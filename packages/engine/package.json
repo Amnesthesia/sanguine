@@ -1,9 +1,12 @@
 {
   "name": "@sanguine/engine",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Sanguine prediction engine: pure TypeScript, deterministic, no dependencies.",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "sideEffects": false,
   "scripts": { "typecheck": "tsc --noEmit -p ." }
 }

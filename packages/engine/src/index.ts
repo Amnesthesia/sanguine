@@ -2,6 +2,7 @@ export * from './types';
 export * from './studentT';
 export * from './dates';
 export * from './params';
+export { ENGINE_BUILD_HASH } from './buildInfo';
 export { classifyCycles, classifyDetailed, madThreshold } from './classify';
 export { cyclePrior, fitCycleLength, fitWeighted, predictiveInterval, predictiveScale, predictiveVariance } from './cycleLength';
 export { calendarOvulation, confidenceGrade, fitLuteal, lutealLengths, ovulationInterval } from './ovulation';
