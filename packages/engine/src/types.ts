@@ -70,7 +70,8 @@ export interface OvulationEstimate {
   sd: number; // days
   basis: 'calendar' | 'bbt' | 'wearable' | 'lh' | 'mucus' | 'cervix' | 'combined';
   confidence?: Confidence;
-  conflict?: boolean;
+  conflict?: boolean; // a signal was discarded or the kept signals disagreed (§4.6)
+  indeterminate?: boolean; // detected but must not override the calendar estimate (LH positives run > 3 days)
 }
 
 // added: §4.10 flag. `code` is the key into copy/flags.en-AU.json; the engine never produces wording.
