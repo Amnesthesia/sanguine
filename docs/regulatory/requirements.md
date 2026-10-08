@@ -19,11 +19,11 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-13 | Luteal posterior updates from biomarker-dated luteal phases; luteal length = nextStart − ovulation − 1 | PLAN §4.5 | fixture F | unit done P1-3 (predict P1-9) |
 | ER-14 | Fertile probability p(d) = Φ((d+5.5−E[O])/SD) − Φ((d−0.5−E[O])/SD) | PLAN §4.8; Wilcox 1995 | fixtures A–D, G | unit done P1-3 (predict P1-9) |
 | ER-15 | Confidence grade by SD[O]: ≤ 1.5 high, ≤ 3 medium, else low; none when suspended | PLAN §4.8 | `ovulation.test.ts` | unit done P1-3 (predict P1-9) |
-| ER-16 | BBT shift: three-over-six, third high ≥ 0.2 °C above the six-day maximum; ovulation = day before first high; SD 1.5 | PLAN §4.6 (C-05) | `bbt.test.ts` | planned P1-4 |
-| ER-17 | CUSUM secondary detector; if it disagrees by > 2 d the shift has SD 2.5 and confidence low | PLAN §4.6 | `bbt.test.ts` | planned P1-4 |
-| ER-18 | Disturbed, out-of-range (35.0–37.5 °C) and > 60 min off-median readings are excluded; one excluded day does not break the count, two consecutive do | PLAN §4.6 (V-06) | `bbt.test.ts` | planned P1-4 |
-| ER-19 | Detection needs valid temperatures on ≥ 50% of cycle days to date | PLAN §4.6; Bull 2019 | `bbt.test.ts` | planned P1-4 |
-| ER-20 | Wearable temperatures form a separate series with a 0.3 °C threshold and SD 2.0; never mixed with oral | PLAN §4.6 (C-05); Zhu 2021 | `bbt.test.ts` | planned P1-4 |
+| ER-16 | BBT shift: three-over-six, third high ≥ 0.2 °C above the six-day maximum; ovulation = day before first high; SD 1.5 | PLAN §4.6 (C-05) | `bbt.test.ts` | done P1-4 |
+| ER-17 | CUSUM secondary detector; if it disagrees by > 2 d the shift has SD 2.5 and confidence low | PLAN §4.6 | `bbt.test.ts` | done P1-4 |
+| ER-18 | Disturbed, out-of-range (35.0–37.5 °C) and > 60 min off-median readings are excluded; one excluded day does not break the count, two consecutive do | PLAN §4.6 (V-06) | `bbt.test.ts` | done P1-4 |
+| ER-19 | Detection needs valid temperatures on ≥ 50% of cycle days to date | PLAN §4.6; Bull 2019 | `bbt.test.ts` | done P1-4 |
+| ER-20 | Wearable temperatures form a separate series with a 0.3 °C threshold and SD 2.0; never mixed with oral | PLAN §4.6 (C-05); Zhu 2021 | `bbt.test.ts` | done P1-4 |
 | ER-21 | LH: first positive after ≥ 1 negative → ovulation = day + 1, SD 1.0; no prior negative within 2 d → SD 1.5; > 3 days of positives → indeterminate, SD 2.5, no override | PLAN §4.6 (C-03) | `lh.test.ts`, fixture G | planned P1-5 |
 | ER-22 | Mucus peak = last eggwhite/watery day before a 3-day change; ovulation = peak, SD 1.5 | PLAN §4.6 (C-04) | `mucus.test.ts` | planned P1-5 |
 | ER-23 | Cervical position: high/soft/open ≥ 2 d then low/firm/closed → last high day, SD 2.5, weight capped | PLAN §4.6 (V-07) | `cervix.test.ts` | planned P1-5 |

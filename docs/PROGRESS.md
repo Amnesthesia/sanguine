@@ -23,3 +23,4 @@ One line per finished backlog item.
 - P1-1 fitCycleLength/predictiveInterval/cyclePrior with fixture numbers; window and recency tested.
 - P1-2 classifyCycles with robust exclusion, reasons, life-state overlap.
 - P1-3 luteal model, calendar ovulation, confidence, fertileDayProbabilities (A table to 0.01).
+- P1-4 detectBbtShift/detectWearableShift: three-over-six, CUSUM, exclusions, provenance factors (D-016).
