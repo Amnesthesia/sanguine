@@ -3,8 +3,8 @@ import { useTheme } from '@/theme';
 import { Text } from './Text';
 
 /** Labelled numeric/text input. The label doubles as the accessibility label; errors are announced with the field. */
-export function TextField({ label, value, onChangeText, error, helper, keyboardType = 'number-pad', maxLength, testID, placeholder }: {
-  label: string; value: string; onChangeText: (s: string) => void; error?: string | undefined; helper?: string; keyboardType?: 'number-pad' | 'default'; maxLength?: number; testID?: string; placeholder?: string;
+export function TextField({ label, value, onChangeText, error, helper, keyboardType = 'number-pad', maxLength, testID, placeholder, onSubmit }: {
+  label: string; value: string; onChangeText: (s: string) => void; error?: string | undefined; helper?: string; keyboardType?: 'number-pad' | 'default' | 'numbers-and-punctuation' | 'decimal-pad'; maxLength?: number; testID?: string; placeholder?: string; onSubmit?: () => void;
 }) {
   const t = useTheme();
   return (
@@ -17,6 +17,8 @@ export function TextField({ label, value, onChangeText, error, helper, keyboardT
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
+        returnKeyType={onSubmit ? 'done' : 'default'}
+        onSubmitEditing={onSubmit}
         maxLength={maxLength}
         placeholder={placeholder}
         placeholderTextColor={t.c.textSecondary}

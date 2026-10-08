@@ -33,6 +33,7 @@ function Shell() {
         <Stack.Protected guard={onboarded}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="log" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="day/[date]" />
         </Stack.Protected>
         <Stack.Screen name="dev/seed" />
       </Stack>

@@ -1,0 +1,15 @@
+# Close the modal log sheet. On Android the Expo Go tools button floats over the top-right corner (where Done sits),
+# so tests use the system back key there; iOS taps Done.
+appId: ${APP_ID}
+---
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: log-done
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - pressKey: back

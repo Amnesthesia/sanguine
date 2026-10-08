@@ -25,3 +25,13 @@ export const recoveryCodeFor = secretToRecoveryWords;
 export async function deleteDeviceSecret(): Promise<void> {
   await SecureStore.deleteItemAsync(KEY, OPTS);
 }
+
+const NOTE_KEY = 'sanguine.notes.key';
+/** Key for the second encryption layer on notes. P2-13 gates its release behind the app lock. */
+export async function getNoteKey(): Promise<Uint8Array> {
+  const v = await SecureStore.getItemAsync(NOTE_KEY, OPTS);
+  if (v) return fromHex(v);
+  const key = deviceClock.randomBytes(32);
+  await SecureStore.setItemAsync(NOTE_KEY, toHex(key), OPTS);
+  return key;
+}

@@ -24,6 +24,7 @@ export interface Projection { cycles: CycleRow[]; dailyLog: DailyLogRow[]; bioma
 
 const byOrder = (a: EventRow, b: EventRow) => a.lamport - b.lamport || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 const PERIOD_GAP_DAYS = 2; // consecutive period days may be one missing day apart
+export const MERGE_WINDOW_DAYS = 7; // §5.4: a start within 7 days before an existing start can be merged into it
 
 /** Events that have not been retracted, in log order. A retract can itself be retracted, which restores its target. */
 export function activeEvents(events: EventRow[]): EventRow[] {
@@ -67,6 +68,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
     return x;
   };
   const periodStarts = new Set<ISODate>();
+  const mergeStarts = new Set<ISODate>(); // user-confirmed: this start belongs to the period that begins within 7 days after it
   const periodEnds: ISODate[] = [];
   const excluded: ISODate[] = [];
   const confirmedLong: ISODate[] = [];
@@ -80,7 +82,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
       case 'symptom': { const x = day(e.effective_day, e.id); if (p.intensity === 0) x.symptoms.delete(p.code as string); else x.symptoms.set(p.code as string, p.intensity as number); break; }
       case 'sex': day(e.effective_day, e.id).sex = { protected: p.protected as boolean }; break;
       case 'note': day(e.effective_day, e.id).note = p.cipher as string; break;
-      case 'period.start': periodStarts.add(e.effective_day); break;
+      case 'period.start': periodStarts.add(e.effective_day); if (p.merge === true) mergeStarts.add(e.effective_day); break;
       case 'period.end': periodEnds.push(e.effective_day); break;
       case 'cycle.exclude': excluded.push(p.cycle_start as ISODate); break;
       case 'cycle.confirm_long': confirmedLong.push(p.cycle_start as ISODate); break;
@@ -115,7 +117,8 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   const runs: Array<{ start: ISODate; end: ISODate }> = [];
   for (const d of sortedDays) {
     const last = runs.at(-1);
-    if (last && diffDays(d, last.end) <= PERIOD_GAP_DAYS) last.end = d;
+    const gap = last ? diffDays(d, last.end) : 0;
+    if (last && (gap <= PERIOD_GAP_DAYS || (gap <= MERGE_WINDOW_DAYS && mergeStarts.has(last.start)))) last.end = d;
     else runs.push({ start: d, end: d });
   }
   runs.forEach((r, i) => {

@@ -238,3 +238,23 @@ describe('projection is order independent (property)', () => {
     expect(activeEvents(rows()).map((e) => e.lamport)).toEqual([...activeEvents(rows()).map((e) => e.lamport)].sort((a, b) => a - b));
   });
 });
+
+describe('merging a start into a later one (§5.4)', () => {
+  it('without the user confirming, a start 5 days before another is a separate cycle', async () => {
+    await periodsOf(['2026-09-20', '2026-09-25']);
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-20', '2026-09-25']);
+  });
+  it('with a confirmed merge the two starts are one period beginning on the earlier day', async () => {
+    await store.append(flow('2026-09-25'));
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-20', merge: true } });
+    expect(await cycles()).toMatchObject([{ start_day: '2026-09-20', end_day: '2026-09-25' }]);
+  });
+  it('a merge flag does not join starts more than 7 days apart', async () => {
+    await store.append(flow('2026-09-25'));
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-10', merge: true } });
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-10', '2026-09-25']);
+  });
+  it('rejects a non-boolean merge flag', async () => {
+    await expect(store.append({ kind: 'period.start', payload: { day: '2026-09-20', merge: 'yes' } })).rejects.toThrow(/merge/);
+  });
+});

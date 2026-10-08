@@ -1,0 +1,78 @@
+appId: ${APP_ID}
+name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=empty
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- evalScript: ${output.today = (function(){var d=new Date();var p=function(n){return (n<10?'0':'')+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());})()}
+
+# period start: Period (tap 1), flow level (tap 2); the sheet closes itself and Today updates
+- assertVisible: "Log your period to start"
+- tapOn:
+    id: quick-period
+- extendedWaitUntil:
+    visible:
+      id: flow-medium
+    timeout: 10000
+- takeScreenshot: sheet-period
+- tapOn:
+    id: flow-medium
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 10000
+- assertVisible: "Day 1 of your period"
+- assertVisible: "Logged: medium flow"
+- takeScreenshot: today-after-period
+
+# symptom: Symptoms (tap 1), tile (tap 2)
+- tapOn:
+    id: quick-symptoms
+- extendedWaitUntil:
+    visible:
+      id: symptom-cramps
+    timeout: 10000
+- tapOn:
+    id: symptom-cramps
+- assertVisible: "Cramps, intensity 2 of 3"
+- takeScreenshot: sheet-symptoms
+- runFlow: _close-sheet.yaml
+
+# it persisted
+- tapOn:
+    id: quick-symptoms
+- extendedWaitUntil:
+    visible:
+      id: symptom-cramps
+    timeout: 10000
+- assertVisible: "Cramps, intensity 2 of 3"
+
+# temperature
+- tapOn:
+    id: more-temperature
+- tapOn:
+    id: temp-value
+- inputText: "36.5"
+- pressKey: Enter
+- assertVisible: ".*36.50 °C.*"
+- runFlow: _close-sheet.yaml
+
+# day detail: see everything, delete one entry
+- openLink: ${APP_URL}/--/day/${output.today}
+- extendedWaitUntil:
+    visible:
+      id: screen-day
+    timeout: 20000
+- assertVisible: "Medium flow"
+- assertVisible: "Cramps 2/3"
+- assertVisible: "Temperature 36.50 °C.*"
+- takeScreenshot: day-detail
+- tapOn:
+    id: event-delete-symptom
+- assertNotVisible: "Cramps 2/3"
+- assertVisible: "Medium flow"

@@ -38,3 +38,4 @@ One line per finished backlog item.
 - P2-6 app shell: native tabs, theme/i18n/zustand, onboarding gate, DB opens in Expo Go; Maestro shell flow green on iOS simulator and Android emulator.
 - P2-7 onboarding: five steps with age gate (13), teen note, life states, consent; Maestro flows green on iOS and Android; component tests (D-029).
 - P2-8 Today: PhaseRing, headline/estimate/flag cards, quick-log row, footer; view-model tests; dev scenarios; Maestro green on iOS and Android (D-030).
+- P2-9 logging sheet and day detail: 2-tap period and symptom, temperature/tests/mucus/cervix/sex/note, merge rule, corrections; Maestro green on iOS and Android (D-031).

@@ -182,7 +182,37 @@
     },
     "previousDay": "Previous day",
     "nextDay": "Next day",
-    "saved": "Saved"
+    "saved": "Saved",
+    "cervixValues": {
+      "position": {
+        "low": "Low",
+        "mid": "Mid",
+        "high": "High"
+      },
+      "firmness": {
+        "firm": "Firm",
+        "medium": "Medium",
+        "soft": "Soft"
+      },
+      "opening": {
+        "closed": "Closed",
+        "partial": "Partly open",
+        "open": "Open"
+      }
+    },
+    "add": "Add",
+    "change": "Change",
+    "timeLabel": "Time (24 h)",
+    "tempInvalid": "Enter a temperature between 30 and 45 °C.",
+    "timeInvalid": "Enter a time like 06:40.",
+    "save": "Save",
+    "longPressHint": "Press and hold a symptom to change its intensity.",
+    "condomYes": "Condom used",
+    "condomNo": "No condom",
+    "conditionNone": "Nothing logged",
+    "tempSummary": "{value} · {time} · {source}",
+    "noteSaved": "Note saved",
+    "noteLocked": "Notes are private to this phone."
   },
   "day": {
     "title": "{date}",
@@ -197,7 +227,27 @@
     "confirmImported": "Confirm",
     "mergePrompt": "This is within 7 days of an earlier period start. Merge them?",
     "merge": "Merge",
-    "keepSeparate": "Keep separate"
+    "keepSeparate": "Keep separate",
+    "edit": "Edit",
+    "deleteEntry": "Delete this entry",
+    "entry": {
+      "flow": "{level} flow",
+      "flowKind": {
+        "period": "",
+        "withdrawal_bleed": " · withdrawal bleed",
+        "intermenstrual": " · between periods",
+        "on_contraception": " · other bleeding"
+      },
+      "symptom": "{name} {n}/3",
+      "lh": "Ovulation test: {result}",
+      "mucus": "Cervical mucus: {quality}",
+      "cervix": "Cervical position: {position}, {firmness}, {opening}",
+      "sex": "Sex: {condom}",
+      "note": "Private note",
+      "periodStart": "Period start",
+      "periodEnd": "Period end",
+      "temp": "Temperature {value} {unit}"
+    }
   },
   "calendar": {
     "title": "Calendar",

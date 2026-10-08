@@ -39,6 +39,8 @@ export function validateEvent(e: NewEvent): ISODate {
   const day = (): ISODate => (isDay(p.day) ? p.day : fail(e.kind, 'day must be YYYY-MM-DD'));
   switch (e.kind) {
     case 'period.start':
+      if (p.merge !== undefined && typeof p.merge !== 'boolean') fail(e.kind, 'merge');
+      return day();
     case 'period.end':
       return day();
     case 'flow':
