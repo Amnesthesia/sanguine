@@ -10,9 +10,6 @@ Format: ID, date, decision, alternative rejected and why.
 - D-004 (2026-10-09) Template `expo-glass-effect`, `react-native-web`, `react-dom` removed from `apps/mobile`: glass is Phase 3 (allow-list), web is not a target.
 - D-005 (2026-10-09) Dev server ports 8090 (iOS) and 8091 (Android) because 8081 is used by another local project.
 
-## VERIFY items
-
-(filled in P0-8)
 - D-006 (2026-10-09) Lint with Biome (`biome lint .`), not ESLint: typescript-eslint refuses TypeScript 7 ("does not support TS 7.0"). Rejected: downgrading to TS 6 (conflicts with D-001) and `expo lint` (pulls ESLint).
 - D-007 (2026-10-09) Allow-list (`tools/ci/lists.ts`) adds the Expo Go built-ins the SDK 57 template needs (expo-constants, expo-device, expo-image, expo-linking, expo-splash-screen, expo-status-bar, expo-symbols, expo-system-ui, expo-web-browser, safe-area-context, worklets) and `react-i18next`; all are bundled in Expo Go. Rejected: stripping them (template and expo-router depend on them).
 - D-008 (2026-10-09) Contrast test (P0-3) found three plan values below AA. Fixes: (a) iOS `glassAccent` light alpha 0.72 → 0.80 (white label 4.12 → 4.91:1 over `bg`); (b) dark `glassAccent` label #FFFFFF instead of onPrimary-style #3A0A14 (2.9:1 → 5.85:1); (c) accent text is only used on `bg` and `surface`; dark accent on `surface2` is 4.21:1, so chips on `surface2` use `textPrimary`. Rejected: changing the accent colour itself (brand-adjacent, plan-fixed).
@@ -29,3 +26,54 @@ Format: ID, date, decision, alternative rejected and why.
   4. Gap: expected fertile-day probabilities for B, C, D from the §4.8 formula are in `fixtures.test.ts` (days 8, 10, … 22). E has no ovulation estimate (plan shows a dash), so no fertile table; the formula values would be 0.16/0.26/0.37/0.45/0.47/0.42/0.32/0.21 if it were ever shown.
   5. Fixture H needs a BBT series and later `today`; G and H use `today` inside the cycle after the biomarker days (day 20 / day 26). Luteal length convention (fixture F): `nextStart - ovulation.point - 1`.
   6. Failing-until-implemented mechanism: tests use `it.fails` gated by `IMPLEMENTED` flags in `fixtures.ts` so CI stays green; `FIXTURES_STRICT=1 vitest run` runs them as ordinary tests (verified: all fail with `NotImplemented`). P1-9 must flip every flag and delete the gate.
+
+## Clinical defaults applied without review (PLAN.md §11.1)
+
+Applied exactly as written. Do not loosen. A change is a single-commit change in the named location, with an entry in `docs/regulatory/engine-changelog.md`.
+
+| ID | Decision | Default applied | Alternative rejected and why | Where it lives |
+| --- | --- | --- | --- | --- |
+| C-01 | Luteal prior | 12.4 ± 2.4 d (Bull 2019, n = 612k) | 14 d textbook median: smaller, older cohorts; would bias ovulation early | `packages/engine/src/params.ts: LUTEAL_PRIOR` |
+| C-02 | Short luteal insight | Low-prominence insight only, at ≤ 9 d in 2 of 3 biomarker-dated cycles, with the uncertainty note | Health flag: evidence contested (§3.4) | `packages/engine/src/flags.ts: SHORT_LUTEAL` |
+| C-03 | LH to ovulation | Positive + 1 d, SD 1.0 | Positive = ovulation day: ignores the 28–48 h onset-to-rupture delay | `params.ts: LH_OFFSET_DAYS, LH_SD` |
+| C-04 | Mucus peak | Peak day, SD 1.5 | Peak + 1: Ecochard found peak within ±1 d in ~70% | `params.ts: MUCUS_SD` |
+| C-05 | BBT rule | Three-over-six, ≥ 0.2 °C, 60-minute time exclusion; wearable 0.3 °C on its own series | Mixing oral and wearable series: amplitude differs 2.5× | `packages/engine/src/bbt.ts`, `params.ts` |
+| C-06 | Temperature-shift gate | Shift accepted only −1 to +4 d from LH/mucus | No gate: lets a late shift override a precise LH estimate | `packages/engine/src/combine.ts`, `params.ts: SHIFT_GATE_*` |
+| C-07 | Flag thresholds | FIGO 2018 adult ranges; PCOS 2023 adolescent ranges; STRAW+10 at ≥ 40; no variability flag in year 1 post-menarche | Adult thresholds for everyone: flags normal pubertal variation | `packages/engine/src/flags.ts` |
+| C-08 | Post-contraception | 3-cycle warm-up at prior-only, weight 0.5 | Immediate full weighting: early cycles unrepresentative (Girum 2018) | `packages/engine/src/lifestate.ts` |
+| C-09 | Breastfeeding | Suspended until first period, then low confidence for 3 cycles, fertile band only with a biomarker | Any calendar-based band: no retrieved timing evidence | `lifestate.ts` |
+| C-10 | Symptom weight | Zero in predictions; per-user patterns in Insights only | Low-weight learned adjustment: no population evidence | by construction: `predict` never reads `DailyLog.symptoms`; property test (P1-8) and `copy/symptoms.json affectsPrediction=false` test |
+| C-11 | Symptom list | 24 codes, 8 visible by default | — | `copy/symptoms.json` |
+
+## Regulatory and legal defaults applied without review (PLAN.md §11.2)
+
+| ID | Decision | Default applied | Alternative rejected and why | Where it lives |
+| --- | --- | --- | --- | --- |
+| R-01 | Ovulation estimate card | Ships in all regions, labelled an estimate, fixed §2.3 wording, no conception mode, no per-day chance figure, hidden in teen mode | Hiding it: omitting makes the app worse without a demonstrated need | `apps/mobile/features/predictions/EstimateCard`, flag `SHOW_OVULATION_ESTIMATE = true` |
+| R-02 | Health flags | Published ranges only; no condition named; no risk score; always "a doctor can help you check" | Naming PCOS/AUB/perimenopause: screening claim about a serious condition | `copy/flags.en-AU.json` |
+| R-03 | Intended-purpose statement | "Track and understand your menstrual cycle"; "not a contraceptive, not a medical device" on listing, onboarding and About | Wellness-plus-fertility phrasing: risks the s41BD conception limb | `copy/legal.en-AU.json` |
+| R-04 | Privacy Act status | Treated as an APP entity; policy, collection notice, NDB procedure written | Relying on the small-business exemption: unsettled for health apps | `docs/privacy-policy.md` (P0-10) |
+| R-05 | Children's Online Privacy Code | Age gate at 13, teen-mode defaults, no profiling, no notifications with health words under 18 by default | Waiting for the Code's final text: defaults are stricter than any likely requirement | onboarding + settings (P2-7, P2-12) |
+| R-06 | GDPR / US state laws | Explicit consent at onboarding, consumer-health-data policy, no sale, no sharing, no geofencing; DPIA drafted | — | `docs/consumer-health-data-policy.md`, `docs/dpia.md` (P0-10) |
+| R-07 | Store listings | Age rating reflects sexual-health content; Health usage strings per type; privacy labels say no data collected | — | app config (Phase 5) |
+| R-08 | Future certification | Requirements trace, risk register, SOUP list, change log kept from Phase 0 | Starting at certification time: retrofitting is the expensive part | `docs/regulatory/` |
+| R-09 | Open question 11.4: hide estimate card in Australia pending an opinion | Decided no; ships behind fixed wording; one-commit flag | Hiding by default | `SHOW_OVULATION_ESTIMATE` |
+
+## VERIFY items
+
+Status: open = not yet checked, carried by the owning backlog item; applied = conservative default in force; closed = checked and recorded.
+
+| ID | VERIFY item (PLAN.md) | Status | Treatment until closed | Owning item |
+| --- | --- | --- | --- | --- |
+| V-01 | Breastfeeding return of fertility (§3.2 postpartum row, §4.9) | applied | Suspended until first period, low confidence three cycles, band only with biomarker (C-09) | P1-6 |
+| V-02 | Time to first ovulation after specific contraceptives (§3.2, §3.4) | applied | 3-cycle prior-only warm-up (C-08) | P1-6 |
+| V-03 | Independent accuracy of Apple wrist temperature (§3.4) | open | Wearable series is optional input with SD 2.0 d and its own coverline | P4-5 |
+| V-04 | Population symptom-timing effect (§3.2, §3.4) | applied | Symptoms never change a prediction (C-10) | P1-8 |
+| V-05 | λ = 0.92 recency weighting (§4.3 table) | open | Backtest acceptance test in P1-8; λ = 1 fallback; fixtures use λ = 1 (D-015) | P1-8 |
+| V-06 | BBT time-of-day drift correction (§4.6) | applied | Exclude readings > 60 min from median, never adjust | P1-4 |
+| V-07 | Cervical position accuracy (§4.6) | applied | SD 2.5 d, weight capped | P1-5 |
+| V-08 | HealthKit third-party write of contraceptive, pregnancy, lactation types (§7.1) | open | Read-only fallback; Phase 4 | P4-2 |
+| V-09 | HealthKit background-delivery frequency per type (§7) | open | Foreground sync always; Phase 4 | P4-2 |
+| V-10 | Health Connect changes-token expiry (§7, §11.3) | open | Bounded 30-day re-read on token failure | P4-3 |
+| V-11 | Flo and Clue export formats (§8.10) | open | Import is best-effort with CSV fallback; verified at Phase 5 (moved from Phase 3 in the plan, because P2-4 imports only Sanguine and CSV) | Phase 5 |
+| V-12 | Expo SDK 57 current docs for Expo Go modules (CLAUDE.md "VERIFY") | closed | SDK 57.0.27 current; template installs; `@expo/ui` and `expo-router` native tabs bundle in Expo Go on iOS 26.4 simulator and Android API 35 emulator (P0-1) | P0-1 |
