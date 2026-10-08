@@ -5,7 +5,8 @@ export async function deviceHasLock(): Promise<boolean> {
   try {
     return (await LocalAuthentication.getEnrolledLevelAsync()) !== LocalAuthentication.SecurityLevel.NONE;
   } catch {
-    return false;
+    // fail closed: if the capability cannot be read, assume a lock exists so the app stays covered rather than opening unlocked
+    return true;
   }
 }
 

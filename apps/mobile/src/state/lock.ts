@@ -5,6 +5,8 @@ import { authenticate, deviceHasLock } from '@/services/lockAuth';
 
 interface LockState {
   locked: boolean;
+  /** False until the first lock decision after start. */
+  decided: boolean;
   available: boolean | undefined;
   unlockedThisSession: boolean;
   backgroundedAt: number | undefined;
@@ -17,14 +19,15 @@ interface LockState {
 }
 
 export const useLock = create<LockState>((set, get) => ({
-  locked: false, available: undefined, unlockedThisSession: false, backgroundedAt: undefined, failed: false, prompting: false,
+  locked: false, decided: false, available: undefined, unlockedThisSession: false, backgroundedAt: undefined, failed: false, prompting: false,
 
   async evaluate(appLock, reason) {
+    // once the phone's capability is known the decision below is synchronous, so a return from the background covers the app at once
     const available = get().available ?? (await deviceHasLock());
     set({ available });
     const lock = shouldLock({ appLock, available, unlockedThisSession: get().unlockedThisSession, backgroundedAt: get().backgroundedAt, now: Date.now() });
-    if (!lock) { set({ locked: false }); return; }
-    set({ locked: true });
+    if (!lock) { set({ locked: false, decided: true }); return; }
+    set({ locked: true, decided: true });
     await get().tryUnlock(reason);
   },
 

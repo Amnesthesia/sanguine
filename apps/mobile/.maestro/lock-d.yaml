@@ -1,0 +1,7 @@
+appId: ${APP_ID}
+name: App lock (4/4) - the lock returns after a minute in the background
+---
+- extendedWaitUntil:
+    visible: "Face ID"
+    timeout: 15000
+- takeScreenshot: relocked

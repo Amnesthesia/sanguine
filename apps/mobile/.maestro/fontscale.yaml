@@ -1,0 +1,54 @@
+appId: ${APP_ID}
+name: Screens at about 150% font scale (PLAN.md §8.9)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- waitForAnimationToEnd
+- takeScreenshot: fs150-today
+- scrollUntilVisible:
+    element:
+      id: today-footer
+- takeScreenshot: fs150-today-bottom
+- scrollUntilVisible:
+    element:
+      id: quick-period
+    direction: UP
+- tapOn:
+    id: quick-period
+- extendedWaitUntil:
+    visible:
+      id: flow-medium
+    timeout: 10000
+- takeScreenshot: fs150-log-sheet
+- scrollUntilVisible:
+    element:
+      id: more-note
+- takeScreenshot: fs150-log-more
+- runFlow: _close-sheet.yaml
+- tapOn: Calendar
+- extendedWaitUntil:
+    visible:
+      id: cal-grid
+    timeout: 10000
+- takeScreenshot: fs150-calendar
+- tapOn: Insights
+- extendedWaitUntil:
+    visible:
+      id: screen-insights
+    timeout: 10000
+- takeScreenshot: fs150-insights
+- tapOn: Settings
+- extendedWaitUntil:
+    visible:
+      id: screen-settings
+    timeout: 10000
+- takeScreenshot: fs150-settings
+- tapOn:
+    id: settings-tracking
+- takeScreenshot: fs150-tracking

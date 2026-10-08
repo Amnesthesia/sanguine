@@ -29,7 +29,7 @@ export function SettingsRow({ title, description, right, onPress, testID, destru
     </View>
   );
   return onPress ? (
-    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={description ? `${title}. ${description}` : title} aria-disabled={disabled} disabled={disabled} onPress={onPress}>{body}</Pressable>
+    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={description ? `${title}. ${description}` : title} aria-disabled={disabled} disabled={disabled} onPress={onPress} style={{ minHeight: 56 }}>{body}</Pressable>
   ) : (
     <View testID={testID}>{body}</View>
   );

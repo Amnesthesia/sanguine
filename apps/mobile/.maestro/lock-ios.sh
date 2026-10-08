@@ -15,3 +15,10 @@ ITEM=P2-13 .maestro/run.sh ios lock-b.yaml || exit 1
 ITEM=P2-13 .maestro/run.sh ios lock-b2.yaml || exit 1
 sleep 2; face match; sleep 3
 ITEM=P2-13 .maestro/run.sh ios lock-c.yaml || exit 1
+# re-lock: leave the app for just over a minute (LOCK_AFTER_MS = 60 s), come back, expect the Face ID sheet again
+xcrun simctl launch "$dev" com.apple.Preferences >/dev/null 2>&1
+sleep 66
+xcrun simctl launch "$dev" host.exp.Exponent >/dev/null 2>&1
+sleep 3
+ITEM=P2-13 .maestro/run.sh ios lock-d.yaml || exit 1
+face match; sleep 2

@@ -44,3 +44,4 @@ One line per finished backlog item.
 - P2-12 Settings: life state, privacy and data (export/import/backup/delete), notifications UI, appearance, tracking options, about with engine hash, health placeholder; Maestro green on iOS and Android (D-034, D-035).
 - P2-12 follow-up: fixed three security-review findings (masked passphrase fields, secure wipe, cache file cleanup) (D-036).
 - P2-13 app lock (Face ID / passcode, 60 s auto-lock, switcher cover, note key gating) verified on iOS with simulated faces; local reminders scheduled from the prediction (iOS; Android moved to P3-1b) (D-037).
+- P2-13 follow-up: security-review fixes for the app lock (iOS background→inactive→active, cover until first decision, fail closed); re-lock after 66 s verified on iOS (D-038).
