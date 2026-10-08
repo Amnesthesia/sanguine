@@ -21,3 +21,4 @@ One line per finished backlog item.
 ## Needs human
 - Controller/operator identity, privacy contact and email in `docs/privacy-policy.md`, `docs/consumer-health-data-policy.md`, `docs/dpia.md` (marked TBD (human)); legal review of all three drafts before publication.
 - P1-1 fitCycleLength/predictiveInterval/cyclePrior with fixture numbers; window and recency tested.
+- P1-2 classifyCycles with robust exclusion, reasons, life-state overlap.
