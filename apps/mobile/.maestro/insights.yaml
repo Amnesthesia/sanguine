@@ -4,7 +4,7 @@ name: Insights - history, charts, accuracy, missed-log prompt, cycle detail
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+      LINK: ${LINKBASE}dev/seed?scenario=typical
 - extendedWaitUntil:
     visible:
       id: screen-today
@@ -35,7 +35,7 @@ name: Insights - history, charts, accuracy, missed-log prompt, cycle detail
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=skippedLog
+      LINK: ${LINKBASE}dev/seed?scenario=skippedLog
 - extendedWaitUntil:
     visible:
       id: screen-today

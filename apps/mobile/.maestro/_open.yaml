@@ -1,22 +1,44 @@
-# Shared start: fresh Expo Go data, open the dev server, dismiss Expo Go's first-run developer-menu sheet (Android) if it appears.
+# Shared start: fresh app data, connect to Metro, open LINK, dismiss the first-run developer-menu sheet.
+# Expo Go: LINK is an exp:// URL that connects and routes in one step. Dev client: connect first (CONNECT), then route (LINK).
 appId: ${APP_ID}
 ---
 - launchApp:
     clearState: true
-- openLink: ${LINK}
 - runFlow:
     when:
-      platform: Android
+      true: ${CLIENT == 'dev'}
     commands:
+      - openLink: ${CONNECT}
       - extendedWaitUntil:
-          visible: "This is the developer menu.*"
-          timeout: 90000
+          visible: "(This is the developer menu.*|.*Sanguine.*)"
+          timeout: 120000
           optional: true
+- openLink: ${LINK}
+# Expo's first-run developer-menu sheet: Continue, then close the tools menu that follows (Android: back key; iOS: tap its close button)
+- extendedWaitUntil:
+    visible: "(This is the developer menu.*|Sanguine)"
+    timeout: 60000
+    optional: true
+- runFlow:
+    when:
+      visible: "This is the developer menu.*"
+    commands:
+      - tapOn:
+          text: "Continue"
+          index: 0
       - runFlow:
           when:
-            visible: "This is the developer menu.*"
+            platform: Android
+          commands:
+            - pressKey: back
+      - runFlow:
+          when:
+            platform: iOS
           commands:
             - tapOn:
-                text: "Continue"
-                index: 0
-            - pressKey: back
+                point: 91%,47%
+# the brand splash (D-042) hands over to the app after about two seconds
+- extendedWaitUntil:
+    notVisible:
+      id: brand-splash
+    timeout: 15000

@@ -4,7 +4,7 @@ name: App shell - four tabs
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+      LINK: ${LINKBASE}dev/seed?scenario=typical
 - extendedWaitUntil:
     visible:
       id: screen-today

@@ -4,7 +4,7 @@ name: Notifications - discreet by default, reminder scheduled from the predictio
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+      LINK: ${LINKBASE}dev/seed?scenario=typical
 - extendedWaitUntil:
     visible:
       id: screen-today
@@ -16,7 +16,7 @@ name: Notifications - discreet by default, reminder scheduled from the predictio
 - takeScreenshot: default
 - runFlow:
     when:
-      platform: iOS
+      true: ${!(PLATFORM == 'android' && CLIENT == 'expogo')}
     commands:
       - tapOn:
           id: notif-period
@@ -32,7 +32,7 @@ name: Notifications - discreet by default, reminder scheduled from the predictio
 # Android in Expo Go cannot load expo-notifications (SDK 53+): the switch is disabled with an explanation until the dev client
 - runFlow:
     when:
-      platform: Android
+      true: ${PLATFORM == 'android' && CLIENT == 'expogo'}
     commands:
       - assertVisible: "Reminders on Android arrive in a later update."
       - takeScreenshot: android-later

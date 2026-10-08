@@ -4,7 +4,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=empty
+      LINK: ${LINKBASE}dev/seed?scenario=empty
 - extendedWaitUntil:
     visible:
       id: screen-today
@@ -63,7 +63,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 - runFlow: _close-sheet.yaml
 
 # day detail: see everything, delete one entry
-- openLink: ${APP_URL}/--/day/${output.today}
+- openLink: ${LINKBASE}day/${output.today}
 - extendedWaitUntil:
     visible:
       id: screen-day

@@ -4,7 +4,7 @@ name: Onboarding, five steps (adult, with last period and life state)
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}
+      LINK: ${LINKBASE}
 - extendedWaitUntil:
     visible:
       id: screen-onboarding

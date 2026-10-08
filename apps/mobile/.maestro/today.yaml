@@ -5,7 +5,7 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=empty
+      LINK: ${LINKBASE}dev/seed?scenario=empty
 - extendedWaitUntil:
     visible:
       id: screen-today
@@ -20,7 +20,7 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+      LINK: ${LINKBASE}dev/seed?scenario=typical
 - extendedWaitUntil:
     visible:
       id: screen-today
@@ -42,7 +42,7 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=inProgress
+      LINK: ${LINKBASE}dev/seed?scenario=inProgress
 - extendedWaitUntil:
     visible:
       id: screen-today
@@ -55,7 +55,7 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=irregular
+      LINK: ${LINKBASE}dev/seed?scenario=irregular
 - extendedWaitUntil:
     visible:
       id: screen-today
@@ -79,7 +79,7 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=typical&theme=dark
+      LINK: ${LINKBASE}dev/seed?scenario=typical&theme=dark
 - extendedWaitUntil:
     visible:
       id: screen-today

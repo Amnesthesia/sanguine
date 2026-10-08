@@ -4,7 +4,7 @@ name: Onboarding age gate (minimum 13) and teen note
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}
+      LINK: ${LINKBASE}
 - extendedWaitUntil:
     visible:
       id: screen-onboarding

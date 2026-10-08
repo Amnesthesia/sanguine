@@ -22,6 +22,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-blur | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-constants | 57.0.21 | ~57.0.21 | ships in app | apps/mobile |
 | expo-crypto | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
+| expo-dev-client | 57.0.19 | ~57.0.19 | ships in app | apps/mobile |
 | expo-device | 57.0.2 | ~57.0.2 | ships in app | apps/mobile |
 | expo-document-picker | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-file-system | 57.0.7 | ~57.0.7 | ships in app | apps/mobile |

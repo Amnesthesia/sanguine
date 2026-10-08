@@ -4,7 +4,7 @@ name: Export my data opens the share sheet with a zip
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+      LINK: ${LINKBASE}dev/seed?scenario=typical
 - extendedWaitUntil:
     visible:
       id: screen-today

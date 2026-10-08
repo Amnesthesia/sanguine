@@ -4,7 +4,7 @@ name: App lock (1/3) - the lock screen covers the app on first open
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}/--/dev/seed?scenario=typical&lock=1
+      LINK: ${LINKBASE}dev/seed?scenario=typical&lock=1
 # the system Face ID sheet sits on top of the lock screen and hides it from the accessibility tree, so wait for the sheet
 - extendedWaitUntil:
     visible: "Face ID"
