@@ -6,7 +6,7 @@ const files = readdirSync(__dirname).filter((f) => f.endsWith('.json'));
 const load = (f: string) => JSON.parse(readFileSync(join(__dirname, f), 'utf8'));
 
 /** PLAN.md §2.3 and §8.7 forbidden words. */
-export const FORBIDDEN: Array<[string, RegExp]> = [
+const FORBIDDEN: Array<[string, RegExp]> = [
   ['safe', /\bsafe\b/i], ['unsafe', /\bunsafe\b/i], ['protected', /\b(un)?protected\b/i],
   ['contraception', /\bcontraception\b/i], ['birth control', /\bbirth control\b/i], ['conceive', /\bconcei\w*/i],
   ['fertile today', /\bfertile today\b/i], ['chance of pregnancy', /\bchance of pregnancy\b/i],
@@ -21,7 +21,7 @@ const ALLOWED: Record<string, string[]> = {
 };
 const ALLOWED_WORDS = ['contraception', 'perimenopause'];
 
-export function strings(node: unknown, path = ''): Array<[string, string]> {
+function strings(node: unknown, path = ''): Array<[string, string]> {
   if (typeof node === 'string') return [[path, node]];
   if (Array.isArray(node)) return node.flatMap((v, i) => strings(v, `${path}[${i}]`));
   if (node && typeof node === 'object')
@@ -29,7 +29,7 @@ export function strings(node: unknown, path = ''): Array<[string, string]> {
   return [];
 }
 
-export function violations(file: string, json: unknown): string[] {
+function violations(file: string, json: unknown): string[] {
   const out: string[] = [];
   for (const [path, text] of strings(json)) {
     const exempt = (ALLOWED[file] ?? []).some((p) => path.startsWith(p));
