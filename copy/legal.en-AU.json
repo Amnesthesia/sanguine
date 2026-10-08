@@ -1,0 +1,13 @@
+{
+  "_note": "Fixed regulatory wording, PLAN.md §2.3. A change here is a reviewed change; keep docs/regulatory/requirements.md in step.",
+  "storeFirstParagraph": "Sanguine helps you track and understand your menstrual cycle. It is not a contraceptive and is not a medical device.",
+  "onboardingPurpose": "Sanguine estimates when your next period and your ovulation are likely, using what you log. Estimates are ranges, not promises.",
+  "estimateCard": "Estimated ovulation around {point} (range {lo}–{hi}). This is for understanding your cycle. Do not use it to prevent pregnancy.",
+  "aboutDisclaimer": "Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional.",
+  "footer": "Estimates are ranges, not promises. Not a contraceptive.",
+  "intendedPurpose": "Track and understand your menstrual cycle.",
+  "notMedicalDevice": "Sanguine is not a contraceptive and is not a medical device.",
+  "privacyThreeSentences": "Everything you log stays on this phone, encrypted. Sanguine has no account and no server; we cannot see your data and cannot hand it to anyone. Backups, if you turn them on, are encrypted before they reach your iCloud or Google Drive.",
+  "healthStoreNotice": "Anything written to {store} is governed by {platform}'s privacy rules and is visible to other apps you have allowed.",
+  "collectionNotice": "Sanguine collects nothing. What you log is stored on this phone. You can export or delete all of it at any time in Settings."
+}

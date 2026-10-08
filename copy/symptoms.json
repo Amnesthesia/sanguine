@@ -1,0 +1,29 @@
+{
+  "_note": "24 symptom codes, 8 visible by default (PLAN.md §11.1). Symptoms never affect a prediction: affectsPrediction is false for every code and a test enforces it.",
+  "symptoms": [
+    { "code": "cramps", "label": "Cramps", "defaultVisible": true, "affectsPrediction": false },
+    { "code": "headache", "label": "Headache", "defaultVisible": true, "affectsPrediction": false },
+    { "code": "bloating", "label": "Bloating", "defaultVisible": true, "affectsPrediction": false },
+    { "code": "breast_tenderness", "label": "Breast tenderness", "defaultVisible": true, "affectsPrediction": false },
+    { "code": "mood_low", "label": "Mood low", "defaultVisible": true, "affectsPrediction": false },
+    { "code": "acne", "label": "Acne", "defaultVisible": true, "affectsPrediction": false },
+    { "code": "fatigue", "label": "Fatigue", "defaultVisible": true, "affectsPrediction": false },
+    { "code": "midcycle_spotting", "label": "Mid-cycle spotting", "defaultVisible": true, "affectsPrediction": false },
+    { "code": "mid_cycle_pain", "label": "Mid-cycle pain", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "back_pain", "label": "Back pain", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "joint_pain", "label": "Joint pain", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "nausea", "label": "Nausea", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "dizziness", "label": "Dizziness", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "irritability", "label": "Irritability", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "anxiety", "label": "Anxiety", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "insomnia", "label": "Trouble sleeping", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "appetite_increase", "label": "Increased appetite", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "food_cravings", "label": "Food cravings", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "diarrhoea", "label": "Diarrhoea", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "constipation", "label": "Constipation", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "hot_flushes", "label": "Hot flushes", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "night_sweats", "label": "Night sweats", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "low_libido", "label": "Low sex drive", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "high_libido", "label": "High sex drive", "defaultVisible": false, "affectsPrediction": false }
+  ]
+}

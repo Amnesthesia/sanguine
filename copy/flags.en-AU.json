@@ -1,0 +1,47 @@
+{
+  "_note": "Health flag wording, PLAN.md §4.10 and §11.2. Published ranges only; never names a condition; always points to a doctor.",
+  "doctorLine": "A doctor can help you check what is going on.",
+  "short": {
+    "title": "Shorter cycles",
+    "body": "Your recent cycles have been shorter than the {threshold}-day lower end of the range most guidelines call typical. A doctor can help you check."
+  },
+  "long": {
+    "title": "Longer cycles",
+    "body": "Your last three cycles included {count} longer than {threshold} days. That is outside the range most clinical guidelines call typical. A doctor can help you check what is going on."
+  },
+  "longSingle": {
+    "title": "A very long cycle",
+    "body": "One of your cycles was longer than 90 days. That is outside the range most clinical guidelines call typical. A doctor can help you check what is going on."
+  },
+  "variability": {
+    "title": "Varying cycle lengths",
+    "body": "Your cycle lengths have varied by more than {days} days over the last six cycles. That is more variation than most guidelines call typical. A doctor can help you check."
+  },
+  "heavy": {
+    "title": "Heavy bleeding logged",
+    "body": "You've logged heavy bleeding on several days for two periods running. Heavy periods are common and treatable; a doctor can help."
+  },
+  "prolonged": {
+    "title": "Longer periods",
+    "body": "Your last two periods lasted more than 8 days. That is longer than most guidelines call typical. A doctor can help you check."
+  },
+  "intermenstrual": {
+    "title": "Bleeding between periods",
+    "body": "You've logged bleeding between periods in two of your last three cycles. A doctor can help you check what is going on."
+  },
+  "missed": {
+    "title": "No period for a while",
+    "body": "It's been more than {days} days since your last period. A doctor can help you check what is going on.",
+    "pregnancyTest": "If you have had sex since your last period, a pregnancy test can give you an answer."
+  },
+  "missedFrom40": {
+    "title": "A long gap between periods",
+    "body": "It's been more than 60 days since your last period. Gaps like this are sometimes part of a change in cycle patterns. A doctor can help you check what is going on."
+  },
+  "shortLuteal": {
+    "title": "Short second half of the cycle",
+    "body": "Your second half of the cycle (ovulation to period) was 9 days or less in two of your last three cycles. This is an insight only: ovulation dates from temperature are uncertain by a day or two, so a short count can be a measurement effect.",
+    "insightOnly": true
+  },
+  "actions": { "learnMore": "Learn more", "mute": "Mute for 90 days", "muted": "Muted until {date}" }
+}

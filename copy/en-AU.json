@@ -1,0 +1,190 @@
+{
+  "app": { "name": "Sanguine", "tagline": "Track and understand your cycle" },
+  "tabs": { "today": "Today", "calendar": "Calendar", "insights": "Insights", "settings": "Settings" },
+  "common": {
+    "continue": "Continue", "skip": "Skip", "done": "Done", "cancel": "Cancel", "save": "Save", "edit": "Edit",
+    "delete": "Delete", "undo": "Undo", "close": "Close", "back": "Back", "next": "Next", "finish": "Finish",
+    "on": "On", "off": "Off", "yes": "Yes", "no": "No", "learnMore": "Learn more", "mute": "Mute",
+    "dontKnow": "I don't know", "optional": "Optional", "openSettings": "Open Settings", "tryAgain": "Try again",
+    "range": "{lo} – {hi}", "dayOfCycle": "day of cycle"
+  },
+  "confidence": { "high": "confident", "medium": "fair estimate", "low": "rough estimate", "none": "" },
+  "onboarding": {
+    "progress": "Step {n} of {total}",
+    "s1": {
+      "title": "Track and understand your cycle",
+      "body": "Sanguine estimates when your next period and your ovulation are likely, using what you log. Estimates are ranges, not promises. Sanguine is not a contraceptive and is not a medical device."
+    },
+    "s2": {
+      "title": "How old are you?", "yearLabel": "Year of birth", "menarcheLabel": "Year of first period (optional)",
+      "tooYoung": "Sanguine is for people aged 13 and over.", "ageHelp": "Your age sets the starting ranges for estimates. It stays on this phone."
+    },
+    "s3": {
+      "title": "When did your last period start?", "dontKnow": "I don't know",
+      "usualLength": "Usual cycle length (optional)", "usualLengthHelp": "Leave blank if unsure",
+      "emptyNote": "No problem. Log your next period to start."
+    },
+    "s4": {
+      "title": "Anything that affects your cycle right now?",
+      "options": {
+        "none": "None", "hormonal": "Hormonal contraception", "postHormonal": "Recently stopped contraception",
+        "pregnant": "Pregnant", "postpartum": "Recently gave birth", "perimenopause": "Perimenopause",
+        "irregular": "Irregular cycles"
+      }
+    },
+    "s5": {
+      "title": "Your data stays with you",
+      "importIos": "Import from Apple Health", "importAndroid": "Import from Health Connect", "backup": "Set up encrypted backup",
+      "consent": "I understand what Sanguine stores and where."
+    },
+    "teenNote": "Some features are hidden by default for under 18s. You can change this in Settings."
+  },
+  "today": {
+    "empty": { "title": "Log your period to start", "body": "Sanguine needs one period date to begin; two or three cycles make estimates useful." },
+    "periodInProgress": "Day {day} of your period",
+    "periodLogged": "Logged: {flow} flow",
+    "periodLikely": "Period likely in {lo}–{hi} days",
+    "periodExpectedBy": "Period expected by {date}",
+    "periodLater": "Later than usual. Nothing to do yet.",
+    "mostLikely": "Most likely {date} · {confidence}",
+    "ovulationCollapsed": "Ovulation estimated around {point} ({lo}–{hi}) · {confidence}",
+    "ovulationUncertain": "Ovulation estimate uncertain (range {lo}–{hi})",
+    "ovulationUncertainShort": "Ovulation estimate uncertain",
+    "suspended": "Estimates are paused while {state}.",
+    "quick": { "period": "Period", "symptoms": "Symptoms", "temperature": "Temperature" },
+    "legend": "darker = more likely to be in the fertile window",
+    "ring": { "dayLabel": "Day {day} of your cycle", "noData": "No cycle data yet" }
+  },
+  "log": {
+    "title": "Log", "flow": "Flow", "bleeding": "Bleeding", "symptoms": "Symptoms", "more": "More",
+    "flowLevels": { "spotting": "Spotting", "light": "Light", "medium": "Medium", "heavy": "Heavy" },
+    "newPeriod": "This will start a new period on {date}",
+    "withdrawalBleed": "Withdrawal bleed", "otherBleed": "Other",
+    "intensity": "Intensity {n} of 3",
+    "temperature": "Temperature", "ovulationTest": "Ovulation test", "mucus": "Cervical mucus", "cervix": "Cervical position",
+    "sex": "Sex", "sexCondom": "Condom used", "note": "Note", "notePlaceholder": "Add a private note",
+    "temperatureSource": { "oral": "Oral", "wrist": "Wrist", "finger": "Finger", "vaginal": "Vaginal", "other": "Other" },
+    "disturbed": "Disturbed (illness, alcohol, little sleep)",
+    "lh": { "negative": "Negative", "positive": "Positive", "high": "High", "peak": "Peak", "indeterminate": "Unclear" },
+    "mucusLevels": { "dry": "Dry", "sticky": "Sticky", "creamy": "Creamy", "watery": "Watery", "eggwhite": "Egg white" },
+    "previousDay": "Previous day", "nextDay": "Next day", "saved": "Saved"
+  },
+  "day": {
+    "title": "{date}", "nothingLogged": "Nothing logged for this day.", "notAPeriod": "Not a period", "markSpotting": "Mark as spotting",
+    "provenance": { "manual": "Logged here", "imported": "Imported", "sensor": "From a sensor" },
+    "confirmImported": "Confirm",
+    "mergePrompt": "This is within 7 days of an earlier period start. Merge them?", "merge": "Merge", "keepSeparate": "Keep separate"
+  },
+  "calendar": {
+    "title": "Calendar", "prevMonth": "Previous month", "nextMonth": "Next month",
+    "legend": {
+      "period": "Period", "predicted": "Predicted period", "fertile": "Fertile window likelihood",
+      "ovulation": "Ovulation estimate", "logged": "Logged"
+    },
+    "selectedSummary": "Day {day} · {items}",
+    "a11y": {
+      "period": "{weekday} {date}, period", "predicted": "{weekday} {date}, predicted period, 80% range",
+      "predicted95": "{weekday} {date}, predicted period, 95% range",
+      "fertile": "{weekday} {date}, {word} likelihood of being in the fertile window",
+      "ovulation": "{weekday} {date}, ovulation estimate", "plain": "{weekday} {date}"
+    },
+    "fertileWords": { "low": "low", "moderate": "moderate", "high": "high" },
+    "backdate": { "title": "Add an earlier period", "body": "Pick the first day of bleeding.", "confirm": "Add period" }
+  },
+  "insights": {
+    "title": "Insights", "segments": { "history": "History", "charts": "Charts", "accuracy": "Accuracy" },
+    "empty": "Insights appear after two complete cycles.",
+    "row": "{start} · {length} days · {bleed} bleed days",
+    "ovulationBasis": { "calendar": "ovulation: calendar", "bbt": "ovulation: temperature", "lh": "ovulation: test", "mucus": "ovulation: mucus", "combined": "ovulation: combined" },
+    "quality": {
+      "valid": "typical", "suspect_skip": "possibly a missed log", "suspect_short": "very short",
+      "user_excluded": "excluded", "life_state": "paused period"
+    },
+    "missedLogPrompt": "Was there a period in between?",
+    "charts": { "cycleLength": "Cycle length", "temperature": "Temperature", "symptomsByPhase": "Symptoms by phase", "coverline": "Coverline", "band": "80% range" },
+    "phases": { "menstrual": "Menstrual", "follicular": "Follicular", "ovulatory": "Ovulatory", "luteal": "Luteal", "late": "Late" },
+    "accuracy": {
+      "summary": "Your 80% ranges have contained the actual date {hits} of {total} times.",
+      "averageMiss": "Average miss: {days} days",
+      "explain": "A range is right about 8 times in 10. A few misses are expected.",
+      "none": "Your accuracy appears after your first completed cycle with an estimate."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "lifeState": {
+      "title": "Life state", "current": "Current", "since": "Since {date}", "history": "Earlier states",
+      "options": {
+        "none": "None", "hormonal": "Hormonal contraception", "postHormonal": "Recently stopped contraception",
+        "pregnant": "Pregnant", "postpartum": "Recently gave birth", "perimenopause": "Perimenopause", "irregular": "Irregular cycles"
+      },
+      "methods": { "combined_pill": "Combined pill", "pop": "Progestogen-only pill", "implant": "Implant", "injection": "Injection", "hormonal_iud": "Hormonal IUD", "ring": "Ring", "patch": "Patch" },
+      "breastfeeding": "Breastfeeding",
+      "effect": {
+        "paused": "Estimates are paused while this is set. Your logs are kept.",
+        "warmup": "Estimates use general starting ranges for your first three cycles.",
+        "wider": "Ranges are wider while this is set."
+      }
+    },
+    "health": { "title": "Health sync", "unavailable": "Health sync arrives in a later update." },
+    "privacy": {
+      "title": "Privacy and data",
+      "intro": "Your data is stored only on this phone, in an encrypted database. Sanguine has no account and no server.",
+      "export": "Export my data", "exportDesc": "A zip with JSON and CSV files.",
+      "import": "Import", "importDesc": "Sanguine export, or a CSV of period start dates.",
+      "backup": "Encrypted backup", "backupDesc": "Saves an encrypted file you can keep anywhere.", "backupOff": "Backup is off",
+      "backedUp": "Backed up {date}",
+      "appLock": "App lock", "appLockDesc": "Use Face ID, fingerprint or your passcode to open Sanguine.",
+      "discreetIcon": "Discreet app icon", "discreetIconDesc": "Shows the app as Notes. Available in a later update.",
+      "deleteAll": "Delete everything", "deleteConfirmTitle": "Delete everything?",
+      "deleteConfirmBody": "This removes every log, setting and backup key from this phone. It cannot be undone.",
+      "deleteConfirmAction": "Delete everything", "deleted": "Everything was deleted.",
+      "exportDone": "Export ready.", "importDone": "Imported {n} records.", "importFailed": "That file could not be read.",
+      "recoveryCode": {
+        "title": "Recovery code", "body": "Write this down. Without it and this phone, your backup cannot be opened, by design.",
+        "saved": "I've saved it"
+      },
+      "passphrase": "Backup passphrase", "passphraseConfirm": "Repeat passphrase", "passphraseMismatch": "The passphrases do not match."
+    },
+    "notifications": {
+      "title": "Notifications and widgets",
+      "periodSoon": "Period reminder", "periodSoonDesc": "A reminder before your estimated period.",
+      "descriptive": "Show details in notifications", "descriptiveDesc": "Off: notifications read \"Sanguine: a reminder\".",
+      "preview": "Preview", "defaultText": "Sanguine: a reminder", "descriptiveText": "Sanguine: Period likely in {lo}–{hi} days",
+      "widgets": "Widgets", "widgetsDesc": "Available in a later update."
+    },
+    "appearance": {
+      "title": "Appearance", "theme": "Theme", "themeSystem": "Match system", "themeLight": "Light", "themeDark": "Dark",
+      "motionNote": "Reduced motion follows your phone's setting."
+    },
+    "tracking": {
+      "title": "Tracking options", "symptoms": "Symptoms shown in the log", "temperatureUnit": "Temperature unit",
+      "celsius": "°C", "fahrenheit": "°F", "temperatureSource": "Usual temperature source",
+      "sexLogging": "Log sexual activity", "sexLoggingDesc": "Optional and off by default.",
+      "ovulationEstimate": "Show ovulation estimate", "ovulationEstimateDesc": "Turn off to hide ovulation and fertile window estimates.",
+      "teenLocked": "Hidden by default for under 18s. You can turn it on here."
+    },
+    "about": {
+      "title": "About", "version": "Version {v}", "engine": "Estimate engine {v}", "engineHash": "Engine hash {h}",
+      "sources": "Sources", "sourcesDesc": "The published studies the estimates are based on.", "licences": "Licences",
+      "wording": "How to read estimates"
+    }
+  },
+  "notifications": {
+    "channel": "Reminders", "defaultTitle": "Sanguine", "defaultBody": "A reminder",
+    "periodTitle": "Sanguine", "periodBody": "Period likely in {lo}–{hi} days"
+  },
+  "lock": {
+    "title": "Sanguine is locked", "unlock": "Unlock", "reason": "Unlock Sanguine", "unavailable": "No screen lock is set up on this phone.",
+    "failed": "Could not unlock. Try again."
+  },
+  "errors": {
+    "generic": "Something went wrong. Nothing was lost.", "saveFailed": "Could not save. Try again.",
+    "loadFailed": "Could not load your data.", "migrationFailed": "Could not update the local database."
+  },
+  "a11y": {
+    "closeSheet": "Close log sheet", "openLog": "Open log", "flowSelected": "{level} flow selected",
+    "symptomSelected": "{symptom}, intensity {n} of 3", "symptomUnselected": "{symptom}, not selected",
+    "phaseRing": "Cycle day {day}. {phase}.", "tab": "{name} tab"
+  }
+}

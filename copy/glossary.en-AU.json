@@ -1,0 +1,16 @@
+{
+  "_note": "Fixed terms, PLAN.md §8.7. Use these words, not synonyms.",
+  "terms": {
+    "period": "Days of menstrual bleeding.",
+    "bleeding": "Any blood loss logged, including spotting and bleeding outside a period.",
+    "spotting": "Very light bleeding, less than a period.",
+    "cycle": "From the first day of one period to the day before the next.",
+    "estimate": "A calculated guess shown with a range, never a certainty.",
+    "range": "The span of days an estimate is likely to fall in.",
+    "ovulation": "When an egg is released. Sanguine estimates this day and shows a range.",
+    "fertile window": "The days around ovulation shown with a likelihood. Darker means more likely to be in the window.",
+    "biomarker": "A measurable sign such as temperature, an ovulation test or cervical mucus."
+  },
+  "preferred": { "typical range": "Use instead of a verdict word.", "people who menstruate": "Inclusive default for general copy." },
+  "confidenceWords": { "high": "confident", "medium": "fair estimate", "low": "rough estimate", "none": "" }
+}
