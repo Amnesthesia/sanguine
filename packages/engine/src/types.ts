@@ -66,6 +66,7 @@ export type Confidence = 'high' | 'medium' | 'low' | 'none';
 // added: ovulation estimate attached to a cycle or to a prediction
 export interface OvulationEstimate {
   point: ISODate;
+  offset?: number; // days after cycle start, fractional; `point` is its rounded date
   sd: number; // days
   basis: 'calendar' | 'bbt' | 'wearable' | 'lh' | 'mucus' | 'cervix' | 'combined';
   confidence?: Confidence;

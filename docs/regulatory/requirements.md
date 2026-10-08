@@ -15,10 +15,10 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-09 | With ≥ 3 cycles a length above median + max(7, 3·1.4826·MAD) is `suspect_skip`, excluded from mean/variance | PLAN §4.4; Li 2020/2022 | fixture B, `classify.test.ts` | done P1-2 |
 | ER-10 | `user_excluded` and life-state cycles are removed from the update and from flags; `confirm_long` re-admits a cycle | PLAN §4.4 | `classify.test.ts` | done P1-2 |
 | ER-11 | Full-history recomputation: no cached state; back-dated entries give the same result as entering in order | PLAN §4.4 | `properties.test.ts` | planned P1-8 |
-| ER-12 | Ovulation = predicted cycle length − luteal length; SD = √(Var L + Var luteal); luteal prior 12.4 ± 2.4 | PLAN §4.5; Bull 2019 (C-01) | fixtures A, F | planned P1-3 |
-| ER-13 | Luteal posterior updates from biomarker-dated luteal phases; luteal length = nextStart − ovulation − 1 | PLAN §4.5 | fixture F | planned P1-3 |
-| ER-14 | Fertile probability p(d) = Φ((d+5.5−E[O])/SD) − Φ((d−0.5−E[O])/SD) | PLAN §4.8; Wilcox 1995 | fixtures A–D, G | planned P1-3 |
-| ER-15 | Confidence grade by SD[O]: ≤ 1.5 high, ≤ 3 medium, else low; none when suspended | PLAN §4.8 | `ovulation.test.ts` | planned P1-3 |
+| ER-12 | Ovulation = predicted cycle length − luteal length; SD = √(Var L + Var luteal); luteal prior 12.4 ± 2.4 | PLAN §4.5; Bull 2019 (C-01) | fixtures A, F | unit done P1-3 (predict P1-9) |
+| ER-13 | Luteal posterior updates from biomarker-dated luteal phases; luteal length = nextStart − ovulation − 1 | PLAN §4.5 | fixture F | unit done P1-3 (predict P1-9) |
+| ER-14 | Fertile probability p(d) = Φ((d+5.5−E[O])/SD) − Φ((d−0.5−E[O])/SD) | PLAN §4.8; Wilcox 1995 | fixtures A–D, G | unit done P1-3 (predict P1-9) |
+| ER-15 | Confidence grade by SD[O]: ≤ 1.5 high, ≤ 3 medium, else low; none when suspended | PLAN §4.8 | `ovulation.test.ts` | unit done P1-3 (predict P1-9) |
 | ER-16 | BBT shift: three-over-six, third high ≥ 0.2 °C above the six-day maximum; ovulation = day before first high; SD 1.5 | PLAN §4.6 (C-05) | `bbt.test.ts` | planned P1-4 |
 | ER-17 | CUSUM secondary detector; if it disagrees by > 2 d the shift has SD 2.5 and confidence low | PLAN §4.6 | `bbt.test.ts` | planned P1-4 |
 | ER-18 | Disturbed, out-of-range (35.0–37.5 °C) and > 60 min off-median readings are excluded; one excluded day does not break the count, two consecutive do | PLAN §4.6 (V-06) | `bbt.test.ts` | planned P1-4 |

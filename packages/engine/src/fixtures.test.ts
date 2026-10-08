@@ -133,10 +133,11 @@ describe('Fixture E: single cycle (31)', () => {
     expectCycleLength(p, 30.43, 6, 3.11, 1);
     expectNextPeriod(p, '2026-10-31', '2026-10-27', '2026-11-05');
   });
-  fixture('E')('no ovulation estimate after one cycle (plan shows a dash)', () => {
+  fixture('E')('ovulation shown whenever a next period is predicted: day 18.0, SD 4.73 (plan dash, D-015)', () => {
     const p = run();
-    expect(p.ovulation).toBeUndefined();
-    expect(p.fertileDays).toBeUndefined();
+    expect(p.ovulation?.point).toBe(day(18));
+    near(p.ovulation?.sd, 4.73);
+    expectFertile(p, { 8: 0.1561, 10: 0.2606, 12: 0.3714, 14: 0.4526, 16: 0.4718, 18: 0.4208, 20: 0.321, 22: 0.2092 });
   });
 });
 
