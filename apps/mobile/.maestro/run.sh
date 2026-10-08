@@ -20,5 +20,5 @@ status=0
 for f in "$@"; do maestro --device "$dev" test --test-output-dir "$out" -e LINKBASE="$linkbase" -e CONNECT="$connect" -e CLIENT="$client" -e PLATFORM="$platform" -e APP_ID="$appid" ".maestro/$f" || status=1; done
 # flatten: docs/screenshots/<item>/<platform>-<name>.png ; drop Maestro's logs and recordings
 find "$out" -path '*takeScreenshot*' -name '*.png' | while read -r f; do cp "$f" "$shots/$platform-$(basename "$f")"; done
-rm -rf "$out"
+if [ $status -ne 0 ]; then keep="/tmp/maestro-debug-$platform-$(date +%H%M%S)"; mv "$out" "$keep"; echo "maestro debug output kept at $keep"; else rm -rf "$out"; fi
 exit $status

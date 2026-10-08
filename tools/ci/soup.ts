@@ -12,6 +12,16 @@ function installedVersion(name: string): string {
   return existsSync(f) ? (JSON.parse(readFileSync(f, 'utf8')).version as string) : 'not installed';
 }
 
+/** SQLCipher is vendored as C source inside expo-sqlite and compiled into the app when `useSQLCipher` is on (P3-2). */
+function sqlcipherVersion(): string {
+  const f = join(root, 'node_modules', 'expo-sqlite', 'vendor', 'sqlcipher', 'sqlite3.c');
+  if (!existsSync(f)) return 'not installed';
+  const src = readFileSync(f, 'utf8');
+  const cipher = /#define CIPHER_VERSION_NUMBER (\S+)/.exec(src)?.[1];
+  const sqlite = /#define SQLITE_VERSION\s+"([^"]+)"/.exec(src)?.[1];
+  return `${cipher} (SQLite ${sqlite})`;
+}
+
 export function renderSoup(): string {
   const rows = new Map<string, { range: string; used: Set<string>; dev: boolean }>();
   for (const ws of WORKSPACES) {
@@ -37,6 +47,12 @@ export function renderSoup(): string {
     '| Package | Installed | Range | Role | Used by |',
     '| --- | --- | --- | --- | --- |',
     ...lines,
+    '',
+    '## Native libraries compiled in by the packages above',
+    '',
+    '| Library | Version | Brought in by | Role |',
+    '| --- | --- | --- | --- |',
+    `| SQLCipher (community) | ${sqlcipherVersion()} | expo-sqlite, \`useSQLCipher: true\` | encrypts the local database (iOS: CommonCrypto; Android: OpenSSL) |`,
     '',
   ].join('\n');
 }

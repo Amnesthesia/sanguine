@@ -53,3 +53,5 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - P2-15 full Maestro suite green on the iOS simulator and the Android emulator in Expo Go; tag v0.2-expo-go (D-040). Phase 2 complete.
 - P3-1 (iOS) prebuild + dev client; full Maestro suite and app-lock script green on the iOS dev client; allow-list job retired, deny-list kept (D-041). Android dev-client run follows the P3-2 rebuild.
 - Brand: horned mark, brand red #B8324A, splash with rotating taglines (D-042); splash redesign with the Cinzel wordmark, vignette and bottom tagline from the owner's mock-ups (D-045).
+- P3-2 SQLCipher at rest with a device-bound Secure Store key; plain database migrated in place; at-rest check in the suite (D-043).
+- P3-3 Liquid Glass quick-log pill with Reduce Transparency and pre-iOS 26 fallbacks; tab bar already system glass (D-044).

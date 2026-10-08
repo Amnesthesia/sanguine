@@ -19,6 +19,8 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | @types/opentype.js | 1.3.10 | ^1.3.10 | dev/build only | tools/brand |
 | @types/react | 19.2.18 | ~19.2.2 | dev/build only | apps/mobile |
 | better-sqlite3 | 13.0.3 | ^13.0.3 | dev/build only | root |
+| eslint | 9.39.5 | ^9.0.0 | dev/build only | apps/mobile |
+| eslint-config-expo | 57.0.2 | ~57.0.2 | dev/build only | apps/mobile |
 | expo | 57.0.27 | ~57.0.27 | ships in app | apps/mobile |
 | expo-blur | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-constants | 57.0.21 | ~57.0.21 | ships in app | apps/mobile |
@@ -28,6 +30,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-document-picker | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-file-system | 57.0.7 | ~57.0.7 | ships in app | apps/mobile |
 | expo-font | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
+| expo-glass-effect | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
 | expo-haptics | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-image | 57.0.5 | ~57.0.5 | ships in app | apps/mobile |
 | expo-linking | 57.0.12 | ~57.0.12 | ships in app | apps/mobile |
@@ -63,3 +66,9 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | typescript | 7.0.2 | ^7.0.2 | dev/build only | apps/mobile, root |
 | vitest | 3.2.7 | ^3.2.0 | dev/build only | root |
 | zustand | 5.0.15 | ^5.0.15 | ships in app | apps/mobile |
+
+## Native libraries compiled in by the packages above
+
+| Library | Version | Brought in by | Role |
+| --- | --- | --- | --- |
+| SQLCipher (community) | 4.7.0 (SQLite 3.49.1) | expo-sqlite, `useSQLCipher: true` | encrypts the local database (iOS: CommonCrypto; Android: OpenSSL) |

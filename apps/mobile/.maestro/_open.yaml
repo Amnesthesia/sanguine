@@ -8,11 +8,20 @@ appId: ${APP_ID}
     when:
       true: ${CLIENT == 'dev'}
     commands:
-      - openLink: ${CONNECT}
+      # the dev launcher must be up before it can take the connect link (Android drops a link sent during its start)
       - extendedWaitUntil:
-          visible: "(This is the developer menu.*|.*Sanguine.*)"
-          timeout: 120000
+          visible: "(?i)development servers"
+          timeout: 30000
           optional: true
+      - openLink: ${CONNECT}
+      # the launcher screen goes away once the bundle loads; its own text contains "Sanguine", so wait for that, not the app
+      - extendedWaitUntil:
+          notVisible: "(?i)development servers"
+          timeout: 120000
+      # and the bundle must be running before LINK is sent: a link that lands before JS starts is swallowed (Android)
+      - extendedWaitUntil:
+          visible: "(Track and understand your cycle|This is the developer menu.*)"
+          timeout: 60000
 - openLink: ${LINK}
 # Expo's first-run developer-menu sheet: Continue, then close the tools menu that follows (Android: back key; iOS: tap its close button)
 - extendedWaitUntil:

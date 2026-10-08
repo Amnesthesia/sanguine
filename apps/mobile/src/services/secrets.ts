@@ -41,3 +41,13 @@ export async function getNoteKey(): Promise<Uint8Array> {
 export async function deleteNoteKey(): Promise<void> {
   await SecureStore.deleteItemAsync(NOTE_KEY, OPTS);
 }
+
+const DB_KEY = 'sanguine.db.key';
+/** SQLCipher key for the local database (P3-2): 32 random bytes as hex, created on first launch, never leaves the Keychain / Keystore. */
+export async function getOrCreateDbKey(): Promise<string> {
+  const v = await SecureStore.getItemAsync(DB_KEY, OPTS);
+  if (v) return v;
+  const key = toHex(deviceClock.randomBytes(32));
+  await SecureStore.setItemAsync(DB_KEY, key, OPTS);
+  return key;
+}

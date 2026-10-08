@@ -4,13 +4,15 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavThemeProvider } fro
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
-import { AppState, Text as RNText, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Alert, AppState, Text as RNText, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/i18n';
 import { useApp } from '@/state/app';
 import { LockGate } from '@/features/lock/LockGate';
 import { BrandSplash } from '@/features/splash/BrandSplash';
 import { ThemeProvider, useTheme } from '@/theme';
+import { Button } from '@/ui/Button';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -19,7 +21,23 @@ function Shell() {
   const status = useApp((s) => s.status);
   const onboarded = useApp((s) => s.onboarded);
   const error = useApp((s) => s.error);
+  const keyMismatch = useApp((s) => s.keyMismatch);
+  const startFresh = useApp((s) => s.startFresh);
+  const { t: tr } = useTranslation();
   const nav = t.scheme === 'dark' ? DarkTheme : DefaultTheme;
+  if (status === 'error' && keyMismatch) {
+    const confirm = () => Alert.alert(tr('errors.keyMismatch.confirmTitle'), tr('errors.keyMismatch.confirmBody'), [
+      { text: tr('common.cancel'), style: 'cancel' },
+      { text: tr('errors.keyMismatch.confirm'), style: 'destructive', onPress: () => void startFresh() },
+    ]);
+    return (
+      <View testID="screen-key-mismatch" style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 16, backgroundColor: t.screenBg }}>
+        <RNText accessibilityRole="header" style={{ color: t.c.textPrimary, fontSize: 18, fontWeight: '600' }}>{tr('errors.keyMismatch.title')}</RNText>
+        <RNText style={{ color: t.c.textPrimary, fontSize: 16, lineHeight: 24 }}>{tr('errors.keyMismatch.body')}</RNText>
+        <Button testID="start-fresh" label={tr('errors.keyMismatch.action')} kind="destructive" onPress={confirm} />
+      </View>
+    );
+  }
   if (status === 'error')
     return (
       <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: t.screenBg }}>
@@ -54,7 +72,6 @@ function Shell() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ DancingScript_700Bold });
   const [fontsLoaded] = useFonts({ DancingScript_700Bold, Cinzel_400Regular, Cinzel_600SemiBold });
   const status = useApp((s) => s.status);
   const theme = useApp((s) => s.prefs.theme);

@@ -11,13 +11,16 @@ import type { Profile } from '@/data/project';
 import { getSetting, setSetting } from '@/data/settings';
 import type { EventStore } from '@/data/store';
 import { planReminder } from '@/features/notifications/plan';
-import { appData } from '@/services/appData';
+import { appData, startFreshDatabase } from '@/services/appData';
+import { KeyMismatchError } from '@/data/cipher';
 import { syncReminder } from '@/services/notifications';
 import { todayLocal } from '@/services/clock';
 
 interface AppState {
   status: 'loading' | 'ready' | 'error';
   error?: string;
+  /** The database exists but this phone's key does not open it (D-043). */
+  keyMismatch?: boolean;
   db?: Database;
   store?: EventStore;
   prefs: Prefs;
@@ -33,6 +36,8 @@ interface AppState {
   nextReminder: string | undefined;
   syncReminders: () => Promise<void>;
   init: () => Promise<void>;
+  /** Deletes an unreadable database and starts empty; only after the user confirms. */
+  startFresh: () => Promise<void>;
   refresh: () => Promise<void>;
   updatePrefs: (patch: Partial<Prefs>) => Promise<void>;
   muteFlag: (code: FlagCode) => Promise<void>;
@@ -59,8 +64,14 @@ export const useApp = create<AppState>((set, get) => ({
       await get().refresh();
       set({ status: 'ready' });
     } catch (e) {
-      set({ status: 'error', error: (e as Error).message });
+      set({ status: 'error', error: (e as Error).message, keyMismatch: e instanceof KeyMismatchError });
     }
+  },
+
+  async startFresh() {
+    await startFreshDatabase();
+    set({ status: 'loading', error: undefined, keyMismatch: false });
+    await get().init();
   },
 
   async refresh() {

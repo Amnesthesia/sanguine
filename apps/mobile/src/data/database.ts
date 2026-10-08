@@ -1,5 +1,5 @@
 // The only database surface the app uses. `expoDatabase.ts` implements it on expo-sqlite; tests use better-sqlite3.
-// Phase 3 turns on SQLCipher: `open(name, key)` already accepts the key and ignores it until then (PLAN.md §6.1, P3-2).
+// SQLCipher since P3-2: the app opens with the key from Secure Store; the test opener ignores it (PLAN.md §6.1).
 export type SqlValue = string | number | null | Uint8Array;
 
 export interface Database {
@@ -13,6 +13,6 @@ export interface Database {
 }
 
 export interface DatabaseOpener {
-  /** `key` is the SQLCipher key from Secure Store (Phase 3); accepted now, ignored until then. */
+  /** `key` is the SQLCipher key from Secure Store, 64 hex characters (required by the app opener since P3-2). */
   open(name: string, key?: string): Promise<Database>;
 }

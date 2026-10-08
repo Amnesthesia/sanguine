@@ -52,8 +52,8 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 
 - [ ] P3-1 `expo prebuild` with config plugins; dev-client builds for both simulators (local `expo run:ios` / `expo run:android`); all Phase 2 Maestro flows pass on the dev client. Remove the Expo Go allow-list job.
 - [ ] P3-1b Android local reminders on the dev client: `expo-notifications` cannot be imported in Expo Go on Android (SDK 53+), so P2-13 ships `remindersSupported = false` there; enable and re-run `apps/mobile/.maestro/notifications.yaml` on the emulator. (§6.1)
-- [ ] P3-2 SQLCipher: `useSQLCipher: true`, key generated on first launch into expo-secure-store, `PRAGMA key` on open; migration of any existing plain DB; test that the file is unreadable without the key. (§6.1)
-- [ ] P3-3 Liquid Glass tab bar and quick-log pill with expo-glass-effect; Reduce Transparency and pre-iOS 26 fallbacks. (§9.1)
+- [x] P3-2 SQLCipher: `useSQLCipher: true`, key generated on first launch into expo-secure-store, `PRAGMA key` on open; migration of any existing plain DB; test that the file is unreadable without the key. (§6.1)
+- [x] P3-3 Liquid Glass tab bar and quick-log pill with expo-glass-effect; Reduce Transparency and pre-iOS 26 fallbacks. (§9.1)
 - [ ] P3-4 Material 3 Expressive theme via @expo/ui jetpack-compose with `MotionScheme.expressive()`; shape-morphing Period button; system animation-scale check. (§9.1)
 - [ ] P3-5 Widgets: iOS lock screen/home, Android Glance; discreet defaults. (§8.3)
 - [ ] P3-6 Alternate app icons (discreet "Notes"); screenshot protection. (§8.8, §9.9)

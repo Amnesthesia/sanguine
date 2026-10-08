@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runs every Maestro flow on one platform in Expo Go. Usage: ITEM=P2-15 .maestro/suite.sh ios|android
+# Runs every Maestro flow on one platform. Usage: [CLIENT=dev] ITEM=P2-15 .maestro/suite.sh ios|android
 # Prerequisites: Metro running (`npx expo start --port 8090`), the simulator/emulator booted, Expo Go installed.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -19,5 +19,9 @@ done
 if [ "$platform" = ios ]; then
   echo "=== app lock (ios, simulated Face ID)"
   .maestro/lock-ios.sh > /tmp/maestro-ios-lock.log 2>&1 || failed+=(lock)
+fi
+if [ "${CLIENT:-expogo}" = dev ]; then # SQLCipher needs the dev client (P3-2)
+  echo "=== database at rest ($platform)"
+  .maestro/at-rest.sh "$platform" || failed+=(at-rest)
 fi
 if [ ${#failed[@]} -eq 0 ]; then echo "SUITE GREEN ($platform): ${flows[*]}"; else echo "SUITE RED ($platform): ${failed[*]}"; exit 1; fi

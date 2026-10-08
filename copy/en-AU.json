@@ -525,7 +525,15 @@
     "generic": "Something went wrong. Nothing was lost.",
     "saveFailed": "Could not save. Try again.",
     "loadFailed": "Could not load your data.",
-    "migrationFailed": "Could not update the local database."
+    "migrationFailed": "Could not update the local database.",
+    "keyMismatch": {
+      "title": "Your data on this phone cannot be opened",
+      "body": "It is locked with a key that only the phone it was created on had. This happens after a phone is restored from a backup. Your history can come back from a Sanguine backup: start again, then restore it in Settings with your recovery code.",
+      "action": "Start again",
+      "confirmTitle": "Start again with no data?",
+      "confirmBody": "The locked data on this phone is deleted. It cannot be opened without its key, so it cannot be recovered here.",
+      "confirm": "Delete and start again"
+    }
   },
   "a11y": {
     "closeSheet": "Close log sheet",
