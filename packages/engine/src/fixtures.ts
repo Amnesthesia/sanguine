@@ -21,6 +21,3 @@ export function historyFromLengths(lengths: number[], lastStart: ISODate = LAST_
   }));
   return { ...emptyHistory(), cycles };
 }
-
-/** Which fixtures have a green implementation. Flip each to true as its backlog item lands (P1-1 .. P1-9). */
-export const IMPLEMENTED = { A: false, B: false, C: false, D: false, E: false, F: false, G: false, H: false, I: false };
