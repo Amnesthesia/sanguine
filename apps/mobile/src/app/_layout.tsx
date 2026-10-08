@@ -2,12 +2,13 @@ import { DancingScript_700Bold, useFonts } from '@expo-google-fonts/dancing-scri
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AppState, Text as RNText, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/i18n';
 import { useApp } from '@/state/app';
 import { LockGate } from '@/features/lock/LockGate';
+import { BrandSplash } from '@/features/splash/BrandSplash';
 import { ThemeProvider, useTheme } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
@@ -57,6 +58,8 @@ export default function RootLayout() {
   const theme = useApp((s) => s.prefs.theme);
   const init = useApp((s) => s.init);
   const refresh = useApp((s) => s.refresh);
+  const [splashShown, setSplashShown] = useState(false);
+  const splashDone = useCallback(() => setSplashShown(true), []);
 
   useEffect(() => { void init(); }, [init]);
   // a new day, or coming back to the app, recomputes today's prediction
@@ -74,6 +77,7 @@ export default function RootLayout() {
         <LockGate>
           <Shell />
         </LockGate>
+        {!splashShown && <BrandSplash onDone={splashDone} />}
       </ThemeProvider>
     </SafeAreaProvider>
   );

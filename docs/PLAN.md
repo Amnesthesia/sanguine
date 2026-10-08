@@ -935,6 +935,8 @@ Using the Sanguine design system, design: (1) iOS lock-screen circular widget: P
 
 ### 9.9 Brand: splash, icon and wordmark
 
+> Superseded in part by DECISIONS.md D-042 (2026-10-09): the glyph is now the horned brush mark, the brand red is #B8324A, and the splash shows the mark with a rotating tagline (`app.taglines`) fading in. The rows below are the original spec.
+
 The brand is one wine-red field, one white script wordmark and one glyph: a script S whose tail ends in a drop. It appears on the splash screen, the app icon and the About screen, and nowhere else; inside the app the accent stays garnet and the interface stays neutral, so the brand reads as a signature rather than a theme.
 
 | Element | Spec |

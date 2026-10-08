@@ -10,7 +10,7 @@
     "android": {
       "package": "app.sanguine.mobile",
       "adaptiveIcon": {
-        "backgroundColor": "#6A1220",
+        "backgroundColor": "#B8324A",
         "foregroundImage": "./assets/brand/android-icon-foreground.png",
         "backgroundImage": "./assets/brand/android-icon-background.png",
         "monochromeImage": "./assets/brand/android-icon-monochrome.png"
@@ -22,13 +22,13 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#6A1220",
-          "image": "./assets/brand/splash-wordmark.png",
-          "imageWidth": 220,
+          "backgroundColor": "#B8324A",
+          "image": "./assets/brand/splash-mark.png",
+          "imageWidth": 200,
           "resizeMode": "contain",
           "dark": {
-            "backgroundColor": "#6A1220",
-            "image": "./assets/brand/splash-wordmark.png"
+            "backgroundColor": "#B8324A",
+            "image": "./assets/brand/splash-mark.png"
           }
         }
       ],
@@ -43,7 +43,12 @@
     },
     "ios": {
       "bundleIdentifier": "app.sanguine.mobile",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "EXDevMenuShowFloatingActionButton": false,
+        "EXDevMenuShowsAtLaunch": false,
+        "EXDevMenuIsOnboardingFinished": true
+      }
     }
   }
 }

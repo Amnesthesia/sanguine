@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&display=swap" rel="stylesheet">
 <style>
-:root{--wine:#6A1220;--wine2:#4E0C17;--pageBg:#EFE9E4;--pageText:#1F1A1C;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--wine:#B8324A;--wine2:#962439;--pageBg:#EFE9E4;--pageText:#1F1A1C;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pageBg:#1B1719;--pageText:#F4EEEF}}
 :root[data-theme="dark"]{--pageBg:#1B1719;--pageText:#F4EEEF}
 *{box-sizing:border-box}html,body{margin:0}
@@ -24,7 +24,9 @@ figure{margin:0}figcaption{font-size:13px;margin:10px 2px 0;line-height:1.45;opa
 .icon.android{border-radius:50%}
 .icon.mono{background:#1F1A1C}
 .icon.tinted{background:linear-gradient(180deg,#B3A8AC,#6B6165)}
-.glyph{position:absolute;inset:0}
+.glyph{position:absolute;inset:0;width:100%;height:100%}
+.splash{flex-direction:column}.splash .mark{width:200px;height:200px}.splash .tag{font-size:28px;margin-top:20px;animation:fade 1.6s ease-in both}
+@keyframes fade{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion: reduce){.splash .tag{animation:none}}
 .row{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
 .about{width:393px;border-radius:24px;overflow:hidden;border:1px solid rgba(0,0,0,.08);background:#FBF8F6;color:#1F1A1C}
 .about .band{height:120px;background:var(--wine);display:flex;align-items:center;justify-content:center;color:#fff}
@@ -34,36 +36,21 @@ figure{margin:0}figcaption{font-size:13px;margin:10px 2px 0;line-height:1.45;opa
 </head>
 <body>
 <h1>Sanguine — brand preview</h1>
-<p class="lead">Wine red #6A1220 field, white wordmark in Dancing Script 700 (OFL, loads in Expo Go via @expo-google-fonts), and the glyph: the script S whose tail ends in a drop. The brand appears on the splash, the icon and the About band only; the in-app accent stays garnet. Great Vibes is shown as the lighter alternative.</p>
+<p class="lead">Brand red #B8324A field, the white horned brush mark (DECISIONS.md D-042), the tagline in Dancing Script 700, and the wordmark on the About band. The brand appears on the splash, the icon and the About band only; the in-app accent stays garnet. The mark is rendered from <code>tools/brand/build.ts</code>.</p>
 
 <div class="grid">
 <figure>
-  <div class="splash"><div class="wm script">Sanguine</div></div>
-  <figcaption>Splash screen (expo-splash-screen: backgroundColor #6A1220, wordmark PNG, resizeMode contain, imageWidth 220). Same in dark mode.</figcaption>
+  <div class="splash"><img class="mark" src="../apps/mobile/assets/brand/splash-mark.png" alt="Sanguine"><div class="tag script">Blood for the blood god</div></div>
+  <figcaption>Splash screen: the native splash shows the mark (backgroundColor #B8324A, imageWidth 200); the JS continuation fades the tagline in beneath it, then hands over to the app. Same in dark mode; no fade under Reduce Motion.</figcaption>
 </figure>
 
 <figure>
   <div class="row">
-    <div class="icon">
-      <svg class="glyph" viewBox="0 0 220 220" aria-label="Sanguine app icon: script S with a drop">
-        <text x="98" y="150" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="150" fill="#fff">S</text>
-        <path d="M150 128 c6 12 12 20 12 28 a12 12 0 0 1 -24 0 c0-8 6-16 12-28 z" fill="#fff"/>
-      </svg>
-    </div>
-    <div class="icon android">
-      <svg class="glyph" viewBox="0 0 220 220" aria-hidden="true">
-        <text x="98" y="150" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="140" fill="#fff">S</text>
-        <path d="M148 130 c6 12 12 20 12 28 a12 12 0 0 1 -24 0 c0-8 6-16 12-28 z" fill="#fff"/>
-      </svg>
-    </div>
-    <div class="icon tinted">
-      <svg class="glyph" viewBox="0 0 220 220" aria-hidden="true">
-        <text x="98" y="150" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="150" fill="#fff">S</text>
-        <path d="M150 128 c6 12 12 20 12 28 a12 12 0 0 1 -24 0 c0-8 6-16 12-28 z" fill="#fff"/>
-      </svg>
-    </div>
+    <div class="icon"><img class="glyph" src="../apps/mobile/assets/brand/icon.png" alt="Sanguine app icon"></div>
+    <div class="icon android"><img class="glyph" src="../apps/mobile/assets/brand/android-icon-background.png" alt=""><img class="glyph" src="../apps/mobile/assets/brand/android-icon-foreground.png" alt=""></div>
+    <div class="icon tinted"><img class="glyph" src="../apps/mobile/assets/brand/glyph.svg" alt=""></div>
   </div>
-  <figcaption>App icon: iOS (squircle), Android adaptive (circle mask) and the iOS 26 tinted appearance derived from the layered Icon Composer file. The drop sits where the S's tail would end; in the production SVG the tail stroke is extended into the drop so it reads as one mark.</figcaption>
+  <figcaption>App icon: iOS (squircle), Android adaptive (circle mask) and the iOS 26 tinted appearance derived from the layered Icon Composer file. The adaptive foreground shrinks the mark so the horn tips stay inside the safe circle.</figcaption>
 </figure>
 
 <figure>
@@ -74,10 +61,6 @@ figure{margin:0}figcaption{font-size:13px;margin:10px 2px 0;line-height:1.45;opa
   <figcaption>About screen header band, the only in-app use of the brand colour.</figcaption>
 </figure>
 
-<figure>
-  <div class="splash" style="height:300px;border-radius:24px"><div class="wm vibes" style="font-size:96px">Sanguine</div></div>
-  <figcaption>Alternative wordmark in Great Vibes, lighter and more formal; choose on device at Phase 0 if Dancing Script feels heavy.</figcaption>
-</figure>
 </div>
 </body>
 </html>

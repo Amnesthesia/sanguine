@@ -10,6 +10,7 @@ function files(dir: string): string[] {
   });
 }
 const SRC = files(__dirname);
+const SPLASH = join(__dirname, 'features/splash/BrandSplash.tsx');
 
 /** The text of a JSX opening tag starting at `from` (just after the tag name), up to its closing `>` or `/>`. */
 function tagBody(src: string, from: number): string {
@@ -58,7 +59,13 @@ describe('interactive elements are labelled', () => {
 describe('motion (§8.9: reduced motion degrades to cross-fades; the ring never animates)', () => {
   it('the app has no custom animation: no Animated, reanimated or LayoutAnimation in screens or components', () => {
     const hits = SRC.filter((f) => /react-native-reanimated|LayoutAnimation|Animated\.|from 'react-native'.*\bAnimated\b/.test(readFileSync(f, 'utf8')));
-    expect(hits.map((f) => f.replace(__dirname, ''))).toEqual([]);
+    expect(hits.map((f) => f.replace(__dirname, ''))).toEqual([SPLASH.replace(__dirname, '')]);
+  });
+  it('the one exception, the brand splash (D-042), only fades opacity and drops the fades under Reduce Motion', () => {
+    const src = readFileSync(SPLASH, 'utf8');
+    expect(src).toContain('isReduceMotionEnabled');
+    expect(src.match(/Animated\.timing\(\w+, \{ toValue: \d, duration: \w+/g)?.length).toBe(3);
+    expect(src).not.toMatch(/translate|scale|rotate|LayoutAnimation|reanimated/);
   });
 });
 

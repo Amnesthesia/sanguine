@@ -7,14 +7,14 @@ const app = JSON.parse(readFileSync(join(mobile, 'app.json'), 'utf8')).expo;
 const splash = app.plugins.find((p: unknown) => Array.isArray(p) && p[0] === 'expo-splash-screen')[1];
 
 describe('brand config (PLAN.md §9.9)', () => {
-  it('splash is wine red with the wordmark at 220pt, same in dark mode', () => {
-    expect(splash.backgroundColor).toBe('#6A1220');
-    expect(splash.imageWidth).toBe(220);
+  it('splash is brand red with the mark at 200pt, same in dark mode', () => {
+    expect(splash.backgroundColor).toBe('#B8324A');
+    expect(splash.imageWidth).toBe(200);
     expect(splash.resizeMode).toBe('contain');
-    expect(splash.dark.backgroundColor).toBe('#6A1220');
+    expect(splash.dark.backgroundColor).toBe('#B8324A');
   });
-  it('android adaptive icon uses wine background and a monochrome layer', () => {
-    expect(app.android.adaptiveIcon.backgroundColor).toBe('#6A1220');
+  it('android adaptive icon uses the brand red background and a monochrome layer', () => {
+    expect(app.android.adaptiveIcon.backgroundColor).toBe('#B8324A');
     expect(app.android.adaptiveIcon.monochromeImage).toBeTruthy();
   });
   it('every referenced brand asset exists and is non-empty', () => {
@@ -29,5 +29,14 @@ describe('brand config (PLAN.md §9.9)', () => {
     const src = readFileSync(join(__dirname, 'build.ts'), 'utf8');
     expect(src).not.toMatch(/fana/i);
     expect(src).toMatch(/dancing-script\/700Bold/);
+  });
+  it('the mark is closed filled outlines with no NaN coordinates', async () => {
+    const { markPaths } = await import('./build');
+    const paths = markPaths();
+    expect(paths.length).toBeGreaterThanOrEqual(10);
+    for (const d of paths) {
+      expect(d).toMatch(/^M[\d.\- L]+Z$/);
+      expect(d).not.toMatch(/NaN/);
+    }
   });
 });

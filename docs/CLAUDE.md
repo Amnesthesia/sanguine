@@ -3,7 +3,7 @@
 You are building Sanguine, a free, on-device menstrual-cycle tracker for iOS and Android (React Native + Expo). The complete design and architecture plan is in `docs/PLAN.md`. Read sections 4, 5 and 6 in full before writing any code; read the section relevant to a task before starting it. The plan is the source of truth; if you must deviate, record why in `docs/DECISIONS.md` and keep going.
 
 ## Brand
-Splash: wine red #6A1220 with the white "Sanguine" wordmark in Dancing Script 700. Icon: white script S whose tail ends in a drop, on the same red. The brand colour appears only on the splash, the icon and the About band; the in-app accent is garnet #9E2A3C. Never use the Fana Studio font from the reference image. (PLAN.md §9.9)
+Brand red #B8324A. Mark: white brush drawing of two pairs of horns cupping a T over a chevron (`tools/brand/build.ts`). Splash: the mark on brand red, with a tagline fading in beneath it, drawn at random per launch from `app.taglines` in copy/en-AU.json ("Blood for the blood god" and eight more; Dancing Script 700). The brand colour appears only on the splash, the icon and the About band; the in-app accent is garnet #9E2A3C. Never use the Fana Studio font from the reference image. (PLAN.md §9.9, DECISIONS.md D-042)
 
 ## Non-negotiables (never change without a human decision)
 - The prediction engine (`packages/engine`) is pure TypeScript: no React, no platform APIs, no I/O, no `Date.now()`, no randomness. `predict(history, settings, today)` is deterministic.
