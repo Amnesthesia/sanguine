@@ -31,7 +31,11 @@
             "image": "./assets/brand/splash-wordmark.png"
           }
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-secure-store",
+      "expo-sharing",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

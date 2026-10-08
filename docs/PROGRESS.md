@@ -30,3 +30,4 @@ One line per finished backlog item.
 - P1-9 (part) predict() wired, fixtures A–I green and the failing-gate removed (D-020); build hash still to do after P1-8.
 - P1-8 property tests (1000 runs), purity check, seeded backtest CLI reproducing §4.13, λ acceptance FAILED so default λ=1 (D-021, D-022).
 - P1-9 fixtures A–I green, engine MIT package with build hash (pnpm engine-hash, CI-checked). Phase 1 complete.
+- P2-1 Database interface, expo-sqlite adapter, migrations runner, §5.2 schema with append-only triggers (D-023).
