@@ -1,0 +1,74 @@
+appId: ${APP_ID}
+name: Calendar - month grid, marks, day summary, back-dating
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- evalScript: |
+    ${(function(){
+      var p=function(n){return (n<10?'0':'')+n};
+      var f=function(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
+      var t=new Date(); var y=new Date(t.getTime()-86400000);
+      var q=new Date(t.getFullYear(), t.getMonth()-1, 15);
+      output.today=f(t); output.yesterday=f(y); output.prev15=f(q);
+    })()}
+- tapOn: Calendar
+- extendedWaitUntil:
+    visible:
+      id: screen-calendar
+    timeout: 10000
+- assertVisible:
+    id: cal-title
+- assertVisible:
+    id: cal-grid
+# today is selected: cycle day 11 and the temperature logged today
+- assertVisible: ".*Day 11 · BBT 36.42 °C.*"
+# the period logged 10 days ago is solid, and a predicted range is hatched
+- assertVisible: ".*, period.*"
+- assertVisible: ".*predicted period, 80% range.*"
+- assertVisible: ".*likelihood of being in the fertile window.*"
+- assertVisible: "Fertile window likelihood"
+- assertVisible: "darker = more likely to be in the fertile window"
+- takeScreenshot: month
+# tap yesterday
+- tapOn:
+    id: day-${output.yesterday}
+- assertVisible: ".*Day 10 · Bloating.*"
+# the sheet is reachable from a day, and day detail from Details
+- tapOn:
+    id: cal-details
+- extendedWaitUntil:
+    visible:
+      id: screen-day
+    timeout: 10000
+- assertVisible: "Bloating 2/3"
+- tapOn:
+    id: day-back
+- extendedWaitUntil:
+    visible:
+      id: screen-calendar
+    timeout: 10000
+# back-date a period in the previous month
+- tapOn:
+    id: cal-prev
+- tapOn:
+    id: day-${output.prev15}
+- tapOn:
+    id: cal-add-earlier
+- extendedWaitUntil:
+    visible:
+      id: flow-medium
+    timeout: 10000
+- tapOn:
+    id: flow-medium
+- extendedWaitUntil:
+    visible:
+      id: screen-calendar
+    timeout: 10000
+- assertVisible: ".*Medium flow.*"
+- takeScreenshot: backdated

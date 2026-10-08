@@ -31,3 +31,11 @@ export function describeEvent(e: DayEvent, t: TFunction, unit: 'C' | 'F'): strin
     default: return e.kind;
   }
 }
+
+/** Short form for the calendar summary: symptom names, "BBT 36.42 °C", and the full text for everything else. */
+export function shortDescribe(e: DayEvent, t: TFunction, unit: 'C' | 'F'): string {
+  const d = e.data as Record<string, any>;
+  if (e.kind === 'symptom') return t(`symptom.${d.code}`, { defaultValue: d.code });
+  if (e.kind === 'biomarker' && (d.type === 'bbt' || d.type === 'skin_temp')) return `${d.type === 'bbt' ? 'BBT' : t('log.temperature')} ${fromC((d.value as { valueC: number }).valueC, unit).toFixed(2)} °${unit}`;
+  return describeEvent(e, t, unit);
+}

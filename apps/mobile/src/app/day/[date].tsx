@@ -45,7 +45,7 @@ export default function DayDetail() {
   const after = async () => { await refresh(); await reload(); };
 
   return (
-    <Screen testID="screen-day" title={formatLong(day)} bottomInset={32}>
+    <Screen testID="screen-day" title={formatLong(day)} bottomInset={32} header={<View style={{ alignItems: 'flex-start', marginLeft: -12 }}><Button kind="text" testID="day-back" label={tr('common.back')} onPress={() => router.back()} /></View>}>
       {events.length === 0 ? <Text color="textSecondary">{tr('day.nothingLogged')}</Text> : null}
       {events.map((e) => (
         <Card key={e.id} testID={`event-${e.kind}`}>

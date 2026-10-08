@@ -15,8 +15,8 @@ export function Screen({ title, children, testID, bottomInset = 96, header }: { 
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: bottomInset + insets.bottom, paddingHorizontal: GUTTER, gap: 12 }}>
-        {title ? <Text variant="title" accessibilityRole="header" style={{ fontSize: t.isIOS ? 34 : 28, lineHeight: t.isIOS ? 41 : 34 }}>{title}</Text> : null}
         {header}
+        {title ? <Text variant="title" accessibilityRole="header" style={{ fontSize: t.isIOS ? 34 : 28, lineHeight: t.isIOS ? 41 : 34 }}>{title}</Text> : null}
         {children}
       </ScrollView>
     </View>

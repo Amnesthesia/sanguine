@@ -262,12 +262,13 @@
     },
     "selectedSummary": "Day {day} · {items}",
     "a11y": {
-      "period": "{weekday} {date}, period",
-      "predicted": "{weekday} {date}, predicted period, 80% range",
-      "predicted95": "{weekday} {date}, predicted period, 95% range",
-      "fertile": "{weekday} {date}, {word} likelihood of being in the fertile window",
-      "ovulation": "{weekday} {date}, ovulation estimate",
-      "plain": "{weekday} {date}"
+      "today": "today",
+      "period": "period",
+      "predicted": "predicted period, 80% range",
+      "predicted95": "predicted period, 95% range",
+      "fertile": "{word} likelihood of being in the fertile window",
+      "ovulation": "ovulation estimate",
+      "logged": "something logged"
     },
     "fertileWords": {
       "low": "low",
@@ -278,7 +279,23 @@
       "title": "Add an earlier period",
       "body": "Pick the first day of bleeding.",
       "confirm": "Add period"
-    }
+    },
+    "summaryDay": "Day {day}",
+    "summaryNothing": "Nothing logged",
+    "details": "Details",
+    "edit": "Edit",
+    "addEarlier": "Add an earlier period",
+    "weekdays": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat",
+      "Sun"
+    ],
+    "ovulationUncertainCaption": "Ovulation estimate uncertain",
+    "legendLogged": "Logged"
   },
   "insights": {
     "title": "Insights",

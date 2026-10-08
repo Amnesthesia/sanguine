@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
 import type { DayEvent } from './actions';
-import { describeEvent } from './describe';
+import { describeEvent, shortDescribe } from './describe';
 
 const ev = (kind: string, data: Record<string, unknown>): DayEvent => ({ id: 'x', lamport: 1, device_id: 'd', recorded_at: '', effective_day: '2026-10-10', tz: 'UTC', kind, payload: JSON.stringify(data), provenance: 'manual', source_app: null, external_id: null, retracts: null, schema_v: 1, data });
 const t = i18n.t.bind(i18n);
@@ -27,5 +27,13 @@ describe('describeEvent', () => {
   it('sex and notes never show private detail', () => {
     expect(describeEvent(ev('sex', { protected: true }), t, 'C')).toBe('Sex: Condom used');
     expect(describeEvent(ev('note', { cipher: 'n1:abcd' }), t, 'C')).toBe('Private note');
+  });
+});
+
+describe('shortDescribe (calendar summary)', () => {
+  it('names symptoms without intensity and writes BBT briefly', () => {
+    expect(shortDescribe(ev('symptom', { code: 'bloating', intensity: 2 }), t, 'C')).toBe('Bloating');
+    expect(shortDescribe(ev('biomarker', { type: 'bbt', value: { valueC: 36.42 } }), t, 'C')).toBe('BBT 36.42 °C');
+    expect(shortDescribe(ev('flow', { level: 'heavy', flow_kind: 'period' }), t, 'C')).toBe('Heavy flow');
   });
 });
