@@ -1,9 +1,10 @@
 // The one expressive element: a ring of the cycle with period days, the graded fertile band, the predicted-period range and today (PLAN.md §9.5).
 import { useTranslation } from 'react-i18next';
-import { PixelRatio, View } from 'react-native';
+import { View } from 'react-native';
 import Svg, { Circle, G, Line, Path } from 'react-native-svg';
 import { useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
+import { useFontScale } from '@/ui/useFontScale';
 import { arcPath } from './arc';
 import type { RingModel } from './todayModel';
 
@@ -15,7 +16,7 @@ const C = SIZE / 2;
 export function PhaseRing({ ring, dayOfCycle, phase }: { ring: RingModel; dayOfCycle: number | undefined; phase: string | undefined }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
-  const big = PixelRatio.getFontScale() > 1.5;
+  const big = useFontScale() > 1.5;
   const label = ring.kind === 'cycle' && dayOfCycle ? tr('a11y.phaseRing', { day: dayOfCycle, phase: phase ? tr(`insights.phases.${phase}`) : '' }) : ring.kind === 'noData' ? tr('today.ring.noData') : '';
 
   // above 150% text size the ring collapses to a text header (§8.9)
