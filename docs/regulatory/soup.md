@@ -38,6 +38,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-system-ui | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
 | expo-web-browser | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | fast-check | 4.10.2 | ^4.0.0 | dev/build only | root |
+| fflate | 0.8.3 | ^0.8.3 | ships in app | apps/mobile |
 | opentype.js | 2.0.0 | ^2.0.0 | dev/build only | tools/brand |
 | react | 19.2.3 | 19.2.3 | ships in app | apps/mobile |
 | react-native | 0.86.3 | 0.86.3 | ships in app | apps/mobile |

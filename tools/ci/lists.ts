@@ -7,7 +7,8 @@ export const EXPO_GO_ALLOW = [
   'expo-font', 'expo-blur', 'expo-haptics', 'expo-localization', 'expo-crypto',
   'expo-auth-session', '@expo/ui', 'react-native-reanimated', 'react-native-gesture-handler',
   'react-native-svg', 'react-native-screens', 'zustand', 'i18next', '@noble/ciphers', '@noble/hashes',
-  // §6.1 stack, pure JS
+  // §6.1 stack, pure JS; fflate is the zip codec for export/import (pure JS, no native code, no network; D-026)
+  'fflate',
   'react-i18next',
   // template / peer requirements (all in Expo Go)
   'expo', 'react', 'react-native', 'react-native-safe-area-context', 'react-native-worklets',

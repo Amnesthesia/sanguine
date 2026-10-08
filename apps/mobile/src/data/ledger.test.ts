@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Database } from './database';
 import { ledgerSummary } from './ledger';
-import { type Clock } from './ids';
+import type { Clock } from './ids';
 import { migrate } from './migrate';
 import { EventStore } from './store';
 import { openTestDb } from './testDb';

@@ -78,6 +78,11 @@ export class EventStore {
     return { history, settings };
   }
 
+  /** Rebuild inside an already open transaction (used by import). */
+  rebuildWithin(tx: Database): Promise<void> {
+    return this.rebuildIn(tx);
+  }
+
   /** Drops and replays every projection from the log. Idempotent. */
   async rebuild(): Promise<void> {
     await this.db.transaction((tx) => this.rebuildIn(tx));
