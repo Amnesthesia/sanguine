@@ -69,6 +69,7 @@ export default function BackupScreen() {
         <Card testID="recovery-words">
           <Text variant="heading">{t('settings.privacy.recoveryCode.words')}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
+            {/* biome-ignore lint/suspicious/noArrayIndexKey: words can repeat; the position is the identity */}
             {pending.words.split(' ').map((w, i) => <Text key={`${i}-${w}`} variant="body" tabular style={{ width: '45%' }}>{`${i + 1}. ${w}`}</Text>)}
           </View>
         </Card>
