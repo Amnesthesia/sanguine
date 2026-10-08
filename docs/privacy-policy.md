@@ -1,0 +1,50 @@
+DRAFT, not legal advice, to be reviewed by a human before publication
+
+# Sanguine Privacy Policy
+
+Last updated: October 2026
+
+## 1. Overview and APP Entity Status
+Sanguine is a free on-device menstrual-cycle tracking application for iOS and Android. It is not a contraceptive and is not a medical device. Sanguine does not provide medical opinions or screen for medical conditions.
+
+Sanguine is operated by TBD (human). Although the application operates without central servers or backend databases, Sanguine is treated as an APP entity bound by the Australian Privacy Principles (APPs) under the Privacy Act 1988 (Cth). This document sets out how personal and health information is handled.
+
+## 2. Collection Notice (APP 5)
+Sanguine collects and retains no personal information on remote servers. All entries remain on your physical device.
+
+- What you log: Menstrual cycle dates, bleeding flow intensity, cycle symptoms, basal body temperature, cervical mucus observations, ovulation test results, personal notes, and optional sexual activity records. These entries constitute sensitive health information.
+- Purpose of collection: To compute cycle estimates, display calendar visualisations, and present personal history entirely on your device.
+- Direct entry: You enter this information directly. There is no background surveillance, no location tracking, and no cross-app monitoring.
+- Absence of trackers: Sanguine includes no user accounts, no analytics SDKs, no crash-reporting SDKs, and no advertising frameworks. We cannot view, access, or monetise your entries.
+- Age restriction: Sanguine is intended for people aged 13 and older. For users aged 13 to 17, the application activates teen mode by default, which disables sexual activity logging and fertility estimate cards until explicitly adjusted in Settings.
+
+## 3. Local Storage and Cryptography
+All application data resides exclusively in a local database on your phone. Starting from the first native release, this database is encrypted using SQLCipher. You can further secure access using the in-app biometric or passcode lock.
+
+## 4. Optional Backups and Platform Sync
+- Optional encrypted backup: You can choose to create end-to-end encrypted backups stored in your personal iCloud Drive or Google Drive application folder. Backups use Argon2id key derivation XORed with a device-generated secret, alongside XChaCha20-Poly1305 encryption. The developer cannot decrypt or read these backups; only your personal passphrase and device secret can decrypt the file.
+- Optional health sync: A future release will offer optional sync with Apple Health or Health Connect. This integration is disabled by default and requires explicit opt-in for each specific data category. Data synchronised to Apple Health or Health Connect becomes subject to Apple or Google terms and permissions.
+
+## 5. Access and Correction (APP 12 and APP 13)
+Because the developer maintains no central user accounts and holds no copy of your records, you exercise access, export, correction, and deletion directly within the application:
+- Access and export: You can export your entire event log at any time as JSON or CSV files via Settings -> Privacy and data.
+- Correction: You can edit or retract any logged entry directly on the day detail screen.
+- Erasure: You can permanently erase all data on your device at any time by selecting "Delete everything" in Settings -> Privacy and data.
+
+## 6. Disclosure and Secondary Use (APP 6 and APP 8)
+Sanguine does not disclose, transmit, sell, or rent your health information to third parties, commercial brokers, or overseas recipients. Cycle data never leaves your device unless you independently export your data or enable optional encrypted backups to your personal cloud account.
+
+## 7. Notifiable Data Breach (NDB) Procedure
+Under the Australian Notifiable Data Breach scheme, entities must assess suspected data breaches and notify affected individuals and the OAIC if serious harm is likely. Because Sanguine stores no information on external servers, the developer cannot suffer a central server data breach.
+
+If a critical security defect is identified in the application code that compromises on-device encryption:
+1. Investigation: The developer will investigate and evaluate the defect within a period TBD (human).
+2. Remediation: A software update containing a fix will be published via app store channels immediately.
+3. Notification: If an eligible data breach occurs under the Privacy Act, notice will be provided through app release notes, public project channels, and formal notification to the Office of the Australian Information Commissioner (OAIC).
+
+## 8. Contact and Complaints
+If you have questions, feedback, or complaints regarding privacy, contact:
+- Privacy Officer: TBD (human)
+- Contact Email: TBD (human)
+
+Complaints will be acknowledged and reviewed within a period TBD (human). If you remain dissatisfied with the response, you can lodge a complaint with the Office of the Australian Information Commissioner (OAIC) at enquiries@oaic.gov.au or by calling 1300 363 992.

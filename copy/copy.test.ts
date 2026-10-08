@@ -103,3 +103,13 @@ describe('placeholders', () => {
         for (const m of t.matchAll(/\{([^}]*)\}/g)) expect(m[1], `${f}:${path}`).toMatch(/^[a-zA-Z0-9]+$/);
   });
 });
+
+describe('policy drafts use the same word list (P0-10)', () => {
+  for (const f of ['privacy-policy.md', 'consumer-health-data-policy.md', 'dpia.md']) {
+    const text = readFileSync(join(__dirname, '..', 'docs', f), 'utf8');
+    it(`${f} has no forbidden word and is marked DRAFT`, () => {
+      expect(text.startsWith('DRAFT, not legal advice')).toBe(true);
+      expect(violations('doc', { text })).toEqual([]);
+    });
+  }
+});
