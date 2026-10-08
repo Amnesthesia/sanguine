@@ -58,6 +58,7 @@ name: Calendar - month grid, marks, day summary, back-dating
     id: cal-prev
 - tapOn:
     id: day-${output.prev15}
+- scroll
 - tapOn:
     id: cal-add-earlier
 - extendedWaitUntil:

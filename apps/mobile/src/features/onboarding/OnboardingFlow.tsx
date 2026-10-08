@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { todayLocal } from '@/services/clock';
 import { deviceHasLock } from '@/services/lockAuth';
 import { useApp } from '@/state/app';
+import { useLock } from '@/state/lock';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Chips } from '@/ui/Chips';
@@ -65,6 +66,7 @@ export function OnboardingFlow() {
       const w = buildOnboardingWrites(answers, today);
       await store.setProfile(w.profile);
       if (w.events.length) await store.appendMany(w.events);
+      useLock.setState({ unlockedThisSession: true }); // the person is here: no lock prompt straight after setup
       await complete();
       await refresh();
       router.replace(backupIntent ? '/settings' : '/today');

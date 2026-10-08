@@ -4,6 +4,8 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 dev="${IOS_UDID:-1C4C0CE9-4A7A-441F-8FCA-5EDBD373D757}"
+unenrol() { xcrun simctl spawn "$dev" notifyutil -s com.apple.BiometricKit.enrollmentChanged 0 >/dev/null; xcrun simctl spawn "$dev" notifyutil -p com.apple.BiometricKit.enrollmentChanged >/dev/null; }
+trap unenrol EXIT
 face() { xcrun simctl spawn "$dev" notifyutil -p "com.apple.BiometricKit_Sim.pearl.$1" >/dev/null; }
 xcrun simctl spawn "$dev" notifyutil -s com.apple.BiometricKit.enrollmentChanged 1 >/dev/null
 xcrun simctl spawn "$dev" notifyutil -p com.apple.BiometricKit.enrollmentChanged >/dev/null
