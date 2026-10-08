@@ -26,3 +26,18 @@ describe('wipeAll', () => {
     expect((await db.all('SELECT version FROM schema_migration')).length).toBe(1);
   });
 });
+
+describe('wipeAll leaves nothing readable behind', () => {
+  it('overwrites freed pages, checkpoints the log and vacuums, in that order, outside the drop transaction', async () => {
+    const db = openTestDb();
+    await migrate(db);
+    const sql: string[] = [];
+    const exec = db.exec.bind(db);
+    db.exec = async (q: string) => { sql.push(q.trim()); return exec(q); }; // the transaction callback receives this same object
+    await wipeAll(db);
+    const at = (needle: string) => sql.findIndex((q) => q.includes(needle));
+    expect(at('secure_delete = ON')).toBe(0);
+    expect(at('wal_checkpoint(TRUNCATE)')).toBeGreaterThan(at('DROP TABLE'));
+    expect(at('VACUUM')).toBeGreaterThan(at('wal_checkpoint(TRUNCATE)'));
+  });
+});

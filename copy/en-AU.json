@@ -466,7 +466,11 @@
       "defaultText": "Sanguine: a reminder",
       "descriptiveText": "Sanguine: Period likely in {lo}–{hi} days",
       "widgets": "Widgets",
-      "widgetsDesc": "Available in a later update."
+      "widgetsDesc": "Available in a later update.",
+      "next": "Next reminder: {date}",
+      "none": "No reminder is scheduled yet. Log a period to get estimates.",
+      "denied": "Notifications are turned off for Sanguine in your phone's settings.",
+      "permissionTitle": "Sanguine reminder"
     },
     "appearance": {
       "title": "Appearance",
@@ -512,7 +516,9 @@
     "unlock": "Unlock",
     "reason": "Unlock Sanguine",
     "unavailable": "No screen lock is set up on this phone.",
-    "failed": "Could not unlock. Try again."
+    "failed": "Could not unlock. Try again.",
+    "explain": "Sanguine locks when you leave it for a minute. You unlock with Face ID, your fingerprint or your phone's passcode.",
+    "off": "App lock is off because this phone has no screen lock."
   },
   "errors": {
     "generic": "Something went wrong. Nothing was lost.",

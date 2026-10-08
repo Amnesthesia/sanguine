@@ -5,6 +5,7 @@ import type { Database } from '@/data/database';
 import { flagContext, loadFlagState, muteFlag, recordRaised } from '@/data/flagState';
 import { wipeAll } from '@/data/wipe';
 import { deleteDeviceSecret, deleteNoteKey } from '@/services/secrets';
+import { removeAllTempFiles } from '@/services/tempFiles';
 import { loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
 import type { Profile } from '@/data/project';
 import { getSetting, setSetting } from '@/data/settings';
@@ -94,6 +95,7 @@ export const useApp = create<AppState>((set, get) => ({
     if (!db) return;
     await wipeAll(db);
     await Promise.all([deleteDeviceSecret(), deleteNoteKey()]);
+    removeAllTempFiles();
     set({ prefs: DEFAULT_PREFS, profile: {}, onboarded: false, history: undefined, settings: undefined, prediction: undefined, version: get().version + 1 });
     await get().refresh();
   },

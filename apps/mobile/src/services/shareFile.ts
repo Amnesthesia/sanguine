@@ -1,5 +1,6 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { removeTempFile } from './tempFiles';
 
 /** Writes bytes to the cache and opens the system share sheet (the user chooses where the file goes). */
 export async function shareFile(bytes: Uint8Array, name: string, mimeType: string): Promise<void> {
@@ -7,5 +8,9 @@ export async function shareFile(bytes: Uint8Array, name: string, mimeType: strin
   if (file.exists) file.delete();
   file.create();
   file.write(bytes);
-  await Sharing.shareAsync(file.uri, { mimeType, dialogTitle: name });
+  try {
+    await Sharing.shareAsync(file.uri, { mimeType, dialogTitle: name });
+  } finally {
+    removeTempFile(file);
+  }
 }

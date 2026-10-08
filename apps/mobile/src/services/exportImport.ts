@@ -6,6 +6,7 @@ import { exportBundle, importBundle, importPeriodCsv, type CsvImportResult, type
 import type { Database } from '@/data/database';
 import type { EventStore } from '@/data/store';
 import { deviceClock, todayLocal } from './clock';
+import { removeTempFile } from './tempFiles';
 
 export async function shareExport(db: Database, store: EventStore): Promise<{ events: number }> {
   const { zip, eventCount } = await exportBundle(db, store, deviceClock);
@@ -13,7 +14,11 @@ export async function shareExport(db: Database, store: EventStore): Promise<{ ev
   if (file.exists) file.delete();
   file.create();
   file.write(zip);
-  await Sharing.shareAsync(file.uri, { mimeType: 'application/zip', UTI: 'public.zip-archive', dialogTitle: 'Sanguine export' });
+  try {
+    await Sharing.shareAsync(file.uri, { mimeType: 'application/zip', UTI: 'public.zip-archive', dialogTitle: 'Sanguine export' });
+  } finally {
+    removeTempFile(file);
+  }
   return { events: eventCount };
 }
 
@@ -25,6 +30,10 @@ export async function pickAndImport(db: Database, store: EventStore): Promise<Pi
   const asset = picked.canceled ? undefined : picked.assets[0];
   if (!asset) return { kind: 'cancelled' };
   const file = new File(asset.uri);
-  if (/\.zip$/i.test(asset.name) || asset.mimeType === 'application/zip') return { kind: 'sanguine', result: await importBundle(db, store, await file.bytes()) };
-  return { kind: 'csv', result: await importPeriodCsv(db, store, await file.text(), todayLocal()) };
+  try {
+    if (/\.zip$/i.test(asset.name) || asset.mimeType === 'application/zip') return { kind: 'sanguine', result: await importBundle(db, store, await file.bytes()) };
+    return { kind: 'csv', result: await importPeriodCsv(db, store, await file.text(), todayLocal()) };
+  } finally {
+    removeTempFile(file);
+  }
 }

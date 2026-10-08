@@ -42,7 +42,7 @@ export default function BackupScreen() {
       if (__DEV__) console.log(`[backup] sealed ${bytes.length} bytes in ${Date.now() - started} ms`);
       if (created) setPending({ bytes, words: recoveryCodeFor(secret) });
       else { await shareFile(bytes, `sanguine-backup-${todayLocal()}.sgb`, 'application/octet-stream'); setMsg(t('settings.privacy.backupReady')); }
-    } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); }
+    } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); setPass(''); setPass2(''); }
   }
   async function restore() {
     if (!db || !store) return;
@@ -60,7 +60,7 @@ export default function BackupScreen() {
       if (r) { await refresh(); setMsg(t('settings.privacy.importDone', { n: r.imported })); }
     } catch (e) {
       setMsg(e instanceof BackupError && e.code === 'auth' ? t('settings.privacy.restoreWrongPassphrase') : (e as Error).message);
-    } finally { setPct(undefined); }
+    } finally { setPct(undefined); setPass(''); setCode(''); }
   }
 
   if (pending) {
@@ -87,8 +87,8 @@ export default function BackupScreen() {
     <SubScreen testID="screen-backup" title={t('settings.privacy.backup')}>
       <Segmented testIDPrefix="backup-mode" value={mode} onChange={(m) => { setMode(m); setMsg(undefined); }} options={[{ value: 'create', label: t('settings.privacy.backupCreate') }, { value: 'restore', label: t('settings.privacy.backupRestore') }]} />
       <Text variant="bodySmall" color="textSecondary">{t('settings.privacy.backupNote')}</Text>
-      <TextField testID="backup-pass" label={t('settings.privacy.passphrase')} value={pass} onChangeText={setPass} keyboardType="default" />
-      {mode === 'create' ? <TextField testID="backup-pass2" label={t('settings.privacy.passphraseConfirm')} value={pass2} onChangeText={setPass2} keyboardType="default" /> : <TextField testID="restore-code" label={t('settings.privacy.restoreCodeLabel')} value={code} onChangeText={setCode} keyboardType="default" />}
+      <TextField testID="backup-pass" secure label={t('settings.privacy.passphrase')} value={pass} onChangeText={setPass} keyboardType="default" />
+      {mode === 'create' ? <TextField testID="backup-pass2" secure label={t('settings.privacy.passphraseConfirm')} value={pass2} onChangeText={setPass2} keyboardType="default" /> : <TextField testID="restore-code" secure label={t('settings.privacy.restoreCodeLabel')} value={code} onChangeText={setCode} keyboardType="default" />}
       <Button testID={mode === 'create' ? 'backup-create' : 'backup-restore'} label={mode === 'create' ? t('settings.privacy.backupCreate') : t('settings.privacy.restorePick')} disabled={pct !== undefined || pass.length === 0} onPress={() => void (mode === 'create' ? create() : restore())} />
       {pct !== undefined ? <Text variant="bodySmall" testID="backup-progress" accessibilityLiveRegion="polite">{t('settings.privacy.backupWorking', { pct })}</Text> : null}
       {msg ? <Text variant="bodySmall" testID="backup-message" accessibilityLiveRegion="polite">{msg}</Text> : null}

@@ -42,3 +42,4 @@ One line per finished backlog item.
 - P2-10 Calendar: month model, graded fertile band, hatched predicted range, ovulation marker, day summary, back-dating; Maestro green on iOS and Android (D-032).
 - P2-11 Insights: history rows with missed-log actions, charts (cycle length band, temperature + coverline, symptoms by phase), accuracy ledger text, cycle detail; Maestro green on iOS and Android (D-033).
 - P2-12 Settings: life state, privacy and data (export/import/backup/delete), notifications UI, appearance, tracking options, about with engine hash, health placeholder; Maestro green on iOS and Android (D-034, D-035).
+- P2-12 follow-up: fixed three security-review findings (masked passphrase fields, secure wipe, cache file cleanup) (D-036).

@@ -7,6 +7,7 @@ import type { Database } from '@/data/database';
 import type { ImportResult } from '@/data/exportImport';
 import type { EventStore } from '@/data/store';
 import { deviceClock, todayLocal } from './clock';
+import { removeTempFile } from './tempFiles';
 import { getOrCreateDeviceSecret } from './secrets';
 
 export async function shareBackup(db: Database, store: EventStore, passphrase: string, onProgress?: (f: number) => void): Promise<{ recoveryCreated: boolean; secret: Uint8Array }> {
@@ -16,7 +17,11 @@ export async function shareBackup(db: Database, store: EventStore, passphrase: s
   if (file.exists) file.delete();
   file.create();
   file.write(bytes);
-  await Sharing.shareAsync(file.uri, { mimeType: 'application/octet-stream', dialogTitle: 'Sanguine encrypted backup' });
+  try {
+    await Sharing.shareAsync(file.uri, { mimeType: 'application/octet-stream', dialogTitle: 'Sanguine encrypted backup' });
+  } finally {
+    removeTempFile(file);
+  }
   return { recoveryCreated: created, secret };
 }
 
@@ -25,5 +30,10 @@ export async function pickAndRestore(db: Database, store: EventStore, passphrase
   const picked = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true, multiple: false });
   const asset = picked.canceled ? undefined : picked.assets[0];
   if (!asset) return null;
-  return restoreBackup(db, store, await new File(asset.uri).bytes(), passphrase, deviceSecret, onProgress);
+  const picked2 = new File(asset.uri);
+  try {
+    return await restoreBackup(db, store, await picked2.bytes(), passphrase, deviceSecret, onProgress);
+  } finally {
+    removeTempFile(picked2);
+  }
 }

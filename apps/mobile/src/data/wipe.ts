@@ -4,6 +4,8 @@ import type { Database } from './database';
 import { migrate } from './migrate';
 
 export async function wipeAll(db: Database): Promise<void> {
+  // overwrite freed pages with zeros so the dropped tables cannot be read back from the file
+  await db.exec('PRAGMA secure_delete = ON');
   await db.transaction(async (tx) => {
     const objs = await tx.all<{ type: string; name: string }>("SELECT type, name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' AND type IN ('trigger','table','index')");
     for (const o of objs.filter((x) => x.type === 'trigger')) await tx.exec(`DROP TRIGGER IF EXISTS "${o.name}"`);
@@ -12,5 +14,8 @@ export async function wipeAll(db: Database): Promise<void> {
     const tables = objs.filter((x) => x.type === 'table').map((x) => x.name);
     for (const name of [...order.filter((n) => tables.includes(n)), ...tables.filter((n) => !order.includes(n))]) await tx.exec(`DROP TABLE IF EXISTS "${name}"`);
   });
+  // fold the write-ahead log into the main file and rebuild it, so no deleted page survives in either
+  await db.exec('PRAGMA wal_checkpoint(TRUNCATE)');
+  await db.exec('VACUUM');
   await migrate(db);
 }

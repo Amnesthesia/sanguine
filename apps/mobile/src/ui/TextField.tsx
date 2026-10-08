@@ -3,8 +3,8 @@ import { useTheme } from '@/theme';
 import { Text } from './Text';
 
 /** Labelled numeric/text input. The label doubles as the accessibility label; errors are announced with the field. */
-export function TextField({ label, value, onChangeText, error, helper, keyboardType = 'number-pad', maxLength, testID, placeholder, onSubmit }: {
-  label: string; value: string; onChangeText: (s: string) => void; error?: string | undefined; helper?: string; keyboardType?: 'number-pad' | 'default' | 'numbers-and-punctuation' | 'decimal-pad'; maxLength?: number; testID?: string; placeholder?: string; onSubmit?: () => void;
+export function TextField({ label, value, onChangeText, error, helper, keyboardType = 'number-pad', maxLength, testID, placeholder, onSubmit, secure }: {
+  label: string; value: string; onChangeText: (s: string) => void; error?: string | undefined; helper?: string; keyboardType?: 'number-pad' | 'default' | 'numbers-and-punctuation' | 'decimal-pad'; maxLength?: number; testID?: string; placeholder?: string; onSubmit?: () => void; /** Passphrases and recovery codes: masked, no suggestions, no autocorrect learning. */ secure?: boolean;
 }) {
   const t = useTheme();
   return (
@@ -18,6 +18,7 @@ export function TextField({ label, value, onChangeText, error, helper, keyboardT
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         returnKeyType={onSubmit ? 'done' : 'default'}
+        {...(secure ? { secureTextEntry: true, autoCorrect: false, autoCapitalize: 'none' as const, spellCheck: false, textContentType: 'none' as const, importantForAutofill: 'no' as const } : {})}
         onSubmitEditing={onSubmit}
         maxLength={maxLength}
         placeholder={placeholder}
