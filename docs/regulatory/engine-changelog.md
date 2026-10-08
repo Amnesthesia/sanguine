@@ -5,3 +5,4 @@ Every change to an engine rule or parameter gets an entry: what changed, why, th
 | Version | Date | Change | Reason and source | Fixture / backtest result |
 | --- | --- | --- | --- | --- |
 | 0.1.0 | 2026-10-09 | Initial parameters and types (`params.ts`, `types.ts`, `studentTQuantile`) | PLAN.md §3, §4.3, §4.5, §4.6 | Fixtures A–I written, pending implementation (P1); `studentTQuantile` matches SciPy to 1e-8 |
+| 0.1.1 | 2026-10-09 | `fitCycleLength`, `predictiveInterval`, `cyclePrior` (age bands; population prior under 18) | PLAN §4.3 | Posteriors for fixtures A–E and F-luteal match to 0.05 d; fixture predict tests still pending |

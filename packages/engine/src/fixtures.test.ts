@@ -141,7 +141,7 @@ describe('Fixture E: single cycle (31)', () => {
 });
 
 describe('Fixture F: luteal update (11, 12, 12)', () => {
-  fixture('F')('luteal posterior: mean 12.23, nu 13, scale 2.22, 80% 9.2-15.2', () => {
+  it('F: luteal posterior: mean 12.23, nu 13, scale 2.22, 80% 9.2-15.2', () => {
     const post = fitCycleLength([11, 12, 12], LUTEAL_PRIOR, 1);
     near(post.m, 12.23);
     expect(2 * post.alpha).toBeCloseTo(13, 6);

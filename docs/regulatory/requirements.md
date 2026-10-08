@@ -7,10 +7,10 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-01 | `predict` is deterministic: same inputs give identical output; no clock, randomness or I/O in the package | PLAN §4.1 | `properties.test.ts` (determinism), `purity.test.ts` | planned P1-8 |
 | ER-02 | Every number is a distribution: point, 80% interval, 95% interval, confidence grade | PLAN §4.1 | `fixtures.test.ts` A–E | planned P1-9 |
 | ER-03 | Symptoms never change `nextPeriod` or `ovulation` | PLAN §4.1, §11.1 C-10 | `properties.test.ts` (symptom permutation) | planned P1-8 |
-| ER-04 | Cycle length ~ Student-t from a Normal-Inverse-Gamma posterior; prior m₀ by age band, κ₀ 0.5, α₀ 2.5, β₀ 16.9 | PLAN §4.3; Bull 2019 | `cycleLength.test.ts`, fixtures A–E | planned P1-1 |
-| ER-05 | Recency weights w = λ^(n−i); λ default 0.92; window 12 valid cycles | PLAN §4.3 (VERIFY V-05) | `cycleLength.test.ts`, backtest λ acceptance | planned P1-1, P1-8 |
+| ER-04 | Cycle length ~ Student-t from a Normal-Inverse-Gamma posterior; prior m₀ by age band, κ₀ 0.5, α₀ 2.5, β₀ 16.9 | PLAN §4.3; Bull 2019 | `cycleLength.test.ts`, fixtures A–E | done P1-1|
+| ER-05 | Recency weights w = λ^(n−i); λ default 0.92; window 12 valid cycles | PLAN §4.3 (VERIFY V-05) | `cycleLength.test.ts`, backtest λ acceptance | done P1-1 (backtest P1-8)-8 |
 | ER-06 | `studentTQuantile` matches SciPy to 1e-8 for real ν | PLAN §4.11 | `studentT.test.ts` | done P0-6 |
-| ER-07 | Cold start: 0 cycles with a last period uses the prior; no last period predicts nothing; a usual cycle length counts as one observation of weight 0.5 | PLAN §4.3 | fixture C, `cycleLength.test.ts` | planned P1-1 |
+| ER-07 | Cold start: 0 cycles with a last period uses the prior; no last period predicts nothing; a usual cycle length counts as one observation of weight 0.5 | PLAN §4.3 | fixture C, `cycleLength.test.ts` | done P1-1|
 | ER-08 | Length < 15 d is `suspect_short`; > 90 d is `suspect_skip`; both excluded from the update | PLAN §4.4 | `classify.test.ts` | planned P1-2 |
 | ER-09 | With ≥ 3 cycles a length above median + max(7, 3·1.4826·MAD) is `suspect_skip`, excluded from mean/variance | PLAN §4.4; Li 2020/2022 | fixture B, `classify.test.ts` | planned P1-2 |
 | ER-10 | `user_excluded` and life-state cycles are removed from the update and from flags; `confirm_long` re-admits a cycle | PLAN §4.4 | `classify.test.ts` | planned P1-2 |
