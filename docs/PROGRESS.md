@@ -8,7 +8,8 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - Run the VoiceOver / TalkBack script in `docs/accessibility.md` on a real device and record the result.
 - Android: app lock through the device-credential prompt and Android local reminders cannot be exercised in Expo Go on the emulator (P3-1, P3-1b).
 - Legal review of the three policy drafts and a clinician / regulatory read of `copy/*.json` and the fixtures before any public release (no reviewer exists; defaults are in docs/DECISIONS.md).
-- Brand (D-042): check that the horned mark and the splash taglines (`app.taglines`) do not infringe a third party's trademark: "Blood for the blood god", "Khorne" and "Brass Citadel" are Games Workshop Warhammer terms before any store listing; also confirm the tagline suits the store's health-category review.
+- Brand (D-042, D-045): check that the horned mark and the splash taglines (`app.taglines`) do not infringe a third party's trademark ("Blood God" and "Lord of Rage" echo Games Workshop Warhammer phrasing) before any store listing; also confirm the taglines suit the store's health-category review.
+- Splash (D-045): run `.maestro/splash.yaml` on the Android emulator once the Android dev client is rebuilt; this session verified iOS only.
 - Store accounts, signing credentials and the Apple Health / Health Connect declarations (Phase 5).
 
 ## Log
@@ -51,4 +52,4 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - P0-10 drafted privacy policy, consumer-health-data policy and DPIA via agy (spot-checked, forbidden-word test); contact and controller fields TBD (human).
 - P2-15 full Maestro suite green on the iOS simulator and the Android emulator in Expo Go; tag v0.2-expo-go (D-040). Phase 2 complete.
 - P3-1 (iOS) prebuild + dev client; full Maestro suite and app-lock script green on the iOS dev client; allow-list job retired, deny-list kept (D-041). Android dev-client run follows the P3-2 rebuild.
-- Brand: horned mark, brand red #B8324A, splash with rotating taglines (D-042).
+- Brand: horned mark, brand red #B8324A, splash with rotating taglines (D-042); splash redesign with the Cinzel wordmark, vignette and bottom tagline from the owner's mock-ups (D-045).

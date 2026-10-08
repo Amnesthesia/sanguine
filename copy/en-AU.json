@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Sanguine",
-    "taglines": ["Blood for the blood god", "Khorne cares not from whence the blood flows, only that it flows!", "Blood demands blood.", "The River of Blood never empties; it only crests.", "By blood bound, by brass crowned.", "Offerings of bone, rivers of red.", "The earth drinks deep, yet the Blood God thirsts.", "An ocean of red for the Lord of Rage.", "The veins of the mortal realm feed the Brass Citadel."]
+    "taglines": ["Blood demands blood.", "The River of Blood never empties; it only crests.", "By blood bound, by brass crowned.", "Offerings of bone, rivers of red.", "The earth drinks deep, yet the Blood God thirsts.", "An ocean of red for the Lord of Rage."]
   },
   "tabs": {
     "today": "Today",

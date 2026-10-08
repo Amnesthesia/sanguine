@@ -6,6 +6,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | Package | Installed | Range | Role | Used by |
 | --- | --- | --- | --- | --- |
 | @biomejs/biome | 2.5.15 | ^2.5.15 | dev/build only | root |
+| @expo-google-fonts/cinzel | 0.4.2 | ^0.4.2 | ships in app | apps/mobile |
 | @expo-google-fonts/dancing-script | 0.4.2 | ^0.4.2 | ships in app | apps/mobile, tools/brand |
 | @expo/ui | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
 | @noble/ciphers | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |

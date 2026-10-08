@@ -1,0 +1,26 @@
+appId: ${APP_ID}
+name: Brand splash - wordmark and tagline fade in, then hand over (D-045)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+# a warm relaunch shows the native splash, then the JS continuation
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: brand-splash
+    timeout: 30000
+- takeScreenshot: splash-fade
+- assertVisible: "SANGUINE"
+- takeScreenshot: splash-tagline
+- extendedWaitUntil:
+    notVisible:
+      id: brand-splash
+    timeout: 15000
+- assertVisible:
+    id: screen-today

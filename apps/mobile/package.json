@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
+    "@expo-google-fonts/cinzel": "^0.4.2",
     "@expo-google-fonts/dancing-script": "^0.4.2",
     "@expo/ui": "~57.0.22",
     "@sanguine/crypto": "workspace:*",

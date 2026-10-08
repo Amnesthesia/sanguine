@@ -50,6 +50,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@expo-google-fonts/cinzel':
+        specifier: ^0.4.2
+        version: 0.4.2
       '@expo-google-fonts/dancing-script':
         specifier: ^0.4.2
         version: 0.4.2
@@ -880,6 +883,8 @@ packages:
       '@noble/hashes':
         optional: true
 
+  '@expo-google-fonts/cinzel@0.4.2':
+    resolution: {integrity: sha512-UAlyuHCGjmKpMt2MoCKYueHz8ZEzjHO1VEol2G7NcPW54UH+85SWIGzpor05YNqUvr/aoqS8Qrfnswxg1RsNMw==}
   '@expo-google-fonts/dancing-script@0.4.2':
     resolution: {integrity: sha512-5ASbxOM81Xm6nR9I0eE//l1PGgHtR4uGyMX3eUIw2Jeh+1LnlkrDPg55qjChGnkFfVwMge31vXEUyOZJiy9rxQ==}
 
@@ -4795,6 +4800,7 @@ snapshots:
     optionalDependencies:
       '@noble/hashes': 2.4.0
 
+  '@expo-google-fonts/cinzel@0.4.2': {}
   '@expo-google-fonts/dancing-script@0.4.2': {}
 
   '@expo-google-fonts/material-symbols@0.4.49': {}

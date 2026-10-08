@@ -1,3 +1,4 @@
+import { Cinzel_400Regular, Cinzel_600SemiBold } from '@expo-google-fonts/cinzel';
 import { DancingScript_700Bold, useFonts } from '@expo-google-fonts/dancing-script';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -54,6 +55,7 @@ function Shell() {
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({ DancingScript_700Bold });
+  const [fontsLoaded] = useFonts({ DancingScript_700Bold, Cinzel_400Regular, Cinzel_600SemiBold });
   const status = useApp((s) => s.status);
   const theme = useApp((s) => s.prefs.theme);
   const init = useApp((s) => s.init);

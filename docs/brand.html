@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sanguine — brand preview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Cinzel:wght@400;600&family=Great+Vibes&display=swap" rel="stylesheet">
 <style>
 :root{--wine:#B8324A;--wine2:#962439;--pageBg:#EFE9E4;--pageText:#1F1A1C;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pageBg:#1B1719;--pageText:#F4EEEF}}
@@ -25,8 +25,8 @@ figure{margin:0}figcaption{font-size:13px;margin:10px 2px 0;line-height:1.45;opa
 .icon.mono{background:#1F1A1C}
 .icon.tinted{background:linear-gradient(180deg,#B3A8AC,#6B6165)}
 .glyph{position:absolute;inset:0;width:100%;height:100%}
-.splash{flex-direction:column}.splash .mark{width:200px;height:200px}.splash .tag{font-size:28px;margin-top:20px;animation:fade 1.6s ease-in both}
-@keyframes fade{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion: reduce){.splash .tag{animation:none}}
+.splash{flex-direction:column;position:relative}.splash .mark{width:200px;height:200px}.splash .wm2,.splash .tag{font-family:Cinzel,serif;text-transform:uppercase;animation:fade .7s ease-in both}.splash .wm2{font-weight:600;font-size:40px;letter-spacing:4px;margin-top:8px}.splash .tag{font-weight:400;font-size:14px;letter-spacing:3px;position:absolute;bottom:72px;left:24px;right:24px;text-align:center;color:rgba(255,255,255,.92)}
+@keyframes fade{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion: reduce){.splash .tag,.splash .wm2{animation:none}}
 .row{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
 .about{width:393px;border-radius:24px;overflow:hidden;border:1px solid rgba(0,0,0,.08);background:#FBF8F6;color:#1F1A1C}
 .about .band{height:120px;background:var(--wine);display:flex;align-items:center;justify-content:center;color:#fff}
@@ -36,12 +36,12 @@ figure{margin:0}figcaption{font-size:13px;margin:10px 2px 0;line-height:1.45;opa
 </head>
 <body>
 <h1>Sanguine — brand preview</h1>
-<p class="lead">Brand red #B8324A field, the white horned brush mark (DECISIONS.md D-042), the tagline in Dancing Script 700, and the wordmark on the About band. The brand appears on the splash, the icon and the About band only; the in-app accent stays garnet. The mark is rendered from <code>tools/brand/build.ts</code>.</p>
+<p class="lead">Brand red #B8324A field, the white horned brush mark (DECISIONS.md D-042), the splash wordmark and tagline in Cinzel (D-045), and the Dancing Script wordmark on the About band. The brand appears on the splash, the icon and the About band only; the in-app accent stays garnet. The mark is rendered from <code>tools/brand/build.ts</code>.</p>
 
 <div class="grid">
 <figure>
-  <div class="splash"><img class="mark" src="../apps/mobile/assets/brand/splash-mark.png" alt="Sanguine"><div class="tag script">Blood for the blood god</div></div>
-  <figcaption>Splash screen: the native splash shows the mark (backgroundColor #B8324A, imageWidth 200); the JS continuation fades the tagline in beneath it, then hands over to the app. Same in dark mode; no fade under Reduce Motion.</figcaption>
+  <div class="splash"><img class="mark" src="../apps/mobile/assets/brand/splash-mark.png" alt="Sanguine"><div class="wm2">Sanguine</div><div class="tag">Blood demands blood.</div></div>
+  <figcaption>Splash screen: the native splash shows the mark (backgroundColor #B8324A, imageWidth 200); the JS continuation fades in the vignette, the Cinzel wordmark and a tagline in Cinzel capitals (D-045), then hands over to the app. Same in dark mode; no fade under Reduce Motion.</figcaption>
 </figure>
 
 <figure>
