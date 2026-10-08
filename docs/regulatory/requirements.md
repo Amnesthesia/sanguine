@@ -25,12 +25,12 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-19 | Detection needs valid temperatures on ≥ 50% of cycle days to date | PLAN §4.6; Bull 2019 | `bbt.test.ts` | done P1-4 |
 | ER-20 | Wearable temperatures form a separate series with a 0.3 °C threshold and SD 2.0; never mixed with oral | PLAN §4.6 (C-05); Zhu 2021 | `bbt.test.ts` | done P1-4 |
 | ER-21 | LH: first positive after ≥ 1 negative → ovulation = day + 1, SD 1.0; no prior negative within 2 d → SD 1.5; > 3 days of positives → indeterminate, SD 2.5, no override | PLAN §4.6 (C-03) | `lh.test.ts`, fixture G | done |
-| ER-22 | Mucus peak = last eggwhite/watery day before a 3-day change; ovulation = peak, SD 1.5 | PLAN §4.6 (C-04) | `mucus.test.ts` | unit done P1-5 |
-| ER-23 | Cervical position: high/soft/open ≥ 2 d then low/firm/closed → last high day, SD 2.5, weight capped | PLAN §4.6 (V-07) | `cervix.test.ts` | unit done P1-5 |
-| ER-24 | Combination: inverse-variance weighted mean of kept signals; one temperature series only | PLAN §4.6, S5 | `combine.test.ts` | unit done P1-5 |
+| ER-22 | Mucus peak = last eggwhite/watery day before a 3-day change; ovulation = peak, SD 1.5 | PLAN §4.6 (C-04) | `mucus.test.ts` | done |
+| ER-23 | Cervical position: high/soft/open ≥ 2 d then low/firm/closed → last high day, SD 2.5, weight capped | PLAN §4.6 (V-07) | `cervix.test.ts` | done |
+| ER-24 | Combination: inverse-variance weighted mean of kept signals; one temperature series only | PLAN §4.6, S5 | `combine.test.ts` | done |
 | ER-25 | Temporal gate: a temperature shift is discarded unless −1 to +4 d from the LH/mucus estimate; conflict recorded | PLAN §4.6 (C-06) | fixture H | done |
-| ER-26 | If two kept signals differ by > 3 d, use the most precise one, confidence low, flag the conflict | PLAN §4.6 | `combine.test.ts` | unit done P1-5 |
-| ER-27 | Provenance multipliers on signal SD (manual/imported/sensor) | PLAN §4.7 | each detector test | unit done P1-5 |
+| ER-26 | If two kept signals differ by > 3 d, use the most precise one, confidence low, flag the conflict | PLAN §4.6 | `combine.test.ts` | done |
+| ER-27 | Provenance multipliers on signal SD (manual/imported/sensor) | PLAN §4.7 | each detector test | done |
 | ER-28 | Hormonal contraception (any method) suspends prediction; withdrawal bleeds are never cycle starts | PLAN §4.9 | fixture I | done |
 | ER-29 | Post-contraception: 3 cycles prior-only at weight 0.5, confidence low | PLAN §4.9 (C-08) | `lifestate.test.ts` | done |
 | ER-30 | Pregnant: suspended; postpartum: suspended until first period, breastfeeding adds 3 low-confidence cycles and no band without a biomarker | PLAN §4.9 (C-09) | `lifestate.test.ts` | done |
