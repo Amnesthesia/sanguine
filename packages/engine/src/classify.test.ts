@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { addDays } from './dates';
 import { classifyCycles, classifyDetailed, madThreshold } from './classify';
 import { FIXTURE_SETTINGS, historyFromLengths } from './fixtures';
 import type { CycleRecord, EngineSettings } from './types';
@@ -82,6 +83,12 @@ describe('exclusions and life states (§4.4 rule 4)', () => {
       ...FIXTURE_SETTINGS,
       lifeStates: [{ kind: 'pregnant', since: h.cycles[1]?.start as string, until: h.cycles[1]?.end as string }],
     };
+    expect(classifyCycles(h.cycles, settings).map((c) => c.quality)).toEqual(['valid', 'life_state', 'valid', 'valid']);
+  });
+  it('postpartum only excludes the cycle spanning the delivery; later cycles are left to the warm-up', () => {
+    const h = historyFromLengths([28, 30, 29]);
+    const delivered = addDays(h.cycles[1]?.start as string, 10);
+    const settings: EngineSettings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'postpartum', delivered, breastfeeding: false }] };
     expect(classifyCycles(h.cycles, settings).map((c) => c.quality)).toEqual(['valid', 'life_state', 'valid', 'valid']);
   });
   it('perimenopause and known_irregular do not exclude cycles', () => {

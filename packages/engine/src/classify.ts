@@ -9,7 +9,7 @@ export interface ClassifyOptions {
 }
 export interface Classified { record: CycleRecord; reason?: string }
 
-const SUSPENDING: Array<LifeState['kind']> = ['hormonal_contraception', 'pregnant', 'postpartum'];
+const SUSPENDING: Array<LifeState['kind']> = ['hormonal_contraception', 'pregnant'];
 
 function median(xs: number[]): number {
   const s = [...xs].sort((a, b) => a - b);
@@ -35,6 +35,8 @@ function lifeStateStart(s: LifeState): ISODate {
 
 function overlapsSuspendingState(start: ISODate, lastDay: ISODate | undefined, settings: EngineSettings): boolean {
   return settings.lifeStates.some((s) => {
+    // the cycle that spans the delivery day is not a normal cycle; cycles after it are handled by the warm-up (lifestate.ts)
+    if (s.kind === 'postpartum') return start < s.delivered && (lastDay === undefined || lastDay >= s.delivered);
     if (!SUSPENDING.includes(s.kind)) return false;
     const from = lifeStateStart(s);
     // cycle [start, lastDay] intersects [from, until]; an open cycle has no last day

@@ -31,11 +31,11 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-25 | Temporal gate: a temperature shift is discarded unless −1 to +4 d from the LH/mucus estimate; conflict recorded | PLAN §4.6 (C-06) | fixture H | unit done P1-5 |
 | ER-26 | If two kept signals differ by > 3 d, use the most precise one, confidence low, flag the conflict | PLAN §4.6 | `combine.test.ts` | unit done P1-5 |
 | ER-27 | Provenance multipliers on signal SD (manual/imported/sensor) | PLAN §4.7 | each detector test | unit done P1-5 |
-| ER-28 | Hormonal contraception (any method) suspends prediction; withdrawal bleeds are never cycle starts | PLAN §4.9 | fixture I | planned P1-6 |
-| ER-29 | Post-contraception: 3 cycles prior-only at weight 0.5, confidence low | PLAN §4.9 (C-08) | `lifestate.test.ts` | planned P1-6 |
-| ER-30 | Pregnant: suspended; postpartum: suspended until first period, breastfeeding adds 3 low-confidence cycles and no band without a biomarker | PLAN §4.9 (C-09) | `lifestate.test.ts` | planned P1-6 |
-| ER-31 | Perimenopause: λ = 0.8, variance prior doubled, band only with biomarkers, 60-day gap flag | PLAN §4.9 | `lifestate.test.ts` | planned P1-6 |
-| ER-32 | Known irregular: exclusion threshold median + max(14, 3·MAD), confidence capped at medium | PLAN §4.9 | `lifestate.test.ts` | planned P1-6 |
+| ER-28 | Hormonal contraception (any method) suspends prediction; withdrawal bleeds are never cycle starts | PLAN §4.9 | fixture I | unit done P1-6 |
+| ER-29 | Post-contraception: 3 cycles prior-only at weight 0.5, confidence low | PLAN §4.9 (C-08) | `lifestate.test.ts` | unit done P1-6 |
+| ER-30 | Pregnant: suspended; postpartum: suspended until first period, breastfeeding adds 3 low-confidence cycles and no band without a biomarker | PLAN §4.9 (C-09) | `lifestate.test.ts` | unit done P1-6 |
+| ER-31 | Perimenopause: λ = 0.8, variance prior doubled, band only with biomarkers, 60-day gap flag | PLAN §4.9 | `lifestate.test.ts` | unit done P1-6 |
+| ER-32 | Known irregular: exclusion threshold median + max(14, 3·MAD), confidence capped at medium | PLAN §4.9 | `lifestate.test.ts` | unit done P1-6 |
 | ER-33 | Short-cycle flag: 2 of last 3 valid < 24 d (adult), < 21 d (1–3 y post-menarche) | PLAN §4.10 (C-07); FIGO 2018 | `flags.test.ts` | planned P1-7 |
 | ER-34 | Long-cycle flag: 2 of last 3 > 38 d (adult), > 45 d (1–3 y); any > 90 d after 1 y | PLAN §4.10 (C-07) | `flags.test.ts` | planned P1-7 |
 | ER-35 | Variability flag: range over last 6 valid cycles > 9 d (18–25, 42–45) or > 7 d (26–41); none in year 1 post-menarche | PLAN §4.10 | fixture D, `flags.test.ts` | planned P1-7 |
