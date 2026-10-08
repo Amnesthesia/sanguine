@@ -1,0 +1,29 @@
+appId: ${APP_ID}
+name: Onboarding age gate (minimum 13) and teen note
+---
+- runFlow: _open.yaml
+- extendedWaitUntil:
+    visible:
+      id: screen-onboarding
+    timeout: 90000
+- tapOn:
+    id: onboarding-continue
+- tapOn:
+    id: birth-year
+- inputText: "2018"
+- assertVisible: "Sanguine is for people aged 13 and over."
+- takeScreenshot: step2-too-young
+- tapOn:
+    id: onboarding-continue
+- assertVisible: "How old are you?"
+- tapOn:
+    id: birth-year
+- eraseText: 4
+- inputText: "2012"
+- assertNotVisible: "Sanguine is for people aged 13 and over."
+- assertVisible:
+    id: teen-note
+- takeScreenshot: step2-teen
+- tapOn:
+    id: onboarding-continue
+- assertVisible: "When did your last period start?"

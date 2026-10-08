@@ -12,6 +12,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | @noble/hashes | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
 | @resvg/resvg-js | 2.6.2 | ^2.6.2 | dev/build only | tools/brand |
 | @scure/bip39 | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
+| @testing-library/react | 16.3.3 | ^16.3.3 | dev/build only | root |
 | @types/better-sqlite3 | 9.6.0 | ^9.6.0 | dev/build only | root |
 | @types/node | 22.20.5 | ^22.0.0 | dev/build only | root |
 | @types/opentype.js | 1.3.10 | ^1.3.10 | dev/build only | tools/brand |
@@ -43,8 +44,10 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | fast-check | 4.10.2 | ^4.0.0 | dev/build only | root |
 | fflate | 0.8.3 | ^0.8.3 | ships in app | apps/mobile |
 | i18next | 26.4.2 | ^26.4.2 | ships in app | apps/mobile |
+| jsdom | 30.1.2 | ^30.1.2 | dev/build only | root |
 | opentype.js | 2.0.0 | ^2.0.0 | dev/build only | tools/brand |
-| react | 19.2.3 | 19.2.3 | ships in app | apps/mobile |
+| react | 19.2.3 | 19.2.3 | ships in app | apps/mobile, root |
+| react-dom | 19.2.3 | ^19.2.3 | dev/build only | root |
 | react-i18next | 17.0.16 | ^17.0.16 | ships in app | apps/mobile |
 | react-native | 0.86.3 | 0.86.3 | ships in app | apps/mobile |
 | react-native-gesture-handler | 2.32.0 | ~2.32.0 | ships in app | apps/mobile |
@@ -52,6 +55,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | react-native-safe-area-context | 5.7.0 | ~5.7.0 | ships in app | apps/mobile |
 | react-native-screens | 4.26.2 | ~4.26.0 | ships in app | apps/mobile |
 | react-native-svg | 15.15.4 | 15.15.4 | ships in app | apps/mobile |
+| react-native-web | 0.21.4 | ^0.21.4 | dev/build only | root |
 | react-native-worklets | 0.10.1 | 0.10.1 | ships in app | apps/mobile |
 | tsx | 4.23.15 | ^4.23.15 | dev/build only | root, tools/brand |
 | typescript | 7.0.2 | ^7.0.2 | dev/build only | apps/mobile, root |

@@ -1,0 +1,51 @@
+appId: ${APP_ID}
+name: Onboarding, five steps (adult, with last period and life state)
+---
+- runFlow: _open.yaml
+- extendedWaitUntil:
+    visible:
+      id: screen-onboarding
+    timeout: 90000
+- assertVisible: "Track and understand your cycle"
+- takeScreenshot: step1-purpose
+- tapOn:
+    id: onboarding-continue
+# step 2: age is required
+- assertVisible: "How old are you?"
+- tapOn:
+    id: birth-year
+- inputText: "1990"
+- takeScreenshot: step2-age
+- tapOn:
+    id: onboarding-continue
+# step 3: last period
+- assertVisible: "When did your last period start?"
+- tapOn:
+    id: last-yesterday
+- takeScreenshot: step3-last-period
+- tapOn:
+    id: onboarding-continue
+# step 4: life state
+- assertVisible: "Anything that affects your cycle right now?"
+- tapOn:
+    id: life-postHormonal
+- scrollUntilVisible:
+    element: "When did you stop?"
+- takeScreenshot: step4-life-state
+- tapOn:
+    id: onboarding-continue
+# step 5: privacy
+- assertVisible: "Your data stays with you"
+- takeScreenshot: step5-privacy
+- tapOn:
+    id: health-offer
+- assertVisible:
+    id: health-note
+- tapOn:
+    id: consent
+- tapOn:
+    id: onboarding-continue
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 20000

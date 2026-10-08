@@ -36,3 +36,4 @@ One line per finished backlog item.
 - P2-4 export zip (events.jsonl + CSVs + README + manifest), Sanguine and CSV import, device services (D-026).
 - P2-5 packages/crypto: backup.v1 (Argon2id + XChaCha20-Poly1305 + HMAC), BIP-39 recovery code, RFC 9106 vector, independently verified pinned vector; data/backup.ts and device services (D-027).
 - P2-6 app shell: native tabs, theme/i18n/zustand, onboarding gate, DB opens in Expo Go; Maestro shell flow green on iOS simulator and Android emulator.
+- P2-7 onboarding: five steps with age gate (13), teen note, life states, consent; Maestro flows green on iOS and Android; component tests (D-029).

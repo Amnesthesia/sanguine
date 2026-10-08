@@ -10,6 +10,7 @@ export function Button({ label, kind = 'primary', ...rest }: Omit<PressableProps
   return (
     <Pressable
       accessibilityRole="button"
+      aria-disabled={rest.disabled ?? undefined}
       accessibilityLabel={rest.accessibilityLabel ?? label}
       {...rest}
       style={({ pressed }) => [{ minHeight: 48, paddingHorizontal: 20, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: bg, opacity: pressed ? 0.7 : 1 }, kind === 'text' ? { minHeight: 44 } : null]}>
