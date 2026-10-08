@@ -40,3 +40,4 @@ One line per finished backlog item.
 - P2-8 Today: PhaseRing, headline/estimate/flag cards, quick-log row, footer; view-model tests; dev scenarios; Maestro green on iOS and Android (D-030).
 - P2-9 logging sheet and day detail: 2-tap period and symptom, temperature/tests/mucus/cervix/sex/note, merge rule, corrections; Maestro green on iOS and Android (D-031).
 - P2-10 Calendar: month model, graded fertile band, hatched predicted range, ovulation marker, day summary, back-dating; Maestro green on iOS and Android (D-032).
+- P2-11 Insights: history rows with missed-log actions, charts (cycle length band, temperature + coverline, symptoms by phase), accuracy ledger text, cycle detail; Maestro green on iOS and Android (D-033).

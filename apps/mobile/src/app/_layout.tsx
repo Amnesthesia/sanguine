@@ -34,6 +34,7 @@ function Shell() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="log" options={{ presentation: 'modal' }} />
           <Stack.Screen name="day/[date]" />
+          <Stack.Screen name="cycle/[id]" />
         </Stack.Protected>
         <Stack.Screen name="dev/seed" />
       </Stack>

@@ -30,7 +30,6 @@ function Swatch({ kind }: { kind: 'period' | 'predicted' | 'fertile' | 'ovulatio
 }
 
 export default function CalendarScreen() {
-  const t = useTheme();
   const { t: tr } = useTranslation();
   const router = useRouter();
   const { prediction, history, today, prefs, profile, store, version } = useApp();

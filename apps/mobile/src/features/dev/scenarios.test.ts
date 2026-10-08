@@ -18,7 +18,7 @@ async function load(name: Parameters<typeof scenario>[0], today = '2026-10-10') 
 }
 
 describe('dev scenarios', () => {
-  it('all names are covered', () => expect(SCENARIOS).toEqual(['empty', 'typical', 'inProgress', 'irregular']));
+  it('all names are covered', () => expect(SCENARIOS).toEqual(['empty', 'typical', 'inProgress', 'irregular', 'skippedLog']));
   it('typical: cycle day 11, cycles of 28 and 29 days, a fair-estimate next period', async () => {
     const { prediction: p, history } = await load('typical');
     expect(p.currentPhase?.dayOfCycle).toBe(11);
@@ -34,6 +34,10 @@ describe('dev scenarios', () => {
     const { prediction: p } = await load('irregular');
     expect(p.flags.map((f) => f.code)).toEqual(['variability']);
     expect(p.nextPeriod?.confidence).toBe('low');
+  });
+  it('skippedLog: the 56-day cycle is suspect', async () => {
+    const { prediction: p } = await load('skippedLog');
+    expect(p.cycleQuality.filter((c) => c.quality === 'suspect_skip')).toHaveLength(1);
   });
   it('empty has no cycles', async () => expect((await load('empty')).history.cycles).toEqual([]));
 });

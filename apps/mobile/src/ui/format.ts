@@ -3,18 +3,18 @@ import { parseISO } from '@sanguine/engine';
 
 const fmt = (opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('en-AU', { ...opts, timeZone: 'UTC' });
 const D = fmt({ day: 'numeric' });
-const DM = fmt({ day: 'numeric', month: 'short' });
-const DMY = fmt({ day: 'numeric', month: 'short', year: 'numeric' });
 const LONG = fmt({ weekday: 'long', day: 'numeric', month: 'long' });
-const MONTH = fmt({ month: 'short' });
 const MONTH_YEAR = fmt({ month: 'long', year: 'numeric' });
 const WEEKDAY = fmt({ weekday: 'long' });
 const when = (iso: string) => new Date(parseISO(iso));
+/** Fixed short month names: Intl gives "Sept" for en-AU, the product copy uses "Sep" (PLAN.md §9.6). */
+export const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
+const monthShort = (iso: string) => MONTHS_SHORT[Number(iso.slice(5, 7)) - 1] as string;
 
-export const formatDay = (iso: string): string => DM.format(when(iso));
-export const formatDayYear = (iso: string): string => DMY.format(when(iso));
+export const formatDay = (iso: string): string => `${Number(iso.slice(8, 10))} ${monthShort(iso)}`;
+export const formatDayYear = (iso: string): string => `${formatDay(iso)} ${iso.slice(0, 4)}`;
 export const formatLong = (iso: string): string => LONG.format(when(iso));
-export const formatMonthShort = (iso: string): string => MONTH.format(when(iso));
+export const formatMonthShort = (iso: string): string => monthShort(iso);
 export const formatMonthYear = (iso: string): string => MONTH_YEAR.format(when(iso));
 export const formatWeekday = (iso: string): string => WEEKDAY.format(when(iso));
 

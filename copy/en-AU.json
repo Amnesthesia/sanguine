@@ -340,6 +340,35 @@
       "averageMiss": "Average miss: {days} days",
       "explain": "A range is right about 8 times in 10. A few misses are expected.",
       "none": "Your accuracy appears after your first completed cycle with an estimate."
+    },
+    "current": "current",
+    "dayN": "day {day}",
+    "confirmLong": "No, this cycle was this long",
+    "viewCycle": "Cycle details",
+    "needTwo": "Insights appear after two complete cycles.",
+    "chart": {
+      "yAxis": "days",
+      "bandCaption": "Shaded: where the next cycle is likely to fall (80%).",
+      "noTemps": "No temperatures logged this cycle.",
+      "coverlineNote": "Dashed line: coverline from your temperatures.",
+      "phaseCaption": "Share of logged days with the symptom, by phase. This is a pattern in your own logs; it never changes an estimate.",
+      "noSymptoms": "Log a few symptoms to see how they line up with your cycle."
+    },
+    "cycleDetail": {
+      "title": "Cycle",
+      "length": "Length",
+      "bleed": "Bleeding",
+      "started": "Started {date}",
+      "ended": "Last bleeding day {date}",
+      "quality": "Status",
+      "ovulation": "Ovulation",
+      "ovulationNone": "Estimated from cycle lengths only.",
+      "ovulationBasis": "Dated by {basis}.",
+      "luteal": "Second half: {days} days",
+      "exclude": "Leave out of estimates",
+      "include": "Include in estimates",
+      "excluded": "This cycle is left out of your estimates.",
+      "conflict": "The signals you logged did not agree, so the most precise one was used."
     }
   },
   "settings": {

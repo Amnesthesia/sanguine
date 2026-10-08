@@ -51,7 +51,7 @@ describe('DateField', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Earlier day' }));
     expect(screen.getByText('9 Oct 2026')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Earlier month' }));
-    expect(screen.getByText('9 Sept 2026')).toBeTruthy();
+    expect(screen.getByText('9 Sep 2026')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Later year' })); // clamped to max
     expect(screen.getByText('10 Oct 2026')).toBeTruthy();
   });

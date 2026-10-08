@@ -1,0 +1,72 @@
+appId: ${APP_ID}
+name: Insights - history, charts, accuracy, missed-log prompt, cycle detail
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Insights
+- extendedWaitUntil:
+    visible:
+      id: screen-insights
+    timeout: 10000
+- assertVisible: ".*29 days.*"
+- assertVisible: ".*28 days.*"
+- assertVisible: ".*ovulation: calendar.*"
+- assertVisible: "current"
+- takeScreenshot: history
+- tapOn:
+    id: insights-tab-charts
+- assertVisible: "Cycle length"
+- assertVisible:
+    id: chart-length
+- assertVisible: "Shaded: where the next cycle is likely to fall \\(80%\\)."
+- takeScreenshot: charts
+- tapOn:
+    id: insights-tab-accuracy
+- assertVisible: "Your 80% ranges have contained the actual date .* of 2 times."
+- assertVisible: "Average miss: .* days"
+- takeScreenshot: accuracy
+# a probable missed log is offered for correction
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=skippedLog
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Insights
+- extendedWaitUntil:
+    visible:
+      id: screen-insights
+    timeout: 10000
+- scrollUntilVisible:
+    element: "possibly a missed log"
+- assertVisible:
+    id: missed-log
+- takeScreenshot: missed-log
+- tapOn:
+    id: confirm-long
+- assertNotVisible: "possibly a missed log"
+# cycle detail and excluding a cycle
+- scrollUntilVisible:
+    element:
+      id: cycle-detail-link
+    direction: UP
+- tapOn:
+    id: cycle-detail-link
+- extendedWaitUntil:
+    visible:
+      id: screen-cycle
+    timeout: 10000
+- assertVisible: "Status: typical"
+- tapOn:
+    id: cycle-exclude
+- assertVisible: "Status: excluded"
+- assertVisible: "This cycle is left out of your estimates."
+- takeScreenshot: cycle-detail

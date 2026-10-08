@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/theme';
 import { type Unit, stepDate } from './dateStep';
-import { formatDayYear } from './format';
+import { formatDayYear, MONTHS_SHORT } from './format';
 import { Text } from './Text';
 
 const UNITS: Unit[] = ['day', 'month', 'year'];
@@ -12,7 +12,7 @@ export function DateField({ value, onChange, min, max, testID }: { value: string
   const t = useTheme();
   const { t: tr } = useTranslation();
   const [y, m, d] = value.split('-');
-  const shown: Record<Unit, string> = { day: String(Number(d)), month: new Intl.DateTimeFormat('en-AU', { month: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(Number(y), Number(m) - 1, 1))), year: y as string };
+  const shown: Record<Unit, string> = { day: String(Number(d)), month: MONTHS_SHORT[Number(m) - 1] as string, year: y as string };
   const btn = (unit: Unit, delta: 1 | -1) => (
     <Pressable
       testID={`${testID ?? 'date'}-${unit}-${delta > 0 ? 'up' : 'down'}`}

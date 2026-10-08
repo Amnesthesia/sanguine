@@ -12,6 +12,10 @@ describe('format', () => {
     expect(formatRange('2026-10-27', '2026-11-02')).toBe('27 Oct – 2 Nov');
     expect(formatRange('2026-10-27', '2026-10-27')).toBe('27 Oct');
   });
+  it('September is Sep, as in the product copy', () => {
+    expect(formatDay('2026-09-30')).toBe('30 Sep');
+    expect(formatRange('2026-09-28', '2026-10-02')).toBe('28 Sep – 2 Oct');
+  });
   it('is not shifted by the machine time zone (UTC maths)', () => {
     expect(formatDay('2026-01-01')).toBe('1 Jan');
     expect(formatDay('2026-12-31')).toBe('31 Dec');

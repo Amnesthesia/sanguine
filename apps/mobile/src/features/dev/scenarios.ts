@@ -3,8 +3,8 @@ import { addDays, type ISODate } from '@sanguine/engine';
 import type { NewEvent } from '@/data/events';
 import type { Profile } from '@/data/project';
 
-export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular';
-export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular'];
+export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog';
+export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog'];
 
 const period = (start: ISODate, bleed = 4, level: 'light' | 'medium' | 'heavy' = 'medium'): NewEvent[] =>
   Array.from({ length: bleed }, (_, i) => ({ kind: 'flow', payload: { day: addDays(start, i), level, flow_kind: 'period' } }));
@@ -23,6 +23,11 @@ export function scenario(name: ScenarioName, today: ISODate): { profile: Profile
   if (name === 'irregular') {
     const starts = startsFrom(addDays(today, -15), [24, 38, 31, 45, 27, 36]);
     return { profile, events: starts.flatMap((s) => period(s, 5)) };
+  }
+  if (name === 'skippedLog') {
+    // PLAN.md fixture B: one 56-day cycle that is probably a missed log
+    const starts = startsFrom(addDays(today, -12), [27, 29, 56, 28, 30, 28]);
+    return { profile, events: starts.flatMap((s) => period(s, 4)) };
   }
   if (name === 'inProgress') {
     const starts = startsFrom(addDays(today, -1), [28, 29]);
