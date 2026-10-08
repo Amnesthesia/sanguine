@@ -1,0 +1,20 @@
+# Risk register (ISO 14971 shape)
+
+Hazards of the prediction engine and the app wording, with controls and how each control is verified. Severity: S1 negligible, S2 minor, S3 serious, S4 critical. Seeded from the engine's known failure modes (PLAN.md §3.4, §4.14, §11). Review whenever an engine rule, parameter or wording changes.
+
+| ID | Hazard | Cause | Severity | Control | Verification |
+| --- | --- | --- | --- | --- | --- |
+| RK-01 | A user treats the ovulation or fertile estimate as a safe-day indicator and relies on it to avoid pregnancy | Estimate shown as a point or "not fertile" days | S4 | Ranges only, graded band, never a single highlighted day; fixed wording "Do not use it to prevent pregnancy"; no "safe" language anywhere | Forbidden-word test over `copy/*.json`; component test for the estimate card; `copy.test.ts` fixed-wording test |
+| RK-02 | Late ovulation missed by the calendar estimate gives false reassurance | Calendar-only SD is ~4 d; Wilcox 2000: window outside days 10–17 for ~70% | S3 | Confidence "low" for calendar-only; wide range; wording "estimate"; no per-day chance figure | Fixtures A–D (confidence low); property: SD > 3 gives low |
+| RK-03 | A skipped log is read as a long cycle and distorts predictions for a year | Missed period logs merge two cycles | S2 | Robust exclusion (`suspect_skip`), UI prompt to correct | Fixture B; `classify.test.ts` |
+| RK-04 | Withdrawal bleeds on hormonal contraception are treated as periods and drive false predictions | Method effect mistaken for menses | S3 | Life-state suspension; bleeds logged as withdrawal, never cycle starts | Fixture I |
+| RK-05 | A conflicting signal (late BBT shift) overrides a precise LH estimate | Temperature rises after ovulation; gates absent | S3 | Temporal gate −1 to +4 d; conflict flagged and shown | Fixture H |
+| RK-06 | Symptoms silently change a prediction, making it unexplainable | Learned adjustments | S2 | `predict` does not read symptoms; zero weight by construction | Property test: permuting symptom logs leaves `nextPeriod`/`ovulation` unchanged |
+| RK-07 | Health flag read as a diagnosis or causes alarm | Wording names a condition or a risk | S3 | Published ranges only; no condition named; always "a doctor can help you check"; once per 90 days; mutable | Forbidden-word test; `flags.test.ts` |
+| RK-08 | Adolescent normal variation is flagged | Adult thresholds applied | S2 | Age-since-menarche thresholds; no variability flag in year 1; teen mode | `flags.test.ts` |
+| RK-09 | Pregnancy or postpartum states produce a prediction | Life state not set | S3 | Life-state gates suspend prediction; missed-period flag suggests a pregnancy test when sex was logged | Fixture I; `lifestate.test.ts` |
+| RK-10 | User data disclosed (device theft, backup, notification text, screenshot) | Plain storage; descriptive notifications; recent-apps thumbnail | S3 | SQLCipher at rest (Phase 3), app lock, double-encrypted notes, discreet notification default, screenshot blur, client-side encrypted backup | Phase 3 tests: DB unreadable without key; backup round-trip; notification default text test |
+| RK-11 | Backup key loss locks the user out | Passphrase and device secret both lost | S2 | Recovery code shown once, wording explains; restore tested | Crypto round-trip tests (P2-5); backup E2E (P3-7) |
+| RK-12 | Event-log corruption or double projection creates duplicate cycles | Replay not idempotent; migration error | S3 | Append-only events; deterministic projections; rebuild command; migration in a transaction | Idempotence and shuffle property tests (P2-2) |
+| RK-13 | Engine change alters predictions silently | Parameter edit without review | S3 | Parameters isolated in `params.ts`; change log entry required; fixtures and backtest gate in CI; no over-the-air engine updates | Fixtures A–I; backtest release gate |
+| RK-14 | Third-party SDK exfiltrates health data | Analytics, crash or ad SDK added | S4 | CI deny-list and Expo Go allow-list; no network calls except the optional encrypted backup | `tools/ci/expo-go-allowlist.test.ts` |
