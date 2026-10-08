@@ -17,6 +17,7 @@ export default function TodayScreen() {
   const { prediction, history, today, prefs, profile, db, version } = useApp();
   const muteFlag = useApp((s) => s.muteFlag);
   const [todayFlow, setTodayFlow] = useState<string | undefined>();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads today's log after every write
   useEffect(() => {
     void db?.get<{ flow: string | null }>('SELECT flow FROM daily_log WHERE day = ?', [today]).then((r) => setTodayFlow(r?.flow ?? undefined));
   }, [db, today, version]);
