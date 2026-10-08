@@ -6,12 +6,13 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "pnpm -r --if-present typecheck",
-    "lint": "pnpm -r --if-present lint"
+    "lint": "biome lint ."
   },
   "devDependencies": {
-    "typescript": "^7.0.2",
-    "vitest": "^3.2.0",
+    "@biomejs/biome": "^2.5.15",
+    "@types/node": "^22.0.0",
     "fast-check": "^4.0.0",
-    "@types/node": "^22.0.0"
+    "typescript": "^7.0.2",
+    "vitest": "^3.2.0"
   }
 }

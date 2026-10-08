@@ -1,0 +1,6 @@
+{
+  "files": { "includes": ["**", "!**/node_modules", "!apps/mobile/.expo", "!docs", "!**/assets", "!tools/backtest/proto.py", "!pnpm-lock.yaml"] },
+  "formatter": { "enabled": false },
+  "linter": { "enabled": true, "rules": { "recommended": true } },
+  "assist": { "enabled": false }
+}

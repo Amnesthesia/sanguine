@@ -13,3 +13,5 @@ Format: ID, date, decision, alternative rejected and why.
 ## VERIFY items
 
 (filled in P0-8)
+- D-006 (2026-10-09) Lint with Biome (`biome lint .`), not ESLint: typescript-eslint refuses TypeScript 7 ("does not support TS 7.0"). Rejected: downgrading to TS 6 (conflicts with D-001) and `expo lint` (pulls ESLint).
+- D-007 (2026-10-09) Allow-list (`tools/ci/lists.ts`) adds the Expo Go built-ins the SDK 57 template needs (expo-constants, expo-device, expo-image, expo-linking, expo-splash-screen, expo-status-bar, expo-symbols, expo-system-ui, expo-web-browser, safe-area-context, worklets) and `react-i18next`; all are bundled in Expo Go. Rejected: stripping them (template and expo-router depend on them).
