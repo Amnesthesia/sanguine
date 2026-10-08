@@ -2,11 +2,14 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
 const src = fileURLToPath(new URL('./apps/mobile/src', import.meta.url));
+const pkg = (name: string) => fileURLToPath(new URL(`./packages/${name}/src/index.ts`, import.meta.url));
 
 export default defineConfig({
   resolve: {
     alias: [
       { find: /^@\//, replacement: `${src}/` },
+      // workspace packages resolve to their sources, whatever the package manager linked
+      ...['engine', 'crypto', 'ui-tokens'].map((n) => ({ find: new RegExp(`^@sanguine/${n}$`), replacement: pkg(n) })),
       // component tests render React Native primitives through react-native-web in jsdom
       { find: /^react-native$/, replacement: 'react-native-web' },
     ],

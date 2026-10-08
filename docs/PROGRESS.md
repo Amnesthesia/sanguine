@@ -48,3 +48,4 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - P0-8 DECISIONS.md: §11.1/§11.2 defaults as applied (C-01..C-11, R-01..R-09), VERIFY table V-01..V-12.
 - P0-9 docs/regulatory: requirements (ER-01..42), risk register (RK-01..14), generated soup.md with currency test, engine changelog.
 - P0-10 drafted privacy policy, consumer-health-data policy and DPIA via agy (spot-checked, forbidden-word test); contact and controller fields TBD (human).
+- P2-15 full Maestro suite green on the iOS simulator and the Android emulator in Expo Go; tag v0.2-expo-go (D-040). Phase 2 complete.
