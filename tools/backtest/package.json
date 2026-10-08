@@ -1,1 +1,10 @@
-{ "name": "@sanguine/backtest", "version": "0.0.0", "private": true, "type": "module" }
+{
+  "name": "@sanguine/backtest",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "backtest": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit -p ." },
+  "dependencies": { "@sanguine/engine": "workspace:*" },
+  "devDependencies": {}
+}

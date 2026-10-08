@@ -15,7 +15,9 @@ export const AGE_BAND_MEANS: Array<{ maxAge: number; mean: number }> = [
   { maxAge: 24, mean: 30.3 }, { maxAge: 29, mean: 29.9 }, { maxAge: 34, mean: 29.2 },
   { maxAge: 39, mean: 28.2 }, { maxAge: 45, mean: 27.4 },
 ];
-export const RECENCY_LAMBDA = 0.92;
+/** Default recency weight. PLAN.md §4.3 proposed 0.92 but the §4.15 acceptance test (tools/backtest/acceptance.test.ts)
+ *  measured a gain of ~5% against the required 15%, so the fallback λ = 1 ships (D-021, V-05). */
+export const RECENCY_LAMBDA = 1;
 export const WINDOW_CYCLES = 12;
 export const MIN_VALID_LENGTH = 15;
 export const MAX_VALID_LENGTH = 90;

@@ -8,7 +8,7 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-02 | Every number is a distribution: point, 80% interval, 95% interval, confidence grade | PLAN §4.1 | `fixtures.test.ts` A–E | done P1-9 |
 | ER-03 | Symptoms never change `nextPeriod` or `ovulation` | PLAN §4.1, §11.1 C-10 | `properties.test.ts` (symptom permutation) | done P1-8 |
 | ER-04 | Cycle length ~ Student-t from a Normal-Inverse-Gamma posterior; prior m₀ by age band, κ₀ 0.5, α₀ 2.5, β₀ 16.9 | PLAN §4.3; Bull 2019 | `cycleLength.test.ts`, fixtures A–E | done P1-1|
-| ER-05 | Recency weights w = λ^(n−i); λ default 0.92; window 12 valid cycles | PLAN §4.3 (VERIFY V-05) | `cycleLength.test.ts`, backtest λ acceptance | done P1-1 (backtest P1-8) |
+| ER-05 | Recency weights w = λ^(n−i); λ default 1 (0.92 failed acceptance, D-021); window 12 valid cycles | PLAN §4.3 (VERIFY V-05) | `cycleLength.test.ts`, backtest λ acceptance | done P1-1 (backtest P1-8) |
 | ER-06 | `studentTQuantile` matches SciPy to 1e-8 for real ν | PLAN §4.11 | `studentT.test.ts` | done P0-6 |
 | ER-07 | Cold start: 0 cycles with a last period uses the prior; no last period predicts nothing; a usual cycle length counts as one observation of weight 0.5 | PLAN §4.3 | fixture C, `cycleLength.test.ts` | done P1-1|
 | ER-08 | Length < 15 d is `suspect_short`; > 90 d is `suspect_skip`; both excluded from the update | PLAN §4.4 | `classify.test.ts` | done P1-2 |
@@ -44,5 +44,5 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-38 | Short-luteal insight only, never a flag | PLAN §4.10 (C-02) | `flags.test.ts` | done |
 | ER-39 | Each flag fires at most once per 90 days and can be muted; flag wording is never produced by the engine | PLAN §4.1, §4.10 | `flags.test.ts` | done |
 | ER-40 | Property: intervals contain the point; 95% contains 80%; an identical extra cycle never widens the interval; shifting dates by k shifts outputs by k | PLAN §4.15 | `properties.test.ts` | done P1-8 |
-| ER-41 | Backtest: coverage within ±5 points of nominal; MAE ≤ 2.8 d at 8 cycles | PLAN §4.15, §10 | `tools/backtest` | planned P1-8 |
+| ER-41 | Backtest: coverage within ±5 points of nominal; MAE ≤ 2.8 d at 8 cycles | PLAN §4.15, §10 | `tools/backtest` | done P1-8 |
 | ER-42 | The engine package has no runtime dependencies and no platform imports | PLAN §4.1 | `tools/ci/soup.test.ts`, `purity.test.ts` | done P1-8 |
