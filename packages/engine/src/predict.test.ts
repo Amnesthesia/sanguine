@@ -59,3 +59,19 @@ describe('predict', () => {
     expect(q[2]?.reason).toBeTruthy();
   });
 });
+
+describe('analyzeCycles', () => {
+  it('returns classified cycles with derived fields and retrospective biomarker ovulation', async () => {
+    const { analyzeCycles } = await import('./predict');
+    const h = historyFromLengths([28, 30, 29]);
+    h.lh = [
+      { date: addDays(h.cycles[0]?.start as string, 12), result: 'negative', provenance: 'manual' },
+      { date: addDays(h.cycles[0]?.start as string, 13), result: 'positive', provenance: 'manual' },
+    ];
+    const out = analyzeCycles(h, FIXTURE_SETTINGS);
+    expect(out.map((c) => c.record.length)).toEqual([28, 30, 29, undefined]);
+    expect(out[0]?.record.ovulation?.basis).toBe('lh');
+    expect(out[0]?.record.ovulation?.offset).toBe(14);
+    expect(out[1]?.record.ovulation).toBeUndefined();
+  });
+});

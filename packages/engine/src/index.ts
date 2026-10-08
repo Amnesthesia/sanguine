@@ -14,4 +14,4 @@ export { detectCervixPeak } from './cervix';
 export { combineOvulation } from './combine';
 export { evaluateLifeStates, suggestPerimenopause } from './lifestate';
 export { evaluateFlags } from './flags';
-export { predict } from './predict';
+export { analyzeCycles, predict } from './predict';

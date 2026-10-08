@@ -44,16 +44,21 @@ function cycleBiomarkerOvulation(h: History, start: ISODate, endExclusive: ISODa
 const predictionBasis = (b: OvulationEstimate['basis']): NonNullable<Prediction['ovulation']>['basis'] =>
   b === 'wearable' ? 'bbt' : b === 'cervix' ? 'combined' : b;
 
-export function predict(history: History, settings: EngineSettings, today: ISODate): Prediction {
+/** Classified cycles with retrospective biomarker ovulation on every closed cycle (a stored estimate is kept when there is no biomarker data). */
+export function analyzeCycles(history: History, settings: EngineSettings): Array<{ record: CycleRecord; reason?: string }> {
   const classified = classifyDetailed(history.cycles, settings, { excluded: history.excluded, confirmedLong: history.confirmedLong });
-  let cycles: CycleRecord[] = classified.map((c) => c.record);
-
-  // retrospective biomarker ovulation for closed cycles; a stored estimate stays when no biomarker data exists
-  cycles = cycles.map((c) => {
-    if (!c.nextStart) return c;
-    const est = cycleBiomarkerOvulation(history, c.start, c.nextStart);
-    return est ? { ...c, ovulation: { point: est.point, offset: est.offset, sd: est.sd, basis: est.basis, confidence: est.confidence } } : c;
+  return classified.map((c) => {
+    if (!c.record.nextStart) return c;
+    const est = cycleBiomarkerOvulation(history, c.record.start, c.record.nextStart);
+    return est
+      ? { ...c, record: { ...c.record, ovulation: { point: est.point, offset: est.offset, sd: est.sd, basis: est.basis, confidence: est.confidence } } }
+      : c;
   });
+}
+
+export function predict(history: History, settings: EngineSettings, today: ISODate): Prediction {
+  const classified = analyzeCycles(history, settings);
+  const cycles: CycleRecord[] = classified.map((c) => c.record);
 
   const gate = evaluateLifeStates(cycles, settings, today);
   const prior = cyclePrior(settings.birthYear, today, { varianceScale: gate.varianceScale });

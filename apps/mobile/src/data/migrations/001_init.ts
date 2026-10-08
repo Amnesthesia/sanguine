@@ -44,6 +44,7 @@ CREATE TABLE daily_log (
   day           TEXT PRIMARY KEY,
   flow          TEXT CHECK (flow IS NULL OR flow IN ('none','spotting','light','medium','heavy')),
   flow_kind     TEXT CHECK (flow_kind IS NULL OR flow_kind IN ('period','withdrawal_bleed','intermenstrual','on_contraception')),
+  clots         INTEGER NOT NULL DEFAULT 0,
   symptoms      TEXT NOT NULL DEFAULT '[]',
   sex           TEXT,
   notes_cipher  BLOB,
