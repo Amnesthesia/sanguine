@@ -42,14 +42,18 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-web-browser | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | fast-check | 4.10.2 | ^4.0.0 | dev/build only | root |
 | fflate | 0.8.3 | ^0.8.3 | ships in app | apps/mobile |
+| i18next | 26.4.2 | ^26.4.2 | ships in app | apps/mobile |
 | opentype.js | 2.0.0 | ^2.0.0 | dev/build only | tools/brand |
 | react | 19.2.3 | 19.2.3 | ships in app | apps/mobile |
+| react-i18next | 17.0.16 | ^17.0.16 | ships in app | apps/mobile |
 | react-native | 0.86.3 | 0.86.3 | ships in app | apps/mobile |
 | react-native-gesture-handler | 2.32.0 | ~2.32.0 | ships in app | apps/mobile |
 | react-native-reanimated | 4.5.1 | 4.5.1 | ships in app | apps/mobile |
 | react-native-safe-area-context | 5.7.0 | ~5.7.0 | ships in app | apps/mobile |
 | react-native-screens | 4.26.2 | ~4.26.0 | ships in app | apps/mobile |
+| react-native-svg | 15.15.4 | 15.15.4 | ships in app | apps/mobile |
 | react-native-worklets | 0.10.1 | 0.10.1 | ships in app | apps/mobile |
 | tsx | 4.23.15 | ^4.23.15 | dev/build only | root, tools/brand |
 | typescript | 7.0.2 | ^7.0.2 | dev/build only | apps/mobile, root |
 | vitest | 3.2.7 | ^3.2.0 | dev/build only | root |
+| zustand | 5.0.15 | ^5.0.15 | ships in app | apps/mobile |

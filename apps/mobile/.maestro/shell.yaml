@@ -1,0 +1,28 @@
+appId: ${APP_ID}
+name: App shell opens, onboarding gate, four tabs
+---
+- runFlow: _open.yaml
+- extendedWaitUntil:
+    visible:
+      id: screen-onboarding
+    timeout: 90000
+- takeScreenshot: onboarding
+- tapOn:
+    id: onboarding-continue
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 20000
+- takeScreenshot: today
+- tapOn: Calendar
+- assertVisible:
+    id: screen-calendar
+- tapOn: Insights
+- assertVisible:
+    id: screen-insights
+- tapOn: Settings
+- assertVisible:
+    id: screen-settings
+- tapOn: Today
+- assertVisible:
+    id: screen-today
