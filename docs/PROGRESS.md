@@ -32,3 +32,4 @@ One line per finished backlog item.
 - P1-9 fixtures A–I green, engine MIT package with build hash (pnpm engine-hash, CI-checked). Phase 1 complete.
 - P2-1 Database interface, expo-sqlite adapter, migrations runner, §5.2 schema with append-only triggers (D-023).
 - P2-2 EventStore: validation, append/retract/appendMany, full projection rebuild, order-independent project(), engine inputs (D-024).
+- P2-3 prediction-score ledger on cycle close with hindsight-free forecasts, stable rows and summary (D-025).

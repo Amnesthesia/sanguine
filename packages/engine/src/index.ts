@@ -12,6 +12,6 @@ export { detectLhSurge } from './lh';
 export { detectMucusPeak } from './mucus';
 export { detectCervixPeak } from './cervix';
 export { combineOvulation } from './combine';
-export { evaluateLifeStates, suggestPerimenopause } from './lifestate';
+export { evaluateLifeStates, lifeStateStart, suggestPerimenopause } from './lifestate';
 export { evaluateFlags } from './flags';
 export { analyzeCycles, predict } from './predict';

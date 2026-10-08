@@ -1,5 +1,7 @@
 // Append-only event store with retract semantics and full projection rebuilds (PLAN.md §5.3-5.4).
 import type { Database } from './database';
+import { ENGINE_VERSION } from '@sanguine/engine';
+import { updateLedger } from './ledger';
 import { type EventRow, type NewEvent, validateEvent } from './events';
 import { type Clock, uuidv7 } from './ids';
 import { type Profile, project, type Projection } from './project';
@@ -97,5 +99,6 @@ export class EventStore {
         [b.id, b.day, b.type, b.value, b.measured_at, b.source, b.provenance, b.disturbed, b.event_id]);
     for (const l of p.lifeStates)
       await tx.run('INSERT INTO life_state (id,kind,detail,from_day,until_day,event_id) VALUES (?,?,?,?,?,?)', [l.id, l.kind, l.detail, l.from_day, l.until_day, l.event_id]);
+    await updateLedger(tx, p, ENGINE_VERSION);
   }
 }

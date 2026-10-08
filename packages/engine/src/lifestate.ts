@@ -21,7 +21,8 @@ const RANK: Record<Confidence, number> = { none: 0, low: 1, medium: 2, high: 3 }
 
 type Stated = LifeState & { until?: ISODate };
 
-function from(s: LifeState): ISODate {
+/** The day a life state starts. */
+export function lifeStateStart(s: LifeState): ISODate {
   switch (s.kind) {
     case 'none': return '9999-12-31';
     case 'post_contraception': return s.stopped;
@@ -29,7 +30,7 @@ function from(s: LifeState): ISODate {
     default: return s.since;
   }
 }
-const active = (s: Stated, today: ISODate): boolean => from(s) <= today && (s.until === undefined || today <= s.until);
+const active = (s: Stated, today: ISODate): boolean => lifeStateStart(s) <= today && (s.until === undefined || today <= s.until);
 const lowerCap = (a: Confidence | undefined, b: Confidence): Confidence => (a === undefined || RANK[b] < RANK[a] ? b : a);
 
 export function evaluateLifeStates(cycles: CycleRecord[], settings: EngineSettings, today: ISODate): LifeGate {
