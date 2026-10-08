@@ -1,0 +1,17 @@
+{
+  "name": "sanguine",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "pnpm -r --if-present lint"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vitest": "^3.2.0",
+    "fast-check": "^4.0.0",
+    "@types/node": "^22.0.0"
+  }
+}

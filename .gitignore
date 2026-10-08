@@ -1,0 +1,9 @@
+node_modules
+.expo
+dist
+*.log
+.DS_Store
+.remember
+.claude
+apps/mobile/ios
+apps/mobile/android

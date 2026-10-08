@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sanguine — core screen mockups (iOS Liquid Glass · Android Material 3 Expressive)</title>
+<style>
+:root{
+  --bg:#FBF8F6;--surface:#FFFFFF;--surface2:#F3EEEA;--sLow:#F7F3F0;--sHigh:#EDE7E2;--text:#1F1A1C;--text2:#6B6165;--border:#E6DDD8;
+  --accent:#9E2A3C;--accentSoft:#F4DCE0;--period:#B8324A;--periodPred:#D9A0AB;--fertile:#5C8A6E;--ov:#3F6F88;--flag:#B9741E;--focus:#2E5C8A;
+  --glassTint:rgba(251,248,246,.55);--glassAccent:rgba(158,42,60,.72);--glassRim:rgba(255,255,255,.75);
+  --pageBg:#EFE9E4;--pageText:#1F1A1C;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.dark{--bg:#141113;--surface:#1E191B;--surface2:#2A2326;--sLow:#1A1517;--sHigh:#2A2326;--text:#F4EEEF;--text2:#B3A8AC;--border:#352D30;
+  --accent:#D4607A;--accentSoft:#3A1F27;--period:#D9607A;--periodPred:#7A4654;--fertile:#7FAF93;--ov:#7FA7C2;--flag:#D9A054;--focus:#8FBDE6;
+  --glassTint:rgba(20,17,19,.55);--glassAccent:rgba(212,96,122,.72);--glassRim:rgba(255,255,255,.18)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pageBg:#1B1719;--pageText:#F4EEEF}}
+:root[data-theme="dark"]{--pageBg:#1B1719;--pageText:#F4EEEF}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--pageBg);color:var(--pageText);font-family:-apple-system,"SF Pro Text",Roboto,"Segoe UI",system-ui,sans-serif;padding:32px 20px 48px}
+h1{font-size:22px;font-weight:600;margin:0 0 6px}
+h2{font-size:16px;font-weight:600;margin:36px 0 12px;opacity:.9}
+p.lead{margin:0 0 20px;max-width:72ch;font-size:15px;line-height:1.5;opacity:.85}
+.grid{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+figure{margin:0;width:393px;max-width:100%}
+figure.and{width:412px}
+figcaption{font-size:13px;margin:10px 2px 0;line-height:1.45;opacity:.8}
+.phone{width:393px;max-width:100%;height:852px;border-radius:44px;background:var(--bg);color:var(--text);border:1px solid var(--border);position:relative;overflow:hidden;font-size:16px;line-height:24px}
+.and .phone{width:412px;height:915px;border-radius:32px;background:var(--sLow);font-family:"Roboto Flex",Roboto,"Segoe UI",system-ui,sans-serif}
+.statusbar{height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 6px;font-size:14px;font-weight:600}
+.screen{padding:8px 16px 120px;height:calc(100% - 54px);overflow:hidden}
+/* iOS Liquid Glass chrome */
+.glass{background:var(--glassTint);-webkit-backdrop-filter:blur(22px) saturate(1.6);backdrop-filter:blur(22px) saturate(1.6);box-shadow:inset 0 1px 0 var(--glassRim),inset 0 -0.5px 0 rgba(0,0,0,.08),0 10px 30px rgba(31,26,28,.14)}
+.tabs-ios{position:absolute;left:16px;right:16px;bottom:22px;height:66px;border-radius:33px;display:flex;justify-content:space-around;align-items:center;padding:0 6px;font-size:11px;color:var(--text2)}
+.tabs-ios span{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:24px}
+.tabs-ios .on{color:var(--accent);background:rgba(255,255,255,.35)}
+.dark .tabs-ios .on{background:rgba(255,255,255,.08)}
+.ico{width:22px;height:22px;border-radius:7px;border:2px solid currentColor}
+.pill{position:absolute;left:28px;right:28px;height:56px;border-radius:28px;display:flex;align-items:center;gap:6px;padding:4px;font-size:14px;font-weight:600}
+.pill span{flex:1;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:center;color:var(--text)}
+.pill .pri{background:var(--glassAccent);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.toolbar-ios{position:absolute;left:16px;right:16px;top:54px;height:48px;border-radius:24px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-weight:600;font-size:17px}
+/* Android M3 Expressive chrome */
+.nav-and{position:absolute;left:0;right:0;bottom:0;height:80px;background:var(--surface2);display:flex;justify-content:space-around;align-items:center;padding:0 8px 8px;font-size:12px;color:var(--text2);font-weight:500}
+.nav-and span{display:flex;flex-direction:column;align-items:center;gap:4px}
+.nav-and i{width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.nav-and .on{color:var(--text)}
+.nav-and .on i{background:var(--accentSoft)}
+.nav-and .on i b{border-color:var(--accent)}
+.nav-and b{width:22px;height:22px;border-radius:7px;border:2px solid currentColor;display:block}
+.toolbar-and{position:absolute;left:50%;transform:translateX(-50%);bottom:96px;height:64px;border-radius:32px;background:var(--sHigh);display:flex;align-items:center;gap:8px;padding:8px;box-shadow:0 6px 16px rgba(31,26,28,.14)}
+.toolbar-and span{height:48px;padding:0 18px;border-radius:24px;display:flex;align-items:center;font-size:14px;font-weight:600;background:var(--surface2);color:var(--text)}
+.toolbar-and .pri{background:var(--accent);color:#fff;padding:0 22px;border-radius:40% 60% 55% 45%/55% 45% 55% 45%}
+.appbar-and{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 16px;font-size:22px;font-weight:600}
+.and .card{border-radius:28px;background:var(--surface2);border:0;padding:18px 20px}
+.and .h{font-weight:700}
+.and .quick{display:none}
+/* shared content */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-top:12px}
+.h{font-size:18px;font-weight:600;line-height:24px}
+.t{font-size:24px;font-weight:600;line-height:30px}
+.lt{font-size:34px;font-weight:700;line-height:41px}
+.s{font-size:14px;line-height:20px;color:var(--text2)}
+.c{font-size:12px;line-height:16px;letter-spacing:.2px;font-weight:500;color:var(--text2)}
+.badge{display:inline-block;font-size:12px;font-weight:500;padding:2px 8px;border-radius:8px;background:var(--surface2);color:var(--text2);vertical-align:middle}
+.and .badge{background:var(--sHigh);border-radius:8px}
+.foot{font-size:12px;line-height:16px;color:var(--text2);margin-top:14px;text-align:center}
+.flagcard{border-left:4px solid var(--flag)}
+.ring{display:flex;flex-direction:column;align-items:center;margin-top:4px}
+.ring .num{position:absolute;text-align:center;font-size:40px;line-height:44px;font-weight:600;font-variant-numeric:tabular-nums}
+.ring .num small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--text2);letter-spacing:.2px}
+.ringwrap{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center}
+.and .ringwrap{width:240px;height:240px;background:var(--surface2);border-radius:42% 58% 55% 45%/50% 45% 55% 50%}
+/* calendar */
+.cal{margin-top:8px}
+.cal .wk,.cal .row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .wk div{font-size:12px;color:var(--text2);text-align:center;padding:4px 0}
+.day{height:46px;border-radius:10px;position:relative;display:flex;align-items:flex-start;justify-content:center;padding-top:5px;font-size:14px;font-variant-numeric:tabular-nums}
+.day.mute{color:var(--text2);opacity:.45}
+.day.per{background:var(--period);color:#fff;background-image:radial-gradient(rgba(255,255,255,.35) 1px,transparent 1.2px);background-size:7px 7px}
+.day.pred{background:repeating-linear-gradient(135deg,var(--periodPred) 0 3px,transparent 3px 7px)}
+.day.pred95{box-shadow:inset 0 0 0 1px var(--periodPred)}
+.day.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.day .band{position:absolute;left:6px;right:6px;bottom:6px;height:5px;border-radius:3px;background:var(--fertile)}
+.day .dot{position:absolute;bottom:14px;width:4px;height:4px;border-radius:2px;background:var(--text2)}
+.day .ovm{position:absolute;left:4px;right:4px;top:26px;height:2px;background:var(--ov)}
+.day .ovm::after{content:"";position:absolute;left:50%;top:-4px;width:10px;height:10px;margin-left:-5px;border-radius:5px;background:var(--ov)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:12px;font-size:12px;color:var(--text2)}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+/* sheet */
+.dim{position:absolute;inset:0;background:rgba(31,26,28,.35)}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:70%;background:var(--surface);border-radius:20px 20px 0 0;padding:0 16px;box-shadow:0 -8px 24px rgba(31,26,28,.12);overflow:hidden}
+.sheet-head{margin:0 -16px;padding:8px 16px 10px}
+.and .sheet{border-radius:24px 24px 0 0;background:var(--sLow)}
+.grab{width:36px;height:5px;border-radius:3px;background:var(--border);margin:6px auto 10px}
+.and .grab{width:32px;height:4px;background:var(--text2);opacity:.5}
+.sh{display:flex;justify-content:space-between;align-items:center}
+.sh b{font-size:18px;font-weight:600}
+.sh span{color:var(--accent);font-weight:600}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.flow div{height:72px;border-radius:12px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:500;color:var(--text2)}
+.flow div.on{border-color:var(--accent);background:var(--accentSoft);color:var(--text)}
+.and .flow{gap:3px}
+.and .flow div{border:0;background:var(--surface2);border-radius:12px;height:64px}
+.and .flow div:first-child{border-radius:32px 12px 12px 32px}.and .flow div:last-child{border-radius:12px 32px 32px 12px}
+.and .flow div.on{background:var(--accent);color:#fff;border-radius:32px}
+.and .flow div.on .drop{border-color:#fff;background:linear-gradient(0deg,#fff 66%,transparent 66%)}
+.drop{width:16px;height:20px;border-radius:50% 50% 50% 50%/40% 40% 60% 60%;border:2px solid var(--period);transform:rotate(45deg)}
+.drop.f1{background:linear-gradient(0deg,var(--period) 33%,transparent 33%)}.drop.f2{background:linear-gradient(0deg,var(--period) 66%,transparent 66%)}.drop.f3{background:var(--period)}
+.sym{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.sym div{height:64px;border-radius:12px;border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--text2);gap:4px;text-align:center;padding:0 4px}
+.sym div.on{border-color:var(--accent);background:var(--accentSoft);color:var(--text)}
+.and .sym div{border:0;background:var(--surface2);border-radius:16px}
+.and .sym div.on{background:var(--accentSoft);border-radius:24px}
+.ints{display:flex;gap:3px}.ints i{width:5px;height:5px;border-radius:3px;background:var(--border)}.ints i.on{background:var(--accent)}
+.more{margin-top:10px;border-top:1px solid var(--border)}
+.more div{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
+.more div span{color:var(--text2)}
+/* insights */
+.seg{display:flex;background:var(--surface2);border-radius:10px;padding:3px;margin-top:4px}
+.seg div{flex:1;text-align:center;font-size:14px;padding:6px;border-radius:8px;color:var(--text2)}
+.seg .on{background:var(--surface);color:var(--text);font-weight:600}
+.and .seg{background:transparent;gap:3px;padding:0}
+.and .seg div{border:1px solid var(--border);border-radius:8px;padding:10px}
+.and .seg div:first-child{border-radius:24px 8px 8px 24px}.and .seg div:last-child{border-radius:8px 24px 24px 8px}
+.and .seg .on{background:var(--accentSoft);border-color:transparent;border-radius:24px}
+.rowl{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+/* onboarding */
+.dots{display:flex;gap:6px;justify-content:center;margin:8px 0 48px}.dots i{width:6px;height:6px;border-radius:3px;background:var(--border)}.dots i.on{background:var(--accent)}
+.btn{display:block;width:100%;height:52px;border-radius:26px;border:0;background:var(--accent);color:#fff;font-size:16px;font-weight:600;margin-top:12px}
+.btn.sec{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.btn.txt{background:transparent;color:var(--text2);height:40px;font-weight:500}
+.sticky{position:absolute;left:16px;right:16px;bottom:36px}
+button:focus-visible,.day:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media (prefers-reduced-motion: no-preference){.ring circle.seg{transition:stroke-dashoffset .6s ease-out}}
+</style>
+</head>
+<body>
+<h1>Sanguine — core screen mockups</h1>
+<p class="lead">One content layer, two native chrome layers. iOS frames (393×852) use Liquid Glass only for the tab bar, toolbars and the floating quick-log pill; content stays on opaque surfaces. Android frames (412×915) use Material 3 Expressive: tonal surface containers, 28 dp containers, a navigation bar with pill indicators, an expressive floating toolbar and a shape-morphing Period button. Sample content from section 9.6 (cycle day 11 on 10 October 2026). Fertile-band opacity equals the engine's per-day probability of being inside the six-day window. Rendered glass here is a CSS approximation of the system material.</p>
+
+<h2>Today</h2>
+<div class="grid">
+
+<figure>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen">
+    <div class="ring" style="margin-top:14px"><div class="ringwrap">
+      <svg width="220" height="220" viewBox="0 0 220 220" role="img" aria-label="Cycle ring, day 11 of an estimated 29, period days 1 to 4, fertile window likelihood days 8 to 22 peaking at day 14, predicted period days 27 to 32">
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--surface2)" stroke-width="14"/>
+        <circle class="seg" cx="110" cy="110" r="96" fill="none" stroke="var(--period)" stroke-width="14" stroke-dasharray="83 520" transform="rotate(-90 110 110)"/>
+        <g transform="rotate(-90 110 110)" stroke="var(--fertile)" stroke-width="14" fill="none">
+          <circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-146" opacity=".2"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-167" opacity=".35"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-188" opacity=".49"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-209" opacity=".55"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-230" opacity=".5"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-251" opacity=".37"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-272" opacity=".22"/>
+        </g>
+        <path d="M 110 14 A 96 96 0 0 0 85 17" fill="none" stroke="var(--periodPred)" stroke-width="14" stroke-dasharray="3 3"/>
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--accent)" stroke-width="18" stroke-dasharray="3 600" stroke-dashoffset="-209" transform="rotate(-90 110 110)"/>
+      </svg>
+      <div class="num">11<small>day of cycle</small></div>
+    </div></div>
+    <div style="height:34px"></div>
+    <div class="card"><div class="h">Period likely in 17–22 days</div><div class="s">Most likely 29 Oct <span class="badge">fair estimate</span></div></div>
+    <div class="card"><div class="s" style="color:var(--text)">Ovulation estimated around 15 Oct (12–19 Oct) <span class="badge">rough estimate</span></div><div class="c" style="margin-top:6px">This is for understanding your cycle. Do not use it to prevent pregnancy.</div></div>
+    <div class="foot">Estimates are ranges, not promises.</div>
+  </div>
+  <div class="pill glass" style="top:282px"><span class="pri">Period</span><span>Symptoms</span><span>Temperature</span></div>
+  <div class="tabs-ios glass"><span class="on"><i class="ico"></i>Today</span><span><i class="ico"></i>Calendar</span><span><i class="ico"></i>Insights</span><span><i class="ico"></i>Settings</span></div>
+</div>
+<figcaption>iOS, Liquid Glass. The quick-log pill is regular glass floating over the ring's edge with Period as a tinted-glass capsule; the tab bar is the system glass bar. Content cards stay opaque.</figcaption>
+</figure>
+
+<figure class="and">
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen">
+    <div class="appbar-and">Today</div>
+    <div class="ring"><div class="ringwrap">
+      <svg width="220" height="220" viewBox="0 0 220 220" aria-hidden="true">
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--sHigh)" stroke-width="14"/>
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--period)" stroke-width="14" stroke-dasharray="83 520" transform="rotate(-90 110 110)"/>
+        <g transform="rotate(-90 110 110)" stroke="var(--fertile)" stroke-width="14" fill="none">
+          <circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-146" opacity=".2"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-167" opacity=".35"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-188" opacity=".49"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-209" opacity=".55"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-230" opacity=".5"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-251" opacity=".37"/><circle cx="110" cy="110" r="96" stroke-dasharray="21 582" stroke-dashoffset="-272" opacity=".22"/>
+        </g>
+        <path d="M 110 14 A 96 96 0 0 0 85 17" fill="none" stroke="var(--periodPred)" stroke-width="14" stroke-dasharray="3 3"/>
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--accent)" stroke-width="18" stroke-dasharray="3 600" stroke-dashoffset="-209" transform="rotate(-90 110 110)"/>
+      </svg>
+      <div class="num" style="font-weight:700">11<small>day of cycle</small></div>
+    </div></div>
+    <div class="card"><div class="h">Period likely in 17–22 days</div><div class="s">Most likely 29 Oct <span class="badge">fair estimate</span></div></div>
+    <div class="card"><div class="s" style="color:var(--text)">Ovulation estimated around 15 Oct (12–19 Oct) <span class="badge">rough estimate</span></div><div class="c" style="margin-top:6px">This is for understanding your cycle. Do not use it to prevent pregnancy.</div></div>
+    <div class="foot">Estimates are ranges, not promises.</div>
+  </div>
+  <div class="toolbar-and"><span class="pri">Period</span><span>Symptoms</span><span>Temperature</span></div>
+  <div class="nav-and"><span class="on"><i><b></b></i>Today</span><span><i><b></b></i>Calendar</span><span><i><b></b></i>Insights</span><span><i><b></b></i>Settings</span></div>
+</div>
+<figcaption>Android, Material 3 Expressive. The ring sits in an expressive container that morphs on phase change; quick-log is a floating toolbar whose primary Period button shape-morphs on press; cards are 28 dp tonal containers; navigation bar with pill indicator.</figcaption>
+</figure>
+
+<figure>
+<div class="phone dark">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen">
+    <div class="ring" style="margin-top:14px"><div class="ringwrap">
+      <svg width="220" height="220" viewBox="0 0 220 220" aria-hidden="true">
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--surface2)" stroke-width="14"/>
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--period)" stroke-width="14" stroke-dasharray="62 540" transform="rotate(-90 110 110)"/>
+        <path d="M 110 14 A 96 96 0 0 0 40 50" fill="none" stroke="var(--periodPred)" stroke-width="14" stroke-dasharray="3 3"/>
+        <circle cx="110" cy="110" r="96" fill="none" stroke="var(--accent)" stroke-width="18" stroke-dasharray="3 600" stroke-dashoffset="-290" transform="rotate(-90 110 110)"/>
+      </svg>
+      <div class="num">16<small>day of cycle</small></div>
+    </div></div>
+    <div style="height:34px"></div>
+    <div class="card"><div class="h">Period likely in 10–26 days</div><div class="s">Most likely 3 Nov <span class="badge">rough estimate</span></div></div>
+    <div class="card flagcard"><div class="s" style="color:var(--text)">Two of your last three cycles were longer than 38 days. That is outside the range most clinical guidelines call typical. A doctor can help you check.</div><div class="c" style="margin-top:8px;color:var(--accent)">Learn more &nbsp;&nbsp; Mute</div></div>
+    <div class="foot">Estimates are ranges, not promises.</div>
+  </div>
+  <div class="pill glass" style="top:282px"><span class="pri">Period</span><span>Symptoms</span><span>Temperature</span></div>
+  <div class="tabs-ios glass"><span class="on"><i class="ico"></i>Today</span><span><i class="ico"></i>Calendar</span><span><i class="ico"></i>Insights</span><span><i class="ico"></i>Settings</span></div>
+</div>
+<figcaption>iOS dark, irregular cycles with low confidence and a health flag. No fertile band when the ovulation estimate is uncertain; the flag never names a condition. Under Reduce Transparency the glass becomes surface at 94%.</figcaption>
+</figure>
+</div>
+
+<h2>Logging sheet</h2>
+<div class="grid">
+<figure>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen" style="opacity:.6"><div class="card" style="margin-top:40px"><div class="h">Period likely in 17–22 days</div><div class="s">Most likely 29 Oct</div></div></div>
+  <div class="dim"></div>
+  <div class="sheet">
+    <div class="sheet-head glass"><div class="grab"></div><div class="sh"><span style="color:var(--text2)">‹</span><b>Friday 10 October</b><span>Done</span></div></div>
+    <div class="c" style="margin-top:14px">Flow</div>
+    <div class="flow"><div><i class="drop"></i>Spotting</div><div><i class="drop f1"></i>Light</div><div class="on"><i class="drop f2"></i>Medium</div><div><i class="drop f3"></i>Heavy</div></div>
+    <div class="c" style="margin-top:8px">This will start a new period on 10 Oct</div>
+    <div class="c" style="margin-top:14px">Symptoms</div>
+    <div class="sym">
+      <div class="on">Cramps<span class="ints"><i class="on"></i><i class="on"></i><i></i></span></div><div>Headache<span class="ints"><i></i><i></i><i></i></span></div><div class="on">Bloating<span class="ints"><i class="on"></i><i class="on"></i><i></i></span></div><div>Breast tenderness<span class="ints"><i></i><i></i><i></i></span></div>
+      <div>Mood low<span class="ints"><i></i><i></i><i></i></span></div><div>Acne<span class="ints"><i></i><i></i><i></i></span></div><div>Fatigue<span class="ints"><i></i><i></i><i></i></span></div><div>Mid-cycle spotting<span class="ints"><i></i><i></i><i></i></span></div>
+    </div>
+    <div class="more"><div>Temperature<span>36.42 °C · 06:40 · oral</span></div><div>Ovulation test<span>Add</span></div><div>Cervical mucus<span>Add</span></div><div>Note<span>Add</span></div></div>
+  </div>
+</div>
+<figcaption>iOS form sheet at the 0.7 detent with a glass header. Period start is two taps from launch (Period, then a flow level).</figcaption>
+</figure>
+
+<figure class="and">
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen" style="opacity:.6"><div class="appbar-and">Today</div><div class="card"><div class="h">Period likely in 17–22 days</div><div class="s">Most likely 29 Oct</div></div></div>
+  <div class="dim"></div>
+  <div class="sheet">
+    <div class="sheet-head"><div class="grab"></div><div class="sh"><span style="color:var(--text2)">‹</span><b>Friday 10 October</b><span>Done</span></div></div>
+    <div class="c" style="margin-top:14px">Flow</div>
+    <div class="flow"><div><i class="drop"></i>Spotting</div><div><i class="drop f1"></i>Light</div><div class="on"><i class="drop f2"></i>Medium</div><div><i class="drop f3"></i>Heavy</div></div>
+    <div class="c" style="margin-top:8px">This will start a new period on 10 Oct</div>
+    <div class="c" style="margin-top:14px">Symptoms</div>
+    <div class="sym">
+      <div class="on">Cramps<span class="ints"><i class="on"></i><i class="on"></i><i></i></span></div><div>Headache<span class="ints"><i></i><i></i><i></i></span></div><div class="on">Bloating<span class="ints"><i class="on"></i><i class="on"></i><i></i></span></div><div>Breast tenderness<span class="ints"><i></i><i></i><i></i></span></div>
+      <div>Mood low<span class="ints"><i></i><i></i><i></i></span></div><div>Acne<span class="ints"><i></i><i></i><i></i></span></div><div>Fatigue<span class="ints"><i></i><i></i><i></i></span></div><div>Mid-cycle spotting<span class="ints"><i></i><i></i><i></i></span></div>
+    </div>
+    <div class="more"><div>Temperature<span>36.42 °C · 06:40 · oral</span></div><div>Ovulation test<span>Add</span></div><div>Cervical mucus<span>Add</span></div><div>Note<span>Add</span></div></div>
+  </div>
+</div>
+<figcaption>Android M3 modal bottom sheet. Flow is an expressive connected button group whose selected segment morphs to a fuller shape; symptom tiles spring on select.</figcaption>
+</figure>
+</div>
+
+<h2>Calendar, Insights, Onboarding</h2>
+<div class="grid">
+<figure>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="toolbar-ios glass"><span style="color:var(--text2);font-weight:400">‹</span><span>October 2026</span><span style="color:var(--text2);font-weight:400">›</span></div>
+  <div class="screen" style="padding-top:60px">
+    <div class="cal">
+      <div class="wk"><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div></div>
+      <div class="row"><div class="day mute per">28</div><div class="day mute per">29</div><div class="day mute per">30</div><div class="day per">1<i class="dot"></i></div><div class="day per">2<i class="dot"></i></div><div class="day per">3</div><div class="day">4</div></div>
+      <div class="row"><div class="day">5</div><div class="day">6</div><div class="day">7</div><div class="day">8<i class="band" style="opacity:.2"></i></div><div class="day">9<i class="dot"></i><i class="band" style="opacity:.27"></i></div><div class="day today">10<i class="dot"></i><i class="band" style="opacity:.35"></i></div><div class="day">11<i class="band" style="opacity:.43"></i></div></div>
+      <div class="row"><div class="day">12<i class="band" style="opacity:.49"></i><i class="ovm" style="left:18px;right:-4px"></i></div><div class="day">13<i class="band" style="opacity:.53"></i></div><div class="day">14<i class="band" style="opacity:.55"></i></div><div class="day">15<i class="band" style="opacity:.54"></i><i class="ovm"></i></div><div class="day">16<i class="band" style="opacity:.5"></i></div><div class="day">17<i class="band" style="opacity:.45"></i></div><div class="day">18<i class="band" style="opacity:.37"></i></div></div>
+      <div class="row"><div class="day">19<i class="band" style="opacity:.3"></i></div><div class="day">20<i class="band" style="opacity:.22"></i></div><div class="day">21<i class="band" style="opacity:.16"></i></div><div class="day">22<i class="band" style="opacity:.11"></i></div><div class="day">23</div><div class="day">24</div><div class="day">25</div></div>
+      <div class="row"><div class="day pred95">26</div><div class="day pred">27</div><div class="day pred">28</div><div class="day pred">29</div><div class="day pred">30</div><div class="day pred">31</div><div class="day mute pred">1</div></div>
+      <div class="row"><div class="day mute pred95">2</div><div class="day mute">3</div><div class="day mute">4</div><div class="day mute">5</div><div class="day mute">6</div><div class="day mute">7</div><div class="day mute">8</div></div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--period)"></i>Period</span>
+      <span><i style="background:repeating-linear-gradient(135deg,var(--periodPred) 0 3px,transparent 3px 6px)"></i>Predicted period (80%, outline 95%)</span>
+      <span><i style="background:var(--fertile);opacity:.55"></i>Fertile window likelihood (darker = more likely)</span>
+      <span><i style="background:var(--ov);height:3px"></i>Ovulation estimate ± range</span>
+      <span><i style="width:4px;height:4px;border-radius:2px;background:var(--text2)"></i>Logged</span>
+    </div>
+    <div class="card"><div class="h">Friday 10 October</div><div class="s">Day 11 · Bloating · BBT 36.42 °C</div><div class="c" style="margin-top:6px;color:var(--accent)">Edit</div></div>
+  </div>
+  <div class="tabs-ios glass"><span><i class="ico"></i>Today</span><span class="on"><i class="ico"></i>Calendar</span><span><i class="ico"></i>Insights</span><span><i class="ico"></i>Settings</span></div>
+</div>
+<figcaption>iOS Calendar with a glass month toolbar. Uncertainty is in the drawing: hatched 80% range with a 95% outline, a graded fertile underline, and an ovulation marker whose arms span 12–19 Oct.</figcaption>
+</figure>
+
+<figure class="and">
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen">
+    <div class="appbar-and">Insights</div>
+    <div class="seg"><div class="on">History</div><div>Charts</div><div>Accuracy</div></div>
+    <div class="card" style="padding:0 20px">
+      <div class="rowl"><div><div class="h" style="font-size:16px">30 Sep · 29 days</div><div class="s">4 bleed days · ovulation: calendar</div></div><span class="badge">current</span></div>
+      <div class="rowl"><div><div class="h" style="font-size:16px">1 Sep · 28 days</div><div class="s">4 bleed days · ovulation: calendar</div></div><span class="badge">valid</span></div>
+      <div class="rowl" style="border:0"><div><div class="h" style="font-size:16px">4 Aug · 28 days</div><div class="s">5 bleed days</div></div><span class="badge">valid</span></div>
+    </div>
+    <div class="card">
+      <div class="h" style="font-size:16px">Cycle length</div>
+      <svg width="100%" height="120" viewBox="0 0 340 120" role="img" aria-label="Cycle length over three cycles, 28, 28 and 29 days, inside an 80% band of 25.7 to 32.4 days">
+        <rect x="40" y="38" width="290" height="32" rx="8" fill="var(--periodPred)" opacity=".45"/>
+        <line x1="40" y1="100" x2="330" y2="100" stroke="var(--border)"/><line x1="40" y1="10" x2="330" y2="10" stroke="var(--border)"/>
+        <text x="4" y="14" font-size="11" fill="var(--text2)">40</text><text x="4" y="104" font-size="11" fill="var(--text2)">20</text>
+        <polyline points="80,64 185,64 290,59.5" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="80" cy="64" r="5" fill="var(--accent)"/><circle cx="185" cy="64" r="5" fill="var(--accent)"/><circle cx="290" cy="59.5" r="5" fill="var(--accent)"/>
+        <text x="66" y="118" font-size="11" fill="var(--text2)">Aug</text><text x="172" y="118" font-size="11" fill="var(--text2)">Sep</text><text x="278" y="118" font-size="11" fill="var(--text2)">Oct</text>
+      </svg>
+      <div class="c">Shaded: where the next cycle is likely to fall (80%).</div>
+    </div>
+    <div class="card"><div class="h" style="font-size:16px">Your accuracy</div><div class="s">Your 80% ranges have contained the actual date 2 of 2 times. Average miss: 1.5 days.</div></div>
+  </div>
+  <div class="nav-and"><span><i><b></b></i>Today</span><span><i><b></b></i>Calendar</span><span class="on"><i><b></b></i>Insights</span><span><i><b></b></i>Settings</span></div>
+</div>
+<figcaption>Android Insights with M3 segmented buttons and tonal containers. History rows carry the data-quality chip and ovulation basis; the chart shows the engine's own 80% band.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen">
+    <div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <div class="lt">Your data stays with you</div>
+    <p style="margin:12px 0 0">Everything you log stays on this phone, encrypted. Sanguine has no account and no server; we cannot see your data and cannot hand it to anyone.</p>
+    <p style="margin:12px 0 0">Backups, if you turn them on, are encrypted before they reach your iCloud or Google Drive.</p>
+    <div class="card" style="margin-top:24px"><div class="h" style="font-size:16px">Already tracking in Apple Health?</div><div class="s">You can import your periods and temperatures, and choose what Sanguine writes back. Nothing is shared until you say so.</div></div>
+  </div>
+  <div class="sticky">
+    <button class="btn sec">Import from Apple Health</button>
+    <button class="btn sec">Set up encrypted backup</button>
+    <button class="btn">Finish</button>
+    <button class="btn txt">Skip for now</button>
+  </div>
+</div>
+<figcaption>iOS onboarding, step 5 of 5, with the iOS 26 Large Title and capsule buttons. No glass yet, because there is no navigation chrome on onboarding.</figcaption>
+</figure>
+</div>
+</body>
+</html>

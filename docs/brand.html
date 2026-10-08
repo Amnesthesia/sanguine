@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sanguine — brand preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+:root{--wine:#6A1220;--wine2:#4E0C17;--pageBg:#EFE9E4;--pageText:#1F1A1C;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pageBg:#1B1719;--pageText:#F4EEEF}}
+:root[data-theme="dark"]{--pageBg:#1B1719;--pageText:#F4EEEF}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pageBg);color:var(--pageText);font-family:-apple-system,"SF Pro Text",Roboto,system-ui,sans-serif;padding:32px 20px 48px}
+h1{font-size:22px;font-weight:600;margin:0 0 6px}
+p.lead{margin:0 0 24px;max-width:70ch;font-size:15px;line-height:1.5;opacity:.85}
+.grid{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+figure{margin:0}figcaption{font-size:13px;margin:10px 2px 0;line-height:1.45;opacity:.8;max-width:393px}
+.script{font-family:"Dancing Script",cursive;font-weight:700;letter-spacing:-.01em}
+.vibes{font-family:"Great Vibes",cursive;font-weight:400}
+.splash{width:393px;height:852px;border-radius:44px;background:radial-gradient(120% 90% at 50% 40%,var(--wine) 0%,var(--wine) 55%,var(--wine2) 100%);display:flex;align-items:center;justify-content:center;color:#fff}
+.splash .wm{font-size:84px;line-height:1}
+.icon{width:220px;height:220px;border-radius:50px;background:radial-gradient(120% 100% at 50% 35%,var(--wine) 0%,var(--wine) 60%,var(--wine2) 100%);position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.icon.android{border-radius:50%}
+.icon.mono{background:#1F1A1C}
+.icon.tinted{background:linear-gradient(180deg,#B3A8AC,#6B6165)}
+.glyph{position:absolute;inset:0}
+.row{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+.about{width:393px;border-radius:24px;overflow:hidden;border:1px solid rgba(0,0,0,.08);background:#FBF8F6;color:#1F1A1C}
+.about .band{height:120px;background:var(--wine);display:flex;align-items:center;justify-content:center;color:#fff}
+.about .band .wm{font-size:48px}
+.about .body{padding:16px 20px;font-size:14px;line-height:20px;color:#6B6165}
+</style>
+</head>
+<body>
+<h1>Sanguine — brand preview</h1>
+<p class="lead">Wine red #6A1220 field, white wordmark in Dancing Script 700 (OFL, loads in Expo Go via @expo-google-fonts), and the glyph: the script S whose tail ends in a drop. The brand appears on the splash, the icon and the About band only; the in-app accent stays garnet. Great Vibes is shown as the lighter alternative.</p>
+
+<div class="grid">
+<figure>
+  <div class="splash"><div class="wm script">Sanguine</div></div>
+  <figcaption>Splash screen (expo-splash-screen: backgroundColor #6A1220, wordmark PNG, resizeMode contain, imageWidth 220). Same in dark mode.</figcaption>
+</figure>
+
+<figure>
+  <div class="row">
+    <div class="icon">
+      <svg class="glyph" viewBox="0 0 220 220" aria-label="Sanguine app icon: script S with a drop">
+        <text x="98" y="150" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="150" fill="#fff">S</text>
+        <path d="M150 128 c6 12 12 20 12 28 a12 12 0 0 1 -24 0 c0-8 6-16 12-28 z" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="icon android">
+      <svg class="glyph" viewBox="0 0 220 220" aria-hidden="true">
+        <text x="98" y="150" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="140" fill="#fff">S</text>
+        <path d="M148 130 c6 12 12 20 12 28 a12 12 0 0 1 -24 0 c0-8 6-16 12-28 z" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="icon tinted">
+      <svg class="glyph" viewBox="0 0 220 220" aria-hidden="true">
+        <text x="98" y="150" text-anchor="middle" font-family="Dancing Script, cursive" font-weight="700" font-size="150" fill="#fff">S</text>
+        <path d="M150 128 c6 12 12 20 12 28 a12 12 0 0 1 -24 0 c0-8 6-16 12-28 z" fill="#fff"/>
+      </svg>
+    </div>
+  </div>
+  <figcaption>App icon: iOS (squircle), Android adaptive (circle mask) and the iOS 26 tinted appearance derived from the layered Icon Composer file. The drop sits where the S's tail would end; in the production SVG the tail stroke is extended into the drop so it reads as one mark.</figcaption>
+</figure>
+
+<figure>
+  <div class="about">
+    <div class="band"><div class="wm script">Sanguine</div></div>
+    <div class="body">Version 1.0.0 · engine 1.0.0 (sha256 3f9a…c21e)<br>Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional.</div>
+  </div>
+  <figcaption>About screen header band, the only in-app use of the brand colour.</figcaption>
+</figure>
+
+<figure>
+  <div class="splash" style="height:300px;border-radius:24px"><div class="wm vibes" style="font-size:96px">Sanguine</div></div>
+  <figcaption>Alternative wordmark in Great Vibes, lighter and more formal; choose on device at Phase 0 if Dancing Script feels heavy.</figcaption>
+</figure>
+</div>
+</body>
+</html>
