@@ -7,3 +7,4 @@ dist
 .claude
 apps/mobile/ios
 apps/mobile/android
+.playwright-mcp
