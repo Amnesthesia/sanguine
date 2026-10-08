@@ -1,7 +1,10 @@
 appId: ${APP_ID}
 name: Onboarding, five steps (adult, with last period and life state)
 ---
-- runFlow: _open.yaml
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}
 - extendedWaitUntil:
     visible:
       id: screen-onboarding

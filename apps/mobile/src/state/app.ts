@@ -1,7 +1,8 @@
 // View cache over the event log (PLAN.md §6.1): the log is the source of truth, this store only holds the latest derived values.
-import { type EngineSettings, type History, type ISODate, type Prediction, predict } from '@sanguine/engine';
+import { type EngineSettings, type FlagCode, type History, type ISODate, type Prediction, predict } from '@sanguine/engine';
 import { create } from 'zustand';
 import type { Database } from '@/data/database';
+import { flagContext, loadFlagState, muteFlag, recordRaised } from '@/data/flagState';
 import { loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
 import type { Profile } from '@/data/project';
 import { getSetting, setSetting } from '@/data/settings';
@@ -26,6 +27,7 @@ interface AppState {
   init: () => Promise<void>;
   refresh: () => Promise<void>;
   updatePrefs: (patch: Partial<Prefs>) => Promise<void>;
+  muteFlag: (code: FlagCode) => Promise<void>;
   updateProfile: (patch: Profile) => Promise<void>;
   completeOnboarding: () => Promise<void>;
 }
@@ -51,11 +53,14 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   async refresh() {
-    const { store } = get();
-    if (!store) return;
+    const { store, db } = get();
+    if (!store || !db) return;
     const today = todayLocal();
-    const [{ history, settings }, profile] = await Promise.all([store.engineInputs(), store.profile()]);
-    set((s) => ({ today, history, settings, profile, prediction: predict(history, settings, today), version: s.version + 1 }));
+    const [inputs, profile, flagState] = await Promise.all([store.engineInputs(), store.profile(), loadFlagState(db)]);
+    const history: History = { ...inputs.history, ...flagContext(flagState) };
+    const prediction = predict(history, inputs.settings, today);
+    await recordRaised(db, prediction.flags, flagState);
+    set((s) => ({ today, history, settings: inputs.settings, profile, prediction, version: s.version + 1 }));
   },
 
   async updatePrefs(patch) {
@@ -64,6 +69,13 @@ export const useApp = create<AppState>((set, get) => ({
     const next = { ...prefs, ...patch };
     await savePrefs(db, next);
     set({ prefs: next });
+  },
+
+  async muteFlag(code) {
+    const { db, today } = get();
+    if (!db) return;
+    await muteFlag(db, code, today);
+    await get().refresh();
   },
 
   async updateProfile(patch) {

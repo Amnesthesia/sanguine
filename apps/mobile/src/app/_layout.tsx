@@ -32,7 +32,9 @@ function Shell() {
         </Stack.Protected>
         <Stack.Protected guard={onboarded}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="log" options={{ presentation: 'modal' }} />
         </Stack.Protected>
+        <Stack.Screen name="dev/seed" />
       </Stack>
     </NavThemeProvider>
   );

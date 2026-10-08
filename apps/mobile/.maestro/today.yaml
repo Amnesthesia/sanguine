@@ -1,0 +1,88 @@
+appId: ${APP_ID}
+name: Today screen states (sample-data scenarios from PLAN.md §9.6)
+---
+# first launch, nothing logged
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=empty
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- assertVisible: "Log your period to start"
+- assertVisible: "Estimates are ranges, not promises. Not a contraceptive."
+- assertNotVisible:
+    id: estimate-card
+- waitForAnimationToEnd
+- takeScreenshot: empty
+# typical user, cycle day 11
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- assertVisible:
+    id: phase-ring
+- assertVisible:
+    id: headline-card
+- assertVisible: "Period likely in .* days"
+- assertVisible: "Most likely .*"
+- assertVisible: "fair estimate"
+- assertVisible:
+    id: estimate-card
+- assertVisible: ".*This is for understanding your cycle. Do not use it to prevent pregnancy."
+- assertVisible: "Estimates are ranges, not promises. Not a contraceptive."
+- waitForAnimationToEnd
+- takeScreenshot: typical
+# period in progress
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=inProgress
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- assertVisible: "Day 2 of your period"
+- assertVisible: "Logged: medium flow"
+- waitForAnimationToEnd
+- takeScreenshot: period-in-progress
+# irregular user: rough estimate and the quiet flag card
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=irregular
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- assertVisible: "Most likely .*"
+- assertVisible: "rough estimate"
+- scrollUntilVisible:
+    element:
+      id: flag-variability
+- assertVisible: "Your cycle lengths have varied by more than 7 days.*"
+- waitForAnimationToEnd
+- takeScreenshot: irregular-flag
+- scrollUntilVisible:
+    element:
+      id: flag-variability-mute
+- tapOn:
+    id: flag-variability-mute
+- assertNotVisible:
+    id: flag-variability
+# dark theme
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical&theme=dark
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- waitForAnimationToEnd
+- takeScreenshot: typical-dark

@@ -3,7 +3,7 @@ appId: ${APP_ID}
 ---
 - launchApp:
     clearState: true
-- openLink: ${APP_URL}
+- openLink: ${LINK}
 - runFlow:
     when:
       platform: Android

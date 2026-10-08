@@ -105,11 +105,11 @@
     "periodLikely": "Period likely in {lo}–{hi} days",
     "periodExpectedBy": "Period expected by {date}",
     "periodLater": "Later than usual. Nothing to do yet.",
-    "mostLikely": "Most likely {date} · {confidence}",
+    "mostLikely": "Most likely {date}",
     "ovulationCollapsed": "Ovulation estimated around {point} ({lo}–{hi}) · {confidence}",
     "ovulationUncertain": "Ovulation estimate uncertain (range {lo}–{hi})",
     "ovulationUncertainShort": "Ovulation estimate uncertain",
-    "suspended": "Estimates are paused while {state}.",
+    "suspended": "Estimates are paused while “{state}” is set.",
     "quick": {
       "period": "Period",
       "symptoms": "Symptoms",
@@ -119,7 +119,20 @@
     "ring": {
       "dayLabel": "Day {day} of your cycle",
       "noData": "No cycle data yet"
-    }
+    },
+    "estimateBasis": {
+      "calendar": "Based on your cycle lengths.",
+      "bbt": "Based on your temperature.",
+      "lh": "Based on your ovulation test.",
+      "mucus": "Based on your cervical mucus.",
+      "combined": "Based on several signals you logged."
+    },
+    "legendFertile": "darker = more likely to be in the fertile window",
+    "expandEstimate": "Show details",
+    "collapseEstimate": "Hide details",
+    "periodExpectedNow": "Period expected about now",
+    "periodLateRange": "Expected {range}",
+    "dayOfCycleHeader": "Day {day} of your cycle"
   },
   "log": {
     "title": "Log",
