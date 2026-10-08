@@ -26,3 +26,4 @@ One line per finished backlog item.
 - P1-4 detectBbtShift/detectWearableShift: three-over-six, CUSUM, exclusions, provenance factors (D-016).
 - P1-5 LH, mucus, cervix detectors and combineOvulation with gate/conflict rules (D-017).
 - P1-6 life-state gates, warm-ups, perimenopause suggestion (D-018).
+- P1-7 evaluateFlags: all §4.10 flags, age-aware, mute and 90-day raisedOn (D-019).

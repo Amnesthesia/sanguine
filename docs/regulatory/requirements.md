@@ -36,13 +36,13 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-30 | Pregnant: suspended; postpartum: suspended until first period, breastfeeding adds 3 low-confidence cycles and no band without a biomarker | PLAN §4.9 (C-09) | `lifestate.test.ts` | unit done P1-6 |
 | ER-31 | Perimenopause: λ = 0.8, variance prior doubled, band only with biomarkers, 60-day gap flag | PLAN §4.9 | `lifestate.test.ts` | unit done P1-6 |
 | ER-32 | Known irregular: exclusion threshold median + max(14, 3·MAD), confidence capped at medium | PLAN §4.9 | `lifestate.test.ts` | unit done P1-6 |
-| ER-33 | Short-cycle flag: 2 of last 3 valid < 24 d (adult), < 21 d (1–3 y post-menarche) | PLAN §4.10 (C-07); FIGO 2018 | `flags.test.ts` | planned P1-7 |
-| ER-34 | Long-cycle flag: 2 of last 3 > 38 d (adult), > 45 d (1–3 y); any > 90 d after 1 y | PLAN §4.10 (C-07) | `flags.test.ts` | planned P1-7 |
-| ER-35 | Variability flag: range over last 6 valid cycles > 9 d (18–25, 42–45) or > 7 d (26–41); none in year 1 post-menarche | PLAN §4.10 | fixture D, `flags.test.ts` | planned P1-7 |
-| ER-36 | Heavy-bleeding, prolonged-bleeding and intermenstrual flags | PLAN §4.10 | `flags.test.ts` | planned P1-7 |
-| ER-37 | Missed-period flag: open cycle > max(90, upper95 + 14) d; > 60 d at age ≥ 40 | PLAN §4.10 | `flags.test.ts` | planned P1-7 |
-| ER-38 | Short-luteal insight only, never a flag | PLAN §4.10 (C-02) | `flags.test.ts` | planned P1-7 |
-| ER-39 | Each flag fires at most once per 90 days and can be muted; flag wording is never produced by the engine | PLAN §4.1, §4.10 | `flags.test.ts` | planned P1-7 |
+| ER-33 | Short-cycle flag: 2 of last 3 valid < 24 d (adult), < 21 d (1–3 y post-menarche) | PLAN §4.10 (C-07); FIGO 2018 | `flags.test.ts` | unit done P1-7 |
+| ER-34 | Long-cycle flag: 2 of last 3 > 38 d (adult), > 45 d (1–3 y); any > 90 d after 1 y | PLAN §4.10 (C-07) | `flags.test.ts` | unit done P1-7 |
+| ER-35 | Variability flag: range over last 6 valid cycles > 9 d (18–25, 42–45) or > 7 d (26–41); none in year 1 post-menarche | PLAN §4.10 | fixture D, `flags.test.ts` | unit done P1-7 |
+| ER-36 | Heavy-bleeding, prolonged-bleeding and intermenstrual flags | PLAN §4.10 | `flags.test.ts` | unit done P1-7 |
+| ER-37 | Missed-period flag: open cycle > max(90, upper95 + 14) d; > 60 d at age ≥ 40 | PLAN §4.10 | `flags.test.ts` | unit done P1-7 |
+| ER-38 | Short-luteal insight only, never a flag | PLAN §4.10 (C-02) | `flags.test.ts` | unit done P1-7 |
+| ER-39 | Each flag fires at most once per 90 days and can be muted; flag wording is never produced by the engine | PLAN §4.1, §4.10 | `flags.test.ts` | unit done P1-7 |
 | ER-40 | Property: intervals contain the point; 95% contains 80%; an identical extra cycle never widens the interval; shifting dates by k shifts outputs by k | PLAN §4.15 | `properties.test.ts` | planned P1-8 |
 | ER-41 | Backtest: coverage within ±5 points of nominal; MAE ≤ 2.8 d at 8 cycles | PLAN §4.15, §10 | `tools/backtest` | planned P1-8 |
 | ER-42 | The engine package has no runtime dependencies and no platform imports | PLAN §4.1 | `tools/ci/soup.test.ts`, `purity.test.ts` | partly done P0-9 |
