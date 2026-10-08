@@ -1,6 +1,7 @@
 // The backup device secret lives in the Keychain / Android Keystore (PLAN.md §6.3), never in the database or the log.
 import { secretToRecoveryWords } from '@sanguine/crypto';
 import * as SecureStore from 'expo-secure-store';
+import { useLock } from '@/state/lock';
 import { deviceClock } from './clock';
 
 const KEY = 'sanguine.backup.deviceSecret';
@@ -29,6 +30,8 @@ export async function deleteDeviceSecret(): Promise<void> {
 const NOTE_KEY = 'sanguine.notes.key';
 /** Key for the second encryption layer on notes. P2-13 gates its release behind the app lock. */
 export async function getNoteKey(): Promise<Uint8Array> {
+  // released only while the app is unlocked (PLAN.md §6.1, §8.8)
+  if (useLock.getState().locked) throw new Error('locked');
   const v = await SecureStore.getItemAsync(NOTE_KEY, OPTS);
   if (v) return fromHex(v);
   const key = deviceClock.randomBytes(32);

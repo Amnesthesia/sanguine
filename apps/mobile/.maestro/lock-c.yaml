@@ -1,0 +1,10 @@
+appId: ${APP_ID}
+name: App lock (3/3) - a matching face opens the app
+---
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 20000
+- assertNotVisible:
+    id: lock-screen
+- takeScreenshot: unlocked

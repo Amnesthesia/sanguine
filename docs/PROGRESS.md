@@ -43,3 +43,4 @@ One line per finished backlog item.
 - P2-11 Insights: history rows with missed-log actions, charts (cycle length band, temperature + coverline, symptoms by phase), accuracy ledger text, cycle detail; Maestro green on iOS and Android (D-033).
 - P2-12 Settings: life state, privacy and data (export/import/backup/delete), notifications UI, appearance, tracking options, about with engine hash, health placeholder; Maestro green on iOS and Android (D-034, D-035).
 - P2-12 follow-up: fixed three security-review findings (masked passphrase fields, secure wipe, cache file cleanup) (D-036).
+- P2-13 app lock (Face ID / passcode, 60 s auto-lock, switcher cover, note key gating) verified on iOS with simulated faces; local reminders scheduled from the prediction (iOS; Android moved to P3-1b) (D-037).

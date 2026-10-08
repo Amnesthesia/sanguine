@@ -470,7 +470,8 @@
       "next": "Next reminder: {date}",
       "none": "No reminder is scheduled yet. Log a period to get estimates.",
       "denied": "Notifications are turned off for Sanguine in your phone's settings.",
-      "permissionTitle": "Sanguine reminder"
+      "permissionTitle": "Sanguine reminder",
+      "androidLater": "Reminders on Android arrive in a later update."
     },
     "appearance": {
       "title": "Appearance",

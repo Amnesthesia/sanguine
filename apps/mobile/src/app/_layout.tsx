@@ -7,6 +7,7 @@ import { AppState, Text as RNText, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/i18n';
 import { useApp } from '@/state/app';
+import { LockGate } from '@/features/lock/LockGate';
 import { ThemeProvider, useTheme } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
@@ -70,7 +71,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <ThemeProvider pref={theme}>
-        <Shell />
+        <LockGate>
+          <Shell />
+        </LockGate>
       </ThemeProvider>
     </SafeAreaProvider>
   );

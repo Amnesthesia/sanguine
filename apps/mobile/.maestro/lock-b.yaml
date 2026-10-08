@@ -1,0 +1,10 @@
+appId: ${APP_ID}
+name: App lock (2/3) - a face that does not match leaves the app locked
+---
+- tapOn: "Cancel"
+- extendedWaitUntil:
+    visible: "Could not unlock. Try again."
+    timeout: 10000
+- assertVisible:
+    id: lock-screen
+- takeScreenshot: failed

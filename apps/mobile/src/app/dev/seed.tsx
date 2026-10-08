@@ -9,7 +9,7 @@ import { deleteDeviceSecret, deleteNoteKey } from '@/services/secrets';
 import { useApp } from '@/state/app';
 
 export default function Seed() {
-  const params = useLocalSearchParams<{ scenario?: string; theme?: string; resetSecrets?: string }>();
+  const params = useLocalSearchParams<{ scenario?: string; theme?: string; resetSecrets?: string; lock?: string }>();
   const router = useRouter();
   const status = useApp((s) => s.status);
   useEffect(() => {
@@ -23,13 +23,13 @@ export default function Seed() {
       const s = scenario(name, todayLocal());
       await store.setProfile(s.profile);
       if (s.events.length) await store.appendMany(s.events);
+      await updatePrefs({ appLock: params.lock === '1', ...(params.theme === 'dark' || params.theme === 'light' ? { theme: params.theme } : {}) });
       await setSetting(db, 'onboarded', true);
       await completeOnboarding();
-      if (params.theme === 'dark' || params.theme === 'light') await updatePrefs({ theme: params.theme });
       await refresh();
       router.replace('/today');
     })();
-  }, [status, params.scenario, params.theme, params.resetSecrets, router]);
+  }, [status, params.scenario, params.theme, params.resetSecrets, params.lock, router]);
   if (!__DEV__) return <Redirect href="/" />;
   return <Text>Loading sample data…</Text>;
 }

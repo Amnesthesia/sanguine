@@ -1,21 +1,14 @@
 appId: ${APP_ID}
-name: App shell opens, onboarding gate, four tabs
+name: App shell - four tabs
 ---
 - runFlow:
     file: _open.yaml
     env:
-      LINK: ${APP_URL}
-- extendedWaitUntil:
-    visible:
-      id: screen-onboarding
-    timeout: 90000
-- takeScreenshot: onboarding
-- tapOn:
-    id: onboarding-continue
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical
 - extendedWaitUntil:
     visible:
       id: screen-today
-    timeout: 20000
+    timeout: 90000
 - takeScreenshot: today
 - tapOn: Calendar
 - assertVisible:

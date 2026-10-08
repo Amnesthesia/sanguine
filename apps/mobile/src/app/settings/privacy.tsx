@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert } from 'react-native';
 import { shareExport, pickAndImport } from '@/services/exportImport';
+import { deviceHasLock } from '@/services/lockAuth';
 import { useApp } from '@/state/app';
 import { Card } from '@/ui/Card';
 import { Group, SettingsRow, SwitchRow } from '@/ui/SettingsRow';
@@ -38,7 +39,7 @@ export default function PrivacyScreen() {
           return t('settings.privacy.importDone', { n: r.kind === 'sanguine' ? r.result.imported : r.result.added });
         })} />
         <SettingsRow testID="privacy-backup" title={t('settings.privacy.backup')} description={t('settings.privacy.backupDesc')} onPress={() => router.push('/settings/backup' as never)} />
-        <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void updatePrefs({ appLock: v })} />
+        <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setMsg(t('settings.privacy.appLockOnly')); return; } setMsg(undefined); await updatePrefs({ appLock: v }); })()} />
         <SwitchRow testID="privacy-icon" title={t('settings.privacy.discreetIcon')} description={t('settings.privacy.discreetSoon')} value={false} onChange={() => {}} disabled />
         <SettingsRow testID="privacy-delete" title={t('settings.privacy.deleteAll')} destructive onPress={confirmDelete} last />
       </Group>

@@ -1,0 +1,42 @@
+appId: ${APP_ID}
+name: Notifications - discreet by default, reminder scheduled from the prediction
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-notifications
+- assertVisible: "Sanguine: a reminder"
+- takeScreenshot: default
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: notif-period
+      - tapOn:
+          text: "Allow"
+          optional: true
+      - extendedWaitUntil:
+          visible:
+            id: notif-next
+          timeout: 15000
+      - assertVisible: "Next reminder: .*"
+      - takeScreenshot: scheduled
+# Android in Expo Go cannot load expo-notifications (SDK 53+): the switch is disabled with an explanation until the dev client
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible: "Reminders on Android arrive in a later update."
+      - takeScreenshot: android-later
+- tapOn:
+    id: notif-descriptive
+- assertVisible: "Sanguine: Period likely in .*"
+- takeScreenshot: descriptive

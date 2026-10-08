@@ -10,7 +10,9 @@ import { loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
 import type { Profile } from '@/data/project';
 import { getSetting, setSetting } from '@/data/settings';
 import type { EventStore } from '@/data/store';
+import { planReminder } from '@/features/notifications/plan';
 import { appData } from '@/services/appData';
+import { syncReminder } from '@/services/notifications';
 import { todayLocal } from '@/services/clock';
 
 interface AppState {
@@ -27,6 +29,9 @@ interface AppState {
   prediction?: Prediction;
   /** Bumps on every refresh so screens can re-query their own tables. */
   version: number;
+  /** Date the next local reminder will fire, if one is scheduled. */
+  nextReminder: string | undefined;
+  syncReminders: () => Promise<void>;
   init: () => Promise<void>;
   refresh: () => Promise<void>;
   updatePrefs: (patch: Partial<Prefs>) => Promise<void>;
@@ -44,6 +49,7 @@ export const useApp = create<AppState>((set, get) => ({
   onboarded: false,
   today: todayLocal(),
   version: 0,
+  nextReminder: undefined,
 
   async init() {
     try {
@@ -66,6 +72,18 @@ export const useApp = create<AppState>((set, get) => ({
     const prediction = predict(history, inputs.settings, today);
     await recordRaised(db, prediction.flags, flagState);
     set((s) => ({ today, history, settings: inputs.settings, profile, prediction, version: s.version + 1 }));
+    void get().syncReminders();
+  },
+
+  async syncReminders() {
+    const { prediction, prefs, today } = get();
+    const hour = new Date().getHours();
+    try {
+      const plan = planReminder(prediction, prefs.notifications.period, prefs.notifications.descriptive, today, hour);
+      set({ nextReminder: await syncReminder(plan) });
+    } catch {
+      set({ nextReminder: undefined });
+    }
   },
 
   async updatePrefs(patch) {
@@ -74,6 +92,7 @@ export const useApp = create<AppState>((set, get) => ({
     const next = { ...prefs, ...patch };
     await savePrefs(db, next);
     set({ prefs: next });
+    if (patch.notifications) void get().syncReminders();
   },
 
   async muteFlag(code) {

@@ -1,11 +1,12 @@
 // Five steps, one question each (PLAN.md §8.3, §8.6, §9.8). Only age is required; the last step needs the data-handling acknowledgement.
 import { addDays } from '@sanguine/engine';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { todayLocal } from '@/services/clock';
+import { deviceHasLock } from '@/services/lockAuth';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -44,6 +45,8 @@ export function OnboardingFlow() {
   const [healthNote, setHealthNote] = useState(false);
   const [backupIntent, setBackupIntent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [lockAvailable, setLockAvailable] = useState<boolean | undefined>();
+  useEffect(() => { void deviceHasLock().then(setLockAvailable); }, []);
 
   const birthYear = num(birthText, 4);
   const lastPeriod = lastChoice === 'today' ? today : lastChoice === 'yesterday' ? addDays(today, -1) : lastChoice === 'weekAgo' ? addDays(today, -7) : lastChoice === 'other' ? other : undefined;
@@ -120,6 +123,7 @@ export function OnboardingFlow() {
         {step === 4 && (<>
           {title('onboarding.s5.title')}
           <Text>{tr('legal.privacyThreeSentences')}</Text>
+          {lockAvailable !== undefined ? <Text variant="bodySmall" color="textSecondary" testID="lock-explain">{tr(lockAvailable ? 'lock.explain' : 'lock.off')}</Text> : null}
           <Pressable testID="consent" accessibilityRole="checkbox" accessibilityLabel={tr('onboarding.s5.consent')} aria-checked={a.consent} onPress={() => setA({ ...a, consent: !a.consent })}
             style={{ flexDirection: 'row', gap: 12, alignItems: 'center', minHeight: 52 }}>
             <View style={{ width: 26, height: 26, borderRadius: 6, borderWidth: 2, borderColor: t.c.accent, backgroundColor: a.consent ? t.c.accent : 'transparent', alignItems: 'center', justifyContent: 'center' }}>

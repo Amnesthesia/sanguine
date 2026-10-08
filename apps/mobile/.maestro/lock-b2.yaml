@@ -1,0 +1,8 @@
+appId: ${APP_ID}
+name: App lock (3/4) - Unlock tries again
+---
+- tapOn:
+    id: unlock-button
+- extendedWaitUntil:
+    visible: "Face ID"
+    timeout: 10000
