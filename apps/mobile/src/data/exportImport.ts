@@ -38,6 +38,7 @@ export async function exportBundle(db: Database, store: EventStore, clock: Clock
       ['id', 'day', 'type', 'value', 'measured_at', 'source', 'provenance', 'disturbed'],
       bios.map((b) => [b.id, b.day, b.type, b.value, b.measured_at, b.source, b.provenance, b.disturbed ? 'yes' : 'no']),
     )),
+    'profile.json': strToU8(JSON.stringify(await store.profile())),
     'manifest.json': strToU8(JSON.stringify({ format: EXPORT_FORMAT, version: EXPORT_VERSION, exported_at: clock.iso(), engine_version: ENGINE_VERSION, events: events.length, cycles: cycles.length }, null, 2)),
     'README.md': strToU8(exportCopy.readme),
   };
@@ -90,6 +91,11 @@ export async function importBundle(db: Database, store: EventStore, zip: Uint8Ar
     }
     if (imported > 0) await store.rebuildWithin(tx);
   });
+  // a restore on a fresh device also brings the profile (birth year etc.), but never overwrites one that is already set
+  if (files['profile.json'] && Object.keys(await store.profile()).length === 0) {
+    const profile = JSON.parse(strFromU8(files['profile.json'])) as Record<string, unknown>;
+    if (Object.keys(profile).length > 0) await store.setProfile(profile);
+  }
   return { imported, duplicates: events.length - imported };
 }
 

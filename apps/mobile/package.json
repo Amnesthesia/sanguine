@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo-google-fonts/dancing-script": "^0.4.2",
     "@expo/ui": "~57.0.22",
+    "@sanguine/crypto": "workspace:*",
     "@sanguine/engine": "workspace:*",
     "@sanguine/ui-tokens": "workspace:*",
     "expo": "~57.0.27",

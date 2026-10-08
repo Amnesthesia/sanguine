@@ -44,7 +44,7 @@ describe('export', () => {
     await populate(store);
     const { zip, eventCount } = await exportBundle(db, store, clk);
     const files = unzipSync(zip);
-    expect(Object.keys(files).sort()).toEqual(['README.md', 'biomarkers.csv', 'cycles.csv', 'daily.csv', 'events.jsonl', 'manifest.json']);
+    expect(Object.keys(files).sort()).toEqual(['README.md', 'biomarkers.csv', 'cycles.csv', 'daily.csv', 'events.jsonl', 'manifest.json', 'profile.json']);
     const lines = strFromU8(files['events.jsonl'] as Uint8Array).trim().split('\n');
     expect(lines).toHaveLength(eventCount);
     expect(lines.map((l) => JSON.parse(l).kind)).toContain('retract');

@@ -9,6 +9,8 @@ export const EXPO_GO_ALLOW = [
   'react-native-svg', 'react-native-screens', 'zustand', 'i18next', '@noble/ciphers', '@noble/hashes',
   // §6.1 stack, pure JS; fflate is the zip codec for export/import (pure JS, no native code, no network; D-026)
   'fflate',
+  // recovery code: BIP-39 wordlist and checksum, pure JS (noble/scure family), no network (D-027)
+  '@scure/bip39',
   'react-i18next',
   // template / peer requirements (all in Expo Go)
   'expo', 'react', 'react-native', 'react-native-safe-area-context', 'react-native-worklets',

@@ -8,7 +8,10 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | @biomejs/biome | 2.5.15 | ^2.5.15 | dev/build only | root |
 | @expo-google-fonts/dancing-script | 0.4.2 | ^0.4.2 | ships in app | apps/mobile, tools/brand |
 | @expo/ui | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
+| @noble/ciphers | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
+| @noble/hashes | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
 | @resvg/resvg-js | 2.6.2 | ^2.6.2 | dev/build only | tools/brand |
+| @scure/bip39 | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
 | @types/better-sqlite3 | 9.6.0 | ^9.6.0 | dev/build only | root |
 | @types/node | 22.20.5 | ^22.0.0 | dev/build only | root |
 | @types/opentype.js | 1.3.10 | ^1.3.10 | dev/build only | tools/brand |
