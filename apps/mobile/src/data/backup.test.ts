@@ -1,6 +1,7 @@
 import { BackupError, newDeviceSecret, recoveryWordsToSecret, secretToRecoveryWords } from '@sanguine/crypto';
 import { describe, expect, it } from 'vitest';
-import { createBackup, restoreBackup } from './backup';
+import { readHeader } from '@sanguine/crypto';
+import { BACKUP_KDF, createBackup, restoreBackup } from './backup';
 import type { Database } from './database';
 import type { Clock } from './ids';
 import { migrate } from './migrate';
@@ -68,4 +69,14 @@ describe('encrypted backup (P2-5)', () => {
     expect((await b.store.profile()).birthYear).toBe(1985);
     expect(await b.db.all('SELECT start_day FROM cycle')).toEqual([{ start_day: '2026-08-04' }]);
   });
+});
+
+describe('backup KDF cost in the JavaScript build', () => {
+  it('defaults to the OWASP minimum recorded in the header (the plan\'s 64 MiB is Phase 3, native)', async () => {
+    const a = await device(1);
+    const secret = newDeviceSecret((n) => a.clk.randomBytes(n));
+    const file = await createBackup(a.db, a.store, { passphrase: 'p', deviceSecret: secret, clock: a.clk });
+    expect(readHeader(file).kdf).toEqual(BACKUP_KDF);
+    expect(BACKUP_KDF).toEqual({ memKiB: 19456, iterations: 2, parallelism: 1 });
+  }, 60_000);
 });

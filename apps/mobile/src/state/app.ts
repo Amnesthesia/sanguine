@@ -3,6 +3,8 @@ import { type EngineSettings, type FlagCode, type History, type ISODate, type Pr
 import { create } from 'zustand';
 import type { Database } from '@/data/database';
 import { flagContext, loadFlagState, muteFlag, recordRaised } from '@/data/flagState';
+import { wipeAll } from '@/data/wipe';
+import { deleteDeviceSecret, deleteNoteKey } from '@/services/secrets';
 import { loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
 import type { Profile } from '@/data/project';
 import { getSetting, setSetting } from '@/data/settings';
@@ -30,6 +32,8 @@ interface AppState {
   muteFlag: (code: FlagCode) => Promise<void>;
   updateProfile: (patch: Profile) => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  /** Drops the whole database and every key, then returns the app to first launch. */
+  deleteEverything: () => Promise<void>;
 }
 
 export const useApp = create<AppState>((set, get) => ({
@@ -82,6 +86,15 @@ export const useApp = create<AppState>((set, get) => ({
     const { store, profile } = get();
     if (!store) return;
     await store.setProfile({ ...profile, ...patch });
+    await get().refresh();
+  },
+
+  async deleteEverything() {
+    const { db } = get();
+    if (!db) return;
+    await wipeAll(db);
+    await Promise.all([deleteDeviceSecret(), deleteNoteKey()]);
+    set({ prefs: DEFAULT_PREFS, profile: {}, onboarded: false, history: undefined, settings: undefined, prediction: undefined, version: get().version + 1 });
     await get().refresh();
   },
 

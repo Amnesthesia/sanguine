@@ -1,0 +1,22 @@
+{
+  "_note": "Settings > About: sources and licences. Scanned by the forbidden-word test.",
+  "howToRead": "Every estimate is a range with a confidence word. A darker fertile-window underline means more likely to be in the window; it never marks a single day. Estimates change when you log more. Symptoms never change an estimate.",
+  "sources": [
+    { "cite": "Bull et al. 2019, npj Digital Medicine", "use": "Cycle-length prior, follicular and luteal phase lengths, age bands" },
+    { "cite": "Fehring et al. 2006", "use": "Check on the average cycle length" },
+    { "cite": "Wilcox et al. 1995 and 2000", "use": "The six-day fertile window and why it varies" },
+    { "cite": "Ecochard et al. 2001", "use": "Timing of ovulation tests, temperature rise and cervical mucus" },
+    { "cite": "Zhu et al. 2021", "use": "Wrist temperature compared with oral temperature" },
+    { "cite": "FIGO 2018 (Munro et al.)", "use": "Typical ranges for cycle length, regularity and bleeding" },
+    { "cite": "International evidence-based guideline 2023, adolescent ranges", "use": "Thresholds in the first years after the first period" },
+    { "cite": "STRAW+10 (Harlow et al. 2012)", "use": "Changes in cycle patterns from the 40s" },
+    { "cite": "Li et al. 2020 and 2022", "use": "How missed logs distort cycle lengths" }
+  ],
+  "licences": [
+    { "name": "Sanguine estimate engine", "licence": "MIT" },
+    { "name": "Expo, React Native, React", "licence": "MIT" },
+    { "name": "noble-ciphers, noble-hashes, scure-bip39", "licence": "MIT" },
+    { "name": "fflate, zustand, i18next, react-i18next", "licence": "MIT" },
+    { "name": "Dancing Script (wordmark)", "licence": "SIL Open Font Licence 1.1" }
+  ]
+}

@@ -35,3 +35,6 @@ export async function getNoteKey(): Promise<Uint8Array> {
   await SecureStore.setItemAsync(NOTE_KEY, toHex(key), OPTS);
   return key;
 }
+export async function deleteNoteKey(): Promise<void> {
+  await SecureStore.deleteItemAsync(NOTE_KEY, OPTS);
+}

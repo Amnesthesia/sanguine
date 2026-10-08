@@ -1,0 +1,34 @@
+appId: ${APP_ID}
+name: Encrypted backup - recovery code is shown once, then the file is offered
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical&resetSecrets=1
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-privacy
+- assertVisible: "Your data is stored only on this phone, in an encrypted database. Sanguine has no account and no server."
+- tapOn:
+    id: privacy-backup
+- tapOn:
+    id: backup-pass
+- inputText: "correct horse battery"
+- tapOn:
+    id: backup-pass2
+- inputText: "correct horse battery"
+- pressKey: Enter
+- tapOn:
+    id: backup-create
+- extendedWaitUntil:
+    visible:
+      id: recovery-words
+    timeout: 120000
+- assertVisible: "Your 24 recovery words"
+- assertVisible: "24\\. .*"
+- assertVisible: "Write this down. Without it and this phone, your backup cannot be opened, by design."
+- takeScreenshot: recovery-code

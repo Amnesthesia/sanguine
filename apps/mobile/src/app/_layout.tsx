@@ -35,6 +35,14 @@ function Shell() {
           <Stack.Screen name="log" options={{ presentation: 'modal' }} />
           <Stack.Screen name="day/[date]" />
           <Stack.Screen name="cycle/[id]" />
+          <Stack.Screen name="settings/lifestate" />
+          <Stack.Screen name="settings/health" />
+          <Stack.Screen name="settings/privacy" />
+          <Stack.Screen name="settings/backup" />
+          <Stack.Screen name="settings/notifications" />
+          <Stack.Screen name="settings/appearance" />
+          <Stack.Screen name="settings/tracking" />
+          <Stack.Screen name="settings/about" />
         </Stack.Protected>
         <Stack.Screen name="dev/seed" />
       </Stack>

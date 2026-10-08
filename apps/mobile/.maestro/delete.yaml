@@ -1,0 +1,25 @@
+appId: ${APP_ID}
+name: Delete everything returns the app to first launch
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-privacy
+- tapOn:
+    id: privacy-delete
+- assertVisible: "Delete everything?"
+- takeScreenshot: confirm
+- tapOn:
+    text: "(?i)delete all my data"
+- extendedWaitUntil:
+    visible:
+      id: screen-onboarding
+    timeout: 20000
+- assertVisible: "Track and understand your cycle"

@@ -425,7 +425,7 @@
       "deleteAll": "Delete everything",
       "deleteConfirmTitle": "Delete everything?",
       "deleteConfirmBody": "This removes every log, setting and backup key from this phone. It cannot be undone.",
-      "deleteConfirmAction": "Delete everything",
+      "deleteConfirmAction": "Delete all my data",
       "deleted": "Everything was deleted.",
       "exportDone": "Export ready.",
       "importDone": "Imported {n} records.",
@@ -433,11 +433,28 @@
       "recoveryCode": {
         "title": "Recovery code",
         "body": "Write this down. Without it and this phone, your backup cannot be opened, by design.",
-        "saved": "I've saved it"
+        "saved": "I've saved it",
+        "words": "Your 24 recovery words"
       },
       "passphrase": "Backup passphrase",
       "passphraseConfirm": "Repeat passphrase",
-      "passphraseMismatch": "The passphrases do not match."
+      "passphraseMismatch": "The passphrases do not match.",
+      "backupCreate": "Create encrypted backup",
+      "backupRestore": "Restore from backup",
+      "backupWorking": "Encrypting… {pct}%",
+      "backupReady": "Backup ready. Choose where to keep it.",
+      "restoreTitle": "Restore",
+      "restorePick": "Choose backup file",
+      "restoreCodeLabel": "Recovery code (needed on a new phone)",
+      "restoreWrongPassphrase": "That passphrase or recovery code does not open this backup.",
+      "restoreNeedCode": "This phone has no recovery key. Enter your recovery code.",
+      "restoreBadCode": "That recovery code is not valid. Check each word.",
+      "passphraseTooShort": "Use at least 8 characters.",
+      "backupNote": "Keep the passphrase and recovery code somewhere private. Without them the backup cannot be opened, by design.",
+      "discreetSoon": "Available in a later update.",
+      "appLockOnly": "Turn on a screen lock on this phone first.",
+      "deleteDone": "Everything was deleted.",
+      "exportBusy": "Preparing…"
     },
     "notifications": {
       "title": "Notifications and widgets",

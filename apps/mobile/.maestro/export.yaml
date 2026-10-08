@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+name: Export my data opens the share sheet with a zip
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${APP_URL}/--/dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-privacy
+- tapOn:
+    id: privacy-export
+- extendedWaitUntil:
+    visible: "(?i)(save to files|copy|more|airdrop|messages|cancel|close).*"
+    timeout: 20000
+- takeScreenshot: share-sheet
