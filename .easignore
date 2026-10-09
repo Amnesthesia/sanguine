@@ -1,0 +1,23 @@
+# EAS Build upload filter. The build scripts in apps/mobile/package.json run with EAS_NO_VCS=1: in Git mode EAS uploads a
+# shallow clone whose .git still holds every tracked screenshot (about 64 MB), so this file alone cannot shrink the upload.
+# With EAS_NO_VCS the project is copied from the repo root through this file only (about 3 MB).
+# When this file exists EAS ignores .gitignore, so everything .gitignore excludes is repeated here.
+# Keep in sync with .gitignore.
+node_modules
+.expo
+dist
+*.log
+.DS_Store
+.remember
+.claude
+.playwright-mcp
+apps/mobile/ios
+apps/mobile/android
+
+# personal data exports used to build importers: never upload either
+NaturalCycles-*.xlsx
+
+# not needed to build the app (about 125 MB, mostly Maestro screenshots). The app imports copy/ at runtime, so copy/ stays.
+docs/
+apps/mobile/.maestro/
+tools/backtest/proto.py
