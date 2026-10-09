@@ -1,5 +1,7 @@
 # Implementation review against PLAN.md (2026-10-10)
 
+> Status: every item has a disposition in `action-plan.md`. Items 1-9 were fixed in 983f525; 10-20 under D-075; the UI review under D-076.
+
 Scope: the working tree at commit 8a76069 plus the uncommitted changes (D-073 date picker, app-lock default, P5-5 store assets). Method: unit suite, type-check and lint run locally; delegated file analysis (Gemini) of the engine, data layer and screens, each finding then checked by hand at the cited line; 47 iOS screenshots from `docs/screenshots/suite-p4-devclient` reviewed against §8 and §9. Findings that did not survive the hand check are listed at the end so nobody re-chases them.
 
 ## 1. Where the project stands
@@ -76,7 +78,7 @@ Severity: **A** blocks a build or a release, **B** wrong behaviour a user can hi
 - **Flo and Clue import** (§8.10, P5-1): blocked on sample exports (D-062). Nothing to do until the owner supplies files.
 - **Android Glance widget** (P3-5b): blocked on expo-widgets (D-047).
 - **Lock-screen widget Period deep link** (§8.4): the medium widget has the button; the flow is unverified on a device (simulators cannot run widgets to the lock screen).
-- **Haptics** (§8.9 "optional and never the only feedback"): no haptics anywhere. Acceptable, but the setting the plan implies does not exist either.
+- **Haptics** (§8.9 "optional and never the only feedback"): the quick-log row uses `expo-haptics` as an extra cue next to the visible change, which meets the rule. (Corrected: the first version of this review said there were none.)
 - **Translations** (P6-2): pipeline only.
 - **Clinician and legal review**: none exists; every default is in DECISIONS.md as the plan requires.
 

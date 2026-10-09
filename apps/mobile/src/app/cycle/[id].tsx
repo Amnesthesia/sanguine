@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { effectivePrefs } from '@/data/prefs';
 import { activeEvents } from '@/data/project';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
@@ -16,7 +17,9 @@ export default function CycleDetail() {
   const { t: tr } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { history, settings, prediction, store, refresh } = useApp();
+  const { history, settings, prediction, store, refresh, prefs, profile, today } = useApp();
+  // under 18 the ovulation date, its basis and the luteal length stay hidden like everywhere else (§8.6, I-18, D-075)
+  const { fertilityTools } = effectivePrefs(prefs, profile, today);
   const classified = useMemo(() => (history && settings ? analyzeCycles(history, settings) : []), [history, settings]);
   const entry = classified.find((c) => c.record.id === id);
   const c = entry?.record;
@@ -37,12 +40,12 @@ export default function CycleDetail() {
   return (
     <Screen testID="screen-cycle" title={formatDayYear(c.start)} bottomInset={32} header={back}>
       <Card>
-        <Text>{c.length ? `${tr('insights.cycleDetail.length')}: ${c.length} days` : `${tr('insights.cycleDetail.length')}: ${tr('insights.dayN', { day: diffDays(useApp.getState().today, c.start) + 1 })}`}</Text>
+        <Text>{c.length ? `${tr('insights.cycleDetail.length')}: ${c.length} days` : `${tr('insights.cycleDetail.length')}: ${tr('insights.dayN', { day: diffDays(today, c.start) + 1 })}`}</Text>
         {c.bleedDays ? <Text>{`${tr('insights.cycleDetail.bleed')}: ${c.bleedDays} days`}</Text> : null}
         <Text>{`${tr('insights.cycleDetail.quality')}: ${tr(`insights.quality.${c.quality}`)}`}</Text>
         {entry?.reason ? <Text variant="bodySmall" color="textSecondary">{entry.reason}</Text> : null}
       </Card>
-      <Card testID="cycle-ovulation">
+      {fertilityTools ? <Card testID="cycle-ovulation">
         <Text variant="heading">{tr('insights.cycleDetail.ovulation')}</Text>
         {c.ovulation && c.ovulation.basis !== 'calendar' ? (<>
           <Text>{formatDayYear(c.ovulation.point)}</Text>
@@ -50,7 +53,7 @@ export default function CycleDetail() {
           {luteal !== undefined ? <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.luteal', { days: luteal })}</Text> : null}
         </>) : <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.ovulationNone')}</Text>}
         {conflict ? <Text variant="bodySmall" testID="cycle-conflict">{tr('insights.cycleDetail.conflict')}</Text> : null}
-      </Card>
+      </Card> : null}
       {c.quality === 'user_excluded' ? <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.excluded')}</Text> : null}
       <Button testID="cycle-exclude" kind="secondary" label={c.quality === 'user_excluded' ? tr('insights.cycleDetail.include') : tr('insights.cycleDetail.exclude')} onPress={() => void toggleExclude()} />
     </Screen>

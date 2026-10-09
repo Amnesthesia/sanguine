@@ -52,6 +52,9 @@ export class EventStore {
   }
 
   /** Many appends, one projection rebuild at the end (a health import appends hundreds of events; the log is always current, only the projection tables lag inside the batch). */
+  // Projections are rebuilt once, after `fn` and outside its writes, so between the last append and the rebuild a reader
+  // would see new events with old projections. Every caller refreshes the app state only after `batch` returns, so no
+  // reader runs in that window today; a new reader of the projections must do the same (I-15, D-075).
   async batch<T>(fn: () => Promise<T>): Promise<T> {
     this.deferred++;
     try {

@@ -28,6 +28,7 @@ import { planReminder } from '@/features/notifications/plan';
 import { appData, startFreshDatabase } from '@/services/appData';
 import { KeyMismatchError } from '@/data/cipher';
 import { syncReminder } from '@/services/notifications';
+import { serial } from './serial';
 import { displayName, setDiscreetIcon } from '@/services/discreet';
 import { syncWidget, widgetSnapshot } from '@/services/widgets';
 import { todayLocal } from '@/services/clock';
@@ -75,6 +76,7 @@ interface AppState {
   startFresh: () => Promise<void>;
   refresh: () => Promise<void>;
   updatePrefs: (patch: Partial<Prefs>) => Promise<void>;
+  retry: () => Promise<void>;
   muteFlag: (code: FlagCode) => Promise<void>;
   updateProfile: (patch: Profile) => Promise<void>;
   completeOnboarding: () => Promise<void>;
@@ -120,6 +122,12 @@ export const useApp = create<AppState>((set, get) => ({
     } catch (e) {
       set({ status: 'error', error: (e as Error).message, keyMismatch: e instanceof KeyMismatchError });
     }
+  },
+
+  /** "Try again" on the open-failed screen: appData() does not cache a failed open, so init can simply run again. */
+  async retry() {
+    set({ status: 'loading', error: undefined, keyMismatch: false });
+    await get().init();
   },
 
   async startFresh() {
@@ -202,7 +210,8 @@ export const useApp = create<AppState>((set, get) => ({
     }
   },
 
-  async updatePrefs(patch) {
+  // serialised: two quick toggles would otherwise both merge into the same stale `prefs` and the first change would be lost (I-13, D-075)
+  updatePrefs: serial(async (patch: Partial<Prefs>) => {
     const { db, prefs } = get();
     if (!db) return;
     const next = { ...prefs, ...patch };
@@ -212,7 +221,7 @@ export const useApp = create<AppState>((set, get) => ({
     if (patch.widgetDetails !== undefined || patch.discreetIcon !== undefined) void get().syncWidgets();
     if (patch.healthTypes) rewatch(next.healthTypes, () => void get().syncHealth({ force: true }));
     if (patch.healthTypes || patch.cloudBackup !== undefined) void setHealthBackground(next.healthTypes.length > 0 || next.cloudBackup);
-  },
+  }),
 
   async muteFlag(code) {
     const { db, today } = get();

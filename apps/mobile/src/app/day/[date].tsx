@@ -3,7 +3,7 @@ import type { ISODate } from '@sanguine/engine';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { type DayEvent, dayEvents, dayState, markNotAPeriod, markSpotting } from '@/features/logging/actions';
 import { describeEvent } from '@/features/logging/describe';
 import { useApp } from '@/state/app';
@@ -43,6 +43,11 @@ export default function DayDetail() {
   }, [store, db, day]);
   useEffect(() => { void reload(); }, [reload]);
   const after = async () => { await refresh(); await reload(); };
+  // a deleted entry cannot be brought back from this screen, so ask first (I-14, D-075); the event log keeps it as a retraction
+  const confirmDelete = (e: DayEvent) => Alert.alert(tr('day.deleteConfirmTitle'), describeEvent(e, tr, prefs.tempUnit), [
+    { text: tr('common.cancel'), style: 'cancel' },
+    { text: tr('common.delete'), style: 'destructive', onPress: () => void store?.retract(e.id).then(after) },
+  ]);
 
   return (
     <Screen testID="screen-day" title={formatLong(day)} bottomInset={32} header={<View style={{ alignItems: 'flex-start', marginLeft: -12 }}><Button kind="text" testID="day-back" label={tr('common.back')} onPress={() => router.back()} /></View>}>
@@ -52,7 +57,7 @@ export default function DayDetail() {
           <Text>{describeEvent(e, tr, prefs.tempUnit)}</Text>
           <ProvenanceChip e={e} />
           <View style={{ flexDirection: 'row' }}>
-            <Button kind="text" testID={`event-delete-${e.kind}`} label={tr('common.delete')} accessibilityLabel={`${tr('day.deleteEntry')}: ${describeEvent(e, tr, prefs.tempUnit)}`} onPress={() => void store?.retract(e.id).then(after)} />
+            <Button kind="text" testID={`event-delete-${e.kind}`} label={tr('common.delete')} accessibilityLabel={`${tr('day.deleteEntry')}: ${describeEvent(e, tr, prefs.tempUnit)}`} onPress={() => confirmDelete(e)} />
           </View>
         </Card>
       ))}

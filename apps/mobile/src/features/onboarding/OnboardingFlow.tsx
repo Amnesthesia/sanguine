@@ -159,6 +159,8 @@ export function OnboardingFlow() {
       </ScrollView>
 
       <View style={{ padding: 16, paddingBottom: insets.bottom + 12, gap: 4 }}>
+        {/* say why Finish does not respond (I-20, D-075) */}
+        {step === TOTAL_STEPS - 1 && !ok ? <Text variant="bodySmall" color="textSecondary" testID="finish-hint" style={{ textAlign: 'center' }} accessibilityLiveRegion="polite">{tr(explicit ? 'onboarding.s5.finishHintBoth' : 'onboarding.s5.finishHint')}</Text> : null}
         <Button testID="onboarding-continue" label={step === TOTAL_STEPS - 1 ? tr('common.finish') : tr('common.continue')} disabled={!ok || busy} onPress={next} />
         {step === 2 || step === 3 ? (
           <Button testID="onboarding-skip" kind="text" label={step === 2 ? tr('common.dontKnow') : tr('common.skip')} onPress={() => { if (step === 2) { setLastChoice(undefined); } else { setA({ ...a, lifeState: 'none' }); } setStep(step + 1); }} />

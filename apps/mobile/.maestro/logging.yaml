@@ -74,6 +74,14 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 - takeScreenshot: day-detail
 - tapOn:
     id: event-delete-symptom
+# deleting asks first (D-075); Cancel keeps the entry, Delete removes it
+- assertVisible: "Delete this entry\\?"
+- tapOn: "Cancel"
+- assertVisible: "Cramps 2/3"
+- tapOn:
+    id: event-delete-symptom
+- assertVisible: "Delete this entry\\?"
+- tapOn: "Delete"
 - assertNotVisible: "Cramps 2/3"
 - assertVisible: "Medium flow"
 

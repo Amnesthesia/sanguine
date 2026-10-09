@@ -73,6 +73,7 @@ describe('every surface reads the teen rules', () => {
     ['app/(tabs)/today.tsx', 'effectivePrefs'],
     ['app/(tabs)/calendar.tsx', 'effectivePrefs'],
     ['app/(tabs)/insights.tsx', 'fertilityTools'],
+    ['app/cycle/[id].tsx', 'fertilityTools'],
     ['features/logging/MoreSection.tsx', 'moreRows'],
     ['app/settings/health.tsx', 'fertilityTools'],
     ['app/_layout.tsx', 'isTeen'],

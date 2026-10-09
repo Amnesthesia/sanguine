@@ -61,3 +61,20 @@ name: Under 18 - no ovulation card, no fertile wording, no fertility rows in the
       id: track-estimate
 - assertVisible: "Hidden by default for under 18s. You can turn it on here."
 - takeScreenshot: tracking
+# cycle detail: no ovulation card under 18 (D-075)
+- openLink: ${LINKBASE}insights
+- extendedWaitUntil:
+    visible:
+      id: screen-insights
+    timeout: 30000
+- tapOn:
+    id: cycle-detail-link
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: screen-cycle
+    timeout: 20000
+- assertNotVisible:
+    id: cycle-ovulation
+- assertNotVisible: ".*[Oo]vulation.*"
+- takeScreenshot: cycle-detail

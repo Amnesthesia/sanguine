@@ -97,7 +97,9 @@
       "healthUnavailable": "Health import arrives in a later update. Nothing is shared.",
       "healthLater": "Health sync opens when you finish. Nothing is switched on until you choose it.",
       "consentExplicit": "I agree that Sanguine stores my health information on this phone, as described above.",
-      "backupHint": "You can set up an encrypted backup in Settings, under Privacy and data."
+      "backupHint": "You can set up an encrypted backup in Settings, under Privacy and data.",
+      "finishHint": "Tick the box above to finish.",
+      "finishHintBoth": "Tick both boxes above to finish."
     },
     "teenNote": "Some features are hidden by default for under 18s. You can change this in Settings."
   },
@@ -238,6 +240,7 @@
     "newPeriod": "A new period",
     "edit": "Edit",
     "deleteEntry": "Delete this entry",
+    "deleteConfirmTitle": "Delete this entry?",
     "entry": {
       "flow": "{level} flow",
       "flowKind": {
@@ -633,6 +636,7 @@
     "generic": "Something went wrong. Nothing was lost.",
     "saveFailed": "Could not save. Try again.",
     "loadFailed": "Could not load your data.",
+    "openFailedBody": "Your data has not been deleted. Try again, or close Sanguine and open it again.",
     "migrationFailed": "Could not update the local database.",
     "keyMismatch": {
       "title": "Your data on this phone cannot be opened",

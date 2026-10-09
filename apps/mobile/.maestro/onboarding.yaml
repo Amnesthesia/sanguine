@@ -40,6 +40,9 @@ name: Onboarding, five steps (adult, with last period and life state)
 # step 5: privacy
 - assertVisible: "Your data stays with you"
 - takeScreenshot: step5-privacy
+# Finish says why it waits (D-075)
+- assertVisible:
+    id: finish-hint
 - tapOn:
     id: health-offer
 - assertVisible:
@@ -53,6 +56,8 @@ name: Onboarding, five steps (adult, with last period and life state)
     commands:
       - tapOn:
           id: consent-explicit
+- assertNotVisible:
+    id: finish-hint
 - tapOn:
     id: onboarding-continue
 # the Health offer opens Health sync once the setup is finished

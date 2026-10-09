@@ -26,6 +26,7 @@ function Shell() {
   const error = useApp((s) => s.error);
   const keyMismatch = useApp((s) => s.keyMismatch);
   const startFresh = useApp((s) => s.startFresh);
+  const retry = useApp((s) => s.retry);
   const { t: tr } = useTranslation();
   const nav = t.scheme === 'dark' ? DarkTheme : DefaultTheme;
   if (status === 'error' && keyMismatch) {
@@ -41,10 +42,14 @@ function Shell() {
       </View>
     );
   }
+  // any other open failure: nothing is deleted; the error text is kept for a support question, and the open can be retried (I-19, D-075)
   if (status === 'error')
     return (
-      <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: t.screenBg }}>
-        <RNText style={{ color: t.c.textPrimary, fontSize: 16 }}>Could not open your data. {error}</RNText>
+      <View testID="screen-open-failed" style={{ flex: 1, justifyContent: 'center', padding: 24, gap: 16, backgroundColor: t.screenBg }}>
+        <RNText accessibilityRole="header" style={{ color: t.c.textPrimary, fontSize: 18, fontWeight: '600' }}>{tr('errors.loadFailed')}</RNText>
+        <RNText style={{ color: t.c.textPrimary, fontSize: 16, lineHeight: 24 }}>{tr('errors.openFailedBody')}</RNText>
+        {error ? <RNText selectable style={{ color: t.c.textSecondary, fontSize: 13, lineHeight: 18 }}>{error}</RNText> : null}
+        <Button testID="open-retry" label={tr('common.tryAgain')} onPress={() => void retry()} />
       </View>
     );
   return (
