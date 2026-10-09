@@ -4,7 +4,7 @@ Oct 9, 2026 · @Victor
 
 ## 1. Executive summary
 
-Sanguine is a free, ad-free menstrual-cycle and fertility-awareness tracker for iOS and Android whose prediction engine runs entirely on the phone and whose developer never holds any user data. It keeps the fast logging and clear predictions people like in Flo and Clue, drops the paywalls, ad-tech and false precision, and ships first in Australia as a consumer wellness app that stays outside TGA medical-device regulation.
+Sanguine is a free, ad-free menstrual-cycle and fertility-awareness tracker for iOS and Android whose prediction engine runs entirely on the phone and whose developer never holds any user data. It keeps the fast logging and clear predictions women like in Flo and Clue, drops the paywalls, ad-tech and false precision, and ships first in Australia as a consumer wellness app that stays outside TGA medical-device regulation.
 
 **Key decisions**
 
@@ -19,7 +19,7 @@ Sanguine is a free, ad-free menstrual-cycle and fertility-awareness tracker for 
 | Health sync | Two-way HealthKit and Health Connect sync, opt-in per data type, in Phase 4 after the native-build phase; 13 mapped data types | Most of the audience already logs in Apple Health; Health Connect is in the Android framework from Android 14 |
 | Open source | Prediction engine open under MIT from day one; app code open after launch | The engine is the trust claim; independent review is worth more than secrecy |
 
-**Regulatory strategy in plain terms.** The app's stated purpose is to help people track and understand their cycle. It shows an estimated next period, an estimated ovulation day and a range of days around it, each with honest uncertainty. It never says a day is safe for unprotected sex, never offers a conception mode, and never names a condition; health flags say only that a logged pattern is outside the published normal range and that a doctor can help check it. Every screen that could be read as a claim carries fixed wording reviewed in section 2. Contraception and conception-support features are reserved for a regulated tier that would need ISO 13485, IEC 62304, ISO 14971, clinical evidence and ARTG inclusion, costing roughly A$250k–600k and 12–24 months, and are not on the v1 roadmap.
+**Regulatory strategy in plain terms.** The app's stated purpose is to help women track and understand their cycle. It shows an estimated next period, an estimated ovulation day and a range of days around it, each with honest uncertainty. It never says a day is safe for unprotected sex, never offers a conception mode, and never names a condition; health flags say only that a logged pattern is outside the published normal range and that a doctor can help check it. Every screen that could be read as a claim carries fixed wording reviewed in section 2. Contraception and conception-support features are reserved for a regulated tier that would need ISO 13485, IEC 62304, ISO 14971, clinical evidence and ARTG inclusion, costing roughly A$250k–600k and 12–24 months, and are not on the v1 roadmap.
 
 **Assumptions changed.** One: Health sync moves from "early phase" to Phase 4, after the Expo Go phases and the first native build, because the work is meant to proceed unattended on a simulator and every feature that needs a native module is deferred behind one build step; the echo-prevention and conflict rules also depend on the event-sourced data model being finished first. Two: a minimum age of 13 is enforced in onboarding with a teen mode that hides fertility language, because the Children's Online Privacy Code lands on 10 December 2026 and the audience explicitly includes teens. All other stated assumptions stand.
 
@@ -703,7 +703,7 @@ Sanguine has four tabs (Today, Calendar, Insights, Settings) and one logging she
 1. Calm by default: one primary fact per screen, generous whitespace, no streaks, badges, articles or prompts to "engage".
 2. Ranges, not points: every predicted date is shown with its 80% range and a confidence word; the point date is secondary.
 3. Evidence-based, neutral tone: short sentences, no emoji in copy, no "your body is telling you"; the Clue register.
-4. Inclusive language: "people who menstruate", "period", "bleeding", no "ladies", no gendered icons; sexual activity logging is optional and off by default.
+4. Audience wording: the app addresses women (client decision, D-050), alongside "period" and "bleeding"; no "ladies", "girls", "feminine" or "womanhood" (§8.7); the brand (splash, icon, About band) is soft and feminine by the client's direction (blush splash field, the single-line uterus emblem) while the interface inside the app stays neutral (§9.2, D-051); sexual activity logging is optional and off by default.
 5. Nothing hidden: no feature gates, no upsell surfaces; Settings contains everything.
 6. Discretion is a setting the user controls, defaulting to the most private option.
 
@@ -766,7 +766,7 @@ Each step is one screen with one question and a skip; nothing is required except
 
 ### 8.7 Language
 
-A glossary file (`copy/glossary.en-AU.json`) fixes terms: period, bleeding, spotting, cycle, estimate, range, ovulation, fertile window, biomarker. Forbidden list from 2.3 plus "ladies", "girls", "feminine", "womanhood", "should" (as advice), "normal" (as a verdict; "typical range" is used). Copy is reviewed by the clinician before each release.
+A glossary file (`copy/glossary.en-AU.json`) fixes terms: period, bleeding, spotting, cycle, estimate, range, ovulation, fertile window, biomarker. Forbidden list from 2.3 plus "ladies", "girls", "feminine", "womanhood", "should" (as advice), "normal" (as a verdict; "typical range" is used). The audience word in general copy is "women" (client decision, D-050); "people who menstruate" is no longer used. Copy is reviewed by the clinician before each release.
 
 ### 8.8 Discretion
 
@@ -834,12 +834,13 @@ Sanguine has one content language and two native chrome languages: on iOS the na
 | Body | 16 / 24 | 400 | System |
 | Body small | 14 / 20 | 400 | System |
 | Caption | 12 / 16 | 500, letter-spacing 0.2 | System |
+| Tagline (splash and About band only) | 13–14 / 20–22, capitals | 500, letter-spacing 0.2 em | Cormorant Garamond |
 
 Spacing uses a 4-pt base on iOS (4, 8, 12, 16, 24, 32, 48; gutters 16) and the M3 8-dp grid on Android (8, 16, 24, 32, 48; gutters 16). Radii, iOS: chips 8, cards 16, sheet 20 (concentric with the device corner), buttons and the quick-log pill fully rounded capsules. Radii, Android: chips 8, cards 28, sheet 24, buttons and toolbar fully rounded, with M3 shape morphing between rounded and the expressive Cookie-9 polygon on press for the Period action. Elevation, iOS: content cards have no shadow; depth comes from the glass layer (system material, highlight rim, specular) and from one shadow under the sheet (0 8 24 rgba(31,26,28,0.12)). Elevation, Android: tonal surface containers (low → high) carry hierarchy; no drop shadows except the M3 level-3 on the floating toolbar. Hairlines 1 px `border` on iOS; `outlineVariant` on Android. Type: iOS uses SF Pro with Large Title 34/41 on scrollable screens; Android uses Roboto Flex with the M3 Expressive emphasised Display for the numeral (40/44, weight 600, width 110).
 
 ### 9.4 Iconography and motion
 
-Icons: SF Symbols on iOS (`drop`, `thermometer.medium`, `calendar`, `chart.line.uptrend.xyaxis`, `gearshape`; custom symbols for test strip and mucus drawn in the SF template at 2 px stroke) and Material Symbols Rounded on Android with the matching set; both at 24 pt/dp. No pink, floral or gendered imagery on either platform. Motion, iOS: system glass transitions for navigation; ring fill animates once on Today appearance (600 ms ease-out) and never loops; sheet 320 ms with a 0.8-damping spring; Reduce Motion collapses everything to 120 ms cross-fades. Motion, Android: `MotionScheme.expressive()` for the ring morph, toolbar press and sheet, `MotionScheme.standard()` for everything else; animation scale 0 means instant. Haptic: light impact on save on both.
+Icons: SF Symbols on iOS (`drop`, `thermometer.medium`, `calendar`, `chart.line.uptrend.xyaxis`, `gearshape`; custom symbols for test strip and mucus drawn in the SF template at 2 px stroke) and Material Symbols Rounded on Android with the matching set; both at 24 pt/dp. Inside the app no pink, floral or gendered imagery on either platform; the client's single-line emblem appears only on the splash, the icon and the About band (§9.9). Motion, iOS: system glass transitions for navigation; ring fill animates once on Today appearance (600 ms ease-out) and never loops; sheet 320 ms with a 0.8-damping spring; Reduce Motion collapses everything to 120 ms cross-fades. Motion, Android: `MotionScheme.expressive()` for the ring morph, toolbar press and sheet, `MotionScheme.standard()` for everything else; animation scale 0 means instant. Haptic: light impact on save on both.
 
 ### 9.5 Core components
 
@@ -935,22 +936,24 @@ Using the Sanguine design system, design: (1) iOS lock-screen circular widget: P
 
 ### 9.9 Brand: splash, icon and wordmark
 
-> Superseded in part by DECISIONS.md D-042 (2026-10-09): the glyph is now the horned brush mark, the brand red is #B8324A, and the splash shows the mark with a rotating tagline (`app.taglines`) fading in. The rows below are the original spec.
-
-The brand is one wine-red field, one white script wordmark and one glyph: a script S whose tail ends in a drop. It appears on the splash screen, the app icon and the About screen, and nowhere else; inside the app the accent stays garnet and the interface stays neutral, so the brand reads as a signature rather than a theme.
+The brand (v2, client-supplied) is one blush field, the client's single-line emblem, the client's script logotype and letter-spaced serif capitals for taglines. It appears on the splash screen, the app icon and the About screen; inside the app the accent stays garnet and the interface stays neutral, so the brand reads as a signature rather than a theme.
 
 | Element | Spec |
 | --- | --- |
-| Brand colour `wine` | #6A1220 (splash and icon field); vignette edge #4E0C17; never used in the UI tokens |
-| Wordmark | "Sanguine" in Dancing Script 700 (OFL, Google Fonts, loaded via `@expo-google-fonts/dancing-script`, works in Expo Go), white #FFFFFF, optical size 72 pt on the splash; letter-spacing −1%; the reference image is a commercial font (Fana Studio) and is not used. Lighter alternative if the weight feels heavy on device: Great Vibes (OFL) |
-| Glyph | The S from the wordmark, white, with its lower tail terminating in a drop (a filled teardrop, 12% of the glyph height, rotated to follow the stroke). One SVG master at 1024 × 1024, glyph box 60% of the canvas, optically centred (shift 3% left to balance the tail) |
-| iOS icon | Icon Composer layers: background `wine` with the vignette; foreground glyph white; the tinted and clear iOS 26 appearances derive automatically from the layered file; no text on the icon |
-| Android icon | Adaptive icon: background `wine`, foreground glyph white with 20% safe-zone padding, monochrome layer = the glyph for themed icons |
-| Discreet icon | Alternate icon (Phase 3): neutral grey field #6B6165 with a white leaf glyph, name "Notes" |
-| Splash | `expo-splash-screen` config: `backgroundColor` #6A1220, `image` = wordmark PNG at 3×, `resizeMode: contain`, `imageWidth: 220`; identical in dark mode; no animation beyond the system fade; the glyph is not shown on the splash to avoid doubling the mark |
-| About screen | Wordmark on `wine` as a 96-pt header band; engine version and hash beneath |
+| Reference | Client-supplied artwork (`docs/brand-v2/client-logo.jpeg`): emblem, logotype and tagline on blush. Elements extracted as white-on-transparent PNGs (`emblem.png`, `logotype.png`) and tinted at render time |
+| Field colours | Blush #F5E8E2 (light), plum #2A1518 (dark); ink #73393B on blush, blush on plum. Splash, icon and About band only; never in the UI tokens (D-051) |
+| Emblem | The client's single-line uterus with crescent moon and dot; never redrawn, recoloured only; used on the icon, the splash lock-up, the About band |
+| Logotype | The client's script "Sanguine" as an image asset, never re-typeset. Closest open font for any in-app script need (About only): Mrs Saint Delafield (OFL) |
+| Source files | `docs/brand-v2/emblem.png` and `logotype.png`, white on transparent. Until the client's originals (`client-logo.jpeg`, the two PNGs) arrive they are cut from the client's reference renders by `tools/brand/extract-from-reference.py` (D-049) |
+| Tagline face (splash and About band only) | Cormorant Garamond 500 capitals, letter-spacing 0.2em (OFL, `@expo-google-fonts/cormorant-garamond`) |
+| Taglines | Six, rotated deterministically by launch count: "Blood demands blood." · "The River of Blood never empties; it only crests." · "By blood bound, by brass crowned." · "Offerings of bone, rivers of red." · "The earth drinks deep, yet the Blood God thirsts." · "An ocean of red for the Lord of Rage." Hidden in teen mode |
+| Splash | `expo-splash-screen`: `backgroundColor` #F5E8E2 (dark #2A1518), `image` = lock-up PNG (emblem over logotype) at 3×, `resizeMode: contain`, `imageWidth: 260`; the app draws the tagline beneath once JS is ready and keeps the splash visible until then. Reference renders: `docs/brand-v2/splash/01-blush-light.png`, `02-plum-dark.png` |
+| iOS icon | Icon Composer layers: background blush, foreground emblem in ink at 62% of the canvas; tinted and clear appearances derive automatically; dark variant blush emblem on plum |
+| Android icon | Adaptive icon: background blush, foreground emblem with 20% safe zone, monochrome layer = emblem |
+| Discreet icon | Unchanged: neutral grey #6B6165 field, white leaf, name "Notes" |
+| About screen | Blush band with the lock-up and a 200 px rule in ink at 60%; engine version and hash beneath; the current tagline |
 
-Assets are generated in Phase 0 by a script (`tools/brand/build.ts`) that renders the wordmark and glyph from the font to PNG and SVG, so a font or colour change rebuilds every asset. A rendered preview is published at [Sanguine — brand preview](docs/brand.html).
+Assets are generated in Phase 0 by a script (`tools/brand/build.ts`) that tints the extracted emblem and logotype PNGs and composes the lock-up, splash and icon files, so a field-colour change rebuilds every asset; the full redesign brief is `docs/REDESIGN_PROMPT.md`. A rendered preview is published at [Sanguine — brand preview](docs/brand.html).
 
 ## 10. Phased delivery plan
 
@@ -992,10 +995,10 @@ No external clinician or regulatory review is assumed. Every decision that would
 | Breastfeeding | Suspended until first period, then low confidence for 3 cycles, fertile band only with a biomarker | Any calendar-based band: no retrieved timing evidence | `engine/lifestate.ts` |
 | Symptom weight | Zero in predictions; per-user patterns in Insights only | Low-weight learned adjustment: no population evidence, and it would make predictions harder to explain | by construction |
 | Symptom list | 24 codes, 8 visible by default (cramps, headache, bloating, breast tenderness, mood low, acne, fatigue, mid-cycle spotting) | — | `copy/symptoms.json` |
+| Recency weighting | λ = 1 (0.92 failed the §4.15 gate, D-021); λ = 0.8 inside the perimenopause state | Shipping 0.92 on the plan's say-so: a third of the required gain | `engine/params.ts: RECENCY_LAMBDA` |
 
 ### 11.2 Regulatory and legal defaults applied without review
 
-| Recency weighting | λ = 1 (0.92 failed the §4.15 gate, D-021); λ = 0.8 inside the perimenopause state | Shipping 0.92 on the plan's say-so: a third of the required gain | `engine/params.ts: RECENCY_LAMBDA` |
 | Decision | Default applied | Alternative rejected and why | Where it lives |
 | --- | --- | --- | --- |
 | Ovulation estimate card | Ships in all regions, labelled an estimate, with the fixed 2.3 wording, no conception mode, no per-day chance figure, hidden in teen mode | Hiding it: every major tracker shows an estimate under consumer-wellness treatment and omitting it makes the app worse without a demonstrated need | `features/predictions/EstimateCard`, flag `SHOW_OVULATION_ESTIMATE = true` |

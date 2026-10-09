@@ -64,7 +64,7 @@ describe('motion (§8.9: reduced motion degrades to cross-fades; the ring never 
   it('the one exception, the brand splash (D-042), only fades opacity and drops the fades under Reduce Motion', () => {
     const src = readFileSync(SPLASH, 'utf8');
     expect(src).toContain('isReduceMotionEnabled');
-    expect(src.match(/Animated\.timing\(\w+, \{ toValue: \d, duration: \w+/g)?.length).toBe(3);
+    expect(src.match(/Animated\.timing\(\w+, \{ toValue: \d, duration: \w+/g)?.length).toBe(5);
     expect(src).not.toMatch(/translate|scale|rotate|LayoutAnimation|reanimated/);
   });
 });

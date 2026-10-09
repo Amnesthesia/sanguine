@@ -10,7 +10,7 @@
     "android": {
       "package": "app.sanguine.mobile",
       "adaptiveIcon": {
-        "backgroundColor": "#B8324A",
+        "backgroundColor": "#F5E8E2",
         "foregroundImage": "./assets/brand/android-icon-foreground.png",
         "backgroundImage": "./assets/brand/android-icon-background.png",
         "monochromeImage": "./assets/brand/android-icon-monochrome.png"
@@ -23,13 +23,22 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#B8324A",
-          "image": "./assets/brand/splash-mark.png",
-          "imageWidth": 200,
+          "backgroundColor": "#F5E8E2",
+          "image": "./assets/brand/splash-lockup.png",
+          "imageWidth": 260,
           "resizeMode": "contain",
           "dark": {
-            "backgroundColor": "#B8324A",
-            "image": "./assets/brand/splash-mark.png"
+            "backgroundColor": "#2A1518",
+            "image": "./assets/brand/splash-lockup-dark.png"
+          },
+          "android": {
+            "image": "./assets/brand/splash-android-blank.png",
+            "imageWidth": 200,
+            "backgroundColor": "#F5E8E2",
+            "dark": {
+              "image": "./assets/brand/splash-android-blank.png",
+              "backgroundColor": "#2A1518"
+            }
           }
         }
       ],
@@ -100,6 +109,11 @@
         "EXDevMenuShowFloatingActionButton": false,
         "EXDevMenuShowsAtLaunch": false,
         "EXDevMenuIsOnboardingFinished": true
+      },
+      "icon": {
+        "light": "./assets/brand/icon.png",
+        "dark": "./assets/brand/icon-dark.png",
+        "tinted": "./assets/brand/icon-tinted.png"
       }
     }
   }

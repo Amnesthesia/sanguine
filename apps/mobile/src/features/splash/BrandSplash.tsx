@@ -1,26 +1,34 @@
-// The native splash continued in JS so the wordmark and a tagline can fade in under the mark (D-042, D-044). It sits
-// exactly where the native splash image sits (centred, 200pt), so the hand-over is seamless, then fades the whole screen out.
-import { useEffect, useRef, useState } from 'react';
+// The native splash continued in JS (PLAN.md §9.9, D-049, D-051): on iOS the lock-up sits exactly where the native splash image sits
+// (centred, 260 pt), so the hand-over is seamless; Android 12+ masks the native image to a circle, so there the native splash
+// is the bare field and the lock-up fades in here. Then the 200 px rule and the tagline fade in beneath it and the whole
+// screen fades out. The native splash stays up until JS is ready (the app renders nothing before that). Opacity only; no
+// fades under Reduce Motion. Colours follow the system scheme, like the native splash.
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, Animated, Image, StyleSheet, View } from 'react-native';
-import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
-import mark from '../../../assets/brand/splash-mark.png';
+import { AccessibilityInfo, Animated, Image, Platform, StyleSheet, useColorScheme, View } from 'react-native';
+import lockupDark from '../../../assets/brand/splash-lockup-dark.png';
+import lockup from '../../../assets/brand/splash-lockup.png';
+import { Text } from '@/ui/Text';
 
-/** Brand red: the splash, the icon and the About band only (PLAN.md §9.9, D-042). */
-export const BRAND_RED = '#B8324A';
-/** The vignette edge, as on the icon (tools/brand/build.ts WINE_EDGE). */
-const BRAND_RED_EDGE = '#962439';
-const MARK = 200; // app.json expo-splash-screen imageWidth
-const TAGLINE_IN_MS = 700;
+/** The brand field and ink (PLAN.md §9.9, D-051): the splash, the icon and the About band only, never the UI tokens. */
+export const BRAND = {
+  light: { field: '#F5E8E2', ink: '#73393B', text: '#73393B' },
+  dark: { field: '#2A1518', ink: '#E3A7AD', text: '#F5E8E2' },
+} as const;
+const LOCKUP_WIDTH = 260; // app.json expo-splash-screen imageWidth
+const LOCKUP_ASPECT = 881 / 780; // tools/brand/build.ts lock-up canvas
+const FADE_IN_MS = 700;
+const LOGO_IN_MS = 300; // Android: the lock-up fades in over the bare native splash
 const HOLD_MS = 2000; // long enough to read the longest tagline
 const OUT_MS = 350;
+const RULE_WIDTH = 200;
 
-/** One of the splash taglines (copy `app.taglines`), a different draw on each launch. */
-export function BrandSplash({ onDone, pick = Math.random }: { onDone: () => void; pick?: () => number }) {
+export function BrandSplash({ tagline, onDone }: { tagline: string | undefined; onDone: () => void }) {
   const { t } = useTranslation();
-  const lines = t('app.taglines', { returnObjects: true }) as string[];
-  const [line] = useState(() => lines[Math.floor(pick() * lines.length)] ?? lines[0]);
-  const reveal = useRef(new Animated.Value(0)).current; // vignette, wordmark and tagline
+  const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
+  const c = BRAND[scheme];
+  const reveal = useRef(new Animated.Value(0)).current; // rule and tagline
+  const logo = useRef(new Animated.Value(Platform.OS === 'android' ? 0 : 1)).current; // the lock-up itself, Android only
   const screen = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -28,51 +36,39 @@ export function BrandSplash({ onDone, pick = Math.random }: { onDone: () => void
     let cancelled = false;
     void AccessibilityInfo.isReduceMotionEnabled().catch(() => false).then((reduce) => {
       if (cancelled) return;
-      // Reduce Motion: no fades, the wordmark and tagline are simply shown for the same time
       anim = reduce
-        ? Animated.sequence([Animated.timing(reveal, { toValue: 1, duration: 0, useNativeDriver: true }), Animated.delay(TAGLINE_IN_MS + HOLD_MS)])
+        ? Animated.sequence([Animated.parallel([Animated.timing(reveal, { toValue: 1, duration: 0, useNativeDriver: true }), Animated.timing(logo, { toValue: 1, duration: 0, useNativeDriver: true })]), Animated.delay(FADE_IN_MS + HOLD_MS)])
         : Animated.sequence([
-            Animated.timing(reveal, { toValue: 1, duration: TAGLINE_IN_MS, useNativeDriver: true }),
+            Animated.parallel([
+              Animated.timing(logo, { toValue: 1, duration: LOGO_IN_MS, useNativeDriver: true }),
+              Animated.timing(reveal, { toValue: 1, duration: FADE_IN_MS, useNativeDriver: true }),
+            ]),
             Animated.delay(HOLD_MS),
             Animated.timing(screen, { toValue: 0, duration: OUT_MS, useNativeDriver: true }),
           ]);
       anim.start(() => onDone());
     });
     return () => { cancelled = true; anim?.stop(); };
-  }, [reveal, screen, onDone]);
+  }, [reveal, logo, screen, onDone]);
 
+  const height = LOCKUP_WIDTH * LOCKUP_ASPECT;
   return (
-    <Animated.View testID="brand-splash" style={[StyleSheet.absoluteFill, styles.bg, { opacity: screen }]}>
-      <Animated.View style={[StyleSheet.absoluteFill, { opacity: reveal }]} pointerEvents="none">
-        <Svg width="100%" height="100%">
-          <Defs>
-            <RadialGradient id="v" cx="50%" cy="40%" r="75%">
-              <Stop offset="0.55" stopColor={BRAND_RED} />
-              <Stop offset="1" stopColor={BRAND_RED_EDGE} />
-            </RadialGradient>
-          </Defs>
-          <Rect width="100%" height="100%" fill="url(#v)" />
-        </Svg>
+    <Animated.View testID="brand-splash" style={[StyleSheet.absoluteFill, styles.bg, { backgroundColor: c.field, opacity: screen }]}>
+      <Animated.View style={{ opacity: logo }}>
+        <Image source={scheme === 'dark' ? lockupDark : lockup} style={{ width: LOCKUP_WIDTH, height }} resizeMode="contain" accessibilityIgnoresInvertColors accessible accessibilityRole="image" accessibilityLabel={t('app.name')} />
       </Animated.View>
-      <Image source={mark} style={{ width: MARK, height: MARK }} accessibilityIgnoresInvertColors accessible accessibilityRole="image" accessibilityLabel={t('app.name')} />
-      <View style={styles.wordmarkRow} pointerEvents="none">
-        <Animated.Text style={[styles.wordmark, { opacity: reveal }]} maxFontSizeMultiplier={1.2} accessibilityElementsHidden importantForAccessibility="no">
-          {t('app.name')}
-        </Animated.Text>
-      </View>
-      <View style={styles.taglineRow} pointerEvents="none">
-        <Animated.Text style={[styles.tagline, { opacity: reveal }]} maxFontSizeMultiplier={1.5} accessibilityRole="text">
-          {line}
-        </Animated.Text>
-      </View>
+      {tagline ? (
+        <Animated.View style={[styles.below, { top: '50%', marginTop: height / 2 + 28, opacity: reveal }]} pointerEvents="none">
+          <View style={{ width: RULE_WIDTH, height: 1, backgroundColor: c.ink, opacity: 0.6 }} />
+          <Text caps variant="caption" style={[styles.tagline, { color: c.text }]} maxFontSizeMultiplier={1.5}>{tagline}</Text>
+        </Animated.View>
+      ) : null}
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  bg: { backgroundColor: BRAND_RED, alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  wordmarkRow: { position: 'absolute', top: '50%', marginTop: MARK / 2 + 8, left: 16, right: 16, alignItems: 'center' },
-  wordmark: { color: '#FFFFFF', fontFamily: 'Cinzel_600SemiBold', fontSize: 40, lineHeight: 52, letterSpacing: 4, textTransform: 'uppercase', textAlign: 'center' },
-  taglineRow: { position: 'absolute', bottom: 72, left: 24, right: 24, alignItems: 'center' },
-  tagline: { color: '#FFFFFF', fontFamily: 'Cinzel_400Regular', fontSize: 14, lineHeight: 24, letterSpacing: 3, textTransform: 'uppercase', textAlign: 'center' },
+  bg: { alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  below: { position: 'absolute', left: 32, right: 32, alignItems: 'center', gap: 18 },
+  tagline: { textAlign: 'center', fontSize: 14, lineHeight: 22 },
 });

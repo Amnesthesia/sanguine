@@ -3,64 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sanguine — brand preview</title>
+<title>Sanguine — brand preview (v2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Cinzel:wght@400;600&family=Great+Vibes&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
 <style>
-:root{--wine:#B8324A;--wine2:#962439;--pageBg:#EFE9E4;--pageText:#1F1A1C;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pageBg:#1B1719;--pageText:#F4EEEF}}
-:root[data-theme="dark"]{--pageBg:#1B1719;--pageText:#F4EEEF}
+:root{--blush:#F5E8E2;--plum:#2A1518;--ink:#73393B;--soft:#EBD3CF;--pageBg:#EADBD4;--pageText:#4A2328;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pageBg:#1F1013;--pageText:#F5E8E2}}
+:root[data-theme="dark"]{--pageBg:#1F1013;--pageText:#F5E8E2}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--pageBg);color:var(--pageText);font-family:-apple-system,"SF Pro Text",Roboto,system-ui,sans-serif;padding:32px 20px 48px}
-h1{font-size:22px;font-weight:600;margin:0 0 6px}
+h1{font-family:"Cormorant Garamond",Georgia,serif;font-size:28px;font-weight:500;margin:0 0 6px}
 p.lead{margin:0 0 24px;max-width:70ch;font-size:15px;line-height:1.5;opacity:.85}
 .grid{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
 figure{margin:0}figcaption{font-size:13px;margin:10px 2px 0;line-height:1.45;opacity:.8;max-width:393px}
-.script{font-family:"Dancing Script",cursive;font-weight:700;letter-spacing:-.01em}
-.vibes{font-family:"Great Vibes",cursive;font-weight:400}
-.splash{width:393px;height:852px;border-radius:44px;background:radial-gradient(120% 90% at 50% 40%,var(--wine) 0%,var(--wine) 55%,var(--wine2) 100%);display:flex;align-items:center;justify-content:center;color:#fff}
-.splash .wm{font-size:84px;line-height:1}
-.icon{width:220px;height:220px;border-radius:50px;background:radial-gradient(120% 100% at 50% 35%,var(--wine) 0%,var(--wine) 60%,var(--wine2) 100%);position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.18)}
-.icon.android{border-radius:50%}
-.icon.mono{background:#1F1A1C}
-.icon.tinted{background:linear-gradient(180deg,#B3A8AC,#6B6165)}
-.glyph{position:absolute;inset:0;width:100%;height:100%}
-.splash{flex-direction:column;position:relative}.splash .mark{width:200px;height:200px}.splash .wm2,.splash .tag{font-family:Cinzel,serif;text-transform:uppercase;animation:fade .7s ease-in both}.splash .wm2{font-weight:600;font-size:40px;letter-spacing:4px;margin-top:8px}.splash .tag{font-weight:400;font-size:14px;letter-spacing:3px;position:absolute;bottom:72px;left:24px;right:24px;text-align:center;color:rgba(255,255,255,.92)}
-@keyframes fade{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion: reduce){.splash .tag,.splash .wm2{animation:none}}
+.caps{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;text-transform:uppercase;letter-spacing:.2em}
+.splash{width:393px;height:852px;border-radius:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.splash.light{background:var(--blush);color:var(--ink)}
+.splash.dark{background:var(--plum);color:var(--blush)}
+.splash img{width:260px;display:block}
+.splash .rule{width:200px;height:1px;background:currentColor;opacity:.6;margin:30px 0 18px}
+.splash .tag{font-size:14px;line-height:22px;text-align:center;padding:0 32px;animation:fade 1.6s ease-in both}
+@keyframes fade{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion: reduce){.splash .tag{animation:none}}
+.icon{width:220px;height:220px;border-radius:50px;position:relative;overflow:hidden}
+.icon img{position:absolute;inset:0;width:100%;height:100%}
 .row{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
-.about{width:393px;border-radius:24px;overflow:hidden;border:1px solid rgba(0,0,0,.08);background:#FBF8F6;color:#1F1A1C}
-.about .band{height:120px;background:var(--wine);display:flex;align-items:center;justify-content:center;color:#fff}
-.about .band .wm{font-size:48px}
-.about .body{padding:16px 20px;font-size:14px;line-height:20px;color:#6B6165}
+.android{border-radius:50%}
+.about{width:393px;border-radius:24px;overflow:hidden;border:1px solid rgba(74,35,40,.12);background:#F5E8E2;color:#4A2328;padding:16px}
+.about .band{border-radius:20px;background:var(--soft);display:flex;flex-direction:column;align-items:center;padding:24px 0;gap:16px;color:var(--ink)}
+.about .band img{width:180px}.about .band .rule{width:200px;height:1px;background:var(--ink);opacity:.6}
+.about .band .tag{font-size:13px;text-align:center;padding:0 24px}
+.about .body{padding:14px 4px 0;font-size:14px;line-height:20px;color:#86595E}
 </style>
 </head>
 <body>
-<h1>Sanguine — brand preview</h1>
-<p class="lead">Brand red #B8324A field, the white horned brush mark (DECISIONS.md D-042), the splash wordmark and tagline in Cinzel (D-045), and the Dancing Script wordmark on the About band. The brand appears on the splash, the icon and the About band only; the in-app accent stays garnet. The mark is rendered from <code>tools/brand/build.ts</code>.</p>
+<h1>Sanguine — brand preview (v2)</h1>
+<p class="lead">Client-supplied identity: a blush field, the single-line emblem, the script logotype (image assets from docs/brand-v2/, recoloured and never redrawn or re-typeset) and letter-spaced Cormorant Garamond capitals for taglines. Ink #73393B on blush #F5E8E2; blush on plum #2A1518 in dark mode. The brand appears on the splash, the icon and the About screen; the emblem is also a faint watermark on two screens. The lock-up images are rendered by <code>tools/brand/build.ts</code>.</p>
 
 <div class="grid">
 <figure>
-  <div class="splash"><img class="mark" src="../apps/mobile/assets/brand/splash-mark.png" alt="Sanguine"><div class="wm2">Sanguine</div><div class="tag">Blood demands blood.</div></div>
-  <figcaption>Splash screen: the native splash shows the mark (backgroundColor #B8324A, imageWidth 200); the JS continuation fades in the vignette, the Cinzel wordmark and a tagline in Cinzel capitals (D-045), then hands over to the app. Same in dark mode; no fade under Reduce Motion.</figcaption>
+  <div class="splash light"><img src="../apps/mobile/assets/brand/splash-lockup.png" alt="Sanguine"><div class="rule"></div><div class="tag caps">Blood demands blood.</div></div>
+  <figcaption>Splash, light: the native splash shows the lock-up (backgroundColor #F5E8E2, imageWidth 260); the app then fades in the 200 px rule and one of six taglines (chosen from the launch count, hidden in teen mode) and keeps the splash up until JS is ready.</figcaption>
 </figure>
-
+<figure>
+  <div class="splash dark"><img src="../apps/mobile/assets/brand/splash-lockup-dark.png" alt="Sanguine"><div class="rule"></div><div class="tag caps">By blood bound, by brass crowned.</div></div>
+  <figcaption>Splash, dark: plum field, lock-up in blush.</figcaption>
+</figure>
 <figure>
   <div class="row">
-    <div class="icon"><img class="glyph" src="../apps/mobile/assets/brand/icon.png" alt="Sanguine app icon"></div>
-    <div class="icon android"><img class="glyph" src="../apps/mobile/assets/brand/android-icon-background.png" alt=""><img class="glyph" src="../apps/mobile/assets/brand/android-icon-foreground.png" alt=""></div>
-    <div class="icon tinted"><img class="glyph" src="../apps/mobile/assets/brand/glyph.svg" alt=""></div>
+    <div class="icon"><img src="../apps/mobile/assets/brand/icon.png" alt="Sanguine app icon, light"></div>
+    <div class="icon"><img src="../apps/mobile/assets/brand/icon-dark.png" alt="Sanguine app icon, dark"></div>
+    <div class="icon android"><img src="../apps/mobile/assets/brand/android-icon-background.png" alt=""><img src="../apps/mobile/assets/brand/android-icon-foreground.png" alt=""></div>
   </div>
-  <figcaption>App icon: iOS (squircle), Android adaptive (circle mask) and the iOS 26 tinted appearance derived from the layered Icon Composer file. The adaptive foreground shrinks the mark so the horn tips stay inside the safe circle.</figcaption>
+  <figcaption>App icon: emblem at 62% of the canvas, ink on blush (iOS light), blush on plum (iOS dark); the iOS tinted variant is derived from a white-on-black emblem. Android adaptive: blush background, smaller emblem inside the safe circle, the emblem as the monochrome layer.</figcaption>
 </figure>
-
 <figure>
   <div class="about">
-    <div class="band"><div class="wm script">Sanguine</div></div>
+    <div class="band"><img src="../apps/mobile/assets/brand/splash-lockup.png" alt="Sanguine"><div class="rule"></div><div class="tag caps">Offerings of bone, rivers of red.</div></div>
     <div class="body">Version 1.0.0 · engine 1.0.0 (sha256 3f9a…c21e)<br>Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional.</div>
   </div>
-  <figcaption>About screen header band, the only in-app use of the brand colour.</figcaption>
+  <figcaption>About screen: the lock-up, the rule and the current tagline on a soft band; engine version and hash beneath.</figcaption>
 </figure>
-
 </div>
 </body>
 </html>

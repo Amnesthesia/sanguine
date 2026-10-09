@@ -61,6 +61,8 @@ name: Settings - appearance, tracking options, life state, backup recovery code,
     id: settings-about
 - assertVisible:
     id: about-band
+- assertVisible:
+    id: about-tagline
 - assertVisible: "Estimate engine .*"
 - assertVisible: "Engine hash .*"
 - assertVisible: "Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional."

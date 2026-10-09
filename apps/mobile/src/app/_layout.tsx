@@ -1,5 +1,4 @@
-import { Cinzel_400Regular, Cinzel_600SemiBold } from '@expo-google-fonts/cinzel';
-import { DancingScript_700Bold, useFonts } from '@expo-google-fonts/dancing-script';
+import { CormorantGaramond_500Medium, useFonts } from '@expo-google-fonts/cormorant-garamond';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -12,6 +11,8 @@ import { useApp } from '@/state/app';
 import { LockGate } from '@/features/lock/LockGate';
 import { ScreenProtection } from '@/features/lock/ScreenProtection';
 import { BrandSplash } from '@/features/splash/BrandSplash';
+import { taglineFor } from '@/features/splash/tagline';
+import { isTeen } from '@/data/prefs';
 import { ThemeProvider, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 
@@ -73,13 +74,16 @@ function Shell() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({ DancingScript_700Bold, Cinzel_400Regular, Cinzel_600SemiBold });
+  const [fontsLoaded] = useFonts({ CormorantGaramond_500Medium });
   const status = useApp((s) => s.status);
   const theme = useApp((s) => s.prefs.theme);
   const init = useApp((s) => s.init);
   const refresh = useApp((s) => s.refresh);
   const [splashShown, setSplashShown] = useState(false);
   const splashDone = useCallback(() => setSplashShown(true), []);
+  const launchCount = useApp((s) => s.launchCount);
+  const birthYear = useApp((s) => s.profile.birthYear);
+  const { t: trSplash } = useTranslation();
 
   useEffect(() => { void init(); }, [init]);
   // a new day, or coming back to the app, recomputes today's prediction
@@ -89,7 +93,8 @@ export default function RootLayout() {
   }, [refresh]);
   const ready = fontsLoaded && status !== 'loading';
   useEffect(() => { if (ready) void SplashScreen.hideAsync(); }, [ready]);
-  if (!ready) return null;
+  // the capture block must not wait for fonts and data: it is applied from the first frame (D-049, review finding)
+  if (!ready) return <ScreenProtection />;
 
   return (
     <SafeAreaProvider>
@@ -98,7 +103,7 @@ export default function RootLayout() {
           <Shell />
         </LockGate>
         <ScreenProtection />
-        {!splashShown && <BrandSplash onDone={splashDone} />}
+        {!splashShown && <BrandSplash tagline={taglineFor(launchCount, trSplash('app.taglines', { returnObjects: true }) as string[], isTeen(birthYear, new Date().getFullYear()))} onDone={splashDone} />}
       </ThemeProvider>
     </SafeAreaProvider>
   );

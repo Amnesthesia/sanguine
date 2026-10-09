@@ -16,7 +16,7 @@ export function widgetSnapshot(i: { prediction: Prediction | undefined; hasCycle
   const model = buildToday({ prediction: i.prediction, hasCycles: i.hasCycles, today: i.today, showEstimate: false, todayFlow: undefined });
   const day = model.dayOfCycle ?? 0;
   const progress = model.ring.kind === 'cycle' ? clamp01(model.ring.dayOfCycle / model.ring.cycleLength) : 0;
-  const base: TodayWidgetProps = { day, progress, appName: i.appName };
+  const base: TodayWidgetProps = { day, progress, appName: i.appName, details: i.descriptive };
   if (!i.descriptive) return base;
   const headline = i18n.t(model.headline.key, model.headline.params);
   const detail = model.subtitle ? i18n.t(model.subtitle.key, model.subtitle.params) : undefined;

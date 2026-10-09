@@ -4,7 +4,7 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 platform="${1:?ios or android}"
-flows=(shell onboarding onboarding-agegate today logging calendar insights settings backup discretion delete notifications)
+flows=(shell onboarding onboarding-agegate today splash logging calendar insights settings backup discretion delete notifications)
 [ "$platform" = ios ] && flows+=(export)
 failed=()
 if [ "$platform" = ios ]; then # the app lock test enrols Face ID; every other flow runs on a phone without a screen lock

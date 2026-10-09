@@ -1,4 +1,5 @@
-// iOS widgets (PLAN.md §8.3, §8.8, P3-5, D-047): the ring miniature and the day count by default; the headline only when
+// iOS widgets (PLAN.md §8.3, §8.8, P3-5, D-047): the ring miniature and the day count on the home screen by default, nothing on
+// the lock screen; the headline only when
 // the user turns widget details on. Rendered by WidgetKit from a snapshot the app writes; the widget never reads the
 // database. Inside the 'widget' function only @expo/ui/swift-ui, no hooks, no module-scope references.
 import { Gauge, HStack, Link, Spacer, Text, VStack } from '@expo/ui/swift-ui';
@@ -13,6 +14,8 @@ export type TodayWidgetProps = {
   progress: number;
   /** Shown as the title: the app's name, or the discreet icon's name. */
   appName: string;
+  /** The user opted in to details (Settings, Notifications and widgets). Lock-screen widgets show nothing about the cycle without it. */
+  details: boolean;
   headline?: string;
   detail?: string;
 };
@@ -20,6 +23,11 @@ export type TodayWidgetProps = {
 function TodayWidget(props: TodayWidgetProps, env: WidgetEnvironment) {
   'widget';
   const dayText = props.day > 0 ? `Day ${props.day}` : 'No cycle yet';
+  // Lock-screen widgets are readable without unlocking the phone, so they carry nothing about the cycle unless the user opted in (PLAN.md §8.8)
+  const lockScreen = env.widgetFamily === 'accessoryCircular' || env.widgetFamily === 'accessoryRectangular' || env.widgetFamily === 'accessoryInline';
+  if (lockScreen && !props.details) {
+    return <Text modifiers={[font({ size: 14, weight: 'semibold' }), minimumScaleFactor(0.5)]}>{props.appName}</Text>;
+  }
   if (env.widgetFamily === 'accessoryCircular') {
     return (
       <Gauge value={props.progress} min={0} max={1} modifiers={[gaugeStyle('circular')]} currentValueLabel={<Text modifiers={[font({ size: 18, weight: 'semibold' }), minimumScaleFactor(0.5)]}>{props.day > 0 ? String(props.day) : '–'}</Text>}>
@@ -31,7 +39,7 @@ function TodayWidget(props: TodayWidgetProps, env: WidgetEnvironment) {
     return <Text modifiers={[font({ size: 14, weight: 'semibold' })]}>{props.headline ? `${dayText} · ${props.headline}` : dayText}</Text>;
   }
   const ring = (
-    <Gauge value={props.progress} min={0} max={1} modifiers={[gaugeStyle('circular'), tint('#9E2A3C')]} currentValueLabel={<Text modifiers={[font({ size: 22, weight: 'semibold' }), minimumScaleFactor(0.5)]}>{props.day > 0 ? String(props.day) : '–'}</Text>}>
+    <Gauge value={props.progress} min={0} max={1} modifiers={[gaugeStyle('circular'), tint(env.colorScheme === 'dark' ? '#D4607A' : '#9E2A3C')]} currentValueLabel={<Text modifiers={[font({ size: 22, weight: 'semibold' }), minimumScaleFactor(0.5)]}>{props.day > 0 ? String(props.day) : '–'}</Text>}>
       <Text>{dayText}</Text>
     </Gauge>
   );

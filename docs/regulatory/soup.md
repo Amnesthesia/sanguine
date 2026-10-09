@@ -6,8 +6,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | Package | Installed | Range | Role | Used by |
 | --- | --- | --- | --- | --- |
 | @biomejs/biome | 2.5.15 | ^2.5.15 | dev/build only | root |
-| @expo-google-fonts/cinzel | 0.4.2 | ^0.4.2 | ships in app | apps/mobile |
-| @expo-google-fonts/dancing-script | 0.4.2 | ^0.4.2 | ships in app | apps/mobile, tools/brand |
+| @expo-google-fonts/cormorant-garamond | 0.4.1 | ^0.4.1 | ships in app | apps/mobile |
 | @expo/ui | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
 | @noble/ciphers | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
 | @noble/hashes | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
@@ -16,7 +15,6 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | @testing-library/react | 16.3.3 | ^16.3.3 | dev/build only | root |
 | @types/better-sqlite3 | 9.6.0 | ^9.6.0 | dev/build only | root |
 | @types/node | 22.20.5 | ^22.0.0 | dev/build only | root |
-| @types/opentype.js | 1.3.10 | ^1.3.10 | dev/build only | tools/brand |
 | @types/react | 19.2.18 | ~19.2.2 | dev/build only | apps/mobile |
 | better-sqlite3 | 13.0.3 | ^13.0.3 | dev/build only | root |
 | eslint | 9.39.5 | ^9.0.0 | dev/build only | apps/mobile |
@@ -53,7 +51,6 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | fflate | 0.8.3 | ^0.8.3 | ships in app | apps/mobile |
 | i18next | 26.4.2 | ^26.4.2 | ships in app | apps/mobile |
 | jsdom | 30.1.2 | ^30.1.2 | dev/build only | root |
-| opentype.js | 2.0.0 | ^2.0.0 | dev/build only | tools/brand |
 | react | 19.2.3 | 19.2.3 | ships in app | apps/mobile, root |
 | react-dom | 19.2.3 | ^19.2.3 | dev/build only | root |
 | react-i18next | 17.0.16 | ^17.0.16 | ships in app | apps/mobile |

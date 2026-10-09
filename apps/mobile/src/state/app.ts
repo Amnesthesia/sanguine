@@ -23,6 +23,8 @@ interface AppState {
   error?: string;
   /** The database exists but this phone's key does not open it (D-043). */
   keyMismatch?: boolean;
+  /** How many times the app has been opened (this launch included); drives the splash tagline (D-049). */
+  launchCount: number;
   db?: Database;
   store?: EventStore;
   prefs: Prefs;
@@ -56,14 +58,17 @@ export const useApp = create<AppState>((set, get) => ({
   profile: {},
   onboarded: false,
   today: todayLocal(),
+  launchCount: 0,
   version: 0,
   nextReminder: undefined,
 
   async init() {
     try {
       const { db, store } = await appData();
-      const [prefs, onboarded] = await Promise.all([loadPrefs(db), getSetting(db, 'onboarded', false)]);
-      set({ db, store, prefs, onboarded });
+      const [prefs, onboarded, launches] = await Promise.all([loadPrefs(db), getSetting(db, 'onboarded', false), getSetting(db, 'launchCount', 0)]);
+      const launchCount = launches + 1;
+      await setSetting(db, 'launchCount', launchCount);
+      set({ db, store, prefs, onboarded, launchCount });
       await get().refresh();
       set({ status: 'ready' });
     } catch (e) {

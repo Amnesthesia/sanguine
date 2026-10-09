@@ -1,10 +1,16 @@
 import { ENGINE_BUILD_HASH, ENGINE_VERSION } from '@sanguine/engine';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
+import lockupDark from '../../../assets/brand/splash-lockup-dark.png';
+import lockup from '../../../assets/brand/splash-lockup.png';
+import { isTeen } from '@/data/prefs';
+import { BRAND } from '@/features/splash/BrandSplash';
+import { taglineFor } from '@/features/splash/tagline';
+import { useApp } from '@/state/app';
+import { useTheme } from '@/theme';
 import about from '../../../../../copy/about.en-AU.json';
 import glossary from '../../../../../copy/glossary.en-AU.json';
-import { BRAND_RED } from '@/features/splash/BrandSplash';
 import { Card } from '@/ui/Card';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
@@ -12,11 +18,18 @@ import { Text } from '@/ui/Text';
 
 export default function AboutScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const brand = BRAND[theme.scheme]; // the brand field lives here and on the splash only (D-051)
+  const launchCount = useApp((s) => s.launchCount);
+  const birthYear = useApp((s) => s.profile.birthYear);
+  const tagline = taglineFor(launchCount, t('app.taglines', { returnObjects: true }) as string[], isTeen(birthYear, new Date().getFullYear()));
   const version = Constants.expoConfig?.version ?? '0';
   return (
     <SubScreen testID="screen-about" title={t('settings.about.title')}>
-      <View testID="about-band" accessible accessibilityRole="image" accessibilityLabel={t('app.name')} style={{ height: 96, borderRadius: 16, backgroundColor: BRAND_RED, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: '#FFFFFF', fontFamily: 'DancingScript_700Bold', fontSize: 48, lineHeight: 60 }} accessibilityElementsHidden>{t('app.name')}</Text>
+      <View testID="about-band" accessible accessibilityRole="image" accessibilityLabel={t('app.name')} style={{ borderRadius: theme.radius.card, backgroundColor: brand.field, alignItems: 'center', paddingVertical: 28, gap: 18 }}>
+        <Image source={theme.scheme === 'dark' ? lockupDark : lockup} style={{ width: 200, height: 200 * (881 / 780) }} resizeMode="contain" accessibilityIgnoresInvertColors />
+        <View style={{ width: 200, height: 1, backgroundColor: brand.ink, opacity: 0.6 }} />
+        {tagline ? <Text testID="about-tagline" caps variant="caption" style={{ color: brand.text, textAlign: 'center', paddingHorizontal: 24, fontSize: 13, lineHeight: 20 }}>{tagline}</Text> : null}
       </View>
       <Card>
         <Text testID="about-version">{t('settings.about.version', { v: version })}</Text>

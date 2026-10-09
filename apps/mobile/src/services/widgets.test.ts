@@ -15,7 +15,7 @@ const snap = (h: History, today: ISODate, descriptive: boolean) =>
 describe('widget snapshot (P3-5, §8.8 discreet by default)', () => {
   it('default: the day and the ring only, no health words', () => {
     const s = snap(hist([28, 30, 29]), '2026-10-10', false);
-    expect(s).toEqual({ day: 10, progress: expect.closeTo(10 / 29, 2), appName: 'Sanguine' });
+    expect(s).toEqual({ day: 10, progress: expect.closeTo(10 / 29, 2), appName: 'Sanguine', details: false });
     expect(JSON.stringify(s)).not.toMatch(/period|ovulation|fertile/i);
   });
   it('details on: the Today headline and subtitle text', () => {

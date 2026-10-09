@@ -11,6 +11,6 @@
     "fertile window": "The days around ovulation shown with a likelihood. Darker means more likely to be in the window.",
     "biomarker": "A measurable sign such as temperature, an ovulation test or cervical mucus."
   },
-  "preferred": { "typical range": "Use instead of a verdict word.", "people who menstruate": "Inclusive default for general copy." },
+  "preferred": { "typical range": "Use instead of a verdict word.", "women": "The audience word in general copy (client decision, D-050)." },
   "confidenceWords": { "high": "confident", "medium": "fair estimate", "low": "rough estimate", "none": "" }
 }

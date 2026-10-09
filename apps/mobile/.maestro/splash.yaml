@@ -1,5 +1,5 @@
 appId: ${APP_ID}
-name: Brand splash - wordmark and tagline fade in, then hand over (D-045)
+name: Brand splash - lock-up, rule and one of six taglines fade in, then hand over (D-049)
 ---
 - runFlow:
     file: _open.yaml
@@ -16,7 +16,7 @@ name: Brand splash - wordmark and tagline fade in, then hand over (D-045)
       id: brand-splash
     timeout: 30000
 - takeScreenshot: splash-fade
-- assertVisible: "SANGUINE"
+- assertVisible: "(Blood demands blood\\.|The River of Blood never empties.*|By blood bound, by brass crowned\\.|Offerings of bone, rivers of red\\.|The earth drinks deep.*|An ocean of red for the Lord of Rage\\.)"
 - takeScreenshot: splash-tagline
 - extendedWaitUntil:
     notVisible:
