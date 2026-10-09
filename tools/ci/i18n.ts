@@ -33,7 +33,10 @@ export function unflatten(rows: Array<[string, string]>): Tree {
     let cur = root;
     parts.forEach((p, i) => {
       if (i === parts.length - 1) cur[p] = text;
-      else cur = (cur[p] ??= {}) as Record<string, unknown>;
+      else {
+        cur[p] ??= {};
+        cur = cur[p] as Record<string, unknown>;
+      }
     });
   }
   const arrays = (n: unknown): unknown => {

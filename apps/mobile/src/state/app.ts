@@ -7,6 +7,11 @@ import { wipeAll } from '@/data/wipe';
 import { deleteDeviceSecret, deleteNoteKey } from '@/services/secrets';
 import { removeAllTempFiles } from '@/services/tempFiles';
 import { loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
+import { sqliteLinks } from '@/data/healthLinks';
+import { mergeReports } from '@/data/healthSync';
+import { syncHealthOnce, watchHealth } from '@/services/health';
+import type { SyncReport } from '@sanguine/health-adapter';
+import { AppState as RNAppState, Platform } from 'react-native';
 import type { Profile } from '@/data/project';
 import { getSetting, setSetting } from '@/data/settings';
 import type { EventStore } from '@/data/store';
@@ -17,6 +22,17 @@ import { syncReminder } from '@/services/notifications';
 import { displayName, setDiscreetIcon } from '@/services/discreet';
 import { syncWidget, widgetSnapshot } from '@/services/widgets';
 import { todayLocal } from '@/services/clock';
+
+export type HealthAsk = SyncReport['asks'][number] & { platform: 'healthkit' | 'healthconnect' };
+export interface HealthState { running: boolean; lastAt?: string; last?: SyncReport; asks: HealthAsk[] }
+const HEALTH_MIN_GAP_MS = 60_000;
+let healthTimer: ReturnType<typeof setTimeout> | undefined;
+let unwatchHealth: (() => void) | undefined;
+let foregroundHooked = false;
+function rewatch(types: Prefs['healthTypes'], run: () => void) {
+  unwatchHealth?.();
+  unwatchHealth = types.length > 0 ? watchHealth(types, run) : undefined;
+}
 
 interface AppState {
   status: 'loading' | 'ready' | 'error';
@@ -38,6 +54,10 @@ interface AppState {
   version: number;
   /** Date the next local reminder will fire, if one is scheduled. */
   nextReminder: string | undefined;
+  /** Health sync (PLAN.md §7): the last pass and the deletions the user has to answer. */
+  health: HealthState;
+  syncHealth: (o?: { force?: boolean }) => Promise<SyncReport | null>;
+  resolveHealthAsk: (ask: HealthAsk, removeHere: boolean) => Promise<void>;
   syncReminders: () => Promise<void>;
   syncWidgets: () => Promise<void>;
   init: () => Promise<void>;
@@ -61,6 +81,7 @@ export const useApp = create<AppState>((set, get) => ({
   launchCount: 0,
   version: 0,
   nextReminder: undefined,
+  health: { running: false, asks: [] },
 
   async init() {
     try {
@@ -68,9 +89,16 @@ export const useApp = create<AppState>((set, get) => ({
       const [prefs, onboarded, launches] = await Promise.all([loadPrefs(db), getSetting(db, 'onboarded', false), getSetting(db, 'launchCount', 0)]);
       const launchCount = launches + 1;
       await setSetting(db, 'launchCount', launchCount);
-      set({ db, store, prefs, onboarded, launchCount });
+      const asks = await getSetting<HealthAsk[]>(db, 'healthAsks', []);
+      set({ db, store, prefs, onboarded, launchCount, health: { running: false, asks } });
       await get().refresh();
       set({ status: 'ready' });
+      void get().syncHealth({ force: true });
+      rewatch(get().prefs.healthTypes, () => void get().syncHealth({ force: true }));
+      if (!foregroundHooked) {
+        foregroundHooked = true;
+        RNAppState.addEventListener('change', (st) => { if (st === 'active') void get().syncHealth(); });
+      }
     } catch (e) {
       set({ status: 'error', error: (e as Error).message, keyMismatch: e instanceof KeyMismatchError });
     }
@@ -93,6 +121,43 @@ export const useApp = create<AppState>((set, get) => ({
     set((s) => ({ today, history, settings: inputs.settings, profile, prediction, version: s.version + 1 }));
     void get().syncReminders();
     void get().syncWidgets();
+    void get().syncHealth();
+  },
+
+  /** One health pass: at most one at a time and one a minute (a skipped call is retried once the minute is up), force skips the minute. */
+  async syncHealth(o) {
+    const { db, store, prefs, health } = get();
+    if (!db || !store || prefs.healthTypes.length === 0 || health.running) return null;
+    const wait = health.lastAt ? HEALTH_MIN_GAP_MS - (Date.now() - Date.parse(health.lastAt)) : 0;
+    if (!o?.force && wait > 0) {
+      healthTimer ??= setTimeout(() => { healthTimer = undefined; void get().syncHealth(); }, wait);
+      return null;
+    }
+    set({ health: { ...health, running: true } });
+    let report: SyncReport | null = null;
+    try {
+      report = await syncHealthOnce(db, store, prefs);
+    } catch (e) {
+      report = { ...mergeReports([]), failed: [{ op: 'read', error: (e as Error).message }] };
+    }
+    const platform = Platform.OS === 'ios' ? 'healthkit' : 'healthconnect';
+    const asks = [...get().health.asks, ...(report?.asks ?? []).map((a) => ({ ...a, platform }) as HealthAsk)];
+    if (report?.asks.length) await setSetting(db, 'healthAsks', asks);
+    set({ health: { running: false, lastAt: new Date().toISOString(), ...(report ? { last: report } : {}), asks } });
+    if (report && report.imported + report.retracted > 0) await get().refresh();
+    return report;
+  },
+
+  async resolveHealthAsk(ask, removeHere) {
+    const { db, store, health } = get();
+    if (!db || !store) return;
+    if (removeHere) await store.retract(ask.eventId);
+    else await sqliteLinks(db).remove(ask.platform, ask.externalId); // unlinked, so the next pass writes it again
+    const asks = health.asks.filter((a) => a.externalId !== ask.externalId);
+    await setSetting(db, 'healthAsks', asks);
+    set({ health: { ...health, asks } });
+    await get().refresh();
+    void get().syncHealth({ force: true });
   },
 
   /** Hands the widget today's snapshot: the ring and the day, plus the headline only if the user opted in (§8.8). */
@@ -124,6 +189,7 @@ export const useApp = create<AppState>((set, get) => ({
     set({ prefs: next });
     if (patch.notifications || patch.discreetIcon !== undefined) void get().syncReminders();
     if (patch.widgetDetails !== undefined || patch.discreetIcon !== undefined) void get().syncWidgets();
+    if (patch.healthTypes) rewatch(next.healthTypes, () => void get().syncHealth({ force: true }));
   },
 
   async muteFlag(code) {
@@ -145,10 +211,11 @@ export const useApp = create<AppState>((set, get) => ({
     if (!db) return;
     await wipeAll(db);
     await Promise.all([deleteDeviceSecret(), deleteNoteKey()]);
+    rewatch([], () => {});
     removeAllTempFiles();
     // the widget and the home-screen icon hold nothing of the deleted data: reset the icon and blank the widget
     void setDiscreetIcon(false).catch(() => {});
-    set({ prefs: DEFAULT_PREFS, profile: {}, onboarded: false, history: undefined, settings: undefined, prediction: undefined, version: get().version + 1 });
+    set({ prefs: DEFAULT_PREFS, health: { running: false, asks: [] }, profile: {}, onboarded: false, history: undefined, settings: undefined, prediction: undefined, version: get().version + 1 });
     await get().refresh();
   },
 

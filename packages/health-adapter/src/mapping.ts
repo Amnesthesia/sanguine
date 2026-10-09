@@ -95,7 +95,7 @@ export function eventValue(e: SinkEvent): RecordValue | null {
     case 'intermenstrual': return { kind: 'bleeding' };
     case 'bbt':
     case 'skin_temp': return { kind: 'temp', celsius: (p.value as { valueC: number }).valueC };
-    case 'lh': { const r = (p.value as { result: string }).result; return { kind: 'lh', result: (r === 'peak' ? 'high' : r) as 'positive' }; }
+    case 'lh': { const r = (p.value as { result: string }).result; return { kind: 'lh', result: (r === 'peak' ? 'positive' : r) as 'positive' }; }
     case 'mucus': return { kind: 'mucus', quality: (p.value as { quality: string }).quality as 'dry' };
     case 'sex': return { kind: 'sex', protected: p.protected === true };
     default: return null;

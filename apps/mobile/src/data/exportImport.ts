@@ -14,11 +14,19 @@ export const EXPORT_VERSION = 1;
 
 export interface ExportResult { zip: Uint8Array; eventCount: number }
 
-export async function exportBundle(db: Database, store: EventStore, clock: Clock): Promise<ExportResult> {
-  const events = await store.events();
-  const cycles = await db.all<Record<string, unknown>>('SELECT * FROM cycle ORDER BY start_day');
-  const days = await db.all<Record<string, unknown>>('SELECT * FROM daily_log ORDER BY day');
-  const bios = await db.all<Record<string, unknown>>('SELECT * FROM biomarker ORDER BY day, id');
+/** `forBackup` leaves out what came only from HealthKit and the derived CSVs (they would carry the same days): Apple does not allow HealthKit data in iCloud (PLAN.md §7.6). */
+export async function exportBundle(db: Database, store: EventStore, clock: Clock, o: { forBackup?: boolean } = {}): Promise<ExportResult> {
+  let events = await store.events();
+  if (o.forBackup) {
+    const fromHealthKit = new Set((await db.all<{ event_id: string }>(
+      "SELECT l.event_id FROM health_link l JOIN event e ON e.id = l.event_id WHERE l.platform = 'healthkit' AND l.direction = 'read' AND e.provenance = 'imported'")).map((r) => r.event_id));
+    events = events.filter((e) => !fromHealthKit.has(e.id) && !(e.retracts && fromHealthKit.has(e.retracts)));
+    // a retract of a retract of a left-out event would dangle too: drop until stable
+    for (let again = true; again;) { const ids = new Set(events.map((e) => e.id)); const kept = events.filter((e) => !e.retracts || ids.has(e.retracts)); again = kept.length !== events.length; events = kept; }
+  }
+  const cycles = o.forBackup ? [] : await db.all<Record<string, unknown>>('SELECT * FROM cycle ORDER BY start_day');
+  const days = o.forBackup ? [] : await db.all<Record<string, unknown>>('SELECT * FROM daily_log ORDER BY day');
+  const bios = o.forBackup ? [] : await db.all<Record<string, unknown>>('SELECT * FROM biomarker ORDER BY day, id');
   const files: Record<string, Uint8Array> = {
     'events.jsonl': strToU8(events.map((e) => JSON.stringify(e)).join('\n') + (events.length ? '\n' : '')),
     'cycles.csv': strToU8(toCsv(
@@ -42,6 +50,7 @@ export async function exportBundle(db: Database, store: EventStore, clock: Clock
     'manifest.json': strToU8(JSON.stringify({ format: EXPORT_FORMAT, version: EXPORT_VERSION, exported_at: clock.iso(), engine_version: ENGINE_VERSION, events: events.length, cycles: cycles.length }, null, 2)),
     'README.md': strToU8(exportCopy.readme),
   };
+  if (o.forBackup) for (const f of ['cycles.csv', 'daily.csv', 'biomarkers.csv', 'README.md']) delete files[f];
   return { zip: zipSync(files), eventCount: events.length };
 }
 

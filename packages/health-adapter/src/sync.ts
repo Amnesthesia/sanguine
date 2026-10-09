@@ -14,6 +14,7 @@ export async function syncType(d: PlatformDriver, links: LinkStore, sink: EventS
   // ---- pull ----
   let read: ReadResult;
   try { read = await d.read(type, await links.anchor(platform, type), o.since); } catch (e) { report.failed.push({ op: 'read', error: msg(e) }); return report; }
+  for (const k of read.skipped ?? []) report.failed.push({ op: 'read', externalId: k.externalId, error: k.reason });
   const wroteHashes = await links.wroteHashesSince(platform, new Date(Date.parse(o.now) - ECHO_WINDOW_MS).toISOString());
   let events = await sink.events();
   const liveOf = () => events.filter((e) => !e.retracted && syncedType(e) === type);
@@ -70,7 +71,7 @@ export async function syncType(d: PlatformDriver, links: LinkStore, sink: EventS
     if (!link) continue;
     const ev = events.find((e) => e.id === link.eventId);
     if (ev && !ev.retracted) {
-      if (link.direction === 'wrote' && ev.provenance === 'manual') { report.asks.push({ eventId: ev.id, externalId: id, reason: 'deleted_remote_manual' }); continue; }
+      if (link.direction === 'wrote' && ev.provenance === 'manual') { report.asks.push({ eventId: ev.id, externalId: id, day: ev.effectiveDay, reason: 'deleted_remote_manual' }); continue; }
       if (link.direction === 'read' && ev.provenance === 'imported') await retract(ev);
     }
     await links.remove(platform, id);

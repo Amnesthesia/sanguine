@@ -29,7 +29,14 @@ export interface HealthRecord {
 }
 export type NewRecord = Omit<HealthRecord, 'externalId' | 'source' | 'modifiedAt'>;
 
-export interface ReadResult { records: HealthRecord[]; deleted: string[]; anchor: string | null; throttled?: boolean }
+export interface ReadResult {
+  records: HealthRecord[];
+  deleted: string[];
+  anchor: string | null;
+  throttled?: boolean;
+  /** Records the driver could not map without guessing (for example sexual activity with no protection flag): reported, never imported. */
+  skipped?: Array<{ externalId: string; reason: string }>;
+}
 export interface PlatformDriver {
   platform: Platform;
   ownSource: string; // our bundle id or package: records from it are echoes
@@ -65,7 +72,7 @@ export interface SyncOptions { now: string; deviceZone: string; since: string }
 export interface SyncReport {
   imported: number; echoed: number; duplicates: number; conflicts: number; retracted: number; written: number; deletedRemote: number;
   /** Deletions the user must confirm (§7.3: a manually confirmed entry is never retracted silently). */
-  asks: Array<{ eventId: string; externalId: string; reason: 'deleted_remote_manual' }>;
+  asks: Array<{ eventId: string; externalId: string; day: ISODate; reason: 'deleted_remote_manual' }>;
   failed: Array<{ op: 'read' | 'write' | 'delete'; eventId?: string; externalId?: string; error: string }>;
 }
 export const emptyReport = (): SyncReport => ({ imported: 0, echoed: 0, duplicates: 0, conflicts: 0, retracted: 0, written: 0, deletedRemote: 0, asks: [], failed: [] });

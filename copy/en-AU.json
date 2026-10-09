@@ -423,7 +423,65 @@
     },
     "health": {
       "title": "Health sync",
-      "unavailable": "Health sync arrives in a later update."
+      "unavailable": "Health sync is not available on this phone.",
+      "intro": "Choose what to share with {platform}. Nothing is switched on until you ask, and each type is its own choice.",
+      "shared": "Anything written to {platform} is governed by its privacy rules and is visible to other apps you have allowed.",
+      "readWrite": "Read and write",
+      "readOnly": "Read only",
+      "types": {
+        "period_flow": {
+          "title": "Period flow",
+          "body": "Sanguine imports periods you logged in {platform} and writes the ones you log here, so both stay in step."
+        },
+        "intermenstrual": {
+          "title": "Spotting between periods",
+          "body": "Bleeding between periods is imported and written the same way."
+        },
+        "bbt": {
+          "title": "Basal body temperature",
+          "body": "Morning temperatures are imported and written in °C."
+        },
+        "skin_temp": {
+          "title": "Wrist temperature",
+          "body": "Nightly wrist temperature is read to help estimate ovulation after the fact. It is never written back.",
+          "bodyTeen": "Nightly wrist temperature is read to improve your cycle estimates. It is never written back."
+        },
+        "lh": {
+          "title": "Ovulation tests",
+          "body": "Test results are imported and written."
+        },
+        "mucus": {
+          "title": "Cervical mucus",
+          "body": "Observations are imported and written."
+        },
+        "sex": {
+          "title": "Sexual activity",
+          "body": "Imported and written with whether protection was used. Entries without that detail are not imported."
+        }
+      },
+      "since": "Import from",
+      "window": {
+        "30d": "30 days",
+        "1y": "1 year",
+        "2y": "2 years"
+      },
+      "windowNote": "Applies the next time you switch a type on.",
+      "offNote": "Switching a type off stops syncing. Entries already imported stay in Sanguine.",
+      "syncNow": "Sync now",
+      "syncing": "Syncing…",
+      "lastSync": "Last sync {when}",
+      "never": "Not synced yet",
+      "result": "Added {imported}, matched {duplicates} you already had, removed {retracted}, wrote {written}.",
+      "failed": "{n} could not be synced.",
+      "emptyHint": "Nothing came back. If you expected data, check Sanguine's access in the Health settings.",
+      "openSettings": "Open Health settings",
+      "denied": "Sanguine could not ask for access.",
+      "ask": {
+        "title": "Removed in {platform}",
+        "body": "{platform} deleted an entry you logged yourself on {day}. Remove it here too?",
+        "remove": "Remove it here",
+        "keep": "Keep it"
+      }
     },
     "privacy": {
       "title": "Privacy and data",

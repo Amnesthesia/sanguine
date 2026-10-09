@@ -1,7 +1,7 @@
 import { argon2id } from '@noble/hashes/argon2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import { describe, expect, it } from 'vitest';
-import { BackupError, DEFAULT_KDF, HEADER_BYTES, openBackup, readHeader, sealBackup } from './backup';
+import { BackupError, DEFAULT_KDF, HEADER_BYTES, openBackup, precomputeKey, readHeader, sealBackup } from './backup';
 import { newDeviceSecret, recoveryWordsToSecret, secretToRecoveryWords } from './recovery';
 
 /** Deterministic "random": fills each request with a counter-offset pattern. */
@@ -147,3 +147,36 @@ describe('recovery code', () => {
 // XChaCha20-Poly1305 (PyNaCl), so the format is not only self-consistent.
 const PINNED =
   '534742310101000001000000000101000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728000000283d9cedf5abec7940c4f30194d29c11d72824a45c961001015b2140667537c819e7f9d136bf5bb69ff09b6da6c265cd57319b0b4423bf445c206ff94fbdb44fcfd3bd9987d07e39a6';
+
+describe('precomputed key (D-061)', () => {
+  const fast = { memKiB: 64, iterations: 1, parallelism: 1 };
+  const rnd = (n: number) => Uint8Array.from({ length: n }, (_, i) => (i * 7 + n) % 256);
+  const secret = new Uint8Array(32).fill(9);
+  const payload = new TextEncoder().encode('events');
+  it('a file sealed without the passphrase opens with the passphrase', async () => {
+    const pre = await precomputeKey('correct horse', rnd, fast);
+    const file = await sealBackup({ payload, passphrase: '', deviceSecret: secret, random: rnd, precomputed: pre });
+    expect(new TextDecoder().decode(await openBackup(file, 'correct horse', secret))).toBe('events');
+    await expect(openBackup(file, 'wrong', secret)).rejects.toMatchObject({ code: 'auth' });
+  });
+  it('reuses the salt but never the nonce, so two files differ', async () => {
+    const pre = await precomputeKey('correct horse', rnd, fast);
+    let n = 0;
+    const fresh = (k: number) => Uint8Array.from({ length: k }, (_, i) => (i + 31 * ++n) % 256);
+    const a = await sealBackup({ payload, passphrase: '', deviceSecret: secret, random: fresh, precomputed: pre });
+    const b = await sealBackup({ payload, passphrase: '', deviceSecret: secret, random: fresh, precomputed: pre });
+    expect(readHeader(a).salt).toEqual(readHeader(b).salt);
+    expect(readHeader(a).nonce).not.toEqual(readHeader(b).nonce);
+    expect(a).not.toEqual(b);
+  });
+  it('still needs the device secret', async () => {
+    const pre = await precomputeKey('correct horse', rnd, fast);
+    const file = await sealBackup({ payload, passphrase: '', deviceSecret: secret, random: rnd, precomputed: pre });
+    await expect(openBackup(file, 'correct horse', new Uint8Array(32).fill(1))).rejects.toMatchObject({ code: 'auth' });
+  });
+  it('a file made with the older 19 MiB cost still opens (parameters travel in the header)', async () => {
+    const file = await sealBackup({ payload, passphrase: 'pw', deviceSecret: secret, random: rnd, kdf: { memKiB: 19 * 1024, iterations: 2, parallelism: 1 } });
+    expect(readHeader(file).kdf).toEqual({ memKiB: 19 * 1024, iterations: 2, parallelism: 1 });
+    expect(new TextDecoder().decode(await openBackup(file, 'pw', secret))).toBe('events');
+  });
+});

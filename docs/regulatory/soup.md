@@ -8,6 +8,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | @biomejs/biome | 2.5.15 | ^2.5.15 | dev/build only | root |
 | @expo-google-fonts/cormorant-garamond | 0.4.1 | ^0.4.1 | ships in app | apps/mobile |
 | @expo/ui | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
+| @kingstinct/react-native-healthkit | 16.1.0 | 16.1.0 | ships in app | apps/mobile |
 | @noble/ciphers | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
 | @noble/hashes | 2.4.0 | ^2.4.0 | ships in app | packages/crypto |
 | @resvg/resvg-js | 2.6.2 | ^2.6.2 | dev/build only | tools/brand |
@@ -21,7 +22,9 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | eslint-config-expo | 57.0.2 | ~57.0.2 | dev/build only | apps/mobile |
 | expo | 57.0.27 | ~57.0.27 | ships in app | apps/mobile |
 | expo-alternate-app-icons | 8.0.0 | ^8.0.0 | ships in app | apps/mobile |
+| expo-background-task | 57.0.21 | ~57.0.21 | ships in app | apps/mobile |
 | expo-blur | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
+| expo-build-properties | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
 | expo-constants | 57.0.21 | ~57.0.21 | ships in app | apps/mobile |
 | expo-crypto | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-dev-client | 57.0.19 | ~57.0.19 | ships in app | apps/mobile |
@@ -35,6 +38,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-linking | 57.0.12 | ~57.0.12 | ships in app | apps/mobile |
 | expo-local-authentication | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-localization | 57.0.2 | ~57.0.2 | ships in app | apps/mobile |
+| expo-network | 57.0.2 | ~57.0.2 | ships in app | apps/mobile |
 | expo-notifications | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
 | expo-router | 57.0.25 | ~57.0.25 | ships in app | apps/mobile |
 | expo-screen-capture | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
@@ -45,6 +49,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-status-bar | 57.0.1 | ~57.0.1 | ships in app | apps/mobile |
 | expo-symbols | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-system-ui | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
+| expo-task-manager | 57.0.21 | ~57.0.21 | ships in app | apps/mobile |
 | expo-web-browser | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-widgets | 57.0.23 | ~57.0.23 | ships in app | apps/mobile |
 | fast-check | 4.10.2 | ^4.0.0 | dev/build only | root |
@@ -56,6 +61,8 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | react-i18next | 17.0.16 | ^17.0.16 | ships in app | apps/mobile |
 | react-native | 0.86.3 | 0.86.3 | ships in app | apps/mobile |
 | react-native-gesture-handler | 2.32.0 | ~2.32.0 | ships in app | apps/mobile |
+| react-native-health-connect | 4.1.3 | 4.1.3 | ships in app | apps/mobile |
+| react-native-nitro-modules | 0.37.1 | 0.37.1 | ships in app | apps/mobile |
 | react-native-reanimated | 4.5.1 | 4.5.1 | ships in app | apps/mobile |
 | react-native-safe-area-context | 5.7.0 | ~5.7.0 | ships in app | apps/mobile |
 | react-native-screens | 4.26.2 | ~4.26.0 | ships in app | apps/mobile |

@@ -16,7 +16,24 @@
         "monochromeImage": "./assets/brand/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "allowBackup": false
+      "allowBackup": false,
+      "permissions": [
+        "android.permission.health.READ_MENSTRUATION",
+        "android.permission.health.WRITE_MENSTRUATION",
+        "android.permission.health.READ_INTERMENSTRUAL_BLEEDING",
+        "android.permission.health.WRITE_INTERMENSTRUAL_BLEEDING",
+        "android.permission.health.READ_BASAL_BODY_TEMPERATURE",
+        "android.permission.health.WRITE_BASAL_BODY_TEMPERATURE",
+        "android.permission.health.READ_OVULATION_TEST",
+        "android.permission.health.WRITE_OVULATION_TEST",
+        "android.permission.health.READ_CERVICAL_MUCUS",
+        "android.permission.health.WRITE_CERVICAL_MUCUS",
+        "android.permission.health.READ_SEXUAL_ACTIVITY",
+        "android.permission.health.WRITE_SEXUAL_ACTIVITY",
+        "android.permission.health.READ_SKIN_TEMPERATURE",
+        "android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND",
+        "android.permission.health.READ_HEALTH_DATA_HISTORY"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -96,7 +113,27 @@
             }
           }
         ]
-      ]
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "minSdkVersion": 26
+          }
+        }
+      ],
+      "expo-background-task",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Sanguine reads the period flow, intermenstrual bleeding, basal body temperature, wrist temperature, ovulation test, cervical mucus and sexual activity records you switch on in Settings, so your cycle log stays in step with Apple Health. Nothing is shared or sent anywhere.",
+          "NSHealthUpdateUsageDescription": "Sanguine writes the period flow, intermenstrual bleeding, basal body temperature, ovulation test, cervical mucus and sexual activity entries you log, so they appear in Apple Health. Wrist temperature is never written.",
+          "background": true
+        }
+      ],
+      "react-native-health-connect"
     ],
     "experiments": {
       "typedRoutes": true,

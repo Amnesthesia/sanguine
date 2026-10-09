@@ -1,7 +1,9 @@
 // User preferences (PLAN.md §8.2: appearance, tracking options, notifications). Defaults are the most private option (§8.1 rule 6).
 import { isTeenOn } from './age';
 import symptomCatalog from '../../../../copy/symptoms.json';
+import type { HealthType } from '@sanguine/health-adapter';
 import type { Database } from './database';
+import type { HealthWindow } from './healthSync';
 import { getSetting, setSetting } from './settings';
 
 export type ThemePref = 'system' | 'light' | 'dark';
@@ -24,6 +26,9 @@ export interface Prefs {
   discreetIcon: boolean;
   /** Screenshots and the recent-apps thumbnail are blocked (PLAN.md §8.8). On by default. */
   screenProtection: boolean;
+  /** Health types the user switched on (PLAN.md §7.5: none until they ask), and how far back the first import reads. */
+  healthTypes: HealthType[];
+  healthWindow: HealthWindow;
 }
 
 export const DEFAULT_SYMPTOMS: string[] = symptomCatalog.symptoms.filter((s) => s.defaultVisible).map((s) => s.code);
@@ -41,6 +46,8 @@ export const DEFAULT_PREFS: Prefs = {
   widgetDetails: false,
   discreetIcon: false,
   screenProtection: true,
+  healthTypes: [],
+  healthWindow: '2y',
 };
 
 export async function loadPrefs(db: Database): Promise<Prefs> {

@@ -73,6 +73,14 @@ describe('syncedType and eventToRecord', () => {
   });
 });
 
+describe('lh results', () => {
+  it('a peak test is written as positive; high stays high for the driver to decide', () => {
+    const v = (result: string) => eventToRecord(ev('biomarker', { day: '2026-10-09', type: 'lh', value: { result }, source: 'strip' }), BNE)?.value;
+    expect(v('peak')).toEqual({ kind: 'lh', result: 'positive' });
+    expect(v('high')).toEqual({ kind: 'lh', result: 'high' });
+  });
+});
+
 describe('contentHash', () => {
   const v = { kind: 'flow', level: 'light' } as const;
   it('is stable over key order', () => expect(contentHash('2026-10-09', 'period_flow', v)).toBe(contentHash('2026-10-09', 'period_flow', { level: 'light', kind: 'flow' } as never)));

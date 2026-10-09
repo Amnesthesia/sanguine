@@ -37,14 +37,32 @@ export class EventStore {
     return row;
   }
 
-  /** Writes events atomically and rebuilds the projections once. */
+  private deferred = 0;
+  private dirty = false;
+
+  /** Writes events atomically and rebuilds the projections once (or once at the end of the enclosing `batch`). */
   async appendMany(events: NewEvent[]): Promise<EventRow[]> {
     return this.db.transaction(async (tx) => {
       const rows: EventRow[] = [];
       for (const e of events) rows.push(await this.insert(tx, e));
-      await this.rebuildIn(tx);
+      if (this.deferred > 0) this.dirty = true;
+      else await this.rebuildIn(tx);
       return rows;
     });
+  }
+
+  /** Many appends, one projection rebuild at the end (a health import appends hundreds of events; the log is always current, only the projection tables lag inside the batch). */
+  async batch<T>(fn: () => Promise<T>): Promise<T> {
+    this.deferred++;
+    try {
+      return await fn();
+    } finally {
+      this.deferred--;
+      if (this.deferred === 0 && this.dirty) {
+        this.dirty = false;
+        await this.rebuild();
+      }
+    }
   }
   async append(e: NewEvent): Promise<EventRow> {
     return (await this.appendMany([e]))[0] as EventRow;

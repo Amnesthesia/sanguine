@@ -1,5 +1,6 @@
 import { sql as m001 } from './001_init';
 import { sql as m002 } from './002_post_pregnancy';
+import { sql as m003 } from './003_health_link_written_at';
 
 export interface Migration { version: number; name: string; sql: string }
 
@@ -7,4 +8,5 @@ export interface Migration { version: number; name: string; sql: string }
 export const MIGRATIONS: Migration[] = [
   { version: 1, name: 'init', sql: m001 },
   { version: 2, name: 'post_pregnancy_flow_kind', sql: m002 },
+  { version: 3, name: 'health_link_written_at', sql: m003 },
 ];

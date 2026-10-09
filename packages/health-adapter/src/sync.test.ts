@@ -70,6 +70,17 @@ describe('import', () => {
   });
 });
 
+describe('records a driver cannot map', () => {
+  it('are reported as failed reads and never imported', async () => {
+    d.seed([flowRec('2026-10-05')]);
+    const read = d.read.bind(d);
+    d.read = async (t, a, s) => ({ ...(await read(t, a, s)), skipped: [{ externalId: 's1', reason: 'protection unknown' }] });
+    const rep = await run();
+    expect(rep.failed).toEqual([{ op: 'read', externalId: 's1', error: 'protection unknown' }]);
+    expect(rep.imported).toBe(1);
+  });
+});
+
 describe('echo prevention (§7.3)', () => {
   it('drops records from our own source', async () => {
     d.seed([flowRec('2026-10-05', 'medium', { source: d.ownSource })]);
@@ -178,7 +189,7 @@ describe('deletions (§7.3)', () => {
     const written = d.writes[0];
     d.remoteDelete(written?.externalId as string);
     const rep = await run();
-    expect(rep.asks).toEqual([{ eventId: sink.list[0]?.id, externalId: written?.externalId, reason: 'deleted_remote_manual' }]);
+    expect(rep.asks).toEqual([{ eventId: sink.list[0]?.id, externalId: written?.externalId, day: '2026-10-05', reason: 'deleted_remote_manual' }]);
     expect(sink.list[0]?.retracted).toBe(false);
     expect(d.writes).toHaveLength(1);
   });

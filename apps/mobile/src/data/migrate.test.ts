@@ -28,10 +28,17 @@ describe('migrations', () => {
     await migrate(db, MIGRATIONS.slice(0, 1));
     await ev('e1');
     await db.run("INSERT INTO daily_log (day, flow, flow_kind, updated_event) VALUES ('2026-10-09', 'medium', 'period', 'e1')");
-    expect(await migrate(db)).toMatchObject({ applied: [2] });
+    expect(await migrate(db)).toMatchObject({ applied: MIGRATIONS.slice(1).map((m) => m.version) });
     expect(await db.all('SELECT day, flow_kind FROM daily_log')).toEqual([{ day: '2026-10-09', flow_kind: 'period' }]);
     await db.run("INSERT INTO daily_log (day, flow, flow_kind, updated_event) VALUES ('2026-10-10', 'heavy', 'post_pregnancy', 'e1')");
     await expect(db.run("INSERT INTO daily_log (day, flow, flow_kind, updated_event) VALUES ('2026-10-11', 'heavy', 'nonsense', 'e1')")).rejects.toThrow(/CHECK/);
+  });
+  it('003 adds written_at to health_link and keeps existing links (P4-1)', async () => {
+    await migrate(db, MIGRATIONS.slice(0, 2));
+    await ev('e1');
+    await db.run("INSERT INTO health_link (event_id, platform, external_id, direction, content_hash) VALUES ('e1', 'healthkit', 'x', 'read', 'h')");
+    expect(await migrate(db)).toMatchObject({ applied: [3] });
+    expect(await db.all('SELECT external_id, written_at FROM health_link')).toEqual([{ external_id: 'x', written_at: '' }]);
   });
   it('applies later migrations in order and only the pending ones', async () => {
     await migrate(db);

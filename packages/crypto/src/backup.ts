@@ -35,7 +35,10 @@ export interface SealOptions {
   random: Random; // required: the package never reaches for a global RNG
   kdf?: Partial<KdfParams>;
   onProgress?: (fraction: number) => void;
+  /** A key from `precomputeKey`: skips the KDF so an automatic upload needs no passphrase (D-061). The file still opens with the passphrase. */
+  precomputed?: PrecomputedKey;
 }
+export interface PrecomputedKey { salt: Uint8Array; k0: Uint8Array; kdf: KdfParams }
 
 const enc = new TextEncoder();
 const norm = (s: string) => s.normalize('NFKC');
@@ -56,11 +59,23 @@ function concat(...xs: Uint8Array[]): Uint8Array {
   return out;
 }
 
-async function deriveKeys(passphrase: string, salt: Uint8Array, kdf: KdfParams, deviceSecret: Uint8Array, onProgress?: (f: number) => void) {
-  const k0 = await argon2idAsync(enc.encode(norm(passphrase)), salt, {
+function argon(passphrase: string, salt: Uint8Array, kdf: KdfParams, onProgress?: (f: number) => void): Promise<Uint8Array> {
+  return argon2idAsync(enc.encode(norm(passphrase)), salt, {
     t: kdf.iterations, m: kdf.memKiB, p: kdf.parallelism, dkLen: 32, asyncTick: 10, maxmem: MAX_KDF.memKiB * 1024 * 2,
     ...(onProgress ? { onProgress } : {}),
   });
+}
+
+/** Runs the KDF once. The result is what `SealOptions.precomputed` takes; keep it only in the system keystore. */
+export async function precomputeKey(passphrase: string, random: Random, kdf?: Partial<KdfParams>, onProgress?: (f: number) => void): Promise<PrecomputedKey> {
+  if (passphrase.length === 0) throw new BackupError('params', 'passphrase must not be empty');
+  const params = { ...DEFAULT_KDF, ...kdf };
+  const salt = random(SALT_BYTES);
+  return { salt, k0: await argon(passphrase, salt, params, onProgress), kdf: params };
+}
+
+async function deriveKeys(passphrase: string, salt: Uint8Array, kdf: KdfParams, deviceSecret: Uint8Array, onProgress?: (f: number) => void, k0Known?: Uint8Array) {
+  const k0 = k0Known ?? (await argon(passphrase, salt, kdf, onProgress));
   const base = new Uint8Array(32);
   for (let i = 0; i < 32; i++) base[i] = (k0[i] as number) ^ (deviceSecret[i] as number);
   return {
@@ -86,13 +101,13 @@ function writeHeader(kdf: KdfParams, salt: Uint8Array, nonce: Uint8Array, ctLen:
 
 export async function sealBackup(o: SealOptions): Promise<Uint8Array> {
   checkSecret(o.deviceSecret);
-  if (o.passphrase.length === 0) throw new BackupError('params', 'passphrase must not be empty');
-  const kdf = { ...DEFAULT_KDF, ...o.kdf };
+  if (o.passphrase.length === 0 && !o.precomputed) throw new BackupError('params', 'passphrase must not be empty');
+  const kdf = o.precomputed ? o.precomputed.kdf : { ...DEFAULT_KDF, ...o.kdf };
   if (kdf.memKiB > MAX_KDF.memKiB || kdf.iterations > MAX_KDF.iterations || kdf.parallelism > MAX_KDF.parallelism || kdf.memKiB < 8 * kdf.parallelism || kdf.iterations < 1)
     throw new BackupError('params', 'KDF parameters out of range');
-  const salt = o.random(SALT_BYTES);
+  const salt = o.precomputed ? o.precomputed.salt : o.random(SALT_BYTES);
   const nonce = o.random(NONCE_BYTES);
-  const { encKey, macKey } = await deriveKeys(o.passphrase, salt, kdf, o.deviceSecret, o.onProgress);
+  const { encKey, macKey } = await deriveKeys(o.passphrase, salt, kdf, o.deviceSecret, o.onProgress, o.precomputed?.k0);
   const header = writeHeader(kdf, salt, nonce, o.payload.length + TAG_BYTES);
   const ct = xchacha20poly1305(encKey, nonce, header).encrypt(o.payload);
   const mac = hmac(sha256, macKey, concat(header, ct));
