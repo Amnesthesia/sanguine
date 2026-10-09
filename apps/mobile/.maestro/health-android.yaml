@@ -1,0 +1,44 @@
+appId: ${APP_ID}
+name: Health sync (Android) - Health Connect permission screen, first pass runs without error
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=empty
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- openLink: ${LINKBASE}settings/health
+- extendedWaitUntil:
+    visible:
+      id: health-row-period_flow
+    timeout: 30000
+- assertVisible:
+    id: health-row-skin_temp
+- takeScreenshot: rows
+- tapOn:
+    id: health-row-period_flow
+# the Health Connect permission screen
+- extendedWaitUntil:
+    visible: "(Allow all|Allow|Sanguine)"
+    timeout: 30000
+- takeScreenshot: permission
+- runFlow:
+    when:
+      visible: "Allow all"
+    commands:
+      - tapOn: "Allow all"
+- runFlow:
+    when:
+      visible: "^Allow$"
+    commands:
+      - tapOn: "^Allow$"
+- extendedWaitUntil:
+    visible:
+      id: health-result
+    timeout: 60000
+- assertVisible: "Added 0.*"
+- assertNotVisible:
+    id: health-failed
+- takeScreenshot: first-pass

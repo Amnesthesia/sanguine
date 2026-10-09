@@ -28,7 +28,7 @@ export default function Seed() {
       await store.setProfile(params.teen === '1' ? { ...s.profile, birthYear: Number(todayLocal().slice(0, 4)) - 15, birthDate: `${Number(todayLocal().slice(0, 4)) - 15}-01-01` } : s.profile);
       if (s.events.length) await store.appendMany(s.events);
       // screen protection blocks the screenshots the tests take, so the seed turns it off unless `protect=1`
-      await updatePrefs({ appLock: params.lock === '1', screenProtection: params.protect === '1', widgetDetails: false, discreetIcon: false, ...(params.theme === 'dark' || params.theme === 'light' ? { theme: params.theme } : {}) });
+      await updatePrefs({ tempUnit: 'C', appLock: params.lock === '1', screenProtection: params.protect === '1', widgetDetails: false, discreetIcon: false, ...(params.theme === 'dark' || params.theme === 'light' ? { theme: params.theme } : {}) });
       await setSetting(db, 'onboarded', true);
       await completeOnboarding();
       await refresh();
