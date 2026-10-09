@@ -119,6 +119,12 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   // ---- period runs -> cycles ----
   const periodDays = new Set<ISODate>(periodStarts);
   for (const r of dailyLog) if (r.flow_kind === 'period' && (r.flow === 'light' || r.flow === 'medium' || r.flow === 'heavy')) periodDays.add(r.day);
+  // D-052 follow-up: an end marks every day from the period's last day up to it as bleeding, so joins measure from the real last day and
+  // nothing joined afterwards is cut. An end 15+ days after the last period day is not a plausible end of that period and is ignored.
+  for (const e of [...periodEnds].sort()) {
+    const p = [...periodDays].filter((d) => d <= e).sort().at(-1);
+    if (p && diffDays(e, p) < MIN_VALID_LENGTH) for (let d = addDays(p, 1); d <= e; d = addDays(d, 1)) periodDays.add(d);
+  }
   const sortedDays = [...periodDays].sort();
   const runs: Array<{ start: ISODate; end: ISODate }> = [];
   const noneDays = new Set(dailyLog.filter((r) => r.flow === 'none').map((r) => r.day));
@@ -134,11 +140,6 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
     if (last && !splitStarts.has(d) && (gap <= PERIOD_GAP_DAYS || gapJoin)) last.end = d;
     else runs.push({ start: d, end: d });
   }
-  runs.forEach((r, i) => {
-    const next = runs[i + 1]?.start;
-    const override = periodEnds.filter((d) => d >= r.start && (next === undefined || d < next)).sort().at(-1);
-    if (override) r.end = override;
-  });
 
   const records: CycleRecord[] = runs.map((r) => ({ id: `cyc-${r.start}`, start: r.start, end: r.end, quality: 'valid' }));
 

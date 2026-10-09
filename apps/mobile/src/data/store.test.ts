@@ -140,6 +140,23 @@ describe('cycles from flow (§5.4)', () => {
     expect(await cycles()).toEqual([]);
     expect(await db.all('SELECT day, flow, flow_kind FROM daily_log ORDER BY day')).toHaveLength(3);
   });
+  it('typed day after an imported end joins and is not orphaned', async () => {
+    await store.append({ kind: 'period.start', payload: { day: '2026-10-01' } });
+    await store.append({ kind: 'period.end', payload: { day: '2026-10-05' } });
+    await store.append(flow('2026-10-08'));
+    expect(await cycles()).toMatchObject([{ start_day: '2026-10-01', end_day: '2026-10-08', bleed_days: 8 }]);
+  });
+  it('an imported start/end pair measures the join gap from its end, like typed days', async () => {
+    await store.append({ kind: 'period.start', payload: { day: '2026-10-01' } });
+    await store.append({ kind: 'period.end', payload: { day: '2026-10-05' } });
+    await store.append(flow('2026-10-10')); // 5 days after the end, 9 after the start
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-10-01']);
+  });
+  it('an end 15 or more days after the last period day is ignored, not stretched', async () => {
+    await store.append({ kind: 'period.start', payload: { day: '2026-10-01' } });
+    await store.append({ kind: 'period.end', payload: { day: '2026-10-20' } });
+    expect(await cycles()).toMatchObject([{ start_day: '2026-10-01', end_day: '2026-10-01' }]);
+  });
   it('period.start alone creates a cycle; period.end overrides the last day', async () => {
     await store.append({ kind: 'period.start', payload: { day: '2026-10-01' } });
     await store.append(flow('2026-10-02', 'light'));
