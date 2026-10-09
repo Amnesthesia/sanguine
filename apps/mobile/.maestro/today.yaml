@@ -35,6 +35,8 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - assertVisible:
     id: estimate-card
 - assertVisible: ".*This is for understanding your cycle. Do not use it to prevent pregnancy."
+- assertNotVisible:
+    id: symptom-note
 - assertVisible: "Estimates are ranges, not promises. Not a contraceptive."
 - waitForAnimationToEnd
 - takeScreenshot: typical
@@ -86,3 +88,20 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
     timeout: 90000
 - waitForAnimationToEnd
 - takeScreenshot: typical-dark
+# look-back symptom note (P8-11)
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=lookback
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- assertVisible:
+    id: symptom-note
+- assertVisible: "In 3 of your last 4 cycles you logged cramps around this day."
+- assertVisible: "From your own logs. It does not change any estimate."
+- assertNotVisible: ".*mood low.*"
+- assertNotVisible: ".*headache.*"
+- waitForAnimationToEnd
+- takeScreenshot: lookback
