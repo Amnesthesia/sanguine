@@ -35,6 +35,8 @@ name: Settings - appearance, tracking options, life state, backup recovery code,
 - scrollUntilVisible:
     element:
       id: track-sex
+    timeout: 90000
+    speed: 70
 - tapOn:
     id: track-sex
 - tapOn:

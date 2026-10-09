@@ -71,16 +71,16 @@
     "ios": "expo run:ios",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "eas:login": "eas login",
-    "eas:init": "eas init",
-    "build:android:dev": "eas build --profile development --platform android",
-    "build:android:preview": "eas build --profile preview --platform android",
-    "build:android:production": "eas build --profile production --platform android",
-    "build:ios:dev": "eas build --profile development --platform ios",
-    "build:ios:preview": "eas build --profile preview --platform ios",
-    "build:ios:production": "eas build --profile production --platform ios",
-    "submit:android": "eas submit --profile production --platform android --latest",
-    "submit:ios": "eas submit --profile production --platform ios --latest"
+    "eas:login": "npx eas-cli login",
+    "eas:init": "npx eas-cli init",
+    "build:android:dev": "npx eas-cli build --profile development --platform android",
+    "build:android:preview": "npx eas-cli build --profile preview --platform android",
+    "build:android:production": "npx eas-cli build --profile production --platform android",
+    "build:ios:dev": "npx eas-cli build --profile development --platform ios",
+    "build:ios:preview": "npx eas-cli build --profile preview --platform ios",
+    "build:ios:production": "npx eas-cli build --profile production --platform ios",
+    "submit:android": "npx eas-cli submit --profile production --platform android --latest",
+    "submit:ios": "npx eas-cli submit --profile production --platform ios --latest"
   },
   "private": true
 }
