@@ -21,3 +21,19 @@ NaturalCycles-*.xlsx
 docs/
 apps/mobile/.maestro/
 tools/backtest/proto.py
+
+# EAS_NO_VCS uploads untracked files too, so anything local and private must be listed here (security review)
+.superpowers
+.git
+.env
+.env.*
+*.jks
+*.keystore
+*.p8
+*.p12
+*.pem
+*.mobileprovision
+credentials.json
+google-services.json
+*.xlsx
+*.xls
