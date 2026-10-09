@@ -1,5 +1,5 @@
 // Period / Symptoms / Temperature on Android: the Material 3 Expressive floating toolbar through @expo/ui
-// (PLAN.md §9.1, P3-4, D-046, D-052). Three equal pill buttons on a neutral bar: Period filled on primary, Symptoms and
+// (PLAN.md §9.1, P3-4, D-046, D-054). Three equal pill buttons on a neutral bar: Period filled on primary, Symptoms and
 // Temperature elevated on surface, so the controls separate from the bar and the bar from the page without any pink
 // container tones. `Host` wraps its children in `MaterialExpressiveTheme` (spring motion scheme) seeded from the accent.
 import { Button, Column, ElevatedButton, HorizontalFloatingToolbar, Host, Text as M3Text } from '@expo/ui/jetpack-compose';
@@ -46,7 +46,7 @@ export function QuickLogRow() {
         ) : (
           <HorizontalFloatingToolbar
             variant="standard"
-            // neutral bar (D-052): the seed's primaryContainer and the FAB's tertiary tones both read pink on pink and the FAB was a small square
+            // neutral bar (D-054): the seed's primaryContainer and the FAB's tertiary tones both read pink on pink and the FAB was a small square
             colors={{ toolbarContainerColor: m.surfaceContainerHigh, toolbarContentColor: t.c.textPrimary }}>
             {period}
             {tonal('symptoms')}
