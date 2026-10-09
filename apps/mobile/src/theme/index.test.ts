@@ -13,9 +13,9 @@ describe('theme surfaces match across platforms (D-066)', () => {
       expect(android.hairline).toBe(ios.hairline);
     });
   }
-  it('light cards are white on the off-white screen', () => {
+  it('light cards and screen are both white; the card is separated by elevation', () => {
     const a = buildTheme('light', 'android');
     expect(a.cardBg).toBe('#FFFFFF');
-    expect(a.screenBg).toBe('#FBF8F6');
+    expect(a.screenBg).toBe('#FFFFFF');
   });
 });
