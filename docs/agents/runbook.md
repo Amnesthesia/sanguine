@@ -41,16 +41,19 @@ npx expo run:android --no-bundler
 ```
 
 Simulators in use on the owner's machine: iOS **iPhone 17 Pro Max** `1C4C0CE9-4A7A-441F-8FCA-5EDBD373D757` (iOS 26.4), Android
-emulator **Medium_Phone_API_VanillaIceCream** (`emulator-5554`, API 35). The iOS simulator is faster; prefer it. `adb` is at
+emulator **Medium_Phone_API_VanillaIceCream** (`emulator-5554`, API 35). Use the iOS simulator only; do not boot the Android emulator unless the owner asks for the dedicated Android pass (memory). One simulator at a time across all sessions. `adb` is at
 `~/Library/Android/sdk/platform-tools`. Free memory: shut down what you are not using (`xcrun simctl shutdown <udid>`).
 
 ## 3. Maestro (end-to-end)
 
+Run only the flows for the screens you changed (`run.sh`), after all edits for the task are in. The full suite is for the end of a batch
+or a release, never per item or per edit (CLAUDE.md, Working unattended).
+
 ```bash
 cd apps/mobile
 CLIENT=dev ITEM=<backlog-id> .maestro/run.sh ios today.yaml logging.yaml     # one or more flows
-CLIENT=dev ITEM=<backlog-id> .maestro/suite.sh ios                            # every flow + app-lock script + at-rest check
-CLIENT=dev ITEM=<backlog-id> .maestro/suite.sh android
+CLIENT=dev ITEM=<backlog-id> .maestro/suite.sh ios                            # once per batch / release: every flow + app-lock + at-rest
+# suite.sh android: only in the owner-requested Android pass
 ```
 
 - Screenshots land in `docs/screenshots/<ITEM>-devclient/<platform>-<name>.png`. Use a meaningful ITEM; do not overwrite another

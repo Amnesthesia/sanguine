@@ -35,7 +35,13 @@ copy/                   en-AU strings and glossary
 Follow `docs/BACKLOG.md` top to bottom. Phases 0–2 must run in Expo Go on the iOS simulator and the Android emulator with no native build; the Expo Go allow-list in PLAN.md §10 is enforced by CI until Phase 3. If a feature needs a native module before Phase 3, stub it behind the same interface, move the native part to Phase 3 in BACKLOG.md, and keep going. The engine with its golden fixtures (§4.12) comes before any screen.
 
 ## Working unattended
-You will often work while nobody is watching. Verify every item yourself: unit tests, then the Maestro flow on both simulators through Expo Go (`npx expo start`, open in the simulator, `maestro test`). Take screenshots of new screens into `docs/screenshots/<item-id>/` so the work can be reviewed later. If something cannot be verified on the simulator (a physical sensor, a store step), say so in DECISIONS.md and continue with the next item. Never leave the suite red at the end of a session; if an item cannot be finished, revert to the last green commit and record why.
+You will often work while nobody is watching. Verify every item yourself, but test in this order and no more often than this (owner's rule, 2026-10-09):
+1. Make all the edits for the task first; do not test after each small edit.
+2. Run only the affected unit tests (`npx vitest related <changed files>` or the test file you touched) plus the type-check.
+3. Run only the Maestro flow(s) for the screens you changed, on the **iOS simulator only** (`.maestro/run.sh ios <flow>.yaml`). Never boot the Android emulator: memory cannot hold it next to the iOS simulator; Android gets one dedicated pass when the owner asks for it.
+4. Fix what fails and rerun just that test or flow.
+5. Run the full unit suite, lint and the deny-list once before committing. Run the full Maestro suite (`suite.sh ios`) only once per batch of items or before a release, never per item.
+One simulator runs at a time on this machine: if another session is using it, wait or ask, do not boot a second one. Take screenshots of new screens into `docs/screenshots/<item-id>/` so the work can be reviewed later. If something cannot be verified on the simulator (a physical sensor, a store step), say so in DECISIONS.md and continue with the next item. Never leave the suite red at the end of a session; if an item cannot be finished, revert to the last green commit and record why.
 
 ## Definition of done for any task
 - Tests written first for engine and data-layer work; a task without tests is not done.
