@@ -47,6 +47,9 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
     timeout: 10000
 - scrollUntilVisible:
     element: "unusually long"
+- scrollUntilVisible:
+    element:
+      id: was-pregnant
 - assertVisible:
     id: missed-log
 - takeScreenshot: missed-log

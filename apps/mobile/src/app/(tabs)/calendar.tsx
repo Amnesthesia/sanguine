@@ -62,10 +62,10 @@ export default function CalendarScreen() {
 
   const nav = (delta: number, id: string, label: string) => (
     <Pressable testID={id} accessibilityRole="button" accessibilityLabel={label} onPress={() => setMonth(shiftMonth(month, delta))} style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
-      <Text variant="heading">{delta < 0 ? '‹' : '›'}</Text>
+      <Text variant="heading" color="accent" style={{ fontSize: 28, lineHeight: 32 }}>{delta < 0 ? '‹' : '›'}</Text>
     </Pressable>
   );
-  const legend: Array<[LegendKind, string]> = calendarLegend(showEstimate).map((k) => [k, k]);
+  const legend: Array<[LegendKind, string]> = calendarLegend(showEstimate).filter((k) => k !== 'ovulation' || !model.ovulationUncertain).map((k) => [k, k]); // no marker is drawn for an uncertain estimate (U-18)
   return (
     <Screen testID="screen-calendar" title={tr('calendar.title')}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>

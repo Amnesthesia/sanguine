@@ -1,7 +1,7 @@
 // Theme provider: ui-tokens by colour scheme and platform treatment (PLAN.md §9.1-9.3). Brand wine is not here (splash, icon, About only).
 import { colors, m3, radii, type ColorToken } from '@sanguine/ui-tokens';
-import { createContext, type ReactNode, useContext, useMemo } from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
+import { Appearance, Platform, useColorScheme } from 'react-native';
 import type { ThemePref } from '@/data/prefs';
 
 export type Scheme = 'light' | 'dark';
@@ -41,5 +41,7 @@ export function ThemeProvider({ pref, children }: { pref: ThemePref; children: R
   const system = useColorScheme();
   const scheme: Scheme = pref === 'system' ? (system === 'dark' ? 'dark' : 'light') : pref;
   const theme = useMemo(() => buildTheme(scheme, Platform.OS === 'android' ? 'android' : 'ios'), [scheme]);
+  // native views (the tab bar, system pickers, alerts) read the app-level scheme, so a forced light or dark theme reaches them too (U-5, D-076)
+  useEffect(() => { Appearance.setColorScheme(pref === 'system' ? 'unspecified' : pref); }, [pref]);
   return <Ctx.Provider value={theme}>{children}</Ctx.Provider>;
 }

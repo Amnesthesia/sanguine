@@ -6,14 +6,14 @@ import { Text } from './Text';
 export function Button({ label, kind = 'primary', ...rest }: Omit<PressableProps, 'children'> & { label: string; kind?: 'primary' | 'secondary' | 'text' | 'destructive' }) {
   const t = useTheme();
   const bg = kind === 'primary' ? t.c.accent : kind === 'secondary' ? t.chipBg : 'transparent';
-  const fg = kind === 'primary' ? (t.scheme === 'dark' ? '#3A0A14' : '#FFFFFF') : kind === 'destructive' ? t.c.period : t.c.textPrimary;
+  const fg = kind === 'primary' ? (t.scheme === 'dark' ? '#3A0A14' : '#FFFFFF') : kind === 'destructive' ? t.c.period : kind === 'text' ? t.c.accent : t.c.textPrimary;
   return (
     <Pressable
       accessibilityRole="button"
       aria-disabled={rest.disabled ?? undefined}
       accessibilityLabel={rest.accessibilityLabel ?? label}
       {...rest}
-      style={({ pressed }) => [{ minHeight: 48, paddingHorizontal: 20, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: bg, opacity: pressed ? 0.7 : 1 }, kind === 'text' ? { minHeight: 44 } : null]}>
+      style={({ pressed }) => [{ minHeight: 48, paddingHorizontal: 20, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: bg, opacity: pressed ? 0.7 : rest.disabled ? 0.5 : 1 }, kind === 'text' ? { minHeight: 44, alignSelf: 'flex-start', paddingHorizontal: 8 } : null]}>
       <Text variant="heading" style={{ color: fg, fontSize: 16, lineHeight: 22 }}>{label}</Text>
     </Pressable>
   );

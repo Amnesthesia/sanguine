@@ -1,5 +1,5 @@
 {
-  "files": { "includes": ["**", "!**/node_modules", "!apps/mobile/.expo", "!apps/mobile/ios", "!apps/mobile/android", "!docs", "!**/assets", "!tools/backtest/proto.py", "!pnpm-lock.yaml", "!site/**/*.astro", "!site/dist"] },
+  "files": { "includes": ["**", "!**/node_modules", "!apps/mobile/.expo", "!apps/mobile/ios", "!apps/mobile/android", "!docs", "!**/assets", "!tools/backtest/proto.py", "!pnpm-lock.yaml", "!apps/site/**/*.astro", "!apps/site/dist", "!apps/site/.astro"] },
   "formatter": { "enabled": false },
   "linter": { "enabled": true, "rules": { "preset": "recommended" } },
   "assist": { "enabled": false }

@@ -130,7 +130,7 @@ export function buildToday(i: TodayInput): TodayModel {
     subtitle = { key: 'today.mostLikely', params: { date: formatDay(next.point) } };
   } else {
     headline = { key: 'today.periodLikely', params: { lo: diffDays(next.i80.lo, i.today), hi: diffDays(next.i80.hi, i.today) } };
-    subtitle = { key: 'today.mostLikely', params: { date: formatDay(next.point) } };
+    subtitle = { key: 'today.mostLikelyRange', params: { range: formatRange(next.i80.lo, next.i80.hi), date: formatDay(next.point) } };
   }
 
   // ovulation estimate card
@@ -142,9 +142,8 @@ export function buildToday(i: TodayInput): TodayModel {
     const todayP = p.fertileDays?.find((f) => f.date === i.today)?.pInWindow ?? 0;
     estimate = {
       uncertain, confidence: o.confidence, expanded: todayP >= EXPAND_P, basisKey: `today.estimateBasis.${o.basis}`,
-      title: uncertain
-        ? { key: 'today.ovulationUncertain', params: { lo: r.lo, hi: r.hi } }
-        : { key: 'today.ovulationCollapsed', params: { point: formatDay(o.point), lo: r.lo, hi: r.hi, confidence: word(o.confidence) } },
+      // the title names the confidence only; the fixed §2.3 sentence below it carries the dates once (U-7, D-076)
+      title: uncertain ? { key: 'today.ovulationUncertainShort' } : { key: 'today.ovulationTitle', params: { confidence: word(o.confidence) } },
       legal: { key: 'legal.estimateCard', params: { point: formatDay(o.point), lo: r.lo, hi: r.hi } },
     };
   }

@@ -5,6 +5,7 @@ import Svg, { Circle, G, Line, Path } from 'react-native-svg';
 import { useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 import { useFontScale } from '@/ui/useFontScale';
+import { fertileAlpha } from '@/ui/fertileAlpha';
 import { arcPath } from './arc';
 import type { RingModel } from './todayModel';
 
@@ -26,13 +27,13 @@ export function PhaseRing({ ring, dayOfCycle, phase }: { ring: RingModel; dayOfC
   const tick = ring.kind === 'cycle' ? ring.today.deg : 0;
   const rad = (tick * Math.PI) / 180;
   return (
-    <View testID="phase-ring" accessible accessibilityRole="image" accessibilityLabel={label} style={{ width: SIZE, height: SIZE, alignSelf: 'center', alignItems: 'center', justifyContent: 'center' }}>
+    <View testID="phase-ring" accessible accessibilityRole="image" accessibilityLabel={label} accessibilityElementsHidden={!label} importantForAccessibility={label ? 'auto' : 'no-hide-descendants'} style={{ width: SIZE, height: SIZE, alignSelf: 'center', alignItems: 'center', justifyContent: 'center' }}>
       <Svg width={SIZE} height={SIZE}>
         {ring.kind === 'cycle' ? (
           <G>
             <Circle cx={C} cy={C} r={R} stroke={t.c.border} strokeWidth={STROKE} fill="none" />
             {ring.fertile.map((f) => (
-              <Path key={`f${f.from.toFixed(2)}`} d={arcPath(C, C, R, f.from, f.to)} stroke={t.c.fertile} strokeOpacity={f.opacity} strokeWidth={STROKE} fill="none" />
+              <Path key={`f${f.from.toFixed(2)}`} d={arcPath(C, C, R, f.from, f.to)} stroke={t.c.fertile} strokeOpacity={fertileAlpha(f.opacity)} strokeWidth={STROKE} fill="none" />
             ))}
             {ring.predicted ? <Path d={arcPath(C, C, R, ring.predicted.from, ring.predicted.to)} stroke={t.c.periodPredicted} strokeWidth={STROKE} strokeDasharray="3 4" fill="none" /> : null}
             <Path d={arcPath(C, C, R, ring.period.from, ring.period.to)} stroke={t.c.period} strokeWidth={STROKE} fill="none" />

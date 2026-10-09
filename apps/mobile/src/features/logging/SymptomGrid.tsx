@@ -10,7 +10,9 @@ export const DEFAULT_INTENSITY = 2;
 export function SymptomGrid({ codes, values, onSet }: { codes: string[]; values: Record<string, number>; onSet: (code: string, intensity: 0 | 1 | 2 | 3) => void }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
-  const wide = useFontScale() > LARGE; // two columns so words are never split
+  const scale = useFontScale();
+  const wide = scale > LARGE; // two columns so words are never split
+  const dot = Math.round(6 * Math.min(scale, 2)); // the intensity dots grow with the text (U-15)
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
       {codes.map((code) => {
@@ -27,11 +29,12 @@ export function SymptomGrid({ codes, values, onSet }: { codes: string[]; values:
             style={{ width: wide ? '48%' : '23%', flexGrow: 1, minHeight: 72, borderRadius: t.radius.tile, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: on ? t.c.accentSoft : t.chipBg, borderWidth: 1.5, borderColor: on ? t.c.accent : 'transparent' }}>
             <Text variant="caption" color={on ? 'accent' : 'textPrimary'} style={{ textAlign: 'center' }}>{name}</Text>
             <View style={{ flexDirection: 'row', gap: 3 }}>
-              {[1, 2, 3].map((i) => <View key={i} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: i <= n ? t.c.accent : t.c.border }} />)}
+              {[1, 2, 3].map((i) => <View key={i} style={{ width: dot, height: dot, borderRadius: dot / 2, backgroundColor: i <= n ? t.c.accent : t.c.border }} />)}
             </View>
           </Pressable>
         );
       })}
+      <Text variant="caption" color="textSecondary" style={{ width: '100%', marginTop: 4 }}>{tr('log.longPressHint')}</Text>
     </View>
   );
 }

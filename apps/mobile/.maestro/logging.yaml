@@ -81,7 +81,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 - tapOn:
     id: event-delete-symptom
 - assertVisible: "Delete this entry\\?"
-- tapOn: "Delete"
+- tapOn: "Delete entry"
 - assertNotVisible: "Cramps 2/3"
 - assertVisible: "Medium flow"
 

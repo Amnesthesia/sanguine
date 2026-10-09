@@ -46,7 +46,7 @@ export default function DayDetail() {
   // a deleted entry cannot be brought back from this screen, so ask first (I-14, D-075); the event log keeps it as a retraction
   const confirmDelete = (e: DayEvent) => Alert.alert(tr('day.deleteConfirmTitle'), describeEvent(e, tr, prefs.tempUnit), [
     { text: tr('common.cancel'), style: 'cancel' },
-    { text: tr('common.delete'), style: 'destructive', onPress: () => void store?.retract(e.id).then(after) },
+    { text: tr('day.deleteConfirmAction'), style: 'destructive', onPress: () => void store?.retract(e.id).then(after) }, // verb + noun so the alert button differs from the row's "Delete"
   ]);
 
   return (

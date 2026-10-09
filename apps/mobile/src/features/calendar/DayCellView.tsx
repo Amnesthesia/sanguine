@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg';
 import { useTheme } from '@/theme';
+import { fertileAlpha } from '@/ui/fertileAlpha';
 import { Text } from '@/ui/Text';
 import type { DayCell } from './calendarModel';
 
@@ -35,7 +36,7 @@ export function DayCellView({ cell, selected, onPress }: { cell: DayCell; select
             {cell.ovulation === 'point' ? <View style={{ position: 'absolute', alignSelf: 'center', top: -2, width: 6, height: 6, borderRadius: 3, backgroundColor: t.c.ovulation }} /> : null}
           </View>
         ) : null}
-        {cell.fertile !== undefined ? <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, backgroundColor: t.c.fertile, opacity: cell.fertile }} /> : null}
+        {cell.fertile !== undefined ? <View style={{ position: 'absolute', bottom: 0, left: 2, right: 2, height: 6, borderRadius: 3, backgroundColor: t.c.fertile, opacity: fertileAlpha(cell.fertile) }} /> : null}
       </View>
     </Pressable>
   );

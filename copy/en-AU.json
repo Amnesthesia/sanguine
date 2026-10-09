@@ -117,6 +117,8 @@
     "ovulationCollapsed": "Ovulation estimated around {point} ({lo}–{hi}) · {confidence}",
     "ovulationUncertain": "Ovulation estimate uncertain (range {lo}–{hi})",
     "ovulationUncertainShort": "Ovulation estimate uncertain",
+    "ovulationTitle": "Ovulation estimate · {confidence}",
+    "mostLikelyRange": "{range} · most likely {date}",
     "suspended": "Estimates are paused while “{state}” is set.",
     "quick": {
       "period": "Period",
@@ -241,6 +243,7 @@
     "edit": "Edit",
     "deleteEntry": "Delete this entry",
     "deleteConfirmTitle": "Delete this entry?",
+    "deleteConfirmAction": "Delete entry",
     "entry": {
       "flow": "{level} flow",
       "flowKind": {
@@ -363,7 +366,7 @@
       "none": "Your accuracy appears after your first completed cycle with an estimate."
     },
     "current": "current",
-    "dayN": "day {day}",
+    "dayN": "day {day} so far",
     "confirmLong": "No, this cycle was this long",
     "viewCycle": "Cycle details",
     "needTwo": "Insights appear after two complete cycles.",
@@ -371,6 +374,8 @@
       "yAxis": "days",
       "bandCaption": "Shaded: where the next cycle is likely to fall (80%).",
       "noTemps": "No temperatures logged this cycle.",
+      "fewTemps": "Log {n} more morning temperatures to see them as a chart.",
+      "fewLengths": "Log {n} more cycles to see your lengths as a chart.",
       "coverlineNote": "Dashed line: coverline from your temperatures.",
       "phaseCaption": "Share of logged days with the symptom, by phase. This is a pattern in your own logs; it never changes an estimate.",
       "noSymptoms": "Log a few symptoms to see how they line up with your cycle."
@@ -394,6 +399,16 @@
   },
   "settings": {
     "title": "Settings",
+    "summary": {
+      "healthN": "{n} types",
+      "lockOn": "Lock on",
+      "lockOff": "Lock off",
+      "backupOn": "Backup on",
+      "backupOff": "Backup off",
+      "reminderOn": "Reminder on",
+      "reminderOff": "Reminders off",
+      "symptomsN": "{n} symptoms"
+    },
     "lifeState": {
       "title": "Life state",
       "current": "Current",
@@ -518,6 +533,7 @@
       "exportDone": "Export ready.",
       "exportFailed": "The export could not be made.",
       "importDone": "Imported {n} records.",
+      "importNotesDropped": "{n} notes were skipped because the file has no notes column.",
       "importSkipped": "Not everything could be imported:",
       "importMore": "and {n} more.",
       "importFailed": "That file could not be read.",

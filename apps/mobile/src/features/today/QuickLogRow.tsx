@@ -51,7 +51,7 @@ export function QuickLogRow() {
     const button = (
       <Pressable
         key={section} testID={`quick-${section}`} accessibilityRole="button" accessibilityLabel={label} onPress={() => go(section)}
-        style={({ pressed }) => ({ ...(tinted ? { flex: 1 } : size), minHeight: 48, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, backgroundColor: primary && !tinted ? t.c.accent : 'transparent', opacity: pressed ? 0.7 : 1 })}>
+        style={({ pressed }) => ({ ...(tinted ? { flex: 1 } : size), minHeight: 48, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, backgroundColor: primary && !tinted ? t.c.accent : 'transparent', borderWidth: primary ? 0 : 1, borderColor: t.hairline, opacity: pressed ? 0.7 : 1 })}>
         <Text variant="heading" style={{ fontSize: 15, lineHeight: 20, color: tinted ? g.onAccent : primary ? (t.scheme === 'dark' ? '#3A0A14' : '#FFFFFF') : t.c.textPrimary }}>{label}</Text>
       </Pressable>
     );

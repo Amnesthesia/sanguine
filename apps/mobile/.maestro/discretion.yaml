@@ -28,6 +28,14 @@ name: Discretion - discreet icon, screen protection, widget details (P3-5, P3-6)
     text: "OK"
     optional: true
 - waitForAnimationToEnd
+# the alert sometimes lands after the first tap: dismiss it again until it is gone
+- repeat:
+    while:
+      visible: "OK"
+    times: 3
+    commands:
+      - tapOn: "OK"
+      - waitForAnimationToEnd
 - takeScreenshot: icon-on
 - runFlow:
     when:
@@ -66,6 +74,14 @@ name: Discretion - discreet icon, screen protection, widget details (P3-5, P3-6)
     text: "OK"
     optional: true
 - waitForAnimationToEnd
+# the alert sometimes lands after the first tap: dismiss it again until it is gone
+- repeat:
+    while:
+      visible: "OK"
+    times: 3
+    commands:
+      - tapOn: "OK"
+      - waitForAnimationToEnd
 - runFlow:
     when:
       platform: Android

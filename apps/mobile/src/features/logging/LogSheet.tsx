@@ -97,11 +97,11 @@ export function LogSheet() {
     <View style={{ flex: 1, backgroundColor: t.cardBg }} testID="screen-log">
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: GUTTER, paddingTop: Platform.OS === 'android' ? insets.top + 8 : 16, paddingBottom: 8 }}>
         <Pressable testID="log-prev" accessibilityRole="button" accessibilityLabel={tr('log.previousDay')} onPress={() => setDay(addDays(day, -1))} style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
-          <Text variant="heading">‹</Text>
+          <Text variant="heading" color="accent" style={{ fontSize: 28, lineHeight: 32 }}>‹</Text>
         </Pressable>
         <Text variant="heading" accessibilityRole="header" testID="log-title" style={{ flex: 1, textAlign: 'center' }}>{formatLong(day)}</Text>
         <Pressable testID="log-next" accessibilityRole="button" accessibilityLabel={tr('log.nextDay')} aria-disabled={isToday} disabled={isToday} onPress={() => setDay(addDays(day, 1))} style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center', opacity: isToday ? 0.3 : 1 }}>
-          <Text variant="heading">›</Text>
+          <Text variant="heading" color="accent" style={{ fontSize: 28, lineHeight: 32 }}>›</Text>
         </Pressable>
         <Pressable testID="log-done" accessibilityRole="button" accessibilityLabel={tr('common.done')} onPress={() => router.back()} style={{ minWidth: 56, minHeight: 48, alignItems: 'flex-end', justifyContent: 'center' }}>
           <Text variant="heading" color="accent">{tr('common.done')}</Text>

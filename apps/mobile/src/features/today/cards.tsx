@@ -24,8 +24,8 @@ export function ConfidenceBadge({ word }: { word: string }) {
   const t = useTheme();
   if (!word) return null;
   return (
-    <View style={{ alignSelf: 'flex-start', backgroundColor: t.chipBg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2, marginTop: 4 }}>
-      <Text variant="caption" color="textSecondary">{word}</Text>
+    <View style={{ alignSelf: 'flex-start', backgroundColor: t.c.accentSoft, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2, marginTop: 4 }}>
+      <Text variant="caption" color="accent">{word}</Text>
     </View>
   );
 }
@@ -51,10 +51,7 @@ export function EstimateCard({ m }: { m: EstimateModel }) {
         <Text variant="bodySmall">{msg(m.title)}</Text>
       </Pressable>
       <Text variant="bodySmall" color="textSecondary" testID="estimate-legal">{msg(m.legal)}</Text>
-      {open ? (<>
-        <Text variant="bodySmall" color="textSecondary">{t(m.basisKey)}</Text>
-        <Text variant="caption" color="textSecondary">{t('today.legendFertile')}</Text>
-      </>) : null}
+      {open ? <Text variant="bodySmall" color="textSecondary">{t(m.basisKey)}</Text> : null}
     </Card>
   );
 }

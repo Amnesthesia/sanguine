@@ -163,7 +163,7 @@ export function OnboardingFlow() {
         {step === TOTAL_STEPS - 1 && !ok ? <Text variant="bodySmall" color="textSecondary" testID="finish-hint" style={{ textAlign: 'center' }} accessibilityLiveRegion="polite">{tr(explicit ? 'onboarding.s5.finishHintBoth' : 'onboarding.s5.finishHint')}</Text> : null}
         <Button testID="onboarding-continue" label={step === TOTAL_STEPS - 1 ? tr('common.finish') : tr('common.continue')} disabled={!ok || busy} onPress={next} />
         {step === 2 || step === 3 ? (
-          <Button testID="onboarding-skip" kind="text" label={step === 2 ? tr('common.dontKnow') : tr('common.skip')} onPress={() => { if (step === 2) { setLastChoice(undefined); } else { setA({ ...a, lifeState: 'none' }); } setStep(step + 1); }} />
+          <Button testID="onboarding-skip" kind={step === 2 ? 'secondary' : 'text'} label={step === 2 ? tr('common.dontKnow') : tr('common.skip')} onPress={() => { if (step === 2) { setLastChoice(undefined); } else { setA({ ...a, lifeState: 'none' }); } setStep(step + 1); }} />
         ) : null}
         {step > 0 ? <Button testID="onboarding-back" kind="text" label={tr('common.back')} onPress={() => setStep(step - 1)} /> : null}
       </View>

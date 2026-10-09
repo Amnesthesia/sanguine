@@ -30,7 +30,7 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - assertVisible:
     id: headline-card
 - assertVisible: "Period likely in .* days"
-- assertVisible: "Most likely .*"
+- assertVisible: ".*[Mm]ost likely .*"
 - assertVisible: "fair estimate"
 - assertVisible:
     id: estimate-card
@@ -60,7 +60,7 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
     visible:
       id: screen-today
     timeout: 90000
-- assertVisible: "Most likely .*"
+- assertVisible: ".*[Mm]ost likely .*"
 - assertVisible: "rough estimate"
 - scrollUntilVisible:
     element:

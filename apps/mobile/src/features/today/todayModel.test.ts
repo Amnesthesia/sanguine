@@ -37,7 +37,7 @@ describe('headline states', () => {
     expect(v.state).toBe('predicted');
     // A: next 27 Oct - 2 Nov, today 10 Oct -> 17 to 23 days
     expect(v.headline).toEqual({ key: 'today.periodLikely', params: { lo: 17, hi: 23 } });
-    expect(v.subtitle).toEqual({ key: 'today.mostLikely', params: { date: '30 Oct' } });
+    expect(v.subtitle).toEqual({ key: 'today.mostLikelyRange', params: { range: '27 Oct – 2 Nov', date: '30 Oct' } });
     expect(v.confidence).toBe('medium');
   });
   it('inside the 80% window the headline switches to "expected by"', () => {
@@ -68,15 +68,14 @@ describe('estimate card (R-01, §2.3, §8.5)', () => {
     expect(v.estimate?.legal.key).toBe('legal.estimateCard');
     expect(v.estimate?.legal.params).toMatchObject({ point: '18 Oct', lo: '13', hi: '23 Oct' });
     expect(v.estimate?.uncertain).toBe(true); // 10-day span > 6
-    expect(v.estimate?.title.key).toBe('today.ovulationUncertain');
-    expect(v.estimate?.title.params).toEqual({ lo: '13', hi: '23 Oct' });
+    expect(v.estimate?.title).toEqual({ key: 'today.ovulationUncertainShort' }); // the dates appear once, in the fixed sentence
   });
   it('a precise (LH) estimate reads "estimated around" with a confidence word', () => {
     const h = hist([28, 30, 29]);
     h.lh = [{ date: '2026-10-13', result: 'negative', provenance: 'manual' }, { date: '2026-10-14', result: 'positive', provenance: 'manual' }];
     const v = view(h, '2026-10-15');
     expect(v.estimate?.uncertain).toBe(false);
-    expect(v.estimate?.title).toEqual({ key: 'today.ovulationCollapsed', params: { point: '15 Oct', lo: '14', hi: '16 Oct', confidence: 'confident' } });
+    expect(v.estimate?.title).toEqual({ key: 'today.ovulationTitle', params: { confidence: 'confident' } });
     expect(v.estimate?.basisKey).toBe('today.estimateBasis.lh');
   });
   it('is expanded on days with a fertile-window probability of 0.2 or more, collapsed otherwise', () => {

@@ -21,7 +21,7 @@ describe('widget snapshot (P3-5, §8.8 discreet by default)', () => {
   it('details on: the Today headline and subtitle text', () => {
     const s = snap(hist([28, 30, 29]), '2026-10-10', true);
     expect(s.headline).toBe('Period likely in 17–23 days');
-    expect(s.detail).toBe('Most likely 30 Oct');
+    expect(s.detail).toBe('27 Oct – 2 Nov · most likely 30 Oct');
   });
   it('no cycle yet: day 0 and an empty ring, even with details on', () => {
     const empty: History = { cycles: [], temperatures: [], lh: [], mucus: [], cervix: [], logs: [] };

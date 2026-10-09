@@ -18,6 +18,9 @@ import { Segmented } from '@/ui/Segmented';
 import { Text } from '@/ui/Text';
 
 type Tab = 'history' | 'charts' | 'accuracy';
+// below these a chart is two dots on an empty axis and reads as broken (U-22, D-076)
+const MIN_LENGTH_POINTS = 2; // two closed cycles already show the band (insights.needTwo)
+const MIN_TEMP_POINTS = 6;
 
 export default function InsightsScreen() {
   const t = useTheme();
@@ -44,9 +47,10 @@ export default function InsightsScreen() {
   const acc = accuracyText(ledger);
   const empty = closed < 2;
 
+  // "typical" and "current" stay muted; anything unusual is outlined in the accent so it is seen (U-23)
   const chip = (q: string) => (
-    <View style={{ backgroundColor: t.chipBg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2, alignSelf: 'flex-start' }}>
-      <Text variant="caption" color="textSecondary">{tr(`insights.quality.${q}`)}</Text>
+    <View style={{ backgroundColor: q === 'valid' ? t.chipBg : t.c.accentSoft, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2, alignSelf: 'flex-start' }}>
+      <Text variant="caption" color={q === 'valid' ? 'textSecondary' : 'accent'}>{tr(`insights.quality.${q}`)}</Text>
     </View>
   );
   return (
@@ -88,15 +92,17 @@ export default function InsightsScreen() {
         ) : (<>
           <Card testID="card-length">
             <Text variant="heading">{tr('insights.charts.cycleLength')}</Text>
-            <LengthChart series={series} />
-            <Text variant="caption" color="textSecondary">{tr('insights.chart.bandCaption')}</Text>
+            {series.points.length >= MIN_LENGTH_POINTS ? (<>
+              <LengthChart series={series} />
+              <Text variant="caption" color="textSecondary">{tr('insights.chart.bandCaption')}</Text>
+            </>) : <Text testID="chart-length-few" variant="bodySmall" color="textSecondary">{tr('insights.chart.fewLengths', { n: MIN_LENGTH_POINTS - series.points.length })}</Text>}
           </Card>
           <Card testID="card-temp">
             <Text variant="heading">{tr('insights.charts.temperature')}</Text>
-            {temps.points.length ? (<>
+            {temps.points.length >= MIN_TEMP_POINTS ? (<>
               <TempChart points={temps.points} coverline={temps.coverline === undefined ? undefined : fromC(temps.coverline, prefs.tempUnit)} unitLabel={`°${prefs.tempUnit}`} />
               {temps.coverline !== undefined ? <Text variant="caption" color="textSecondary">{tr('insights.chart.coverlineNote')}</Text> : null}
-            </>) : <Text variant="bodySmall" color="textSecondary">{tr('insights.chart.noTemps')}</Text>}
+            </>) : <Text testID="chart-temp-few" variant="bodySmall" color="textSecondary">{temps.points.length ? tr('insights.chart.fewTemps', { n: MIN_TEMP_POINTS - temps.points.length }) : tr('insights.chart.noTemps')}</Text>}
           </Card>
           <Card testID="card-phases">
             <Text variant="heading">{tr('insights.charts.symptomsByPhase')}</Text>
