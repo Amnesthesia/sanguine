@@ -17,12 +17,12 @@ const FONT = 'Cormorant Garamond';
 
 /** One store screenshot: caption lines, the iOS and Android source captures, and whether it is the dark slide. */
 export const SLIDES = [
-  { name: '01-today', caption: ['Your next period,', 'as a range'], ios: 'suite-p4-devclient/ios-typical.png', android: 'P3-1-devclient/android-typical.png' },
-  { name: '02-log', caption: ['Log your day', 'in two taps'], ios: 'suite-p4-devclient/ios-sheet-symptoms.png', android: 'P3-1-devclient/android-sheet-symptoms.png' },
-  { name: '03-calendar', caption: ['Your whole cycle', 'at a glance'], ios: 'suite-p4-devclient/ios-month.png', android: 'P3-1-devclient/android-month.png' },
-  { name: '04-insights', caption: ['See how your', 'cycles vary'], ios: 'suite-p4-devclient/ios-charts.png', android: 'P3-1-devclient/android-charts.png' },
-  { name: '05-privacy', caption: ['Stays on your phone,', 'encrypted'], ios: 'suite-p4-devclient/ios-privacy-discretion.png', android: 'P3-1-devclient/android-step5-privacy.png' },
-  { name: '06-dark', caption: ['No account.', 'No tracking.'], ios: 'suite-p4-devclient/ios-typical-dark.png', android: 'P3-1-devclient/android-typical-dark.png', dark: true },
+  { name: '01-today', caption: ['Your next period,', 'as a range'], ios: 'D-076-final-devclient/ios-typical.png', android: 'P3-1-devclient/android-typical.png' },
+  { name: '02-log', caption: ['Log your day', 'in two taps'], ios: 'D-076-final-devclient/ios-sheet-symptoms.png', android: 'P3-1-devclient/android-sheet-symptoms.png' },
+  { name: '03-calendar', caption: ['Your whole cycle', 'at a glance'], ios: 'D-076-final-devclient/ios-month.png', android: 'P3-1-devclient/android-month.png' },
+  { name: '04-insights', caption: ['See how your', 'cycles vary'], ios: 'D-076-final-devclient/ios-charts.png', android: 'P3-1-devclient/android-charts.png' },
+  { name: '05-privacy', caption: ['Stays on your phone,', 'encrypted'], ios: 'D-076-final-devclient/ios-privacy-discretion.png', android: 'P3-1-devclient/android-step5-privacy.png' },
+  { name: '06-dark', caption: ['No account.', 'No tracking.'], ios: 'D-076-final-devclient/ios-typical-dark.png', android: 'P3-1-devclient/android-typical-dark.png', dark: true },
 ] as const;
 
 /** Canvas per store: App Store 6.9" (1320 x 2868); Play 9:16 (1080 x 1920, the size Play asks for to be eligible for recommendation). */
