@@ -75,6 +75,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | tsx | 4.23.15 | ^4.23.15 | dev/build only | root, tools/brand |
 | typescript | 7.0.2 | ^7.0.2 | dev/build only | apps/mobile, root |
 | vitest | 3.2.7 | ^3.2.0 | dev/build only | root |
+| yaml | 2.9.1 | 2.9.1 | dev/build only | apps/mobile |
 | zustand | 5.0.15 | ^5.0.15 | ships in app | apps/mobile |
 
 ## Native libraries compiled in by the packages above

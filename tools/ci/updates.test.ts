@@ -14,7 +14,18 @@ describe('EAS Update configuration', () => {
     expect(runtimeVersionFor('1.0.0')).toBe(a);
     expect(runtimeVersionFor('1.0.1')).not.toBe(a);
     const src = read('app.config.ts');
-    for (const input of ["'pnpm-lock.yaml'", "'app.json'", "'packages', 'engine', 'src'"]) expect(src).toContain(input);
+    for (const input of ["'pnpm-lock.yaml'", "'app.json'", "'modules'", "'plugins'", "'packages', 'engine', 'src'"]) expect(src).toContain(input);
+    // no app.json plugin may come from a devDependency, which the dependency part leaves out (D-080)
+    const pkg = JSON.parse(read('package.json'));
+    const plugins = (JSON.parse(read('app.json')).expo.plugins as (string | [string])[]).map((p) => (typeof p === 'string' ? p : p[0])).filter((p) => !p.startsWith('.'));
+    for (const p of plugins) expect(pkg.dependencies[p], p).toBeDefined();
+  });
+  it('the dependency part covers what the app ships, not the website, tools or dev dependencies (D-080)', async () => {
+    const { mobileDependencies } = await import(join(mobile, 'app.config.ts'));
+    const deps: string[] = mobileDependencies();
+    const has = (name: string) => deps.some((d) => d.startsWith(`${name}@`));
+    for (const name of ['expo', 'react-native', 'expo-updates', 'expo-sqlite', 'expo-build-properties', '@noble/ciphers']) expect(has(name), name).toBe(true); // @noble/ciphers through the packages/crypto link
+    for (const name of ['astro', 'vitest', '@biomejs/biome']) expect(has(name), name).toBe(false);
   });
   it('every build profile names an update channel', () => {
     const eas = JSON.parse(read('eas.json'));
