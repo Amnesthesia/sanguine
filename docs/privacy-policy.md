@@ -1,5 +1,3 @@
-DRAFT, not legal advice, to be reviewed by a human before publication
-
 # Sanguine Privacy Policy
 
 Last updated: October 2026
@@ -7,10 +5,10 @@ Last updated: October 2026
 ## 1. Overview and APP Entity Status
 Sanguine is a free on-device menstrual-cycle tracking application for iOS and Android. It is not a contraceptive and is not a medical device. Sanguine does not provide medical opinions or screen for medical conditions.
 
-Sanguine is operated by TBD (human). Although the application operates without central servers or backend databases, Sanguine is treated as an APP entity bound by the Australian Privacy Principles (APPs) under the Privacy Act 1988 (Cth). This document sets out how personal and health information is handled.
+Sanguine is operated by its developer, who can be contacted at admin@dothings.lol. Although the application operates without central servers or backend databases, Sanguine is treated as an APP entity bound by the Australian Privacy Principles (APPs) under the Privacy Act 1988 (Cth). This document sets out how personal and health information is handled.
 
 ## 2. Collection Notice (APP 5)
-Sanguine collects and retains no personal information on remote servers. All entries remain on your physical device.
+Sanguine keeps no personal information on remote servers. All entries remain on your physical device. The one thing that leaves it is the update check described in section 6, which carries a random installation identifier and no health or cycle information.
 
 - What you log: Menstrual cycle dates, bleeding flow intensity, cycle symptoms, basal body temperature, cervical mucus observations, ovulation test results, personal notes, and optional sexual activity records. These entries constitute sensitive health information.
 - Purpose of collection: To compute cycle estimates, display calendar visualisations, and present personal history entirely on your device.
@@ -38,13 +36,13 @@ Sanguine does not disclose, transmit, sell, or rent your health information to t
 Under the Australian Notifiable Data Breach scheme, entities must assess suspected data breaches and notify affected individuals and the OAIC if serious harm is likely. Because Sanguine stores no information on external servers, the developer cannot suffer a central server data breach.
 
 If a critical security defect is identified in the application code that compromises on-device encryption:
-1. Investigation: The developer will investigate and evaluate the defect within a period TBD (human).
+1. Investigation: The developer will investigate and evaluate the defect within 30 days of becoming aware of it, as the Notifiable Data Breaches scheme requires for an assessment.
 2. Remediation: A software update containing a fix will be published via app store channels immediately.
 3. Notification: If an eligible data breach occurs under the Privacy Act, notice will be provided through app release notes, public project channels, and formal notification to the Office of the Australian Information Commissioner (OAIC).
 
 ## 8. Contact and Complaints
 If you have questions, feedback, or complaints regarding privacy, contact:
-- Privacy Officer: TBD (human)
-- Contact Email: TBD (human)
+- Privacy contact: the Sanguine developer
+- Email: admin@dothings.lol
 
-Complaints will be acknowledged and reviewed within a period TBD (human). If you remain dissatisfied with the response, you can lodge a complaint with the Office of the Australian Information Commissioner (OAIC) at enquiries@oaic.gov.au or by calling 1300 363 992.
+Complaints will be acknowledged within 7 days and answered within 30 days. If you remain dissatisfied with the response, you can lodge a complaint with the Office of the Australian Information Commissioner (OAIC) at enquiries@oaic.gov.au or by calling 1300 363 992.

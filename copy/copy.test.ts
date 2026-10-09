@@ -104,11 +104,13 @@ describe('placeholders', () => {
   });
 });
 
-describe('policy drafts use the same word list (P0-10)', () => {
-  for (const f of ['privacy-policy.md', 'consumer-health-data-policy.md', 'dpia.md']) {
+describe('policies use the same word list (P0-10)', () => {
+  // The two published policies (site/ and the app's About screen) are complete; the DPIA stays an internal draft.
+  for (const [f, published] of [['privacy-policy.md', true], ['consumer-health-data-policy.md', true], ['dpia.md', false]] as const) {
     const text = readFileSync(join(__dirname, '..', 'docs', f), 'utf8');
-    it(`${f} has no forbidden word and is marked DRAFT`, () => {
-      expect(text.startsWith('DRAFT, not legal advice')).toBe(true);
+    it(`${f} has no forbidden word and is ${published ? 'complete' : 'marked DRAFT'}`, () => {
+      if (published) expect(text).not.toMatch(/DRAFT|TBD/);
+      else expect(text.startsWith('DRAFT, not legal advice')).toBe(true);
       expect(violations('doc', { text })).toEqual([]);
     });
   }

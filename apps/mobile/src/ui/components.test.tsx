@@ -7,7 +7,12 @@ import { DateField, dateToIso, isoToDate } from './DateField';
 
 // the native picker cannot render in jsdom: a stub that picks 3 Feb 1994 when pressed
 vi.mock('@expo/ui/community/datetime-picker', () => ({
-  default: ({ onValueChange }: { onValueChange: (e: unknown, d: Date) => void }) => <button type="button" data-testid="picker" onClick={() => onValueChange({}, new Date(1994, 1, 3, 12))} />,
+  default: ({ onValueChange }: { onValueChange: (e: unknown, d?: Date) => void }) => (
+    <>
+      <button type="button" data-testid="picker" onClick={() => onValueChange({}, new Date(1994, 1, 3, 12))} />
+      <button type="button" data-testid="dismiss" onClick={() => onValueChange({}, undefined)} />
+    </>
+  ),
 }));
 import { OptionList } from './OptionList';
 import { ProgressDots } from './ProgressDots';
@@ -56,6 +61,17 @@ describe('DateField', () => {
     fireEvent.click(screen.getByRole('button', { name: '10 Oct 2026' }));
     fireEvent.click(screen.getByTestId('picker'));
     expect(screen.getByRole('button', { name: '1 Jan 2020' })).toBeTruthy(); // the stub picks 3 Feb 1994, before the minimum
+    expect(screen.queryByTestId('picker')).toBeNull();
+  });
+  it('keeps the value when the Android dialog is dismissed without a date', () => {
+    function D() {
+      const [d, setD] = useState('2026-10-10');
+      return <DateField value={d} onChange={setD} min="2020-01-01" max="2026-10-10" />;
+    }
+    render(<D />);
+    fireEvent.click(screen.getByRole('button', { name: '10 Oct 2026' }));
+    fireEvent.click(screen.getByTestId('dismiss'));
+    expect(screen.getByRole('button', { name: '10 Oct 2026' })).toBeTruthy();
     expect(screen.queryByTestId('picker')).toBeNull();
   });
   it('converts between ISO days and local dates without shifting the day', () => {

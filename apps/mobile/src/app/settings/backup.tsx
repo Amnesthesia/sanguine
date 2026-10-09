@@ -39,7 +39,6 @@ export default function BackupScreen() {
   const service = cloud ? cloudServiceName(cloud) : '';
   useEffect(() => { void getCloudStore().then(setCloud); }, []);
   const reloadLast = () => { if (db) void getSetting<string | null>(db, 'cloud.lastUploadAt', null).then(setLastUpload); };
-  // biome-ignore lint/correctness/useExhaustiveDependencies: loads once when the database is ready; the actions below reload it
   useEffect(reloadLast, [db]);
 
   async function create() {

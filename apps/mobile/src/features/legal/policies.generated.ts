@@ -17,7 +17,7 @@ export const POLICIES = {
       },
       {
         "type": "p",
-        "text": "Sanguine is operated by TBD (human). Although the application operates without central servers or backend databases, Sanguine is treated as an APP entity bound by the Australian Privacy Principles (APPs) under the Privacy Act 1988 (Cth). This document sets out how personal and health information is handled."
+        "text": "Sanguine is operated by its developer, who can be contacted at admin@dothings.lol. Although the application operates without central servers or backend databases, Sanguine is treated as an APP entity bound by the Australian Privacy Principles (APPs) under the Privacy Act 1988 (Cth). This document sets out how personal and health information is handled."
       },
       {
         "type": "h",
@@ -25,7 +25,7 @@ export const POLICIES = {
       },
       {
         "type": "p",
-        "text": "Sanguine collects and retains no personal information on remote servers. All entries remain on your physical device."
+        "text": "Sanguine keeps no personal information on remote servers. All entries remain on your physical device. The one thing that leaves it is the update check described in section 6, which carries a random installation identifier and no health or cycle information."
       },
       {
         "type": "li",
@@ -109,7 +109,7 @@ export const POLICIES = {
       },
       {
         "type": "li",
-        "text": "Investigation: The developer will investigate and evaluate the defect within a period TBD (human)."
+        "text": "Investigation: The developer will investigate and evaluate the defect within 30 days of becoming aware of it, as the Notifiable Data Breaches scheme requires for an assessment."
       },
       {
         "type": "li",
@@ -129,18 +129,18 @@ export const POLICIES = {
       },
       {
         "type": "li",
-        "text": "Privacy Officer: TBD (human)"
+        "text": "Privacy contact: the Sanguine developer"
       },
       {
         "type": "li",
-        "text": "Contact Email: TBD (human)"
+        "text": "Email: admin@dothings.lol"
       },
       {
         "type": "p",
-        "text": "Complaints will be acknowledged and reviewed within a period TBD (human). If you remain dissatisfied with the response, you can lodge a complaint with the Office of the Australian Information Commissioner (OAIC) at enquiries@oaic.gov.au or by calling 1300 363 992."
+        "text": "Complaints will be acknowledged within 7 days and answered within 30 days. If you remain dissatisfied with the response, you can lodge a complaint with the Office of the Australian Information Commissioner (OAIC) at enquiries@oaic.gov.au or by calling 1300 363 992."
       }
     ],
-    "ready": false
+    "ready": true
   },
   "consumerHealth": {
     "title": "Sanguine Consumer Health Data Privacy Policy",
@@ -163,7 +163,7 @@ export const POLICIES = {
       },
       {
         "type": "p",
-        "text": "Data Controller: TBD (human). Contact: TBD (human)."
+        "text": "Data Controller: the Sanguine developer. Contact: admin@dothings.lol."
       },
       {
         "type": "h",
@@ -259,7 +259,7 @@ export const POLICIES = {
       },
       {
         "type": "li",
-        "text": "Right to appeal: Because all processing occurs on-device and the developer retains no personal data on servers, rights are exercised directly inside the app. If you believe a request has not been fulfilled or wish to submit an appeal regarding your consumer health data rights, email: TBD (human). Appeals will be reviewed within 45 days."
+        "text": "Right to appeal: Because all processing occurs on-device and the developer retains no personal data on servers, rights are exercised directly inside the app. If you believe a request has not been fulfilled or wish to submit an appeal regarding your consumer health data rights, email: admin@dothings.lol. Appeals will be reviewed within 45 days."
       },
       {
         "type": "h",
@@ -270,6 +270,6 @@ export const POLICIES = {
         "text": "Sanguine requires users to be at least 13 years of age. For users aged 13 to 17, the application automatically enables teen mode. Teen mode hides sexual activity tracking, suppresses fertility estimate cards, and sets cycle thresholds appropriate for younger individuals."
       }
     ],
-    "ready": false
+    "ready": true
   }
 } as const;

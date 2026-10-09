@@ -93,5 +93,20 @@ name: Settings - appearance, tracking options, life state, backup recovery code,
 - assertVisible: "Engine hash .*"
 - assertVisible: "Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional."
 - takeScreenshot: about
+# the published privacy policy, bundled (D-072)
+- scrollUntilVisible:
+    element:
+      id: about-privacy-policy
+- tapOn:
+    id: about-privacy-policy
+- assertVisible:
+    id: screen-legal
+- assertVisible: "Sanguine Privacy Policy"
+- scrollUntilVisible:
+    element:
+      text: ".*admin@dothings.lol.*"
+- takeScreenshot: privacy-policy
+- tapOn:
+    id: back
 - tapOn:
     id: back

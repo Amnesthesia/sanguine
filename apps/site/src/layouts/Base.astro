@@ -1,0 +1,70 @@
+---
+// Every page: the splash lock-up, the body, the footer with the fixed wording (PLAN.md §2.3). Splash palette and Cormorant,
+// as on the splash and the About band (D-051); the font and images are bundled, so no visitor's IP reaches a third party.
+import lockup from '../../../../apps/mobile/assets/brand/splash-lockup.png';
+import lockupDark from '../../../../apps/mobile/assets/brand/splash-lockup-dark.png';
+import icon from '../../../../apps/mobile/assets/brand/icon.png';
+import font from '../../../../node_modules/@expo-google-fonts/cormorant-garamond/600SemiBold/CormorantGaramond_600SemiBold.ttf?url';
+
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+---
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content={description}>
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href={icon.src}>
+<link rel="apple-touch-icon" href={icon.src}>
+<style is:global set:html={`@font-face { font-family: 'Cormorant Garamond'; font-weight: 600; font-display: swap; src: url(${font}) format('truetype'); }`}></style>
+<style is:global>
+  /* splash palette (PLAN.md §9.9): blush field and ink; plum field in dark */
+  :root { --field: #F5E8E2; --ink: #73393B; --text: #2A1518; --muted: #6E5558; --card: #FFFFFF; --rule: #E6D3CC; }
+  @media (prefers-color-scheme: dark) { :root { --field: #2A1518; --ink: #F5E8E2; --text: #F5E8E2; --muted: #C9B3AF; --card: #3A2125; --rule: #4A2D31; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--field); color: var(--text); font: 17px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  a { color: var(--ink); }
+  header, main, footer { max-width: 760px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 32px; text-align: center; }
+  header img { width: 150px; height: auto; }
+  .lockup-dark { display: none; }
+  @media (prefers-color-scheme: dark) { .lockup-light { display: none; } .lockup-dark { display: inline; } }
+  h1, h2, .caps { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; color: var(--ink); text-transform: uppercase; letter-spacing: 0.06em; line-height: 1.25; }
+  h1 { font-size: 1.9rem; text-align: center; margin: 24px 0 8px; }
+  h2 { font-size: 1.3rem; margin: 40px 0 8px; }
+  .lede { text-align: center; font-size: 1.1rem; }
+  .shots { display: flex; gap: 12px; justify-content: center; margin: 32px 0; }
+  .shots img { width: 31%; max-width: 220px; height: auto; border-radius: 12px; }
+  ul { padding-left: 1.2em; }
+  li { margin: 6px 0; }
+  .note { color: var(--muted); font-size: 0.95rem; }
+  .doc h1 { text-align: left; }
+  .doc { background: var(--card); border-radius: 16px; padding: 8px 24px 24px; margin-top: 24px; }
+  footer { margin-top: 48px; padding-bottom: 40px; border-top: 1px solid var(--rule); font-size: 0.9rem; color: var(--muted); text-align: center; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: center; padding: 20px 0 8px; }
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" aria-label="Sanguine home">
+    <img class="lockup-light" src={lockup.src} alt="Sanguine" width={lockup.width} height={lockup.height}>
+    <img class="lockup-dark" src={lockupDark.src} alt="Sanguine" width={lockupDark.width} height={lockupDark.height}>
+  </a>
+</header>
+<main>
+  <slot />
+</main>
+<footer>
+  <nav>
+    <a href="privacy.html">Privacy policy</a>
+    <a href="health-data.html">Consumer health data policy</a>
+    <a href="support.html">Support</a>
+    <a href="https://github.com/Amnesthesia/sanguine">Source code</a>
+  </nav>
+  <p>Sanguine is not a contraceptive and is not a medical device.<br>This site sets no cookies and loads nothing from anyone else.</p>
+</footer>
+</body>
+</html>

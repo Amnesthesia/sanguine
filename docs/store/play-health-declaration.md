@@ -27,4 +27,4 @@ Submitted by the owner in Play Console. Text drafted from PLAN.md §6.6 and §7.
 ## In-app requirements
 
 - Permission rationale screen: shown before the system dialog (Settings > Health sync).
-- Privacy policy: `docs/privacy-policy.md`, linked in the app (Settings > About > Privacy policy) and on the store page.
+- Privacy policy: https://amnesthesia.github.io/sanguine/privacy.html (from `docs/privacy-policy.md`), also shown in the app (Settings > About > Privacy policy) and linked on the store page.

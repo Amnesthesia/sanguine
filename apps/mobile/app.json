@@ -8,7 +8,7 @@
     "scheme": "sanguine",
     "userInterfaceStyle": "automatic",
     "android": {
-      "package": "lol.sanguine.app",
+      "package": "app.sanguine.mobile",
       "adaptiveIcon": {
         "backgroundColor": "#F5E8E2",
         "foregroundImage": "./assets/brand/android-icon-foreground.png",
@@ -156,7 +156,8 @@
             "NSUbiquitousContainerName": "Sanguine",
             "NSUbiquitousContainerSupportedFolderLevels": "Any"
           }
-        }
+        },
+        "ITSAppUsesNonExemptEncryption": false
       },
       "icon": {
         "light": "./assets/brand/icon.png",
@@ -166,7 +167,16 @@
       "privacyManifests": {
         "NSPrivacyTracking": false,
         "NSPrivacyTrackingDomains": [],
-        "NSPrivacyCollectedDataTypes": [],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
+          }
+        ],
         "NSPrivacyAccessedAPITypes": [
           {
             "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",

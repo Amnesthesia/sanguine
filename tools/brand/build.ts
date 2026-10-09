@@ -16,21 +16,21 @@ const root = join(here, '..', '..');
 const src = join(root, 'docs', 'brand-v2');
 const out = join(root, 'apps', 'mobile', 'assets', 'brand');
 
-const emblemPng = readFileSync(join(src, 'emblem.png'));
-const logotypePng = readFileSync(join(src, 'logotype.png'));
+export const emblemPng = readFileSync(join(src, 'emblem.png'));
+export const logotypePng = readFileSync(join(src, 'logotype.png'));
 /** Width and height from the PNG header (IHDR). */
 const size = (b: Buffer) => ({ w: b.readUInt32BE(16), h: b.readUInt32BE(20) });
 export const EMBLEM = size(emblemPng);
 export const LOGOTYPE = size(logotypePng);
 
-const png = (svg: string, width?: number) => new Resvg(svg, width ? { fitTo: { mode: 'width', value: width } } : {}).render().asPng();
-const svgOf = (w: number, h: number, inner: string) =>
+export const png = (svg: string, width?: number) => new Resvg(svg, width ? { fitTo: { mode: 'width', value: width } } : {}).render().asPng();
+export const svgOf = (w: number, h: number, inner: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${inner}</svg>`;
-const field = (w: number, h: number, color: string) => `<rect width="${w}" height="${h}" fill="${color}"/>`;
+export const field = (w: number, h: number, color: string) => `<rect width="${w}" height="${h}" fill="${color}"/>`;
 
 let n = 0;
 /** One of the white-on-transparent PNGs, recoloured to `color` and placed at x, y with width `w`. */
-function tinted(buf: Buffer, dims: { w: number; h: number }, color: string, x: number, y: number, w: number): string {
+export function tinted(buf: Buffer, dims: { w: number; h: number }, color: string, x: number, y: number, w: number): string {
   const id = `t${n++}`;
   const h = (w * dims.h) / dims.w;
   return `<filter id="${id}" color-interpolation-filters="sRGB"><feFlood flood-color="${color}"/><feComposite in2="SourceAlpha" operator="in"/></filter>`

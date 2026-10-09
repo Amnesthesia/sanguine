@@ -35,7 +35,7 @@ export function DateField({ value, onChange, min, max, testID }: { value: string
       maximumDate={isoToDate(max)}
       accentColor={t.c.accent}
       themeVariant={t.scheme}
-      onValueChange={(_e, d) => { setOpen(false); pick(d); }}
+      onValueChange={(_e, d) => { setOpen(false); if (d) pick(d); }} // Android passes no date when the dialog is dismissed
       onDismiss={() => setOpen(false)}
     />
   );

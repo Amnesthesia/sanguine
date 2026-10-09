@@ -1,5 +1,7 @@
 appId: ${APP_ID}
 name: Onboarding age gate (minimum 13) and teen note
+# iOS only: the year wheel of the compact SwiftUI picker is driven by percentage taps (only the selected row is in the
+# accessibility tree); Android uses the Material dialog and gets its own flow in the P3-14 pass.
 ---
 - runFlow:
     file: _open.yaml

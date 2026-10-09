@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Support · Sanguine" description="Help with Sanguine, and how to contact us.">
+<h1>Support</h1>
+<p class="lede">Questions, problems or ideas: email <a href="mailto:admin@dothings.lol">admin@dothings.lol</a>.</p>
+<p class="note">Please never send us your logs or a backup file. We do not need them, and email is not the place for health data.</p>
+
+<h2>Do I need an account?</h2>
+<p>No. Sanguine has no account and no sign-in. Everything you log is stored on your phone in an encrypted database.</p>
+
+<h2>How do I move to a new phone?</h2>
+<p>In Settings, open Privacy and data, then Encrypted backup. Choose a passphrase and write down your 24 recovery words. On the new phone, install Sanguine, open the same screen and choose Restore from backup. You need the backup file, your passphrase and your recovery code.</p>
+<p>Without the passphrase and the recovery code a backup cannot be opened, by design. We cannot recover it for you.</p>
+
+<h2>How do I get my data out?</h2>
+<p>Settings, Privacy and data, Export my data. You get a zip with JSON and CSV files.</p>
+
+<h2>How do I delete everything?</h2>
+<p>Settings, Privacy and data, Delete everything. This removes every log, setting and backup key from your phone. Backups you saved in iCloud Drive, Google Drive or Files, and entries written to Apple Health or Health Connect, stay where they are until you delete them there.</p>
+
+<h2>How are the estimates made?</h2>
+<p>From the period dates you log and, if you log them, temperature, ovulation tests and cervical mucus. Symptoms never change an estimate. Every estimate is a range with a confidence grade, and the range gets narrower as you log more cycles. Settings, About explains how to read them.</p>
+
+<h2>Apple Health and Health Connect</h2>
+<p>Settings, Health sync. Nothing is shared until you switch a data type on, and you choose for each type whether Sanguine reads, writes or both.</p>
+
+<h2>Security issues</h2>
+<p>Please report security problems privately to <a href="mailto:admin@dothings.lol">admin@dothings.lol</a>. See <a href="https://github.com/Amnesthesia/sanguine/blob/main/SECURITY.md">SECURITY.md</a>.</p>
+</Base>

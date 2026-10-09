@@ -64,6 +64,7 @@ export default function HealthScreen() {
       </Text>
       {last ? <Text testID="health-result" variant="bodySmall">{t('settings.health.result', { imported: last.imported, duplicates: last.duplicates, retracted: last.retracted, written: last.written })}</Text> : null}
       {last && last.failed.length > 0 ? <Text testID="health-failed" variant="bodySmall" color="textSecondary">{t('settings.health.failed', { n: last.failed.length })}</Text> : null}
+      {message ? <Text testID="health-denied" variant="bodySmall" color="textSecondary" accessibilityLiveRegion="polite">{message}</Text> : null}
       {empty ? (
         <>
           <Text testID="health-empty" variant="bodySmall" color="textSecondary">{t('settings.health.emptyHint')}</Text>

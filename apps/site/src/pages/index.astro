@@ -1,0 +1,38 @@
+---
+// Landing page. The description is the store listing's (docs/store/listing-en-AU.md); the first paragraph is PLAN.md §2.3 fixed wording.
+import Base from '../layouts/Base.astro';
+import today from '../../../../docs/store/graphics/ios/01-today.png';
+import calendar from '../../../../docs/store/graphics/ios/03-calendar.png';
+import privacy from '../../../../docs/store/graphics/ios/05-privacy.png';
+---
+<Base title="Sanguine: a private cycle tracker" description="Track and understand your menstrual cycle. Everything stays on your phone, encrypted.">
+<h1>A private cycle tracker</h1>
+<p class="lede">Sanguine helps you track and understand your menstrual cycle. It is not a contraceptive and is not a medical device.</p>
+<p class="lede">Everything you log stays on your phone, encrypted. There is no account and no server, so we cannot see your data and cannot hand it to anyone.</p>
+
+<div class="shots">
+  <img src={today.src} width={today.width} height={today.height} alt="The Today screen: next period likely in 15 to 22 days, with a fair estimate grade">
+  <img src={calendar.src} width={calendar.width} height={calendar.height} alt="The Calendar screen: logged and predicted period days for October">
+  <img src={privacy.src} width={privacy.width} height={privacy.height} alt="Privacy and data settings: export, import, encrypted backup and app lock">
+</div>
+
+<h2>What it does</h2>
+<ul>
+  <li>Log your period, flow, symptoms, temperature, ovulation tests and cervical mucus in two taps.</li>
+  <li>See your next period and your ovulation as ranges, with a plain-language confidence grade, never as a single promised day.</li>
+  <li>Understand your history: cycle length, period length and how they vary.</li>
+  <li>Import your history from Natural Cycles or a CSV, and export everything whenever you like.</li>
+  <li>Optional two-way sync with Apple Health and Health Connect, one data type at a time.</li>
+  <li>Optional encrypted backup to your own iCloud Drive or Google Drive. The file is encrypted on your phone before it leaves.</li>
+  <li>App lock, discreet notifications, a discreet app icon and name, and screenshot protection.</li>
+  <li>No analytics, no advertising, no tracking. Free, with nothing locked away.</li>
+</ul>
+
+<h2>Get Sanguine</h2>
+<p>Coming soon to the App Store and Google Play, in Australia first.</p>
+
+<h2>Open source</h2>
+<p>Sanguine is free software under the AGPL. Read the code, check the claims above against it, or build it yourself: <a href="https://github.com/Amnesthesia/sanguine">github.com/Amnesthesia/sanguine</a>.</p>
+
+<p class="note">Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional.</p>
+</Base>

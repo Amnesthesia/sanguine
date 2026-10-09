@@ -40,3 +40,5 @@ google-services.json
 
 # local EAS build output
 apps/mobile/build/
+.astro
+apps/site/

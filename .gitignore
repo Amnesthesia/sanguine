@@ -14,3 +14,6 @@ NaturalCycles-*.xlsx
 
 # local EAS build output
 apps/mobile/build/
+
+# Astro build cache (apps/site/)
+.astro

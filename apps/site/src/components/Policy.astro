@@ -1,0 +1,30 @@
+---
+// A policy page from the same generated data the app shows (apps/mobile/src/features/legal/policies.generated.ts, written by
+// `pnpm policy` from docs/*.md), so the published policy and the in-app one cannot drift. A draft (TBD) is refused at build.
+import Base from '../layouts/Base.astro';
+import { POLICIES } from '../../../../apps/mobile/src/features/legal/policies.generated';
+
+interface Props { policy: keyof typeof POLICIES }
+const p = POLICIES[Astro.props.policy];
+if (!p.ready) throw new Error(`${Astro.props.policy} policy still has a TBD: it is not published`);
+
+// Lists are flat runs of li blocks; group them. URLs and email addresses become links.
+const groups: { type: 'h' | 'p' | 'ul'; items: string[] }[] = [];
+for (const b of p.blocks) {
+  const last = groups[groups.length - 1];
+  if (b.type === 'li' && last?.type === 'ul') last.items.push(b.text);
+  else groups.push({ type: b.type === 'li' ? 'ul' : b.type, items: [b.text] });
+}
+const parts = (s: string) => s.split(/(https?:\/\/[^\s)]+|[\w.+-]+@[\w-]+\.[\w.]+\w)/g);
+const href = (s: string) => (s.includes('@') ? `mailto:${s}` : s);
+---
+<Base title={`${p.title} · Sanguine`} description={p.title}>
+  <article class="doc">
+    <h1>{p.title}</h1>
+    {groups.map((g) =>
+      g.type === 'h' ? <h2>{g.items[0]}</h2>
+      : g.type === 'ul' ? <ul>{g.items.map((t) => <li>{parts(t).map((s, i) => (i % 2 ? <a href={href(s)}>{s}</a> : s))}</li>)}</ul>
+      : <p>{parts(g.items[0] ?? '').map((s, i) => (i % 2 ? <a href={href(s)}>{s}</a> : s))}</p>
+    )}
+  </article>
+</Base>

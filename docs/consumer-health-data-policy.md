@@ -1,5 +1,3 @@
-DRAFT, not legal advice, to be reviewed by a human before publication
-
 # Sanguine Consumer Health Data Privacy Policy
 
 Last updated: October 2026
@@ -9,7 +7,7 @@ This Consumer Health Data Privacy Policy applies to personal health data collect
 
 Sanguine is an on-device cycle tracker. It is not a contraceptive and is not a medical device. Sanguine does not identify conditions, provide medical opinions, or substitute for professional medical care.
 
-Data Controller: TBD (human). Contact: TBD (human).
+Data Controller: the Sanguine developer. Contact: admin@dothings.lol.
 
 ## 2. Categories of Consumer Health Data Collected
 All data in Sanguine is entered directly by you or imported with your explicit permission. Categories include:
@@ -42,7 +40,7 @@ Consumers under Washington MHMDA, Nevada SB 370, Connecticut CTDPA, and similar 
 - Right to confirm and access: You can confirm what data is stored and obtain a copy. In Sanguine, tap Settings -> Privacy and data -> Export to generate a complete JSON or CSV file.
 - Right to withdraw consent: You can withdraw consent at any time by ceasing tracking or toggling off individual tracking types in Settings.
 - Right to deletion: You can delete your consumer health data at any time. Selecting "Delete everything" in Settings -> Privacy and data immediately wipes all database records from your phone.
-- Right to appeal: Because all processing occurs on-device and the developer retains no personal data on servers, rights are exercised directly inside the app. If you believe a request has not been fulfilled or wish to submit an appeal regarding your consumer health data rights, email: TBD (human). Appeals will be reviewed within 45 days.
+- Right to appeal: Because all processing occurs on-device and the developer retains no personal data on servers, rights are exercised directly inside the app. If you believe a request has not been fulfilled or wish to submit an appeal regarding your consumer health data rights, email: admin@dothings.lol. Appeals will be reviewed within 45 days.
 
 ## 8. Age Limits and Teen Settings
 Sanguine requires users to be at least 13 years of age. For users aged 13 to 17, the application automatically enables teen mode. Teen mode hides sexual activity tracking, suppresses fertility estimate cards, and sets cycle thresholds appropriate for younger individuals.
