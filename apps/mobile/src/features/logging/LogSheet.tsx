@@ -66,17 +66,18 @@ export function LogSheet() {
     const kind = hormonal ? bleedKind : afterPregnancy ? ppKind : 'period';
     if (state.flow === level) { await setFlow(store, day, 'none', { kind }); await saved(); return; }
     const ctx = await periodContext(db, day);
-    const write = async (splitAt?: string) => {
-      await setFlow(store, day, level, { kind, ...(splitAt ? { splitAt } : {}) });
+    const write = async (answer: { splitAt?: string; mergeAt?: string } = {}) => {
+      await setFlow(store, day, level, { kind, ...answer });
       await saved();
       if (quick) router.back();
     };
-    // within a week of another period (D-052): joined by default; "A new period" splits at the later of the two days
+    // within a week of another period (D-052): the answer is written on the later of the two days, so it survives cleared days in the gap
     const joins = ctx.joins;
+    const later = ctx.startsNew && joins ? joins : day;
     if (kind === 'period' && level !== 'spotting' && joins) {
       Alert.alert(tr('day.joinPrompt', { date: formatDay(joins) }), undefined, [
-        { text: tr('day.samePeriod'), onPress: () => void write() },
-        { text: tr('day.newPeriod'), onPress: () => void write(ctx.startsNew ? joins : day) },
+        { text: tr('day.samePeriod'), onPress: () => void write({ mergeAt: later }) },
+        { text: tr('day.newPeriod'), onPress: () => void write({ splitAt: later }) },
         { text: tr('common.cancel'), style: 'cancel' },
       ]);
       return;

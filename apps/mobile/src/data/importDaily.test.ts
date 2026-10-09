@@ -35,6 +35,11 @@ describe('importDailyRows (P3-13): every daily field, not only period starts', (
     const note = await db.get<{ notes_cipher: Uint8Array }>("SELECT notes_cipher FROM daily_log WHERE day = '2026-09-01'");
     expect(openNote(KEY, new TextDecoder().decode(note?.notes_cipher))).toBe('cramps bad');
   });
+  it('imported temperatures reach the engine as an oral series (source app kept in source_app)', async () => {
+    await importDailyRows(db, store, [{ day: '2026-09-01', tempC: 36.3 }, { day: '2026-09-02', tempC: 36.4, tempExcluded: true }], opts());
+    const t = (await store.engineInputs()).history.temperatures;
+    expect(t.map((r) => [r.date, r.source, r.disturbed ?? false])).toEqual([['2026-09-01', 'oral', false], ['2026-09-02', 'oral', true]]);
+  });
   it('excluded temperature is disturbed, never a clean reading', async () => {
     await importDailyRows(db, store, [{ day: '2026-09-02', tempC: 36.9, tempExcluded: true }], opts());
     expect(await db.all('SELECT disturbed FROM biomarker')).toEqual([{ disturbed: 1 }]);

@@ -14,6 +14,7 @@ export interface DailyRow {
   tempC?: number;
   tempTime?: string; // 'HH:MM'
   tempExcluded?: boolean; // the source app marked the reading as deviating: imported as disturbed, never as a clean reading
+  tempSource?: 'oral' | 'vaginal' | 'other'; // the engine's BBT series accepts only these; default 'oral' (Natural Cycles is an oral-thermometer app)
   lh?: 'negative' | 'positive';
   mucus?: 'dry' | 'sticky' | 'creamy' | 'watery' | 'eggwhite';
   sex?: { protected: boolean };
@@ -38,7 +39,7 @@ export async function importDailyRows(db: Database, store: EventStore, rows: Dai
     if (r.flow) add('flow', r.day, 'flow', { level: r.flow, flow_kind: r.flowKind ?? 'period' });
     if (r.tempC !== undefined && Number.isFinite(r.tempC)) {
       add('bbt', r.day, 'biomarker', {
-        type: 'bbt', value: { valueC: Math.round(r.tempC * 100) / 100 }, source: o.sourceApp,
+        type: 'bbt', value: { valueC: Math.round(r.tempC * 100) / 100 }, source: r.tempSource ?? 'oral',
         ...(r.tempTime ? { measured_at: `${r.day}T${r.tempTime}:00` } : {}), ...(r.tempExcluded ? { disturbed: true } : {}),
       });
     }

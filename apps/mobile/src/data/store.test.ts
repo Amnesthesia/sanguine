@@ -81,6 +81,19 @@ describe('cycles from flow (§5.4)', () => {
     await periodsOf(['2026-10-01', '2026-10-02', '2026-10-05', '2026-10-12']);
     expect(await cycles()).toMatchObject([{ start_day: '2026-10-01', end_day: '2026-10-12', bleed_days: 12, next_start: null }]);
   });
+  it('a stray day between two periods joins the first and never bridges into the second', async () => {
+    await periodsOf(['2026-10-01', '2026-10-05', '2026-10-18', '2026-10-22']);
+    await store.append(flow('2026-10-12'));
+    expect((await cycles()).map((c) => [c.start_day, c.end_day])).toEqual([['2026-10-01', '2026-10-12'], ['2026-10-18', '2026-10-22']]);
+  });
+  it('gap joins stop once a run would reach 15 days, so chained spotting cannot swallow a cycle', async () => {
+    await periodsOf(['2026-10-01', '2026-10-05', '2026-10-11', '2026-10-17', '2026-10-23', '2026-10-27']);
+    expect((await cycles()).map((c) => [c.start_day, c.end_day])).toEqual([['2026-10-01', '2026-10-11'], ['2026-10-17', '2026-10-27']]);
+  });
+  it('continuous bleeding stays one period however long it lasts', async () => {
+    await periodsOf(Array.from({ length: 20 }, (_, i) => `2026-10-${String(i + 1).padStart(2, '0')}`));
+    expect(await cycles()).toMatchObject([{ start_day: '2026-10-01', end_day: '2026-10-20', bleed_days: 20 }]);
+  });
   it('an 8-day gap starts a new cycle', async () => {
     await periodsOf(['2026-09-03', '2026-09-04', '2026-09-12']);
     expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-03', '2026-09-12']);

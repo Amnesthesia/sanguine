@@ -45,6 +45,20 @@ describe('period logging: two taps (§8.4)', () => {
     await setFlow(store, '2026-08-27', 'medium', { splitAt: '2026-09-01' });
     expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-08-27', '2026-09-01', '2026-09-08']);
   });
+  it('no prompt when the join would make the run 15 days or longer', async () => {
+    for (const d of ['2026-10-01', '2026-10-05', '2026-10-11']) await setFlow(store, d, 'medium');
+    expect(await periodContext(db, '2026-10-17')).toEqual({ startsNew: true });
+  });
+  it('"Same period" holds even after two cleared days in the gap (mergeAt writes merge:true)', async () => {
+    for (const d of ['2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05']) await setFlow(store, d, 'medium');
+    await setFlow(store, '2026-10-04', 'none');
+    await setFlow(store, '2026-10-05', 'none');
+    expect(await periodContext(db, '2026-10-08')).toEqual({ startsNew: false, joins: '2026-10-01' });
+    await setFlow(store, '2026-10-08', 'light', { mergeAt: '2026-10-08' });
+    expect(await cycles()).toEqual([{ start_day: '2026-10-01', end_day: '2026-10-08' }]);
+    await setFlow(store, '2026-10-08', 'none'); // clearing drops the answer with the day
+    expect(await cycles()).toEqual([{ start_day: '2026-10-01', end_day: '2026-10-03' }]);
+  });
   it('clearing the flow on a split day retracts the split', async () => {
     await setFlow(store, '2026-09-01', 'medium');
     await setFlow(store, '2026-09-05', 'medium', { splitAt: '2026-09-05' });

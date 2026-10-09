@@ -540,8 +540,8 @@ CREATE TABLE schema_migration (version INTEGER PRIMARY KEY, applied_at TEXT NOT 
 
 ### 5.4 Projection rules
 
-- `cycle.start_day` is the earliest day of a run of `period` flow days; days up to 7 apart belong to one run, unless two or more days inside the gap are logged as no flow (D-052); a run shorter than one day of `light` or more is spotting, not a period.
-- A `period.start` with `merge: false` begins a new period on its day even inside that window. When a logged day would join another period across a gap of 3 to 7 days, the logging sheet asks "Is it the same period?" and writes the split only for "A new period"; clearing the day retracts its split.
+- `cycle.start_day` is the earliest day of a run of `period` flow days; days up to 7 apart belong to one run while the run stays shorter than 15 days, unless two or more days inside the gap were cleared to no flow (D-052); continuous bleeding is never cut; a run shorter than one day of `light` or more is spotting, not a period.
+- A `period.start` with `merge: false` begins a new period on its day even inside that window. When a logged day would join another period across a gap of 3 to 7 days, the logging sheet asks "Is it the same period?" and writes `merge: false` on the later day for "A new period" and `merge: true` for "Same period"; clearing the day retracts its answer.
 - Retracting the only flow event of a period removes the cycle and re-links the neighbours; the engine then re-runs.
 - Projections carry `updated_event`, so a rebuild from the log is idempotent and testable (property test: `project(events) == project(shuffle(events))` for commuting events).
 - Migrations are numbered SQL files applied in order at launch inside a transaction; a projection-only migration is a rebuild; an event-schema migration bumps `schema_v` and includes an up-converter per kind. Events are never rewritten in place.

@@ -69,4 +69,10 @@ describe('pregnancy outcome (P3-12, D-053)', () => {
     await addPastPregnancy(store, { from: '2025-03-26', until: '2025-12-01', outcome: 'loss' });
     expect(await quality()).toEqual(['valid', 'valid', 'valid', 'life_state', 'life_state', 'valid', 'valid']);
   });
+  it('a marked past pregnancy never displaces the current state in Settings', async () => {
+    const { db, store } = await setup();
+    await changeLifeState(store, db, { choice: 'hormonal', day: '2026-01-01', method: 'implant' });
+    await addPastPregnancy(store, { from: '2024-03-01', until: '2024-10-20', outcome: 'loss' });
+    expect(currentLifeStates(await lifeStateHistory(db), '2026-10-10')[0]?.kind).toBe('hormonal_contraception');
+  });
 });

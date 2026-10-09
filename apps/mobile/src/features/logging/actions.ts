@@ -1,5 +1,5 @@
 // Everything the logging sheet and day detail can do, as writes to the event log (PLAN.md §8.4). No UI imports.
-import { diffDays, type ISODate } from '@sanguine/engine';
+import { diffDays, type ISODate, MIN_VALID_LENGTH } from '@sanguine/engine';
 import { sealNote } from '@sanguine/crypto';
 import type { Database } from '@/data/database';
 import type { EventRow, FlowKind, FlowLevel, NewEvent } from '@/data/events';
@@ -58,19 +58,20 @@ async function periodRunContext(db: Database, day: ISODate): Promise<PeriodConte
   const before = [...cycles].reverse().find((c) => c.start_day <= day);
   const gap = before ? diffDays(day, before.end_day ?? before.start_day) : Number.POSITIVE_INFINITY;
   if (before && gap <= 2) return { startsNew: false }; // one missing day: obviously the same period
-  if (before && gap <= PERIOD_JOIN_DAYS) return { startsNew: false, joins: before.start_day };
+  if (before && gap <= PERIOD_JOIN_DAYS && diffDays(day, before.start_day) < MIN_VALID_LENGTH) return { startsNew: false, joins: before.start_day };
   const next = cycles.find((c) => c.start_day > day && diffDays(c.start_day, day) <= PERIOD_JOIN_DAYS);
   return next ? { startsNew: true, joins: next.start_day } : { startsNew: true };
 }
 
 /** Sets or clears the flow for a day. Tapping the level already set clears it. `splitAt` records the user's answer that a day inside the
  *  join window is a separate period: that day (this one, or the start of the period it would join) begins a new period (D-052). */
-export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel, o: { kind?: FlowKind; clots?: boolean; splitAt?: ISODate } = {}): Promise<void> {
+export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel, o: { kind?: FlowKind; clots?: boolean; splitAt?: ISODate; mergeAt?: ISODate } = {}): Promise<void> {
   const kind = o.kind ?? 'period';
   // clearing a day also drops a split written on it, or a bleed-less one-day period would remain (a split is itself a period day)
-  if (level === 'none') for (const e of await dayEvents(store, day)) if (e.kind === 'period.start' && e.data.merge === false) await store.retract(e.id);
+  if (level === 'none') for (const e of await dayEvents(store, day)) if (e.kind === 'period.start' && typeof e.data.merge === 'boolean') await store.retract(e.id);
   const events: NewEvent[] = [{ kind: 'flow', payload: { day, level, flow_kind: kind, ...(o.clots ? { clots: true } : {}) } }];
   if (o.splitAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.splitAt, merge: false } });
+  else if (o.mergeAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.mergeAt, merge: true } });
   await store.appendMany(events);
 }
 

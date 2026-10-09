@@ -19,7 +19,10 @@ export async function lifeStateHistory(db: Database): Promise<LifeStateRow[]> {
   const rows = await db.all<{ id: string; kind: string; detail: string; from_day: string; until_day: string | null }>('SELECT * FROM life_state ORDER BY from_day, id');
   return rows.map((r) => ({ ...r, detail: JSON.parse(r.detail) as Record<string, unknown> }));
 }
-export const currentLifeStates = (rows: LifeStateRow[], today: ISODate): LifeStateRow[] => rows.filter((r) => r.from_day <= today && (r.until_day === null || r.until_day >= today));
+/** Open states on `today`, newest first: an old postpartum row from a marked past pregnancy stays open for the engine's warm-up but must not
+ *  displace the state the user set most recently (D-053). */
+export const currentLifeStates = (rows: LifeStateRow[], today: ISODate): LifeStateRow[] =>
+  rows.filter((r) => r.from_day <= today && (r.until_day === null || r.until_day >= today)).sort((a, b) => (a.from_day < b.from_day ? 1 : a.from_day > b.from_day ? -1 : 0));
 
 export async function changeLifeState(store: EventStore, db: Database, o: { choice: LifeChoice; day: ISODate; method?: Method; breastfeeding?: boolean }): Promise<void> {
   const open = (await lifeStateHistory(db)).filter((r) => r.until_day === null);

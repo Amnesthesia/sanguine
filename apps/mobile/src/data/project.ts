@@ -1,6 +1,6 @@
 // Pure projection of the event log (PLAN.md §5.3-5.4). Same events in, same rows out, in any input order.
 import {
-  addDays, analyzeCycles, RECENCY_LAMBDA, diffDays,
+  addDays, analyzeCycles, MIN_VALID_LENGTH, RECENCY_LAMBDA, diffDays,
   type CervixObs, type CycleRecord, type DailyLog, type EngineSettings, type History, type ISODate, type LhTest, type LifeState,
   type MucusObs, type TemperatureReading,
 } from '@sanguine/engine';
@@ -23,9 +23,11 @@ export interface LifeStateRow { id: string; kind: string; detail: string; from_d
 export interface Projection { cycles: CycleRow[]; dailyLog: DailyLogRow[]; biomarkers: BiomarkerRow[]; lifeStates: LifeStateRow[]; history: History; settings: EngineSettings }
 
 const byOrder = (a: EventRow, b: EventRow) => a.lamport - b.lamport || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-/** §5.4 (D-052): period days up to 7 days apart are one period. A cycle shorter than MIN_VALID_LENGTH (15 d) is never valid, so joining
- *  only removes fragments the engine would discard; a user who knows better splits with period.start { merge: false }. */
+/** §5.4 (D-052): period days up to 7 days apart are one period, as long as the joined run stays shorter than MIN_VALID_LENGTH (15 d).
+ *  A cycle shorter than that is never valid, so a join can only remove fragments the engine would discard, never a real cycle start;
+ *  continuous bleeding (gaps of one missing day) is never cut. A user who knows better splits with period.start { merge: false }. */
 export const PERIOD_JOIN_DAYS = 7;
+const PERIOD_GAP_DAYS = 2; // one missing day: always the same run
 /** Explicit "no flow" days inside the gap: one is tolerated (a mistaken day cleared), two or more mean the user said the bleeding stopped. */
 export const PERIOD_JOIN_NONE_MAX = 1;
 
@@ -72,6 +74,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   };
   const periodStarts = new Set<ISODate>();
   const splitStarts = new Set<ISODate>(); // user-confirmed: this day begins a new period even inside the join window
+  const joinStarts = new Set<ISODate>(); // user-confirmed: this day belongs to the run before it, even across cleared days
   const periodEnds: ISODate[] = [];
   const excluded: ISODate[] = [];
   const confirmedLong: ISODate[] = [];
@@ -85,7 +88,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
       case 'symptom': { const x = day(e.effective_day, e.id); if (p.intensity === 0) x.symptoms.delete(p.code as string); else x.symptoms.set(p.code as string, p.intensity as number); break; }
       case 'sex': day(e.effective_day, e.id).sex = { protected: p.protected as boolean }; break;
       case 'note': day(e.effective_day, e.id).note = p.cipher as string; break;
-      case 'period.start': periodStarts.add(e.effective_day); if (p.merge === false) splitStarts.add(e.effective_day); break;
+      case 'period.start': periodStarts.add(e.effective_day); if (p.merge === false) splitStarts.add(e.effective_day); else if (p.merge === true) joinStarts.add(e.effective_day); break;
       case 'period.end': periodEnds.push(e.effective_day); break;
       case 'cycle.exclude': excluded.push(p.cycle_start as ISODate); break;
       case 'cycle.confirm_long': confirmedLong.push(p.cycle_start as ISODate); break;
@@ -126,7 +129,9 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   };
   for (const d of sortedDays) {
     const last = runs.at(-1);
-    if (last && !splitStarts.has(d) && diffDays(d, last.end) <= PERIOD_JOIN_DAYS && explicitNones(last.end, d) <= PERIOD_JOIN_NONE_MAX) last.end = d;
+    const gap = last ? diffDays(d, last.end) : Number.POSITIVE_INFINITY;
+    const gapJoin = last !== undefined && gap <= PERIOD_JOIN_DAYS && diffDays(d, last.start) < MIN_VALID_LENGTH && (joinStarts.has(d) || explicitNones(last.end, d) <= PERIOD_JOIN_NONE_MAX);
+    if (last && !splitStarts.has(d) && (gap <= PERIOD_GAP_DAYS || gapJoin)) last.end = d;
     else runs.push({ start: d, end: d });
   }
   runs.forEach((r, i) => {
