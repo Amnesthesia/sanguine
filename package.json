@@ -8,7 +8,9 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "soup": "tsx tools/ci/soup.ts",
     "engine-hash": "tsx tools/ci/engine-hash.ts",
-    "lint": "biome lint ."
+    "lint": "biome lint .",
+    "i18n:extract": "tsx tools/ci/i18n.ts extract",
+    "i18n:import": "tsx tools/ci/i18n.ts import"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
