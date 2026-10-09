@@ -81,18 +81,32 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
 - assertVisible: "This cycle is left out of your estimates."
 - takeScreenshot: cycle-detail
 # P3-12 (D-053): an unusually long cycle can be marked as a pregnancy; it is then paused, not a possible missed log
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=skippedLog
+- extendedWaitUntil:
+    visible:
       id: screen-today
+    timeout: 90000
 - tapOn: Insights
+- extendedWaitUntil:
+    visible:
       id: screen-insights
+    timeout: 10000
 - scrollUntilVisible:
     element:
       id: was-pregnant
 - tapOn:
     id: was-pregnant
+- extendedWaitUntil:
     visible: "How did the pregnancy end\\?"
+    timeout: 10000
 - takeScreenshot: pregnancy-outcome
 - tapOn: "Pregnancy loss"
+- extendedWaitUntil:
     notVisible: "unusually long"
+    timeout: 10000
 - scrollUntilVisible:
     element: "paused period"
 - takeScreenshot: marked-pregnancy
