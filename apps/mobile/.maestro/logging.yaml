@@ -91,7 +91,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
     timeout: 10000
 - takeScreenshot: join-prompt
 - tapOn: "Same period"
-- runFlow: _close-sheet.yaml
+# the period sheet closes itself after the answer
 - openLink: ${LINKBASE}today
 - extendedWaitUntil:
     visible: "Day 5 of your period"
@@ -110,7 +110,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
     visible: ".*Is it the same period\\?"
     timeout: 10000
 - tapOn: "A new period"
-- runFlow: _close-sheet.yaml
+# the period sheet closes itself after the answer
 - openLink: ${LINKBASE}today
 - extendedWaitUntil:
     visible: "Day 1 of your period"
