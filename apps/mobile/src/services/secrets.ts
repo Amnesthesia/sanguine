@@ -23,6 +23,10 @@ export async function getOrCreateDeviceSecret(): Promise<{ secret: Uint8Array; c
   return { secret, created: true };
 }
 export const recoveryCodeFor = secretToRecoveryWords;
+/** Linking a second phone to the cloud copy (P8-7): this phone takes the first phone's secret from its recovery code. */
+export async function setDeviceSecret(secret: Uint8Array): Promise<void> {
+  await SecureStore.setItemAsync(KEY, toHex(secret), OPTS);
+}
 export async function deleteDeviceSecret(): Promise<void> {
   await SecureStore.deleteItemAsync(KEY, OPTS);
 }

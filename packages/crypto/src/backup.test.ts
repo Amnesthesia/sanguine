@@ -1,7 +1,7 @@
 import { argon2id } from '@noble/hashes/argon2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import { describe, expect, it } from 'vitest';
-import { type Argon2id, BackupError, DEFAULT_KDF, HEADER_BYTES, openBackup, precomputeKey, readHeader, sealBackup } from './backup';
+import { type Argon2id, BackupError, DEFAULT_KDF, HEADER_BYTES, keyForFile, openBackup, openBackupWithKey, precomputeKey, readHeader, sealBackup } from './backup';
 import { newDeviceSecret, recoveryWordsToSecret, secretToRecoveryWords } from './recovery';
 
 /** Deterministic "random": fills each request with a counter-offset pattern. */
@@ -203,5 +203,31 @@ describe('injected Argon2id (native libsodium on the phone)', () => {
     const counted: Argon2id = async (...a) => { calls++; return viaNoble(...a); };
     await precomputeKey('pw', rnd, fast, undefined, counted);
     expect(calls).toBe(1);
+  });
+});
+
+describe('key from an existing file (P8-7, D-083)', () => {
+  const fast = { memKiB: 64, iterations: 1, parallelism: 1 };
+  let n = 0;
+  const rnd = (k: number) => Uint8Array.from({ length: k }, (_, i) => (i * 13 + 7 * ++n) % 256);
+  const secret = new Uint8Array(32).fill(9);
+  const payload = new TextEncoder().encode('events');
+  it('a second phone derives the same key from the file and both open each other\'s files without the passphrase', async () => {
+    const phoneA = await precomputeKey('correct horse', rnd, fast);
+    const fromA = await sealBackup({ payload, passphrase: '', deviceSecret: secret, random: rnd, precomputed: phoneA });
+    const phoneB = await keyForFile(fromA, 'correct horse');
+    expect(phoneB).toEqual(phoneA);
+    const fromB = await sealBackup({ payload: new TextEncoder().encode('more'), passphrase: '', deviceSecret: secret, random: rnd, precomputed: phoneB });
+    expect(new TextDecoder().decode(await openBackupWithKey(fromB, phoneA, secret))).toBe('more');
+    expect(new TextDecoder().decode(await openBackupWithKey(fromA, phoneB, secret))).toBe('events');
+  });
+  it('a different salt, passphrase or device secret is auth, never a wrong decryption', async () => {
+    const key = await precomputeKey('correct horse', rnd, fast);
+    const file = await sealBackup({ payload, passphrase: '', deviceSecret: secret, random: rnd, precomputed: key });
+    const other = await precomputeKey('correct horse', rnd, fast);
+    await expect(openBackupWithKey(file, other, secret)).rejects.toMatchObject({ code: 'auth' });
+    await expect(openBackupWithKey(file, await keyForFile(file, 'wrong'), secret)).rejects.toMatchObject({ code: 'auth' });
+    await expect(openBackupWithKey(file, key, new Uint8Array(32).fill(1))).rejects.toMatchObject({ code: 'auth' });
+    await expect(keyForFile(file, '')).rejects.toMatchObject({ code: 'params' });
   });
 });

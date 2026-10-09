@@ -1,5 +1,5 @@
 // Cloud backup wiring (PLAN.md §6.3, D-061): picks the store, keeps the derived key in the keystore, runs the automatic upload.
-import { type PrecomputedKey, precomputeKey } from '@sanguine/crypto';
+import { keyForFile, openBackupWithKey, type PrecomputedKey, precomputeKey } from '@sanguine/crypto';
 import * as Network from 'expo-network';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
@@ -9,8 +9,8 @@ import { deviceClock } from '../clock';
 import { backupCrypto } from '../argon2';
 import { getDeviceSecret } from '../secrets';
 import { localCloudStore } from './local';
-import type { CloudStore } from './types';
-import { uploadIfDue } from './upload';
+import { BACKUP_NAME, type CloudStore } from './types';
+import { type SyncStatus, uploadIfDue } from './upload';
 
 export { BACKUP_NAME, BACKUP_PREV, type CloudStore } from './types';
 
@@ -46,13 +46,21 @@ async function loadKey(): Promise<PrecomputedKey | null> {
   const j = JSON.parse(raw) as { salt: string; k0: string; kdf: PrecomputedKey['kdf'] };
   return { salt: unhex(j.salt), k0: unhex(j.k0), kdf: j.kdf };
 }
-/** Runs the key derivation once (the slow part) and keeps the result on this phone only. */
-export async function enableAutoBackup(passphrase: string, onProgress?: (f: number) => void): Promise<void> {
+/** Runs the key derivation once (the slow part) and keeps the result on this phone only. When a copy is already in the cloud (this
+ *  phone's earlier one, or another phone's, P8-7), the key is derived from that file's salt so every phone opens every upload; it must
+ *  open with `deviceSecret`, else `otherPhone`: the copy was made with another recovery code or passphrase, and nothing is saved. */
+export async function enableAutoBackup(passphrase: string, deviceSecret: Uint8Array, onProgress?: (f: number) => void): Promise<'ok' | 'otherPhone'> {
   const { kdf, argon2id } = backupCrypto();
   const started = deviceClock.nowMs();
-  const k = await precomputeKey(passphrase, (n) => deviceClock.randomBytes(n), kdf, onProgress, argon2id);
+  const cloud = await getCloudStore();
+  const remote = cloud ? await cloud.get(BACKUP_NAME) : null;
+  const k = remote ? await keyForFile(remote, passphrase, onProgress, argon2id) : await precomputeKey(passphrase, (n) => deviceClock.randomBytes(n), kdf, onProgress, argon2id);
+  if (remote) {
+    try { await openBackupWithKey(remote, k, deviceSecret); } catch { return 'otherPhone'; }
+  }
   if (__DEV__) console.log(`[backup] key derived with ${argon2id ? 'native' : 'JavaScript'} Argon2id, ${kdf.memKiB / 1024} MiB x ${kdf.iterations}, in ${deviceClock.nowMs() - started} ms`);
   await SecureStore.setItemAsync(KEY, JSON.stringify({ salt: hex(k.salt), k0: hex(k.k0), kdf: k.kdf }), OPTS);
+  return 'ok';
 }
 export async function disableAutoBackup(): Promise<void> {
   await SecureStore.deleteItemAsync(KEY, OPTS);
@@ -68,16 +76,18 @@ export async function clearCloudSecrets(): Promise<void> {
   }
 }
 
-/** Uploads when due (after a change, on Wi-Fi, at most hourly). Safe to call often; never throws. */
-export async function uploadCloudIfDue(db: Database, store: EventStore, enabled: boolean): Promise<'uploaded' | 'skipped' | 'failed'> {
-  if (!enabled) return 'skipped';
+/** Merges the cloud copy, then uploads when due (after a change, on Wi-Fi, at most hourly; `force` skips the hour). Safe to call
+ *  often; never throws. `merged` > 0 means events from another phone arrived: the caller refreshes. */
+export async function uploadCloudIfDue(db: Database, store: EventStore, enabled: boolean, force = false): Promise<{ status: SyncStatus; merged: number }> {
+  const skipped = { status: 'skipped' as const, merged: 0 };
+  if (!enabled) return skipped;
   try {
     const cloud = await getCloudStore();
-    if (!cloud) return 'skipped';
+    if (!cloud) return skipped;
     // the development test folder uploads on any network: an emulator has no Wi-Fi
     const onWifi = (__DEV__ && cloud.name === 'local') || (await Network.getNetworkStateAsync()).type === Network.NetworkStateType.WIFI;
-    return await uploadIfDue({ db, store, cloud, clock: deviceClock, deviceSecret: await getDeviceSecret(), key: await loadKey(), enabled, onWifi, nowMs: deviceClock.nowMs() });
+    return await uploadIfDue({ db, store, cloud, clock: deviceClock, deviceSecret: await getDeviceSecret(), key: await loadKey(), enabled, onWifi, nowMs: deviceClock.nowMs(), force });
   } catch {
-    return 'failed';
+    return { status: 'failed', merged: 0 };
   }
 }

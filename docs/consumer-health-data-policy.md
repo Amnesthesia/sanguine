@@ -27,6 +27,7 @@ Processing takes place entirely on your device. Sanguine operates without user a
 Sanguine does not share, disclose, or transfer consumer health data to third parties, corporate affiliates, or advertising networks.
 
 - Optional backups: If you enable encrypted cloud backup, an encrypted archive is written directly to your personal iCloud Drive or Google Drive application folder. Encryption uses Argon2id and XChaCha20-Poly1305. The developer holds no keys and cannot read or inspect this archive.
+- Your own phones: if you link a second phone with your recovery code, each phone merges the entries in that encrypted archive before it uploads a new one. The archive stays in your own cloud folder; nothing passes through the developer.
 - Optional health sync: Sanguine can sync with Apple Health or Health Connect. Synchronisation is off by default and needs your consent per data type, given in Settings and confirmed by the operating system. Transferred data is governed by the platform operating system policies. A backup never contains records that were only imported from Apple Health.
 
 ## 5. No Sale of Consumer Health Data

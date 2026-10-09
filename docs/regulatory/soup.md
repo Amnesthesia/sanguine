@@ -41,6 +41,8 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-localization | 57.0.2 | ~57.0.2 | ships in app | apps/mobile |
 | expo-network | 57.0.2 | ~57.0.2 | ships in app | apps/mobile |
 | expo-notifications | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
+| expo-print | 57.0.2 | ~57.0.2 | ships in app | apps/mobile |
+| expo-quick-actions | 6.0.2 | 6.0.2 | ships in app | apps/mobile |
 | expo-router | 57.0.25 | ~57.0.25 | ships in app | apps/mobile |
 | expo-screen-capture | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
 | expo-secure-store | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |

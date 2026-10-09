@@ -94,9 +94,9 @@ As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the h
 - [x] P8-3 "How Sanguine estimates" reference pages under About (R2-6).
 - [x] P8-4 Perimenopause view in Insights: variability facts, vasomotor symptom counts, no stage label, no 12-month milestone (R3-1, D-081).
 - [x] P8-5 Pregnancy view on Today: gestational week and day, due date as a range (R3-2, D-082).
-- [ ] P8-6 Report for a doctor, PDF on the device through expo-print (R2-1); needs a dev-client rebuild.
-- [ ] P8-7 Sync between the user's own devices: merge core with property tests first, then transport through the backup channel (R5-1, D-077).
-- [ ] P8-8 Siri, Shortcuts, Control Center and Android shortcuts: spike first (R2-2).
-- [ ] P8-9 Apple Watch app: spike first (R4-1).
-- [ ] P8-10 Android Glance widget and Wear OS tile, at expo-widgets' Android renderer (R4-2, P3-5b).
+- [x] P8-6 Report for a doctor, PDF on the device through expo-print (R2-1, D-084).
+- [x] P8-7 Sync between the user's own devices: merge core with property tests first, then transport through the backup channel (R5-1, D-077, D-083).
+- [x] P8-8 Home-screen quick actions on both platforms (D-085; R2-2). Siri, App Shortcuts and Control Center wait for expo-app-intents at the SDK 58 upgrade (spike result in D-085).
+- [ ] P8-9 Apple Watch app (R4-1): spike done (D-086); needs the owner's decision on the experimental expo-apple-targets plugin and a Swift watch target.
+- [ ] P8-10 Android Glance widget and Wear OS tile (R4-2, P3-5b): spike done (D-086); blocked until expo-widgets supports Android (re-check at SDK 58).
 - [x] P8-11 Today look-back symptom note: own logs only, past tense, allow-listed physical codes, switchable (D-087; amends C-10).

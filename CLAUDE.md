@@ -7,7 +7,7 @@ The logo and the splash are the client's v2 brand (D-049), cut back by the owner
 
 ## Non-negotiables (never change without a human decision)
 - The prediction engine (`packages/engine`) is pure TypeScript: no React, no platform APIs, no I/O, no `Date.now()`, no randomness. `predict(history, settings, today)` is deterministic.
-- No network calls anywhere except the optional, client-side-encrypted backup to the user's own iCloud Drive / Google Drive app folder (Phase 3) and the EAS Update check for new app code (D-069, carries no user data; engine changes never ship over the air). No analytics, crash-reporting, ad or attribution SDKs. CI fails the build if one appears.
+- No network calls anywhere except the optional, client-side-encrypted backup to the user's own iCloud Drive / Google Drive app folder (Phase 3), which also carries sync between the user's own phones through that same encrypted copy (owner, D-077; D-083), and the EAS Update check for new app code (D-069, carries no user data; engine changes never ship over the air). No analytics, crash-reporting, ad or attribution SDKs. CI fails the build if one appears.
 - Symptoms (cramps, mood, acne, breast tenderness, mittelschmerz, etc.) never change a prediction. Only period dates, BBT, wearable temperature, LH tests, cervical mucus and cervical position do.
 - Every prediction is a range with a confidence grade. Never render a single highlighted "fertile day".
 - The regulatory wording in PLAN.md §2.3 is fixed copy. The forbidden-word list in §2.3 and §8.7 is enforced by a test over `copy/*.json`.

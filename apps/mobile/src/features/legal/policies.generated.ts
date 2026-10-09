@@ -65,6 +65,10 @@ export const POLICIES = {
       },
       {
         "type": "li",
+        "text": "Using Sanguine on more than one phone: if the automatic encrypted copy is on, each phone first downloads the copy already in your iCloud Drive or Google Drive application folder, decrypts it on the phone and merges its entries, then uploads the merged copy. A second phone joins only when you enter the first phone's recovery code and passphrase on it. The copy never passes through a server of the developer, and the developer cannot read it. Deleting everything on one phone does not delete the entries on your other phones or the copy in your cloud folder."
+      },
+      {
+        "type": "li",
         "text": "Optional health sync: Sanguine can sync with Apple Health or Health Connect. This is off by default and you choose each data category yourself in Settings. What you log here is written to the health store only for the categories you switch on; wrist temperature is read and never written. Data in Apple Health or Health Connect is subject to Apple or Google terms and permissions, and a backup never contains records that were only imported from Apple Health."
       },
       {
@@ -220,6 +224,10 @@ export const POLICIES = {
       {
         "type": "li",
         "text": "Optional backups: If you enable encrypted cloud backup, an encrypted archive is written directly to your personal iCloud Drive or Google Drive application folder. Encryption uses Argon2id and XChaCha20-Poly1305. The developer holds no keys and cannot read or inspect this archive."
+      },
+      {
+        "type": "li",
+        "text": "Your own phones: if you link a second phone with your recovery code, each phone merges the entries in that encrypted archive before it uploads a new one. The archive stays in your own cloud folder; nothing passes through the developer."
       },
       {
         "type": "li",

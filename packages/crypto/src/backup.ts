@@ -135,7 +135,27 @@ export function readHeader(file: Uint8Array): { kdf: KdfParams; salt: Uint8Array
 export async function openBackup(file: Uint8Array, passphrase: string, deviceSecret: Uint8Array, onProgress?: (f: number) => void, argon2id?: Argon2id): Promise<Uint8Array> {
   checkSecret(deviceSecret);
   const h = readHeader(file);
-  const { encKey, macKey } = await deriveKeys(passphrase, h.salt, h.kdf, deviceSecret, onProgress, undefined, argon2id);
+  return decryptWith(file, h, await deriveKeys(passphrase, h.salt, h.kdf, deviceSecret, onProgress, undefined, argon2id));
+}
+
+/** The precomputed key for an existing file: the passphrase stretched with that file's own salt and cost, so every phone that shares
+ *  the user's cloud copy seals and opens with the same key and no passphrase after this one derivation (P8-7, D-083). */
+export async function keyForFile(file: Uint8Array, passphrase: string, onProgress?: (f: number) => void, argon2id?: Argon2id): Promise<PrecomputedKey> {
+  if (passphrase.length === 0) throw new BackupError('params', 'passphrase must not be empty');
+  const h = readHeader(file);
+  return { salt: h.salt, k0: await argon(passphrase, h.salt, h.kdf, onProgress, argon2id), kdf: h.kdf };
+}
+
+/** Opens a file sealed with this precomputed key (same salt and cost) without the passphrase; `auth` when the key or secret differs. */
+export async function openBackupWithKey(file: Uint8Array, key: PrecomputedKey, deviceSecret: Uint8Array): Promise<Uint8Array> {
+  checkSecret(deviceSecret);
+  const h = readHeader(file);
+  const sameCost = h.kdf.memKiB === key.kdf.memKiB && h.kdf.iterations === key.kdf.iterations && h.kdf.parallelism === key.kdf.parallelism;
+  if (!equal(h.salt, key.salt) || !sameCost) throw new BackupError('auth', 'the file was sealed with a different key');
+  return decryptWith(file, h, await deriveKeys('', h.salt, h.kdf, deviceSecret, undefined, key.k0));
+}
+
+function decryptWith(file: Uint8Array, h: ReturnType<typeof readHeader>, { encKey, macKey }: { encKey: Uint8Array; macKey: Uint8Array }): Uint8Array {
   const ct = file.subarray(HEADER_BYTES, HEADER_BYTES + h.ctLen);
   const mac = file.subarray(HEADER_BYTES + h.ctLen);
   if (!equal(mac, hmac(sha256, macKey, concat(h.header, ct)))) throw new BackupError('auth', 'wrong passphrase or device secret, or the file was changed');

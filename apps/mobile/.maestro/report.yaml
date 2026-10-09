@@ -1,0 +1,30 @@
+appId: ${APP_ID}
+name: Report for a doctor makes a PDF and opens the share sheet (P8-6, D-084)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=irregular
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-privacy
+- tapOn:
+    id: privacy-report
+- assertVisible:
+    id: screen-report
+- assertVisible:
+    id: report-ovulation
+- takeScreenshot: report-options
+- scrollUntilVisible:
+    element:
+      id: report-share
+- tapOn:
+    id: report-share
+- extendedWaitUntil:
+    visible: "(?i)(save to files|copy|more|airdrop|messages|print|cancel|close|pdf).*"
+    timeout: 30000
+- takeScreenshot: report-share-sheet

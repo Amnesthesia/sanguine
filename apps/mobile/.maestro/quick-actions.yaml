@@ -1,0 +1,26 @@
+appId: ${APP_ID}
+name: Home-screen shortcuts are off by default, unavailable with the discreet icon, and their link opens the period section (P8-8, D-085)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-notifications
+- assertVisible: "Home screen shortcuts"
+- assertVisible: "Hold the app icon for Log period and Log temperature.*"
+- tapOn:
+    id: quick-actions
+- takeScreenshot: quick-actions-on
+# the shortcut's target: the logging sheet on the period section
+- openLink: ${LINKBASE}log?section=period
+- extendedWaitUntil:
+    visible:
+      id: flow-heavy
+    timeout: 15000
+- takeScreenshot: quick-action-period

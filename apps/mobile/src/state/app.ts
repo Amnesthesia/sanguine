@@ -117,7 +117,7 @@ export const useApp = create<AppState>((set, get) => ({
       void setHealthBackground(get().prefs.healthTypes.length > 0 || get().prefs.cloudBackup);
       if (!foregroundHooked) {
         foregroundHooked = true;
-        RNAppState.addEventListener('change', (st) => { if (st === 'active') { void get().syncHealth(); const { db: d, store: st2, prefs: p } = get(); if (d && st2) void uploadCloudIfDue(d, st2, p.cloudBackup); } });
+        RNAppState.addEventListener('change', (st) => { if (st === 'active') { void get().syncHealth(); const { db: d, store: st2, prefs: p } = get(); if (d && st2) void uploadCloudIfDue(d, st2, p.cloudBackup).then((r) => { if (r.merged > 0) void get().refresh(); }); } });
       }
     } catch (e) {
       set({ status: 'error', error: (e as Error).message, keyMismatch: e instanceof KeyMismatchError });
@@ -148,7 +148,8 @@ export const useApp = create<AppState>((set, get) => ({
     void get().syncReminders();
     void get().syncWidgets();
     void get().syncHealth();
-    void uploadCloudIfDue(db, store, get().prefs.cloudBackup);
+    // events merged from another phone's copy (P8-7) need one more refresh; the next pass merges nothing, so this ends
+    void uploadCloudIfDue(db, store, get().prefs.cloudBackup).then((r) => { if (r.merged > 0) void get().refresh(); });
   },
 
   /** One health pass: at most one at a time and one a minute (a skipped call is retried once the minute is up), force skips the minute. */

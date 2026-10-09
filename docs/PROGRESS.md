@@ -79,3 +79,7 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - P8-3 "How Sanguine estimates" under About: range, confidence words, what narrows the range, what does not, accuracy; teen wording; how.yaml green on iOS.
 - P8-4 Cycle pattern card in Insights for the perimenopause life state: STRAW+10 marker counts and vasomotor symptom days, no stage label; pattern.yaml green on iOS (D-081).
 - P8-5 Pregnancy week and due-date range on Today, optional due date in Life state; pregnancy.yaml green on iOS (D-082).
+- P8-7 Sync between the user's own phones through the encrypted cloud copy: merge before every upload, never overwrite an unreadable copy, link a second phone with the recovery code; fast-check convergence test (D-083). Needs human: a check with two real phones on one iCloud or Google account.
+- P8-6 Report for a doctor: PDF made on the phone (expo-print), chosen cycles and sections, fixed flag wording, no condition named, ovulation column opt-in and teen-gated (D-084).
+- P8-8 Home-screen quick actions (Log period, Log temperature), off by default, none with the discreet icon; Siri and Control Center wait for SDK 58 (D-085).
+- P8-9, P8-10 spikes recorded (D-086). Needs human: decide on the experimental expo-apple-targets plugin for a Watch app.

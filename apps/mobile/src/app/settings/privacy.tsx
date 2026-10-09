@@ -52,6 +52,7 @@ export default function PrivacyScreen() {
             + (daily && daily.result.notesDropped > 0 ? ` ${t('settings.privacy.importNotesDropped', { n: daily.result.notesDropped })}` : '');
           return daily && daily.problems.length > 0 ? `${done}\n${t('settings.privacy.importSkipped')} ${daily.problems.slice(0, 5).join('; ')}${daily.problems.length > 5 ? ` ${t('settings.privacy.importMore', { n: daily.problems.length - 5 })}` : ''}` : done;
         })} />
+        <SettingsRow testID="privacy-report" title={t('report.screenTitle')} description={t('report.rowDesc')} onPress={() => router.push('/settings/report' as never)} />
         <SettingsRow testID="privacy-calendar" title={t('settings.calendar.title')} description={t('settings.calendar.rowDesc')} onPress={() => router.push('/settings/calendar' as never)} />
         <SettingsRow testID="privacy-backup" title={t('settings.privacy.backup')} description={t('settings.privacy.backupDesc')} onPress={() => router.push('/settings/backup' as never)} />
         <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setMsg(t('settings.privacy.appLockOnly')); return; } setMsg(undefined); await updatePrefs({ appLock: v }); })()} />

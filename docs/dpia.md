@@ -16,6 +16,7 @@ This assessment evaluates processing operations within Sanguine, a free on-devic
 - Architecture: No transmission of personal or health data. The only routine request is the app-code update check to Expo's update service (D-069), which carries the app version, platform, a random installation identifier and the IP address, and no cycle data. The application has no user accounts, operates no servers, and contains no analytics SDKs, crash trackers, or advertising SDKs.
 - Local storage: All data is written to a local database encrypted with SQLCipher from the first native release.
 - Optional backup: Users can configure end-to-end encrypted backup files to their personal iCloud Drive or Google Drive application folder. Backups use Argon2id and XChaCha20-Poly1305 encryption. The developer cannot decrypt or inspect these files.
+- Sync between the data subject's own phones (D-077, D-083): the same encrypted file is downloaded, decrypted on the phone, merged and re-uploaded by each linked phone. No new recipient and no new processor; the merge widens the backup's existing flow from upload-only to download-and-upload. Residual consideration: "Delete everything" on one phone leaves the other phones and the cloud copy unchanged, which the policy states.
 - Optional platform sync: Future releases will provide optional sync with Apple Health or Health Connect, configured strictly per data category.
 
 ## 3. Necessity, Proportionality, and Lawful Basis

@@ -137,7 +137,8 @@
       [
         "react-native-libsodium",
         {}
-      ]
+      ],
+      "expo-quick-actions"
     ],
     "experiments": {
       "typedRoutes": true,

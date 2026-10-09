@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getSetting, setSetting } from '@/data/settings';
 import { useTranslation } from 'react-i18next';
 import { ensurePermission, remindersSupported } from '@/services/notifications';
 import { widgetsSupported } from '@/services/widgets';
@@ -11,7 +12,9 @@ import { Text } from '@/ui/Text';
 
 export default function NotificationsScreen() {
   const { t } = useTranslation();
-  const { prefs, prediction, today, updatePrefs, nextReminder } = useApp();
+  const { db, prefs, prediction, today, updatePrefs, nextReminder, refresh } = useApp();
+  const [quick, setQuick] = useState(false);
+  useEffect(() => { if (db) void getSetting(db, 'quickActions', false).then(setQuick); }, [db]);
   const [denied, setDenied] = useState(false);
   const next = prediction?.nextPeriod;
   const lo = next ? Math.max(0, Math.round((Date.parse(next.i80.lo) - Date.parse(today)) / 86_400_000)) : 3;
@@ -33,6 +36,7 @@ export default function NotificationsScreen() {
       <Text variant="heading" accessibilityRole="header">{t('settings.notifications.preview')}</Text>
       <Card testID="notif-preview"><Text>{prefs.notifications.descriptive ? t('settings.notifications.descriptiveText', { lo, hi }) : t('settings.notifications.defaultText')}</Text></Card>
       <Group title={t('settings.notifications.widgets')}>
+        <SwitchRow testID="quick-actions" title={t('settings.notifications.quickActions')} description={prefs.discreetIcon ? t('settings.notifications.quickActionsDiscreet') : t('settings.notifications.quickActionsDesc')} disabled={prefs.discreetIcon} value={quick && !prefs.discreetIcon} onChange={(v) => void (async () => { if (db) { await setSetting(db, 'quickActions', v); setQuick(v); await refresh(); } })()} />
         {widgetsSupported
           ? <SwitchRow testID="widget-details" title={t('settings.notifications.widgetDetails')} description={t('settings.notifications.widgetDetailsDesc')} value={prefs.widgetDetails} onChange={(v) => void updatePrefs({ widgetDetails: v })} last />
           : <SettingsRow title={t('settings.notifications.widgetsDesc')} disabled last />}

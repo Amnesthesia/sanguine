@@ -1,11 +1,12 @@
 // Encrypted backup (PLAN.md §6.3): passphrase + device secret. The recovery code is shown once, before the file leaves the phone.
-import { BackupError, recoveryWordsToSecret, secretToRecoveryWords as recoveryCodeFor } from '@sanguine/crypto';
+import { BackupError, openBackup, recoveryWordsToSecret, secretToRecoveryWords as recoveryCodeFor } from '@sanguine/crypto';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { createBackup } from '@/data/backup';
+import { importBundle } from '@/data/exportImport';
 import { deviceClock, todayLocal } from '@/services/clock';
-import { getDeviceSecret, getOrCreateDeviceSecret } from '@/services/secrets';
+import { getDeviceSecret, getOrCreateDeviceSecret, setDeviceSecret } from '@/services/secrets';
 import { pickBackupBytes as pickAndRestoreBytes } from '@/services/backup';
 import { backupCrypto, nativeArgon2 } from '@/services/argon2';
 import { BACKUP_NAME, BACKUP_PREV, type CloudStore, cloudServiceName, disableAutoBackup, enableAutoBackup, getCloudStore, uploadCloudIfDue } from '@/services/cloud';
@@ -33,6 +34,8 @@ export default function BackupScreen() {
   const [pass, setPass] = useState('');
   const [pass2, setPass2] = useState('');
   const [code, setCode] = useState('');
+  /** A copy made by another phone is in the cloud: ask for that phone's recovery code to link this one (P8-7). */
+  const [link, setLink] = useState(false);
   const [pct, setPct] = useState<number | undefined>();
   const [msg, setMsg] = useState<string | undefined>();
   const [pending, setPending] = useState<{ words: string; next: () => Promise<void> } | undefined>();
@@ -40,6 +43,9 @@ export default function BackupScreen() {
   useEffect(() => { void getCloudStore().then(setCloud); }, []);
   const reloadLast = () => { if (db) void getSetting<string | null>(db, 'cloud.lastUploadAt', null).then(setLastUpload); };
   useEffect(reloadLast, [db]);
+  // a background pass found another phone's copy it cannot open (P8-7): say so here and offer the link field
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once per open; `service` is derived from `cloud`
+  useEffect(() => { if (db && cloud) void getSetting(db, 'cloud.conflict', false).then((c) => { if (c) { setLink(true); setMsg(t('settings.privacy.cloud.otherPhone', { service })); } }); }, [db, cloud]);
 
   async function create() {
     if (!db || !store) return;
@@ -92,19 +98,29 @@ export default function BackupScreen() {
       return setMsg(t('settings.privacy.cloud.off', { service }));
     }
     if (pass.length < MIN_PASSPHRASE) return setMsg(t('settings.privacy.cloud.needPass'));
-    const enable = async () => {
+    // linking a second phone (P8-7, D-083): the first phone's recovery code makes this phone use the same device secret
+    const linking = link && code.trim() !== '' ? recoveryWordsToSecret(code) : undefined;
+    if (linking === null) return setMsg(t('settings.privacy.restoreBadCode'));
+    const enable = async (secret: Uint8Array) => {
       try {
         setPct(0);
-        await enableAutoBackup(pass, (f) => setPct(Math.round(f * 100)));
+        if ((await enableAutoBackup(pass, secret, (f) => setPct(Math.round(f * 100)))) === 'otherPhone') {
+          setLink(true);
+          return setMsg(t(linking ? 'settings.privacy.cloud.linkFailed' : 'settings.privacy.cloud.otherPhone', { service }));
+        }
+        if (linking) { await setDeviceSecret(linking); await setSetting(db, 'recoveryShown', true); setLink(false); }
         await updatePrefs({ cloudBackup: true });
         const r = await uploadCloudIfDue(db, store, true);
-        setMsg(r === 'failed' ? t('settings.privacy.cloud.failed', { service }) : r === 'skipped' ? t('settings.privacy.cloud.waitingWifi') : t('settings.privacy.cloud.uploaded', { service }));
+        if (r.merged > 0) await refresh();
+        if (r.status === 'conflict') setLink(true);
+        setMsg(r.status === 'failed' ? t('settings.privacy.cloud.failed', { service }) : r.status === 'conflict' ? t('settings.privacy.cloud.otherPhone', { service }) : r.status === 'skipped' ? t('settings.privacy.cloud.waitingWifi') : t('settings.privacy.cloud.uploaded', { service }));
         reloadLast();
-      } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); setPass(''); setPass2(''); }
+      } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); setPass(''); setPass2(''); setCode(''); }
     };
+    if (linking) return enable(linking);
     const { secret, created } = await getOrCreateDeviceSecret();
-    if (created || !(await getSetting(db, 'recoveryShown', false))) setPending({ words: recoveryCodeFor(secret), next: enable });
-    else await enable();
+    if (created || !(await getSetting(db, 'recoveryShown', false))) setPending({ words: recoveryCodeFor(secret), next: () => enable(secret) });
+    else await enable(secret);
   }
   async function uploadNow() {
     if (!db || !store || !cloud) return;
@@ -112,9 +128,26 @@ export default function BackupScreen() {
     setMsg(undefined);
     try {
       setPct(0);
+      if (prefs.cloudBackup) {
+        // the automatic copy is on: the same merge-then-upload as the automatic pass, without the hourly wait (P8-7)
+        const r = await uploadCloudIfDue(db, store, true, true);
+        if (r.merged > 0) await refresh();
+        if (r.status === 'conflict') setLink(true);
+        setMsg(r.status === 'uploaded' ? t('settings.privacy.cloud.uploaded', { service }) : r.status === 'conflict' ? t('settings.privacy.cloud.otherPhone', { service }) : r.status === 'skipped' ? t('settings.privacy.cloud.waitingWifi') : t('settings.privacy.cloud.failed', { service }));
+        return reloadLast();
+      }
       const { secret } = await getOrCreateDeviceSecret();
-      const bytes = await createBackup(db, store, { passphrase: pass, deviceSecret: secret, clock: deviceClock, ...backupCrypto(), onProgress: (f) => setPct(Math.round(f * 100)) });
       const previous = await cloud.get(BACKUP_NAME);
+      if (previous) {
+        // never overwrite a copy this phone cannot read: it may hold another phone's entries; merge it when it opens
+        let zip: Uint8Array;
+        try { zip = await openBackup(previous, pass, secret, undefined, nativeArgon2() ?? undefined); } catch (e) {
+          if (e instanceof BackupError && e.code === 'auth') { setLink(true); return setMsg(t('settings.privacy.cloud.otherPhone', { service })); }
+          throw e;
+        }
+        if ((await importBundle(db, store, zip)).imported > 0) await refresh();
+      }
+      const bytes = await createBackup(db, store, { passphrase: pass, deviceSecret: secret, clock: deviceClock, ...backupCrypto(), onProgress: (f) => setPct(Math.round(f * 100)) });
       if (previous) await cloud.put(BACKUP_PREV, previous);
       await cloud.put(BACKUP_NAME, bytes);
       await setSetting(db, 'cloud.lastUploadAt', new Date().toISOString());
@@ -156,6 +189,7 @@ export default function BackupScreen() {
           <SwitchRow testID="cloud-switch" title={t('settings.privacy.cloud.switch', { service })} description={t('settings.privacy.cloud.switchDesc')} value={prefs.cloudBackup} onChange={(v) => void toggleCloud(v)} disabled={pct !== undefined} last />
         </Group>
       ) : null}
+      {cloud && mode === 'create' && link ? <TextField testID="link-code" secure label={t('settings.privacy.cloud.linkCode')} helper={t('settings.privacy.cloud.linkHelp')} value={code} onChangeText={setCode} keyboardType="default" /> : null}
       {cloud && mode === 'create' ? <Button testID="cloud-upload-now" kind="secondary" label={t('settings.privacy.cloud.uploadNow')} disabled={pct !== undefined || pass.length === 0} onPress={() => void uploadNow()} /> : null}
       {cloud && mode === 'restore' ? <Button testID="cloud-restore" kind="secondary" label={t('settings.privacy.cloud.restore', { service })} disabled={pct !== undefined || pass.length === 0} onPress={() => void restoreFromCloud()} /> : null}
       {cloud && lastUpload ? <Text testID="cloud-last" variant="bodySmall" color="textSecondary">{t('settings.privacy.cloud.lastUpload', { when: new Date(lastUpload).toLocaleString() })}</Text> : null}
