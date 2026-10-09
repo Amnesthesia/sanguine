@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { addDays } from './dates';
 import { emptyHistory, FIXTURE_SETTINGS, historyFromLengths, LAST_START, TODAY } from './fixtures';
 import { fitCycleLength, predictiveInterval } from './cycleLength';
-import { LUTEAL_PRIOR } from './params';
+import { LUTEAL_PRIOR, RECENCY_LAMBDA } from './params';
 import { predict } from './predict';
 import type { EngineSettings, History, ISODate, Prediction } from './types';
 
@@ -237,5 +237,11 @@ describe('fixture plumbing', () => {
   it('historyFromLengths builds the expected starts', () => {
     const h = historyFromLengths([28, 30, 29]);
     expect(h.cycles.map((c) => c.start)).toEqual([addDays(LAST_START, -87), addDays(LAST_START, -59), addDays(LAST_START, -29), LAST_START]);
+  });
+});
+
+describe('fixture settings', () => {
+  it('fixtures are computed with the shipped recency default (D-021)', () => {
+    expect(FIXTURE_SETTINGS.recencyLambda).toBe(RECENCY_LAMBDA);
   });
 });

@@ -52,7 +52,7 @@ export interface EngineSettings {
   birthYear?: number;
   menarcheYear?: number;
   lifeStates: Array<LifeState & { until?: ISODate }>;
-  recencyLambda: number; // default 0.92
+  recencyLambda: number; // shipped default RECENCY_LAMBDA = 1 (D-021)
   window: number; // default 12 cycles
   usualCycleLength?: number; // optional onboarding value, one observation of weight 0.5 (§4.3)
 }

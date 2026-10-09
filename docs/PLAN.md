@@ -200,7 +200,7 @@ export type LifeState =
 export interface EngineSettings {
   birthYear?: number; menarcheYear?: number;
   lifeStates: Array<LifeState & { until?: ISODate }>;
-  recencyLambda: number;        // default 0.92
+  recencyLambda: number;        // shipped default 1 (D-021); 0.92 was proposed and failed the §4.15 gate
   window: number;               // default 12 cycles
 }
 
@@ -249,7 +249,7 @@ L_{\text{next}} \sim t_{2\alpha_n}\!\left(m_n,\; \sqrt{\tfrac{\beta_n(\kappa_n +
 | κ₀ | 0.5 | Tuned in prototype so the cold-start 80% interval equals the population spread (±6.7 d) |
 | α₀ | 2.5 (5 pseudo-cycles of variance information) | Prototype: calibrated 80% coverage at 1–3 cycles |
 | β₀ | α₀ · 2.6² = 16.9 | Bull 2019 mean per-user SD 2.6 d |
-| λ (recency) | 0.92 per cycle (a cycle 12 back weighs 0.37) | Cycle length drifts about −0.18 d/yr (Bull) and transition onset is marked by abrupt change (STRAW+10); prototype used λ=1, so 0.92 is a backtest acceptance item, not a measured gain (VERIFY) |
+| λ (recency) | 1, no recency weighting (D-021). 0.92 was proposed; the §4.15 acceptance backtest measured a 4.9% gain against the 15% required, so the plan's own fallback ships. The perimenopause state uses 0.8 (§4.9) | Cycle length drifts about −0.18 d/yr (Bull) and transition onset is marked by abrupt change (STRAW+10); at 0.8 a step change is tracked 12% better, which is why only the perimenopause state uses it |
 | window | last 12 valid cycles | Median user has 11 cycles tracked (Li 2022); older cycles are near-weightless under λ |
 | hard bounds | lengths 15–90 d accepted, else `suspect` | Bull 2019 acceptance range |
 
@@ -370,7 +370,7 @@ export function studentTQuantile(p: number, nu: number): number;   // own implem
 
 ### 4.12 Worked fixtures (test cases)
 
-All values below were computed with the equations in 4.3 and are the expected outputs for the engine's golden tests (tolerance 0.05 d). Dates assume the last logged period started 1 Oct 2026 and `today` is 10 Oct 2026.
+All values below were computed with the equations in 4.3 and are the expected outputs for the engine's golden tests (tolerance 0.05 d). Dates assume the last logged period started 1 Oct 2026 and `today` is 10 Oct 2026. All fixtures use λ = 1, the shipped default (D-021); `fixtures.test.ts` pins the fixture settings to `RECENCY_LAMBDA`, so a change to one without the other fails the golden tests.
 
 | Fixture | Input lengths (oldest first) | Classification | Posterior mean | ν | scale | 80% PI (days) | Next period (point, 80%) | Ovulation (calendar) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -413,7 +413,7 @@ Independent reviewers could not be run (no sub-agent or second-model access), so
 | S1 | Statistical | Cold-start 80% interval (κ₀ = 1) covered only 68–76% of outcomes in the prototype | κ₀ lowered to 0.5; coverage 75–83% |
 | S2 | Statistical | Excluding long cycles also from the flag computation would hide exactly the pattern flags exist for | Exclusion applies to the mean/variance update only |
 | S3 | Statistical | Evaluating on targets that could themselves be merged cycles penalised the robust model unfairly | Target drawn from the clean process; results above |
-| S4 | Statistical | Recency weighting λ = 0.92 is untested in the prototype | Kept as a parameter with λ = 1 as fallback; acceptance test in 4.15 |
+| S4 | Statistical | Recency weighting λ = 0.92 is untested in the prototype | Tested in 4.15 and failed (D-021); λ = 1 ships |
 | S5 | Statistical | Inverse-variance combination assumes independent signals; BBT and wearable temperature are not independent | Only one temperature series (the user's primary) enters the combination |
 
 ### 4.15 Ongoing validation plan
@@ -995,6 +995,7 @@ No external clinician or regulatory review is assumed. Every decision that would
 
 ### 11.2 Regulatory and legal defaults applied without review
 
+| Recency weighting | λ = 1 (0.92 failed the §4.15 gate, D-021); λ = 0.8 inside the perimenopause state | Shipping 0.92 on the plan's say-so: a third of the required gain | `engine/params.ts: RECENCY_LAMBDA` |
 | Decision | Default applied | Alternative rejected and why | Where it lives |
 | --- | --- | --- | --- |
 | Ovulation estimate card | Ships in all regions, labelled an estimate, with the fixed 2.3 wording, no conception mode, no per-day chance figure, hidden in teen mode | Hiding it: every major tracker shows an estimate under consumer-wellness treatment and omitting it makes the app worse without a demonstrated need | `features/predictions/EstimateCard`, flag `SHOW_OVULATION_ESTIMATE = true` |
@@ -1014,7 +1015,7 @@ No external clinician or regulatory review is assumed. Every decision that would
 | Health Connect changes-token expiry and background read limits differ from assumptions | Medium | Medium | Bounded 30-day re-read on token failure; foreground sync always |
 | Apple wrist temperature availability and semantics change by iOS version | Medium | Medium | Feature-detect at runtime; wearable series is optional input |
 | SQLCipher via expo-sqlite on Android build variants | Low | High | Phase 1 spike in week 1; fallback is op-sqlite with SQLCipher |
-| Recency weighting λ = 0.92 hurts stable users | Low | Low | Backtest gate; λ = 1 fallback |
+| Recency weighting λ = 0.92 hurts stable users | Closed | — | Gate failed; λ = 1 ships (D-021) |
 | Backup key loss locks users out | Medium | Medium (by design) | Recovery code shown once; restore tested in E2E; clear wording |
 | Flo/Clue export formats change | High | Low | Import is best-effort with CSV fallback |
 | Single-engineer bus factor | High | High | Engine and app open-sourced; documentation in repo; this plan |

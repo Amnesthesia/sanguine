@@ -33,7 +33,7 @@ describe('predict', () => {
     const phase = (d: number) => predict(A(), FIXTURE_SETTINGS, addDays(LAST_START, d)).currentPhase?.phase;
     expect([phase(2), phase(9), phase(17), phase(24), phase(45)]).toEqual(['menstrual', 'follicular', 'ovulatory', 'luteal', 'late']);
   });
-  it('the default recency lambda 0.92 is applied through the settings', () => {
+  it('a recency lambda below 1 (0.92, rejected as default in D-021) is applied through the settings', () => {
     const s: EngineSettings = { ...FIXTURE_SETTINGS, recencyLambda: 0.92 };
     const p = predict(historyFromLengths([34, 34, 34, 28, 28, 28]), s, TODAY);
     expect(p.cycleLength.mean).toBeLessThan(predict(historyFromLengths([34, 34, 34, 28, 28, 28]), FIXTURE_SETTINGS, TODAY).cycleLength.mean);
