@@ -46,10 +46,11 @@ export default function PrivacyScreen() {
           if (r.kind === 'cancelled') return undefined;
           await refresh();
           // imported symptoms appear in the logging sheet too, not only in the day detail
-          if (r.kind === 'natural_cycles' && r.symptoms.some((c) => !prefs.symptoms.includes(c))) await updatePrefs({ symptoms: [...new Set([...prefs.symptoms, ...r.symptoms])] });
+          const daily = r.kind === 'natural_cycles' || r.kind === 'drip' ? r : undefined;
+          if (daily?.symptoms.some((c) => !prefs.symptoms.includes(c))) await updatePrefs({ symptoms: [...new Set([...prefs.symptoms, ...daily.symptoms])] });
           const done = t('settings.privacy.importDone', { n: r.kind === 'sanguine' ? r.result.imported : r.result.added })
-            + (r.kind === 'natural_cycles' && r.result.notesDropped > 0 ? ` ${t('settings.privacy.importNotesDropped', { n: r.result.notesDropped })}` : '');
-          return r.kind === 'natural_cycles' && r.problems.length > 0 ? `${done}\n${t('settings.privacy.importSkipped')} ${r.problems.slice(0, 5).join('; ')}${r.problems.length > 5 ? ` ${t('settings.privacy.importMore', { n: r.problems.length - 5 })}` : ''}` : done;
+            + (daily && daily.result.notesDropped > 0 ? ` ${t('settings.privacy.importNotesDropped', { n: daily.result.notesDropped })}` : '');
+          return daily && daily.problems.length > 0 ? `${done}\n${t('settings.privacy.importSkipped')} ${daily.problems.slice(0, 5).join('; ')}${daily.problems.length > 5 ? ` ${t('settings.privacy.importMore', { n: daily.problems.length - 5 })}` : ''}` : done;
         })} />
         <SettingsRow testID="privacy-backup" title={t('settings.privacy.backup')} description={t('settings.privacy.backupDesc')} onPress={() => router.push('/settings/backup' as never)} />
         <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setMsg(t('settings.privacy.appLockOnly')); return; } setMsg(undefined); await updatePrefs({ appLock: v }); })()} />

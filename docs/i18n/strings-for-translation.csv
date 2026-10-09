@@ -391,7 +391,7 @@ settings.privacy.intro,"Your data is stored only on this phone, in an encrypted 
 settings.privacy.export,Export my data,no,settings,
 settings.privacy.exportDesc,A zip with JSON and CSV files.,no,settings,
 settings.privacy.import,Import,no,settings,
-settings.privacy.importDesc,"Sanguine export, Natural Cycles export, or a CSV of period start dates.",no,settings,
+settings.privacy.importDesc,"Sanguine export, Natural Cycles or drip export, or a CSV of period start dates.",no,settings,
 settings.privacy.backup,Encrypted backup,no,settings,
 settings.privacy.backupDesc,Saves an encrypted file you can keep anywhere.,no,settings,
 settings.privacy.backupOff,Backup is off,no,settings,

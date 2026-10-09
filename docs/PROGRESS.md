@@ -74,3 +74,4 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - P5-2 under-18 audit (D-064): `fertilityTools` gate on the calendar legend, logging sheet, Insights and Health sync; `teenAudit.test.ts` and `teen.yaml` (green on the iOS simulator).
 - P5-5 Store data (D-072): listing with promotional text, URLs and privacy answers; framed store screenshots, Play feature graphic and icon; website with privacy, health-data and support pages.
 - D-076 UI pass from the 2026-10-10 review: double top inset removed, one text-button style, estimate title without the repeated range, visible fertile band floor, sparse-chart thresholds, settings subtitles, native dark mode follows the theme. iOS flows green; screenshots in docs/screenshots/D-076-devclient.
+- P8-1 drip import: drip's CSV (bleeding, temperature, mucus, cervix, sex, pain, mood, desire, notes) through the shared DailyRow writer; unmapped fields reported (D-078).

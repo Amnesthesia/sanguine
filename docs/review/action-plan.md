@@ -2,6 +2,8 @@
 
 Every finding in `implementation-review.md` (I-n) and `ui-ux-review.md` (U-n) has one disposition here. Re-checked against HEAD 8ed1221 before planning; the peer session that committed D-073 had already fixed several. Decision id for this work: **D-075**.
 
+**Status (2026-10-10, checked against HEAD eb99705): complete.** Batch 1 is D-075 (776b492). Batches 2 and 3 are D-076 (331063e, 09a2f41, ff5985f), including the P3 items U-16, U-20, U-24 and U-25. U-33 is done: the engine hash is selectable in About. I-7 is done: the stray root `app.json` is gone.
+
 ## Already fixed before this plan (verified at the cited line)
 
 | Id | Finding | Where it was fixed |

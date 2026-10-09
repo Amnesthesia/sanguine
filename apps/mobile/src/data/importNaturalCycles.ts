@@ -32,7 +32,7 @@ function serialDay(serial: number, date1904: boolean): ISODate {
 }
 
 /** Temperature in °C rounded to 0.01, from °C or °F; undefined when outside any plausible body temperature. */
-function celsius(v: number): number | undefined {
+export function celsius(v: number): number | undefined {
   const c = v >= 34 && v <= 42 ? v : v >= 93 && v <= 108 ? ((v - 32) * 5) / 9 : undefined;
   return c === undefined ? undefined : Math.round(c * 100) / 100;
 }

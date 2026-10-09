@@ -86,3 +86,16 @@ As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the h
 - [x] P6-1 (D-063) Localisation infrastructure with en-GB and en-US overrides, °F display and entry for en-US, device first weekday, locale snapshot tests. (§6.4)
 - [x] P6-2 (pipeline and loader done, D-063; translations need translators and a clinician check, see PROGRESS) Translation pipeline for de, fr, es, pt-BR (extract, validate, load): no machine translation; the translations themselves need translators and a clinician check.
 - [x] P6-3 (D-063; controller, representative and legal review are the owner's) GDPR Article 9 explicit-consent step for EU/UK regions, US state health-data policy text. Owner: controller identity, GDPR representative, legal review.
+
+## Phase 8 — Competitive gaps (docs/ROADMAP.md §2.3; plan docs/superpowers/plans/2026-10-10-competitive-gaps.md)
+
+- [x] P8-1 drip import through the shared DailyRow writer, cervix included (D-078; roadmap R2-4).
+- [ ] P8-2 Calendar (.ics) export of the predicted period range, optional fertile range, teen-gated (D-079; R2-3, owner approved in D-077).
+- [ ] P8-3 "How Sanguine estimates" reference pages under About (R2-6).
+- [ ] P8-4 Perimenopause view in Insights: variability facts, vasomotor symptom counts, no stage label, no 12-month milestone (R3-1).
+- [ ] P8-5 Pregnancy view on Today: gestational week and day, due date as a range (R3-2).
+- [ ] P8-6 Report for a doctor, PDF on the device through expo-print (R2-1); needs a dev-client rebuild.
+- [ ] P8-7 Sync between the user's own devices: merge core with property tests first, then transport through the backup channel (R5-1, D-077).
+- [ ] P8-8 Siri, Shortcuts, Control Center and Android shortcuts: spike first (R2-2).
+- [ ] P8-9 Apple Watch app: spike first (R4-1).
+- [ ] P8-10 Android Glance widget and Wear OS tile, at expo-widgets' Android renderer (R4-2, P3-5b).
