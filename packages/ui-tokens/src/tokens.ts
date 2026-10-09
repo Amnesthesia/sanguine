@@ -2,7 +2,7 @@
 export const colors = {
   light: {
     bg: '#FFFFFF', surface: '#FFFFFF', surface2: '#F3F3F4', textPrimary: '#1F1A1C', textSecondary: '#6B6165',
-    border: '#E4E4E6', accent: '#9E2A3C', accentSoft: '#F4DCE0', period: '#B8324A', periodPredicted: '#D9A0AB',
+    border: '#E4E4E6', accent: '#BC4560', accentSoft: '#F4DCE0', period: '#B8324A', periodPredicted: '#D9A0AB',
     fertile: '#5C8A6E', ovulation: '#3F6F88', flag: '#B9741E', success: '#3E7D5A', focus: '#2E5C8A',
   },
   dark: {
@@ -14,15 +14,15 @@ export const colors = {
 
 /** iOS glass tints (rgba in the plan, split into base colour + alpha so contrast can be computed). */
 export const glass = {
-  light: { tintBase: '#FFFFFF', tintAlpha: 0.55, accentBase: '#9E2A3C', accentAlpha: 0.8, onAccent: '#FFFFFF' },
+  light: { tintBase: '#FFFFFF', tintAlpha: 0.55, accentBase: '#BC4560', accentAlpha: 0.96, onAccent: '#FFFFFF' },
   dark: { tintBase: '#000000', tintAlpha: 0.55, accentBase: '#D4607A', accentAlpha: 0.72, onAccent: '#FFFFFF' },
 } as const;
 
-/** Android Material 3 roles (seed #9E2A3C). The surface roles are the iOS bg / surface / surface2 values, so Android is the same
+/** Android Material 3 roles (seed #BC4560). The surface roles are the iOS bg / surface / surface2 values, so Android is the same
  *  white/black design as iOS rather than M3's warm tonal surfaces (D-066). */
 export const m3 = {
   light: {
-    primary: '#9E2A3C', onPrimary: '#FFFFFF', primaryContainer: '#F4DCE0', surfaceContainerLow: '#FFFFFF',
+    primary: '#BC4560', onPrimary: '#FFFFFF', primaryContainer: '#F4DCE0', surfaceContainerLow: '#FFFFFF',
     surfaceContainer: '#FFFFFF', surfaceContainerHigh: '#F3F3F4', tertiary: '#5C8A6E', outlineVariant: '#E4E4E6',
   },
   dark: {

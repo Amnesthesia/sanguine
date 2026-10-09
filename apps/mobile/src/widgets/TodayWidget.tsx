@@ -39,7 +39,7 @@ function TodayWidget(props: TodayWidgetProps, env: WidgetEnvironment) {
     return <Text modifiers={[font({ size: 14, weight: 'semibold' })]}>{props.headline ? `${dayText} · ${props.headline}` : dayText}</Text>;
   }
   const ring = (
-    <Gauge value={props.progress} min={0} max={1} modifiers={[gaugeStyle('circular'), tint(env.colorScheme === 'dark' ? '#D4607A' : '#9E2A3C')]} currentValueLabel={<Text modifiers={[font({ size: 22, weight: 'semibold' }), minimumScaleFactor(0.5)]}>{props.day > 0 ? String(props.day) : '–'}</Text>}>
+    <Gauge value={props.progress} min={0} max={1} modifiers={[gaugeStyle('circular'), tint(env.colorScheme === 'dark' ? '#D4607A' : '#BC4560')]} currentValueLabel={<Text modifiers={[font({ size: 22, weight: 'semibold' }), minimumScaleFactor(0.5)]}>{props.day > 0 ? String(props.day) : '–'}</Text>}>
       <Text>{dayText}</Text>
     </Gauge>
   );
