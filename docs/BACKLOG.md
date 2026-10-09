@@ -69,7 +69,7 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 
 ## Phase 4 — Health sync (§7)
 
-- [ ] P4-1 `packages/health-adapter` core with a fake driver: mapping §7.1, sync tables, echo prevention, conflicts, deletions §7.3; the §10 round-trip scenario as a test.
+- [x] P4-1 `packages/health-adapter` core with a fake driver (D-057): mapping §7.1, sync tables, echo prevention, conflicts, deletions §7.3; the §10 round-trip scenario as a test.
 - [ ] P4-2 iOS driver (`@kingstinct/react-native-healthkit`): anchored queries, background delivery, metadata `com.sanguine.eventId`, deletes by UUID; simulator tests with seeded HealthKit data. VERIFY: third-party write for contraceptive/pregnancy/lactation; background-delivery frequency per type.
 - [ ] P4-3 Android driver (`react-native-health-connect` v4): changes API with token persistence, `clientRecordId` upsert, background read + WorkManager hourly, history permission; emulator tests with the Health Connect Toolbox. VERIFY: changes-token expiry.
 - [ ] P4-4 Health sync settings and permission UX (§7.5); Play health declaration and Apple usage strings (§6.6).

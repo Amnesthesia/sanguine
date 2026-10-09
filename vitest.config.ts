@@ -9,7 +9,7 @@ export default defineConfig({
     alias: [
       { find: /^@\//, replacement: `${src}/` },
       // workspace packages resolve to their sources, whatever the package manager linked
-      ...['engine', 'crypto', 'ui-tokens'].map((n) => ({ find: new RegExp(`^@sanguine/${n}$`), replacement: pkg(n) })),
+      ...['engine', 'crypto', 'ui-tokens', 'health-adapter'].map((n) => ({ find: new RegExp(`^@sanguine/${n}$`), replacement: pkg(n) })),
       // component tests render React Native primitives through react-native-web in jsdom
       { find: /^react-native$/, replacement: 'react-native-web' },
     ],
