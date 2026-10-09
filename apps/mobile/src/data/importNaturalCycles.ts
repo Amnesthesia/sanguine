@@ -11,13 +11,19 @@ export interface NaturalCyclesParse { rows: DailyRow[]; problems: string[] }
 const FLOW = { LIGHT: 'light', MEDIUM: 'medium', HEAVY: 'heavy' } as const;
 const YES_NO = { YES: 'positive', NO: 'negative' } as const;
 const MUCUS = { DRY: 'dry', STICKY: 'sticky', CREAMY: 'creamy', WATERY: 'watery', EGGWHITE: 'eggwhite' } as const;
-// Only flags with a clear Sanguine equivalent (copy/symptoms.json); the rest (positive moods, skin texture, "other") are reported.
+// Every Data Flag seen in a real export, onto copy/symptoms.json (some codes were added for these, D-056); a flag not listed is reported.
 const SYMPTOM: Record<string, string> = {
   PAIN_CRAMPS: 'cramps', PAIN_HEADACHE: 'headache', PAIN_BLOATING: 'bloating', PAIN_SORE_BREASTS: 'breast_tenderness', PAIN_BACKACHE: 'back_pain',
-  PAIN_NAUSEOUS: 'nausea', PAIN_CRAVINGS: 'food_cravings', SKIN_ACNE: 'acne', MOOD_TIRED: 'fatigue', MOOD_EXHAUSTED: 'fatigue', MOOD_SAD: 'mood_low',
-  MOOD_IRRITABLE: 'irritability',
+  PAIN_NAUSEOUS: 'nausea', PAIN_CRAVINGS: 'food_cravings', PAIN_PELVIC: 'pelvic_pain', PAIN_OTHER: 'other_pain',
+  SKIN_ACNE: 'acne', SKIN_OILY: 'oily_skin', SKIN_PUFFY: 'puffiness',
+  MOOD_TIRED: 'fatigue', MOOD_EXHAUSTED: 'fatigue', MOOD_SAD: 'mood_low', MOOD_IRRITABLE: 'irritability', MOOD_SWINGS: 'mood_swings', MOOD_STRESSED: 'stressed',
+  MOOD_SENSITIVE: 'sensitive', MOOD_SELF_CRITICAL: 'self_critical', MOOD_NUMB: 'numb', MOOD_UNFOCUSED: 'unfocused', MOOD_SENSITIVE_TO_SMELL: 'smell_sensitivity',
+  MOOD_HAPPY: 'happy', MOOD_CALM: 'calm', MOOD_CONFIDENT: 'confident', MOOD_ENERGETIC: 'energetic', MOOD_EXCITED: 'excited',
 };
-const HANDLED = new Set(['date', 'temperature', 'menstruation', 'menstruation quantity', 'lh test', 'pregnancy test', 'cervical mucus consistency', 'notes', 'skipped', 'source', 'data flag']);
+const LIBIDO: Record<string, string | null> = { LOW: 'low_libido', HIGH: 'high_libido', MEDIUM: null, NORMAL: null }; // a usual sex drive is not a symptom
+const SEX_WORDS = new Set(['YES', 'PROTECTED', 'UNPROTECTED']);
+const HANDLED = new Set(['date', 'temperature', 'menstruation', 'menstruation quantity', 'lh test', 'pregnancy test', 'cervical mucus consistency', 'cervical mucus quantity',
+  'notes', 'skipped', 'source', 'data flag', 'libido', 'had sex', 'sex type']);
 const lookup = <T extends Record<string, string>>(map: T, v: string): T[keyof T] | undefined => (Object.hasOwn(map, v) ? map[v as keyof T] : undefined);
 
 function serialDay(serial: number, date1904: boolean): ISODate {
@@ -82,10 +88,25 @@ export function parseNaturalCycles(table: string[][], o: { date1904?: boolean } 
       else problems.push(`line ${line}: ${name} "${v}" not recognised`);
     }
     const mucus = get('cervical mucus consistency');
+    const mucusQty = get('cervical mucus quantity');
     if (mucus !== '') {
       const q = lookup(MUCUS, mucus);
       if (q) r.mucus = q;
       else problems.push(`line ${line}: cervical mucus "${mucus}" not recognised`);
+    }
+    if (mucusQty !== '') {
+      const a = lookup(FLOW, mucusQty);
+      if (!a) problems.push(`line ${line}: cervical mucus quantity "${mucusQty}" not recognised`);
+      else if (!r.mucus) problems.push(`line ${line}: cervical mucus quantity without a consistency not imported`); // the engine reads the consistency
+      else r.mucusAmount = a;
+    }
+
+    // protected or not must be stated: "YES" alone is reported rather than guessed (D-056)
+    const sexVals = [get('had sex'), get('sex type')].filter((v) => v !== '');
+    if (sexVals.length > 0 && !sexVals.includes('NO')) {
+      const prot = sexVals.includes('UNPROTECTED') ? false : sexVals.includes('PROTECTED') ? true : undefined;
+      if (prot === undefined || sexVals.some((v) => !SEX_WORDS.has(v))) problems.push(`line ${line}: sex "${sexVals.join(' / ')}" not recognised`);
+      else r.sex = { protected: prot };
     }
 
     const symptoms = new Set<string>();
@@ -93,6 +114,12 @@ export function parseNaturalCycles(table: string[][], o: { date1904?: boolean } 
       const code = lookup(SYMPTOM, f);
       if (code) symptoms.add(code);
       else if (!f.startsWith('DEVIATION_REASON_')) count(ignored, f);
+    }
+    const libido = get('libido');
+    if (libido !== '') {
+      const code = Object.hasOwn(LIBIDO, libido) ? LIBIDO[libido] : undefined;
+      if (code === undefined) problems.push(`line ${line}: libido "${libido}" not recognised`);
+      else if (code) symptoms.add(code);
     }
     if (symptoms.size > 0) r.symptoms = [...symptoms];
     const note = get('notes');

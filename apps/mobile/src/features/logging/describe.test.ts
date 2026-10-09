@@ -22,6 +22,8 @@ describe('describeEvent', () => {
   it('tests and observations', () => {
     expect(describeEvent(ev('biomarker', { type: 'lh', value: { result: 'positive' } }), t, 'C')).toBe('Ovulation test: Positive');
     expect(describeEvent(ev('biomarker', { type: 'mucus', value: { quality: 'eggwhite' } }), t, 'C')).toBe('Cervical mucus: Egg white');
+    expect(describeEvent(ev('biomarker', { type: 'mucus', value: { quality: 'eggwhite', amount: 'heavy' } }), t, 'C')).toBe('Cervical mucus: Egg white, a lot');
+    expect(describeEvent(ev('biomarker', { type: 'preg_test', value: { result: 'negative' } }), t, 'C')).toBe('Pregnancy test: Negative');
     expect(describeEvent(ev('biomarker', { type: 'cervix', value: { position: 'high', firmness: 'soft', opening: 'open' } }), t, 'C')).toBe('Cervical position: high, soft, open');
   });
   it('sex and notes never show private detail', () => {

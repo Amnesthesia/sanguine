@@ -19,7 +19,11 @@ export function describeEvent(e: DayEvent, t: TFunction, unit: 'C' | 'F'): strin
         return `${t('day.entry.temp', { value: shown, unit: `°${unit}` })}${time ? ` · ${time}` : ''} · ${t(`log.temperatureSource.${d.source}`, { defaultValue: d.source })}`;
       }
       if (d.type === 'lh') return t('day.entry.lh', { result: t(`log.lh.${v.result}`) });
-      if (d.type === 'mucus') return t('day.entry.mucus', { quality: t(`log.mucusLevels.${v.quality}`) });
+      if (d.type === 'mucus') {
+        const quality = t(`log.mucusLevels.${v.quality}`);
+        return v.amount ? t('day.entry.mucusAmount', { quality, amount: t(`day.entry.mucusAmounts.${v.amount}`) }) : t('day.entry.mucus', { quality });
+      }
+      if (d.type === 'preg_test') return t('day.entry.pregTest', { result: t(`log.lh.${v.result}`) });
       if (d.type === 'cervix')
         return t('day.entry.cervix', { position: t(`log.cervixValues.position.${v.position}`).toLowerCase(), firmness: t(`log.cervixValues.firmness.${v.firmness}`).toLowerCase(), opening: t(`log.cervixValues.opening.${v.opening}`).toLowerCase() });
       return String(d.type);

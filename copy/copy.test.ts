@@ -87,9 +87,9 @@ describe('health flag copy (§4.10, §11.2)', () => {
 
 describe('symptom catalogue (§11.1)', () => {
   const { symptoms } = load('symptoms.json') as { symptoms: Array<{ code: string; label: string; defaultVisible: boolean; affectsPrediction: boolean }> };
-  it('has 24 unique codes', () => {
-    expect(symptoms).toHaveLength(24);
-    expect(new Set(symptoms.map((s) => s.code)).size).toBe(24);
+  it('has 40 unique codes', () => {
+    expect(symptoms).toHaveLength(40);
+    expect(new Set(symptoms.map((s) => s.code)).size).toBe(40);
   });
   it('shows exactly the 8 default symptoms', () =>
     expect(symptoms.filter((s) => s.defaultVisible).map((s) => s.code)).toEqual(['cramps', 'headache', 'bloating', 'breast_tenderness', 'mood_low', 'acne', 'fatigue', 'midcycle_spotting']));

@@ -996,7 +996,7 @@ No external clinician or regulatory review is assumed. Every decision that would
 | Post-pregnancy bleeding window | 42 d after a birth, 14 d after a loss: bleeding defaults to post-pregnancy, the user can choose "My period" | Treating every bleed as a period: counts lochia and loss bleeding as menses and starts false cycles | `features/logging/actions.ts: POST_PREGNANCY_BLEED_DAYS` |
 | Breastfeeding | Suspended until first period, then low confidence for 3 cycles, fertile band only with a biomarker | Any calendar-based band: no retrieved timing evidence | `engine/lifestate.ts` |
 | Symptom weight | Zero in predictions; per-user patterns in Insights only | Low-weight learned adjustment: no population evidence, and it would make predictions harder to explain | by construction |
-| Symptom list | 24 codes, 8 visible by default (cramps, headache, bloating, breast tenderness, mood low, acne, fatigue, mid-cycle spotting) | — | `copy/symptoms.json` |
+| Symptom list | 40 codes (24, plus 16 for imports, D-056), 8 visible by default (cramps, headache, bloating, breast tenderness, mood low, acne, fatigue, mid-cycle spotting) | — | `copy/symptoms.json` |
 | Recency weighting | λ = 1 (0.92 failed the §4.15 gate, D-021); λ = 0.8 inside the perimenopause state | Shipping 0.92 on the plan's say-so: a third of the required gain | `engine/params.ts: RECENCY_LAMBDA` |
 
 ### 11.2 Regulatory and legal defaults applied without review

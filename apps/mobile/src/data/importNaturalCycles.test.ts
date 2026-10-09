@@ -16,11 +16,11 @@ describe('parseNaturalCycles (P3-13)', () => {
       row({ Date: '2026-09-14', 'LH test': 'YES', 'Cervical Mucus Consistency': 'EGGWHITE', 'Cervical Mucus Quantity': 'HEAVY', Temperature: '36.5' }),
       row({ Date: '2026-09-15', 'LH test': 'NO', 'Pregnancy test': 'NO' }),
     ]);
-    expect(problems).toEqual(['not imported: Cervical Mucus Quantity ×1']); // Sanguine records mucus quality only
+    expect(problems).toEqual([]);
     expect(rows).toEqual([
       { day: '2026-09-01', flow: 'heavy', tempC: 36.27, note: 'Migraine', symptoms: ['cramps', 'headache'] },
       { day: '2026-09-02', flow: 'spotting' },
-      { day: '2026-09-14', tempC: 36.5, lh: 'positive', mucus: 'eggwhite' },
+      { day: '2026-09-14', tempC: 36.5, lh: 'positive', mucus: 'eggwhite', mucusAmount: 'heavy' },
       { day: '2026-09-15', lh: 'negative', pregTest: 'negative' },
     ]);
   });
@@ -55,18 +55,49 @@ describe('parseNaturalCycles (P3-13)', () => {
     expect(rows).toEqual([]);
     expect(problems).toEqual(['1 temperature from another device (Source "OURA") not imported']);
   });
-  it('reports flags and columns it cannot map instead of guessing', () => {
+  it('every flag seen in a real export has a symptom; libido maps to sex drive', () => {
+    const flags = 'PAIN_CRAMPS,PAIN_HEADACHE,PAIN_BLOATING,PAIN_SORE_BREASTS,PAIN_BACKACHE,PAIN_NAUSEOUS,PAIN_CRAVINGS,PAIN_PELVIC,PAIN_OTHER,SKIN_ACNE,SKIN_OILY,SKIN_PUFFY,'
+      + 'MOOD_TIRED,MOOD_EXHAUSTED,MOOD_SAD,MOOD_IRRITABLE,MOOD_SWINGS,MOOD_STRESSED,MOOD_SENSITIVE,MOOD_SELF_CRITICAL,MOOD_NUMB,MOOD_UNFOCUSED,MOOD_SENSITIVE_TO_SMELL,'
+      + 'MOOD_HAPPY,MOOD_CALM,MOOD_CONFIDENT,MOOD_ENERGETIC,MOOD_EXCITED,DEVIATION_REASON_SLEEP';
+    const { rows, problems } = parseNaturalCycles([HEADER, row({ Date: '2026-09-01', 'Data Flag': flags, Libido: 'HIGH' }), row({ Date: '2026-09-02', Libido: 'MEDIUM' })]);
+    expect(problems).toEqual([]);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.symptoms).toHaveLength(28); // tired and exhausted are both fatigue
+    expect(rows[0]?.symptoms).toEqual(expect.arrayContaining(['happy', 'pelvic_pain', 'smell_sensitivity', 'high_libido']));
+  });
+  it('every symptom code it writes is in the catalogue', async () => {
+    const { symptoms } = (await import('../../../../copy/symptoms.json')).default as { symptoms: Array<{ code: string }> };
+    const codes = new Set(symptoms.map((s) => s.code));
+    const { rows } = parseNaturalCycles([HEADER, row({ Date: '2026-09-01', Libido: 'LOW', 'Data Flag': 'PAIN_CRAMPS,PAIN_HEADACHE,PAIN_BLOATING,PAIN_SORE_BREASTS,PAIN_BACKACHE,PAIN_NAUSEOUS,PAIN_CRAVINGS,PAIN_PELVIC,PAIN_OTHER,SKIN_ACNE,SKIN_OILY,SKIN_PUFFY,MOOD_TIRED,MOOD_SAD,MOOD_IRRITABLE,MOOD_SWINGS,MOOD_STRESSED,MOOD_SENSITIVE,MOOD_SELF_CRITICAL,MOOD_NUMB,MOOD_UNFOCUSED,MOOD_SENSITIVE_TO_SMELL,MOOD_HAPPY,MOOD_CALM,MOOD_CONFIDENT,MOOD_ENERGETIC,MOOD_EXCITED' })]);
+    expect((rows[0]?.symptoms ?? []).filter((c) => !codes.has(c))).toEqual([]);
+  });
+  it('sex imports only when protected or not is stated', () => {
     const { rows, problems } = parseNaturalCycles([
       HEADER,
-      row({ Date: '2026-09-01', 'Data Flag': 'MOOD_HAPPY,MOOD_HAPPY,SKIN_OILY', 'Had sex': 'YES', Libido: 'HIGH' }),
-      row({ Date: '2026-09-02', 'Data Flag': 'MOOD_HAPPY', Menstruation: 'SOMETHING_NEW' }),
+      row({ Date: '2026-09-01', 'Had sex': 'YES', 'Sex Type': 'UNPROTECTED' }),
+      row({ Date: '2026-09-02', 'Had sex': 'PROTECTED' }),
+      row({ Date: '2026-09-03', 'Had sex': 'YES' }),
+      row({ Date: '2026-09-04', 'Had sex': 'NO' }),
+    ]);
+    expect(rows).toEqual([{ day: '2026-09-01', sex: { protected: false } }, { day: '2026-09-02', sex: { protected: true } }]);
+    expect(problems).toEqual(['line 4: sex "YES" not recognised']);
+  });
+  it('mucus amount needs a consistency', () => {
+    expect(parseNaturalCycles([HEADER, row({ Date: '2026-09-01', 'Cervical Mucus Quantity': 'LIGHT' })]).problems).toEqual(['line 2: cervical mucus quantity without a consistency not imported']);
+  });
+  it('reports flags, values and columns it cannot map instead of guessing', () => {
+    const { rows, problems } = parseNaturalCycles([
+      [...HEADER, 'Something New'],
+      [...row({ Date: '2026-09-01', 'Data Flag': 'MOOD_BRAND_NEW,MOOD_BRAND_NEW', Libido: 'VERY', 'Covid Test': 'NO' }), 'x'],
+      row({ Date: '2026-09-02', 'Data Flag': 'MOOD_BRAND_NEW', Menstruation: 'SOMETHING_NEW' }),
       row({ Date: 'yesterday' }),
     ]);
     expect(rows).toEqual([]);
     expect(problems).toEqual([
+      'line 2: libido "VERY" not recognised',
       'line 3: menstruation "SOMETHING_NEW" not recognised',
       'line 4: "yesterday" is not a date',
-      'not imported: Had sex ×1, Libido ×1, MOOD_HAPPY ×3, SKIN_OILY ×1',
+      'not imported: Covid Test ×1, MOOD_BRAND_NEW ×3, Something New ×1',
     ]);
   });
   it('Excel serial dates (1900 and 1904 systems)', () => {

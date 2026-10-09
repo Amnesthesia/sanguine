@@ -17,6 +17,7 @@ export interface DailyRow {
   tempSource?: 'oral' | 'vaginal' | 'other'; // the engine's BBT series accepts only these; default 'oral' (Natural Cycles is an oral-thermometer app)
   lh?: 'negative' | 'positive';
   mucus?: 'dry' | 'sticky' | 'creamy' | 'watery' | 'eggwhite';
+  mucusAmount?: 'light' | 'medium' | 'heavy'; // kept with the consistency; the engine reads only the consistency
   sex?: { protected: boolean };
   symptoms?: string[]; // Sanguine symptom codes (copy/symptoms.json); imported at intensity 1 because source apps record presence only
   pregTest?: 'negative' | 'positive';
@@ -50,7 +51,7 @@ export async function importDailyRows(db: Database, store: EventStore, rows: Dai
       });
     }
     if (r.lh) add('lh', r.day, 'biomarker', { type: 'lh', value: { result: r.lh }, source: 'strip' });
-    if (r.mucus) add('mucus', r.day, 'biomarker', { type: 'mucus', value: { quality: r.mucus }, source: 'app' });
+    if (r.mucus) add('mucus', r.day, 'biomarker', { type: 'mucus', value: { quality: r.mucus, ...(r.mucusAmount ? { amount: r.mucusAmount } : {}) }, source: 'app' });
     if (r.sex) add('sex', r.day, 'sex', { protected: r.sex.protected });
     for (const code of r.symptoms ?? []) add(`symptom:${code}`, r.day, 'symptom', { code, intensity: 1 });
     if (r.pregTest) add('preg_test', r.day, 'biomarker', { type: 'preg_test', value: { result: r.pregTest }, source: 'strip' });

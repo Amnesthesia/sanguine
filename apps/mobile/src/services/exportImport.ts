@@ -28,7 +28,7 @@ export async function shareExport(db: Database, store: EventStore): Promise<{ ev
 export type PickedImport =
   | { kind: 'sanguine'; result: ImportResult }
   | { kind: 'csv'; result: CsvImportResult }
-  | { kind: 'natural_cycles'; result: DailyImportResult; problems: string[] }
+  | { kind: 'natural_cycles'; result: DailyImportResult; problems: string[]; symptoms: string[] }
   | { kind: 'cancelled' };
 
 /** Lets the user pick a Sanguine export (.zip), a Natural Cycles export (.xlsx, or its CSV) or a CSV of period start dates. */
@@ -41,7 +41,7 @@ export async function pickAndImport(db: Database, store: EventStore): Promise<Pi
     const nc = readNaturalCycles(await file.bytes());
     if (nc) {
       const result = await importDailyRows(db, store, nc.rows, { sourceApp: 'natural_cycles', today: todayLocal(), clock: deviceClock, noteKey: await getNoteKey() });
-      return { kind: 'natural_cycles', result, problems: nc.problems };
+      return { kind: 'natural_cycles', result, problems: nc.problems, symptoms: [...new Set(nc.rows.flatMap((r) => r.symptoms ?? []))] };
     }
     if (/\.zip$/i.test(asset.name) || asset.mimeType === 'application/zip') return { kind: 'sanguine', result: await importBundle(db, store, await file.bytes()) };
     return { kind: 'csv', result: await importPeriodCsv(db, store, await file.text(), todayLocal()) };

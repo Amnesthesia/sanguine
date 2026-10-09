@@ -42,6 +42,8 @@ export default function PrivacyScreen() {
           const r = await pickAndImport(db, store);
           if (r.kind === 'cancelled') return undefined;
           await refresh();
+          // imported symptoms appear in the logging sheet too, not only in the day detail
+          if (r.kind === 'natural_cycles' && r.symptoms.some((c) => !prefs.symptoms.includes(c))) await updatePrefs({ symptoms: [...new Set([...prefs.symptoms, ...r.symptoms])] });
           const done = t('settings.privacy.importDone', { n: r.kind === 'sanguine' ? r.result.imported : r.result.added });
           return r.kind === 'natural_cycles' && r.problems.length > 0 ? `${done}\n${t('settings.privacy.importSkipped')} ${r.problems.slice(0, 5).join('; ')}${r.problems.length > 5 ? ` ${t('settings.privacy.importMore', { n: r.problems.length - 5 })}` : ''}` : done;
         })} />
