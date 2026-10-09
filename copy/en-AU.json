@@ -114,10 +114,8 @@
     "periodExpectedBy": "Period expected by {date}",
     "periodLater": "Later than usual. Nothing to do yet.",
     "mostLikely": "Most likely {date}",
-    "ovulationCollapsed": "Ovulation estimated around {point} ({lo}–{hi}) · {confidence}",
-    "ovulationUncertain": "Ovulation estimate uncertain (range {lo}–{hi})",
     "ovulationUncertainShort": "Ovulation estimate uncertain",
-    "ovulationTitle": "Ovulation estimate · {confidence}",
+    "ovulationTitle": "Ovulation: {confidence}",
     "mostLikelyRange": "{range} · most likely {date}",
     "suspended": "Estimates are paused while “{state}” is set.",
     "quick": {
@@ -405,7 +403,7 @@
       "lockOff": "Lock off",
       "backupOn": "Backup on",
       "backupOff": "Backup off",
-      "reminderOn": "Reminder on",
+      "reminderOn": "Reminders on",
       "reminderOff": "Reminders off",
       "symptomsN": "{n} symptoms"
     },

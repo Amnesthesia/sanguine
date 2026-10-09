@@ -9,6 +9,7 @@ import { describeEvent } from '@/features/logging/describe';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
+import { BackButton } from '@/ui/BackButton';
 import { Card } from '@/ui/Card';
 import { formatLong } from '@/ui/format';
 import { Screen } from '@/ui/Screen';
@@ -50,7 +51,7 @@ export default function DayDetail() {
   ]);
 
   return (
-    <Screen testID="screen-day" title={formatLong(day)} bottomInset={32} header={<View style={{ alignItems: 'flex-start', marginLeft: -12 }}><Button kind="text" testID="day-back" label={tr('common.back')} onPress={() => router.back()} /></View>}>
+    <Screen testID="screen-day" title={formatLong(day)} bottomInset={32} header={<BackButton testID="day-back" />}>
       {events.length === 0 ? <Text color="textSecondary">{tr('day.nothingLogged')}</Text> : null}
       {events.map((e) => (
         <Card key={e.id} testID={`event-${e.kind}`}>

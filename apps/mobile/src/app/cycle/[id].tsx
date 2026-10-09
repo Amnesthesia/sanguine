@@ -1,13 +1,13 @@
 // Cycle detail (PLAN.md §8.3): one cycle, where its ovulation estimate came from, and whether it counts toward estimates.
 import { analyzeCycles, diffDays } from '@sanguine/engine';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
 import { activeEvents } from '@/data/project';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
+import { BackButton } from '@/ui/BackButton';
 import { Card } from '@/ui/Card';
 import { formatDayYear } from '@/ui/format';
 import { Screen } from '@/ui/Screen';
@@ -15,7 +15,6 @@ import { Text } from '@/ui/Text';
 
 export default function CycleDetail() {
   const { t: tr } = useTranslation();
-  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { history, settings, prediction, store, refresh, prefs, profile, today } = useApp();
   // under 18 the ovulation date, its basis and the luteal length stay hidden like everywhere else (§8.6, I-18, D-075)
@@ -33,7 +32,7 @@ export default function CycleDetail() {
     } else await store.append({ kind: 'cycle.exclude', payload: { cycle_start: c.start, reason: 'user_excluded' } });
     await refresh();
   }
-  const back = <View style={{ alignItems: 'flex-start', marginLeft: -12 }}><Button kind="text" testID="cycle-back" label={tr('common.back')} onPress={() => router.back()} /></View>;
+  const back = <BackButton testID="cycle-back" />;
   if (!c) return <Screen testID="screen-cycle" title={tr('insights.cycleDetail.title')} header={back}>{null}</Screen>;
 
   const luteal = c.ovulation && c.ovulation.basis !== 'calendar' && c.nextStart ? diffDays(c.nextStart, c.ovulation.point) - 1 : undefined;
