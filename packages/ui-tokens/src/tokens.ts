@@ -18,14 +18,15 @@ export const glass = {
   dark: { tintBase: '#141113', tintAlpha: 0.55, accentBase: '#D4607A', accentAlpha: 0.72, onAccent: '#FFFFFF' },
 } as const;
 
-/** Android Material 3 roles (seed #9E2A3C). */
+/** Android Material 3 roles (seed #9E2A3C). The surface roles are the iOS bg / surface / surface2 values, so Android is the same
+ *  white/black design as iOS rather than M3's warm tonal surfaces (D-066). */
 export const m3 = {
   light: {
-    primary: '#9E2A3C', onPrimary: '#FFFFFF', primaryContainer: '#F4DCE0', surfaceContainerLow: '#F7F3F0',
-    surfaceContainer: '#F3EEEA', surfaceContainerHigh: '#EDE7E2', tertiary: '#5C8A6E', outlineVariant: '#E6DDD8',
+    primary: '#9E2A3C', onPrimary: '#FFFFFF', primaryContainer: '#F4DCE0', surfaceContainerLow: '#FBF8F6',
+    surfaceContainer: '#FFFFFF', surfaceContainerHigh: '#F3EEEA', tertiary: '#5C8A6E', outlineVariant: '#E6DDD8',
   },
   dark: {
-    primary: '#D4607A', onPrimary: '#3A0A14', primaryContainer: '#3A1F27', surfaceContainerLow: '#1A1517',
+    primary: '#D4607A', onPrimary: '#3A0A14', primaryContainer: '#3A1F27', surfaceContainerLow: '#141113',
     surfaceContainer: '#1E191B', surfaceContainerHigh: '#2A2326', tertiary: '#7FAF93', outlineVariant: '#352D30',
   },
 } as const;
