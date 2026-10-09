@@ -42,7 +42,8 @@ export default function PrivacyScreen() {
           const r = await pickAndImport(db, store);
           if (r.kind === 'cancelled') return undefined;
           await refresh();
-          return t('settings.privacy.importDone', { n: r.kind === 'sanguine' ? r.result.imported : r.result.added });
+          const done = t('settings.privacy.importDone', { n: r.kind === 'sanguine' ? r.result.imported : r.result.added });
+          return r.kind === 'natural_cycles' && r.problems.length > 0 ? `${done}\n${t('settings.privacy.importSkipped')} ${r.problems.slice(0, 5).join('; ')}${r.problems.length > 5 ? ` ${t('settings.privacy.importMore', { n: r.problems.length - 5 })}` : ''}` : done;
         })} />
         <SettingsRow testID="privacy-backup" title={t('settings.privacy.backup')} description={t('settings.privacy.backupDesc')} onPress={() => router.push('/settings/backup' as never)} />
         <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setMsg(t('settings.privacy.appLockOnly')); return; } setMsg(undefined); await updatePrefs({ appLock: v }); })()} />

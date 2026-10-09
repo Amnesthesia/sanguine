@@ -8,3 +8,6 @@ dist
 apps/mobile/ios
 apps/mobile/android
 .playwright-mcp
+
+# personal data exports used to build importers: never commit
+NaturalCycles-*.xlsx

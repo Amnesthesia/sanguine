@@ -428,7 +428,7 @@
       "export": "Export my data",
       "exportDesc": "A zip with JSON and CSV files.",
       "import": "Import",
-      "importDesc": "Sanguine export, or a CSV of period start dates.",
+      "importDesc": "Sanguine export, Natural Cycles export, or a CSV of period start dates.",
       "backup": "Encrypted backup",
       "backupDesc": "Saves an encrypted file you can keep anywhere.",
       "backupOff": "Backup is off",
@@ -448,6 +448,8 @@
       "deleted": "Everything was deleted.",
       "exportDone": "Export ready.",
       "importDone": "Imported {n} records.",
+      "importSkipped": "Not everything could be imported:",
+      "importMore": "and {n} more.",
       "importFailed": "That file could not be read.",
       "recoveryCode": {
         "title": "Recovery code",

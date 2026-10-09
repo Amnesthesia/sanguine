@@ -18,6 +18,8 @@ export interface DailyRow {
   lh?: 'negative' | 'positive';
   mucus?: 'dry' | 'sticky' | 'creamy' | 'watery' | 'eggwhite';
   sex?: { protected: boolean };
+  symptoms?: string[]; // Sanguine symptom codes (copy/symptoms.json); imported at intensity 1 because source apps record presence only
+  pregTest?: 'negative' | 'positive';
   note?: string;
 }
 /** `skipped`: fields an earlier import already wrote. `duplicates`: the same day and field repeated inside this file (the first is kept). */
@@ -50,6 +52,8 @@ export async function importDailyRows(db: Database, store: EventStore, rows: Dai
     if (r.lh) add('lh', r.day, 'biomarker', { type: 'lh', value: { result: r.lh }, source: 'strip' });
     if (r.mucus) add('mucus', r.day, 'biomarker', { type: 'mucus', value: { quality: r.mucus }, source: 'app' });
     if (r.sex) add('sex', r.day, 'sex', { protected: r.sex.protected });
+    for (const code of r.symptoms ?? []) add(`symptom:${code}`, r.day, 'symptom', { code, intensity: 1 });
+    if (r.pregTest) add('preg_test', r.day, 'biomarker', { type: 'preg_test', value: { result: r.pregTest }, source: 'strip' });
     if (r.note !== undefined && r.note.trim() !== '') {
       if (!o.noteKey) notesDropped++;
       else add('note', r.day, 'note', { cipher: sealNote(o.noteKey, r.note.trim(), (k) => o.clock.randomBytes(k)) });

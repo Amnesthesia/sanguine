@@ -3,9 +3,12 @@ import * as DocumentPicker from 'expo-document-picker';
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { exportBundle, importBundle, importPeriodCsv, type CsvImportResult, type ImportResult } from '@/data/exportImport';
+import { importDailyRows, type DailyImportResult } from '@/data/importDaily';
+import { readNaturalCycles } from '@/data/importNaturalCycles';
 import type { Database } from '@/data/database';
 import type { EventStore } from '@/data/store';
 import { deviceClock, todayLocal } from './clock';
+import { getNoteKey } from './secrets';
 import { removeTempFile } from './tempFiles';
 
 export async function shareExport(db: Database, store: EventStore): Promise<{ events: number }> {
@@ -22,15 +25,24 @@ export async function shareExport(db: Database, store: EventStore): Promise<{ ev
   return { events: eventCount };
 }
 
-export type PickedImport = { kind: 'sanguine'; result: ImportResult } | { kind: 'csv'; result: CsvImportResult } | { kind: 'cancelled' };
+export type PickedImport =
+  | { kind: 'sanguine'; result: ImportResult }
+  | { kind: 'csv'; result: CsvImportResult }
+  | { kind: 'natural_cycles'; result: DailyImportResult; problems: string[] }
+  | { kind: 'cancelled' };
 
-/** Lets the user pick a Sanguine export (.zip) or a CSV of period start dates. */
+/** Lets the user pick a Sanguine export (.zip), a Natural Cycles export (.xlsx, or its CSV) or a CSV of period start dates. */
 export async function pickAndImport(db: Database, store: EventStore): Promise<PickedImport> {
   const picked = await DocumentPicker.getDocumentAsync({ type: ['application/zip', 'text/csv', 'text/comma-separated-values', 'text/plain', '*/*'], copyToCacheDirectory: true, multiple: false });
   const asset = picked.canceled ? undefined : picked.assets[0];
   if (!asset) return { kind: 'cancelled' };
   const file = new File(asset.uri);
   try {
+    const nc = readNaturalCycles(await file.bytes());
+    if (nc) {
+      const result = await importDailyRows(db, store, nc.rows, { sourceApp: 'natural_cycles', today: todayLocal(), clock: deviceClock, noteKey: await getNoteKey() });
+      return { kind: 'natural_cycles', result, problems: nc.problems };
+    }
     if (/\.zip$/i.test(asset.name) || asset.mimeType === 'application/zip') return { kind: 'sanguine', result: await importBundle(db, store, await file.bytes()) };
     return { kind: 'csv', result: await importPeriodCsv(db, store, await file.text(), todayLocal()) };
   } finally {

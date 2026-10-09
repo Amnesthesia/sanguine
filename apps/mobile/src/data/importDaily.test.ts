@@ -44,6 +44,12 @@ describe('importDailyRows (P3-13): every daily field, not only period starts', (
     await importDailyRows(db, store, [{ day: '2026-09-02', tempC: 36.9, tempExcluded: true }], opts());
     expect(await db.all('SELECT disturbed FROM biomarker')).toEqual([{ disturbed: 1 }]);
   });
+  it('symptoms import at intensity 1 and a pregnancy test as a preg_test biomarker', async () => {
+    const r = await importDailyRows(db, store, [{ day: '2026-09-03', symptoms: ['cramps', 'headache'], pregTest: 'negative' }], opts());
+    expect(r.added).toBe(3);
+    expect(JSON.parse((await db.get<{ symptoms: string }>('SELECT symptoms FROM daily_log'))?.symptoms ?? '[]')).toEqual(expect.arrayContaining([{ code: 'cramps', intensity: 1 }, { code: 'headache', intensity: 1 }]));
+    expect(await db.all('SELECT type, value FROM biomarker')).toEqual([{ type: 'preg_test', value: JSON.stringify({ result: 'negative' }) }]);
+  });
   it('a temperature and an LH test on the same day both import', async () => {
     expect((await importDailyRows(db, store, [{ day: '2026-09-14', tempC: 36.5, lh: 'positive' }], opts())).added).toBe(2);
   });
