@@ -299,7 +299,7 @@
     "summaryDay": "Day {day}",
     "summaryNothing": "Nothing logged",
     "details": "Details",
-    "edit": "Edit",
+    "edit": "Log this day",
     "addEarlier": "Add an earlier period",
     "weekdays": [
       "Mon",
@@ -361,7 +361,10 @@
       "summary": "Your 80% ranges have contained the actual date {hits} of {total} times.",
       "averageMiss": "Average miss: {days} days",
       "explain": "A range is right about 8 times in 10. A few misses are expected.",
-      "none": "Your accuracy appears after your first completed cycle with an estimate."
+      "none": "Your accuracy appears after your first completed cycle with an estimate.",
+      "rowActual": "Period came {date}",
+      "rowIn": "in range",
+      "rowOff": "{n} days off"
     },
     "current": "current",
     "dayN": "day {day} so far",

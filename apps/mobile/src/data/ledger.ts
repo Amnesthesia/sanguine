@@ -44,6 +44,13 @@ export async function updateLedger(tx: Database, p: Projection, engineVersion: s
 }
 
 export interface LedgerSummary { total: number; in80: number; in95: number; meanAbsError: number }
+export interface LedgerRow { cycleId: string; lo80: string; hi80: string; actual: string; absError: number; in80: boolean }
+
+/** Every scored cycle, newest first, for the per-cycle list on the Accuracy tab. */
+export async function ledgerRows(db: Database): Promise<LedgerRow[]> {
+  const rows = await db.all<{ cycle_id: string; lo80: string; hi80: string; actual_day: string; abs_error: number; in80: number }>('SELECT cycle_id, lo80, hi80, actual_day, abs_error, in80 FROM prediction_score ORDER BY actual_day DESC');
+  return rows.map((r) => ({ cycleId: r.cycle_id, lo80: r.lo80, hi80: r.hi80, actual: r.actual_day, absError: r.abs_error, in80: r.in80 === 1 }));
+}
 
 export async function ledgerSummary(db: Database): Promise<LedgerSummary> {
   const r = await db.get<{ n: number; a: number | null; b: number | null; e: number | null }>('SELECT COUNT(*) n, SUM(in80) a, SUM(in95) b, AVG(abs_error) e FROM prediction_score');

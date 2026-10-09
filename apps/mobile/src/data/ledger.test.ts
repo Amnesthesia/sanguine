@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Database } from './database';
-import { ledgerSummary } from './ledger';
+import { ledgerRows, ledgerSummary } from './ledger';
 import type { Clock } from './ids';
 import { migrate } from './migrate';
 import { EventStore } from './store';
@@ -77,6 +77,17 @@ describe('prediction-score ledger (PLAN.md §4.15)', () => {
     expect(s.in80).toBeLessThanOrEqual(5);
     expect(s.meanAbsError).toBeGreaterThanOrEqual(0);
     expect(s.meanAbsError).toBeLessThan(3);
+  });
+  it('rows: one per scored cycle, newest first, with the range, the actual day and the hit', async () => {
+    for (const d of REGULAR) await start(d);
+    const rows = await ledgerRows(db);
+    expect(rows).toHaveLength(5);
+    expect(rows.map((r) => r.actual)).toEqual([...rows.map((r) => r.actual)].sort().reverse());
+    for (const r of rows) {
+      expect(r.lo80 <= r.hi80).toBe(true);
+      expect(r.in80).toBe(r.lo80 <= r.actual && r.actual <= r.hi80);
+      expect(r.absError).toBeGreaterThanOrEqual(0);
+    }
   });
   it('summary of an empty ledger', async () => expect(await ledgerSummary(db)).toEqual({ total: 0, in80: 0, in95: 0, meanAbsError: 0 }));
   it('a forecast never uses information from after the day it was issued', async () => {

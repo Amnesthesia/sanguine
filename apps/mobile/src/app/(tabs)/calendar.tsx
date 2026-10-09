@@ -90,16 +90,19 @@ export default function CalendarScreen() {
       </View>
       {model.ovulationUncertain ? <Text variant="caption" color="textSecondary" testID="cal-uncertain">{tr('calendar.ovulationUncertainCaption')}</Text> : null}
       {showEstimate ? <Text variant="caption" color="textSecondary">{tr('today.legendFertile')}</Text> : null}
-      <Card testID="cal-summary">
-        <Text variant="heading" accessibilityRole="header">{formatLong(selected)}</Text>
-        <Text variant="bodySmall" color="textSecondary" testID="cal-summary-text">
-          {[cycleDay ? tr('calendar.summaryDay', { day: cycleDay }) : null, ...(summary.length ? summary : [tr('calendar.summaryNothing')])].filter(Boolean).join(' · ')}
-        </Text>
-        <View style={{ flexDirection: 'row', gap: 4, marginTop: 4 }}>
-          <Button kind="text" testID="cal-edit" label={tr('calendar.edit')} disabled={isFuture} onPress={() => router.push({ pathname: '/log', params: { day: selected } })} />
-          <Button kind="text" testID="cal-details" label={tr('calendar.details')} onPress={() => router.push({ pathname: '/day/[date]', params: { date: selected } })} />
-        </View>
-      </Card>
+      {/* the card is the way to the day's detail; logging is the one button (U-20, D-076) */}
+      <Pressable testID="cal-details" style={{ minHeight: 56 }} accessibilityRole="button" accessibilityLabel={`${formatLong(selected)}. ${tr('calendar.details')}`} onPress={() => router.push({ pathname: '/day/[date]', params: { date: selected } })}>
+        <Card testID="cal-summary" style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ flex: 1, gap: 4 }}>
+            <Text variant="heading" accessibilityRole="header">{formatLong(selected)}</Text>
+            <Text variant="bodySmall" color="textSecondary" testID="cal-summary-text">
+              {[cycleDay ? tr('calendar.summaryDay', { day: cycleDay }) : null, ...(summary.length ? summary : [tr('calendar.summaryNothing')])].filter(Boolean).join(' · ')}
+            </Text>
+          </View>
+          <Text color="textSecondary" accessibilityElementsHidden>›</Text>
+        </Card>
+      </Pressable>
+      <Button testID="cal-edit" kind="secondary" label={tr('calendar.edit')} disabled={isFuture} onPress={() => router.push({ pathname: '/log', params: { day: selected } })} />
       <Button testID="cal-add-earlier" kind="secondary" label={tr('calendar.addEarlier')} onPress={() => router.push({ pathname: '/log', params: { day: isFuture ? today : selected, section: 'period' } })} />
     </Screen>
   );

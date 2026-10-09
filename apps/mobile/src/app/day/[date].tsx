@@ -15,20 +15,15 @@ import { formatLong } from '@/ui/format';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
-export function ProvenanceChip({ e }: { e: DayEvent }) {
-  const t = useTheme();
-  const { t: tr } = useTranslation();
-  if (e.provenance === 'manual') return null;
-  const label = e.provenance === 'imported' ? `${tr('day.provenance.imported')}${e.source_app ? ` · ${e.source_app}` : ''}` : tr('day.provenance.sensor');
-  return (
-    <View style={{ alignSelf: 'flex-start', backgroundColor: t.chipBg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}>
-      <Text variant="caption" color="textSecondary">{label}</Text>
-    </View>
-  );
+/** "imported · Natural Cycles" or "from a sensor" as a muted suffix; nothing for a manual entry. */
+function provenance(e: DayEvent, tr: (k: string) => string): string {
+  if (e.provenance === 'manual') return '';
+  return e.provenance === 'imported' ? ` · ${tr('day.provenance.imported')}${e.source_app ? ` · ${e.source_app}` : ''}` : ` · ${tr('day.provenance.sensor')}`;
 }
 
 export default function DayDetail() {
   const { t: tr } = useTranslation();
+  const t = useTheme();
   const router = useRouter();
   const { date } = useLocalSearchParams<{ date: string }>();
   const day = date as ISODate;
@@ -53,15 +48,17 @@ export default function DayDetail() {
   return (
     <Screen testID="screen-day" title={formatLong(day)} bottomInset={32} header={<BackButton testID="day-back" />}>
       {events.length === 0 ? <Text color="textSecondary">{tr('day.nothingLogged')}</Text> : null}
-      {events.map((e) => (
-        <Card key={e.id} testID={`event-${e.kind}`}>
-          <Text>{describeEvent(e, tr, prefs.tempUnit)}</Text>
-          <ProvenanceChip e={e} />
-          <View style={{ flexDirection: 'row' }}>
-            <Button kind="text" testID={`event-delete-${e.kind}`} label={tr('common.delete')} accessibilityLabel={`${tr('day.deleteEntry')}: ${describeEvent(e, tr, prefs.tempUnit)}`} onPress={() => confirmDelete(e)} />
-          </View>
+      {events.length ? (
+        // one row per entry (U-16, D-076): the text with its provenance, and Delete at the trailing edge
+        <Card style={{ padding: 0, gap: 0 }}>
+          {events.map((e, i) => (
+            <View key={e.id} testID={`event-${e.kind}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 16, paddingRight: 4, minHeight: 52, borderBottomWidth: i === events.length - 1 ? 0 : 1, borderBottomColor: t.hairline }}>
+              <Text style={{ flex: 1, paddingVertical: 8 }}>{describeEvent(e, tr, prefs.tempUnit)}<Text color="textSecondary">{provenance(e, tr)}</Text></Text>
+              <Button kind="text" testID={`event-delete-${e.kind}`} label={tr('common.delete')} accessibilityLabel={`${tr('day.deleteEntry')}: ${describeEvent(e, tr, prefs.tempUnit)}`} onPress={() => confirmDelete(e)} />
+            </View>
+          ))}
         </Card>
-      ))}
+      ) : null}
       <View style={{ gap: 4 }}>
         <Button testID="day-edit" label={tr('day.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />
         {isPeriodDay && db && store ? (<>
