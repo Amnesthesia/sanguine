@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { diffDays } from '@sanguine/engine';
+import { analyzeCycles, diffDays } from '@sanguine/engine';
 import { effectivePrefs } from '@/data/prefs';
 import { EstimateCard, FlagCard, HeadlineCard, useMsg } from '@/features/today/cards';
 import { PhaseRing } from '@/features/today/PhaseRing';
@@ -47,8 +47,9 @@ export default function TodayScreen() {
     [prediction, history, today, eff.showOvulationEstimate, todayFlow, bleedDays],
   );
   const note = useMemo(
-    () => symptomNote(history?.cycles ?? [], history?.logs ?? [], noteDay(prefs.symptomNote, model.state, model.dayOfCycle)),
-    [history, prefs.symptomNote, model.state, model.dayOfCycle],
+    // analyzed records carry nextStart, length and the engine's quality; the raw history does not (same as Insights)
+    () => symptomNote(history && settings ? analyzeCycles(history, settings).map((c) => c.record) : [], history?.logs ?? [], noteDay(prefs.symptomNote, model.state, model.dayOfCycle)),
+    [history, settings, prefs.symptomNote, model.state, model.dayOfCycle],
   );
   const word = model.confidence && model.state === 'predicted' ? t(`confidence.${model.confidence}`) : undefined;
   const shownFlags = model.flags.filter((f) => !f.insightOnly);

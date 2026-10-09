@@ -3,8 +3,8 @@ import { addDays, type ISODate } from '@sanguine/engine';
 import type { NewEvent } from '@/data/events';
 import type { Profile } from '@/data/project';
 
-export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog' | 'pattern' | 'pregnant';
-export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant'];
+export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog' | 'pattern' | 'pregnant' | 'lookback';
+export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback'];
 
 const period = (start: ISODate, bleed = 4, level: 'light' | 'medium' | 'heavy' = 'medium'): NewEvent[] =>
   Array.from({ length: bleed }, (_, i) => ({ kind: 'flow', payload: { day: addDays(start, i), level, flow_kind: 'period' } }));
@@ -42,6 +42,17 @@ export function scenario(name: ScenarioName, today: ISODate): { profile: Profile
     // P8-5: pregnancy set 3 weeks ago, last period start 7 weeks ago
     const starts = startsFrom(addDays(today, -49), [28, 29]);
     return { profile, events: [...starts.flatMap((s) => period(s, 4)), { kind: 'life_state.set', payload: { kind: 'pregnant', detail: {}, day: addDays(today, -21) } }] };
+  }
+  if (name === 'lookback') {
+    // P8-11: day 2 today; cramps around day 2 in 3 of 4 past cycles; mood_low every cycle (excluded code, must not show); headache once
+    const starts = startsFrom(addDays(today, -1), [28, 29, 27, 28]);
+    const past = starts.slice(0, -1);
+    return { profile, events: [
+      ...past.flatMap((s) => period(s, 4)), ...period(starts.at(-1) as ISODate, 2),
+      ...past.slice(0, 3).map((s): NewEvent => ({ kind: 'symptom', payload: { day: addDays(s, 1), code: 'cramps', intensity: 2 } })),
+      ...past.map((s): NewEvent => ({ kind: 'symptom', payload: { day: addDays(s, 1), code: 'mood_low', intensity: 2 } })),
+      { kind: 'symptom', payload: { day: addDays(past[0] as ISODate, 1), code: 'headache', intensity: 1 } },
+    ] };
   }
   if (name === 'inProgress') {
     const starts = startsFrom(addDays(today, -1), [28, 29]);

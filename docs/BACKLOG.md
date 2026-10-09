@@ -99,3 +99,4 @@ As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the h
 - [ ] P8-8 Siri, Shortcuts, Control Center and Android shortcuts: spike first (R2-2).
 - [ ] P8-9 Apple Watch app: spike first (R4-1).
 - [ ] P8-10 Android Glance widget and Wear OS tile, at expo-widgets' Android renderer (R4-2, P3-5b).
+- [x] P8-11 Today look-back symptom note: own logs only, past tense, allow-listed physical codes, switchable (D-087; amends C-10).
