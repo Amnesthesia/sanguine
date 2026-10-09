@@ -8,6 +8,7 @@ import { PhaseRing } from '@/features/today/PhaseRing';
 import { QuickLogRow } from '@/features/today/QuickLogRow';
 import { buildToday, SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { pregnancyModel } from '@/features/today/pregnancyModel';
+import { noteDay, symptomNote } from '@/features/today/symptomNote';
 import { useApp } from '@/state/app';
 import { Card } from '@/ui/Card';
 import { formatRange } from '@/ui/format';
@@ -45,6 +46,10 @@ export default function TodayScreen() {
     () => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate: SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate, todayFlow, ...(bleedDays ? { bleedDays } : {}) }),
     [prediction, history, today, eff.showOvulationEstimate, todayFlow, bleedDays],
   );
+  const note = useMemo(
+    () => symptomNote(history?.cycles ?? [], history?.logs ?? [], noteDay(prefs.symptomNote, model.state, model.dayOfCycle)),
+    [history, prefs.symptomNote, model.state, model.dayOfCycle],
+  );
   const word = model.confidence && model.state === 'predicted' ? t(`confidence.${model.confidence}`) : undefined;
   const shownFlags = model.flags.filter((f) => !f.insightOnly);
 
@@ -60,6 +65,13 @@ export default function TodayScreen() {
             <Text testID="pregnancy-due">{t('today.pregnancy.due', { range: formatRange(pregnancy.due.lo, pregnancy.due.hi) })}</Text>
             <Text variant="caption" color="textSecondary">{t(pregnancy.from === 'due' ? 'today.pregnancy.fromDue' : 'today.pregnancy.fromPeriod')}</Text>
           </>) : <Text variant="bodySmall" color="textSecondary" testID="pregnancy-none">{t('today.pregnancy.none')}</Text>}
+        </Card>
+      ) : null}
+      {note.length ? (
+        <Card testID="symptom-note" accessibilityRole="summary">
+          {/* ponytail: label lower-cased for mid-sentence use; a language where nouns keep capitals needs inline label keys */}
+          {note.map((l) => <Text key={l.code} variant="bodySmall" testID={`symptom-note-${l.code}`}>{t('today.symptomNote.line', { hits: l.hits, cycles: l.cycles, name: t(`symptom.${l.code}`).toLocaleLowerCase('en-AU') })}</Text>)}
+          <Text variant="caption" color="textSecondary">{t('today.symptomNote.caption')}</Text>
         </Card>
       ) : null}
       {model.estimate ? <EstimateCard m={model.estimate} /> : null}

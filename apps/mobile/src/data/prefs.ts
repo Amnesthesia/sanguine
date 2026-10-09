@@ -18,6 +18,8 @@ export interface Prefs {
   /** User override of the ovulation estimate card; teen mode forces it off until unlocked. */
   showOvulationEstimate: boolean;
   teenUnlockEstimate: boolean;
+  /** Today's look-back symptom note (D-087). */
+  symptomNote: boolean;
   notifications: { period: boolean; descriptive: boolean };
   appLock: boolean;
   /** Widgets show the headline text only when on (PLAN.md §8.8): off = the ring and the day count. */
@@ -43,6 +45,7 @@ export const DEFAULT_PREFS: Prefs = {
   sexLogging: false,
   showOvulationEstimate: true,
   teenUnlockEstimate: false,
+  symptomNote: true,
   notifications: { period: false, descriptive: false },
   appLock: false, // off until turned on in Settings, Privacy and data (owner, D-073)
   widgetDetails: false,

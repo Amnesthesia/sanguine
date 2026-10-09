@@ -1,7 +1,7 @@
 import { addDays, type CycleRecord, type DailyLog, type ISODate } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import symptomCatalog from '../../../../../copy/symptoms.json';
-import { NOTE_SYMPTOMS, symptomNote } from './symptomNote';
+import { NOTE_SYMPTOMS, noteDay, symptomNote } from './symptomNote';
 
 // closed cycles oldest first, each `len` days, starting from `first`
 function cycles(first: ISODate, lens: number[], quality: CycleRecord['quality'] = 'valid'): CycleRecord[] {
@@ -78,5 +78,14 @@ describe('symptomNote', () => {
     const known = new Set(symptomCatalog.symptoms.map((s) => s.code));
     for (const c of NOTE_SYMPTOMS) expect(known.has(c)).toBe(true);
     for (const c of ['midcycle_spotting', 'mid_cycle_pain', 'low_libido', 'high_libido']) expect(NOTE_SYMPTOMS.has(c)).toBe(false);
+  });
+});
+
+describe('noteDay', () => {
+  it('passes the day through only when the preference is on and Today is predicted or in progress', () => {
+    expect(noteDay(true, 'predicted', 11)).toBe(11);
+    expect(noteDay(true, 'inProgress', 2)).toBe(2);
+    for (const s of ['empty', 'suspended', 'late'] as const) expect(noteDay(true, s, 11)).toBeUndefined();
+    expect(noteDay(false, 'predicted', 11)).toBeUndefined();
   });
 });

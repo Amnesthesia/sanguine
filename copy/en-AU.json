@@ -115,6 +115,10 @@
       "fromPeriod": "Counted from your last period start. You can enter a due date in Settings, Life state.",
       "none": "Enter a due date in Settings, Life state, to see the week count."
     },
+    "symptomNote": {
+      "line": "In {hits} of your last {cycles} cycles you logged {name} around this day.",
+      "caption": "From your own logs. It does not change any estimate."
+    },
     "periodInProgress": "Day {day} of your period",
     "periodLogged": "Logged: {flow} flow",
     "periodLikely": "Period likely in {lo}–{hi} days",
@@ -672,6 +676,8 @@
       "temperatureSource": "Usual temperature source",
       "sexLogging": "Log sexual activity",
       "sexLoggingDesc": "Optional and off by default.",
+      "symptomNote": "Show what you logged around this day",
+      "symptomNoteDesc": "On Today, a note of symptoms you logged around the same day in past cycles.",
       "ovulationEstimate": "Show ovulation estimate",
       "ovulationEstimateDesc": "Turn off to hide ovulation and fertile window estimates.",
       "teenLocked": "Hidden by default for under 18s. You can turn it on here."

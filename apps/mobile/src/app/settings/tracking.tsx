@@ -29,6 +29,7 @@ export default function TrackingScreen() {
       <Text variant="heading" accessibilityRole="header">{t('settings.tracking.temperatureSource')}</Text>
       <Chips testIDPrefix="source" value={prefs.tempSource} onChange={(v) => void updatePrefs({ tempSource: v })} options={(['oral', 'vaginal', 'wrist', 'finger', 'other'] as const).map((s) => ({ value: s, label: t(`log.temperatureSource.${s}`) }))} />
       <Group>
+        <SwitchRow testID="track-symptom-note" title={t('settings.tracking.symptomNote')} description={t('settings.tracking.symptomNoteDesc')} value={prefs.symptomNote} onChange={(v) => void updatePrefs({ symptomNote: v })} />
         <SwitchRow testID="track-sex" title={t('settings.tracking.sexLogging')} description={t('settings.tracking.sexLoggingDesc')} value={prefs.sexLogging} onChange={(v) => void updatePrefs({ sexLogging: v })} />
         <SwitchRow
           testID="track-estimate" title={t('settings.tracking.ovulationEstimate')} description={eff.teen ? t('settings.tracking.teenLocked') : t('settings.tracking.ovulationEstimateDesc')}

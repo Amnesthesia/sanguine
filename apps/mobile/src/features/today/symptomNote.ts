@@ -1,6 +1,7 @@
 // Look-back note on Today (P8-11, D-087, amends C-10): which of the user's own symptoms she logged around this cycle day in her
 // past cycles. Reads closed valid cycles and daily logs only; never feeds the engine and never forecasts.
 import { addDays, type CycleRecord, type DailyLog, type ISODate } from '@sanguine/engine';
+import type { TodayModel } from './todayModel';
 
 /** Physical, non-intimate codes only (D-087): no mood, libido, bowel, bleeding or mid-cycle codes on a screen others may glance at. */
 export const NOTE_SYMPTOMS: ReadonlySet<string> = new Set([
@@ -43,3 +44,7 @@ export function symptomNote(cycles: CycleRecord[], logs: DailyLog[], dayOfCycle:
     .slice(0, MAX_LINES)
     .map(([code, h]) => ({ code, hits: h, cycles: past.length }));
 }
+
+/** The note shows only on an ordinary Today: not empty, suspended (pregnant, hormonal) or late, and only if the user leaves it on. */
+export const noteDay = (on: boolean, state: TodayModel['state'], dayOfCycle: number | undefined): number | undefined =>
+  on && (state === 'predicted' || state === 'inProgress') ? dayOfCycle : undefined;
