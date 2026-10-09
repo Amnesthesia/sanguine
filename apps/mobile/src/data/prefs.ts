@@ -44,7 +44,7 @@ export const DEFAULT_PREFS: Prefs = {
   showOvulationEstimate: true,
   teenUnlockEstimate: false,
   notifications: { period: false, descriptive: false },
-  appLock: true,
+  appLock: false, // off until turned on in Settings, Privacy and data (owner, D-073)
   widgetDetails: false,
   discreetIcon: false,
   screenProtection: true,

@@ -1,9 +1,14 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
 import { Chips } from './Chips';
-import { DateField } from './DateField';
+import { DateField, dateToIso, isoToDate } from './DateField';
+
+// the native picker cannot render in jsdom: a stub that picks 3 Feb 1994 when pressed
+vi.mock('@expo/ui/community/datetime-picker', () => ({
+  default: ({ onValueChange }: { onValueChange: (e: unknown, d: Date) => void }) => <button type="button" data-testid="picker" onClick={() => onValueChange({}, new Date(1994, 1, 3, 12))} />,
+}));
 import { OptionList } from './OptionList';
 import { ProgressDots } from './ProgressDots';
 import { TextField } from './TextField';
@@ -41,19 +46,21 @@ describe('Chips', () => {
 });
 
 describe('DateField', () => {
-  it('steps day, month and year with labelled buttons and respects the maximum', () => {
+  it('opens the system picker from a labelled field and stores the picked day, clamped to the range', () => {
     function D() {
       const [d, setD] = useState('2026-10-10');
       return <DateField value={d} onChange={setD} min="2020-01-01" max="2026-10-10" />;
     }
     render(<D />);
-    expect(screen.getByText('10 Oct 2026')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Earlier day' }));
-    expect(screen.getByText('9 Oct 2026')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Earlier month' }));
-    expect(screen.getByText('9 Sep 2026')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Later year' })); // clamped to max
-    expect(screen.getByText('10 Oct 2026')).toBeTruthy();
+    expect(screen.queryByTestId('picker')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '10 Oct 2026' }));
+    fireEvent.click(screen.getByTestId('picker'));
+    expect(screen.getByRole('button', { name: '1 Jan 2020' })).toBeTruthy(); // the stub picks 3 Feb 1994, before the minimum
+    expect(screen.queryByTestId('picker')).toBeNull();
+  });
+  it('converts between ISO days and local dates without shifting the day', () => {
+    expect(dateToIso(isoToDate('2024-02-29'))).toBe('2024-02-29');
+    expect(dateToIso(isoToDate('1990-12-31'))).toBe('1990-12-31');
   });
 });
 

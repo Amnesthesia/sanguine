@@ -101,7 +101,7 @@ export function OnboardingFlow() {
         {step === 1 && (<>
           {title('onboarding.s2.title')}
           <Text variant="bodySmall" color="textSecondary">{tr('onboarding.s2.dateLabel')}</Text>
-          <DateField testID="birth-date" value={birthDate} onChange={setBirthDate} min={addDays(today, -365 * 110)} max={today} yearJump />
+          <DateField testID="birth-date" value={birthDate} onChange={setBirthDate} min={addDays(today, -365 * 110)} max={today} />
           <Text variant="bodySmall" color="textSecondary">{tr('onboarding.s2.ageHelp')}</Text>
           {!birthCheck.ok ? <Text variant="bodySmall" testID="birth-error" style={{ color: t.c.period }} accessibilityLiveRegion="polite">{birthCheck.reason === 'tooYoung' ? tr('onboarding.s2.tooYoung') : tr('onboarding.s2.invalidDate')}</Text> : null}
           <TextField testID="menarche-year" label={tr('onboarding.s2.menarcheLabel')} value={menarcheText} onChangeText={(s) => setMenarcheText(digits(s).slice(0, 4))} maxLength={4} error={!menarcheCheck.ok ? tr('onboarding.s2.invalidYear') : undefined} />

@@ -39,7 +39,7 @@ describe('surfaces', () => {
     const ids = (e: ReturnType<typeof eff>) => moreRows(e).map((r) => r.id);
     expect(ids(eff(teenProfile))).not.toEqual(expect.arrayContaining(['lh']));
     expect(ids(eff(teenProfile))).toEqual(['temperature', 'note']);
-    expect(ids(eff(adultProfile))).toEqual(['temperature', 'lh', 'mucus', 'cervix', 'note']);
+    expect(ids(eff(adultProfile))).toEqual(['temperature', 'lh', 'mucus', 'note', 'cervix']);
     expect(ids(eff(adultProfile, { sexLogging: true }))).toContain('sex');
   });
   it('the calendar legend names no fertile window or ovulation when the estimate is hidden', () => {

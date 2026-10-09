@@ -19,7 +19,7 @@ const LOCKUP_WIDTH = 260; // app.json expo-splash-screen imageWidth
 const LOCKUP_ASPECT = 881 / 780; // tools/brand/build.ts lock-up canvas
 const FADE_IN_MS = 700;
 const LOGO_IN_MS = 300; // Android: the lock-up fades in over the bare native splash
-const HOLD_MS = 2000; // long enough to read the longest tagline
+const HOLD_MS = 3500; // long enough to read the longest tagline unhurried (owner, 2026-10-10: 2 s was too short)
 const OUT_MS = 350;
 const RULE_WIDTH = 200;
 

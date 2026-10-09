@@ -11,23 +11,44 @@ name: Onboarding age gate (minimum 13) and teen note
     timeout: 90000
 - tapOn:
     id: onboarding-continue
-# the selector starts thirty years back: two jumps of ten years later make the user ten
+# the system date picker (D-073) starts thirty years back. iOS: open it, open the month-and-year wheel, and tap the year
+# wheel below or above the selection (only the selected row is in the accessibility tree) until the header shows a year
+# that makes the user under 13; the latest selectable day is today, so overshooting stays too young
+- tapOn:
+    id: birth-date
+- tapOn: "[A-Z][a-z]+ \\d{4}"
 - repeat:
-    times: 2
+    while:
+      notVisible: "${'[A-Z][a-z]+ (' + [0,1,2,3,4,5,6,7,8,9,10,11,12].map(function (a) { return new Date().getFullYear() - a }).join('|') + ')'}"
+    times: 20
     commands:
       - tapOn:
-          id: birth-date-year-up10
+          text: "\\d{4}"
+          point: "50%,70%"
+# a tap above the popover closes it
+- tapOn:
+    id: PopoverDismissRegion
+    point: "50%,8%"
 - assertVisible: "Sanguine is for people aged 13 and over."
 - takeScreenshot: step2-too-young
 - tapOn:
     id: onboarding-continue
 - assertVisible: "How old are you?"
-# five years earlier makes the user fifteen: teen mode, no error
+# one year earlier at a time until the user is 13 to 16: teen mode, no error
+- tapOn:
+    id: birth-date
+- tapOn: "[A-Z][a-z]+ \\d{4}"
 - repeat:
-    times: 5
+    while:
+      notVisible: "${'[A-Z][a-z]+ (' + [13,14,15,16].map(function (a) { return new Date().getFullYear() - a }).join('|') + ')'}"
+    times: 20
     commands:
       - tapOn:
-          id: birth-date-year-down
+          text: "\\d{4}"
+          point: "50%,39%"
+- tapOn:
+    id: PopoverDismissRegion
+    point: "50%,8%"
 - assertNotVisible: "Sanguine is for people aged 13 and over."
 - assertVisible:
     id: teen-note

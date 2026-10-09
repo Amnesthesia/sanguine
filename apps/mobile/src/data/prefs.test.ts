@@ -20,7 +20,7 @@ describe('prefs', () => {
     expect(DEFAULT_SYMPTOMS).toEqual(['cramps', 'headache', 'bloating', 'breast_tenderness', 'mood_low', 'acne', 'fatigue', 'midcycle_spotting']);
     expect(DEFAULT_PREFS.sexLogging).toBe(false);
     expect(DEFAULT_PREFS.notifications).toEqual({ period: false, descriptive: false });
-    expect(DEFAULT_PREFS.appLock).toBe(true);
+    expect(DEFAULT_PREFS.appLock).toBe(false); // D-073: the owner chose no Face ID at launch unless asked for
   });
   it('load merges saved values over defaults', async () => {
     const db = openTestDb();

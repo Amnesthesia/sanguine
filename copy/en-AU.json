@@ -626,7 +626,7 @@
     "reason": "Unlock Sanguine",
     "unavailable": "No screen lock is set up on this phone.",
     "failed": "Could not unlock. Try again.",
-    "explain": "Sanguine locks when you leave it for a minute. You unlock with Face ID, your fingerprint or your phone's passcode.",
+    "explain": "You can lock Sanguine with Face ID, your fingerprint or your phone's passcode in Settings, Privacy and data.",
     "off": "App lock is off because this phone has no screen lock."
   },
   "errors": {
@@ -653,13 +653,6 @@
     "tab": "{name} tab"
   },
   "date": {
-    "day": "Day",
-    "month": "Month",
-    "year": "Year",
-    "earlier": "Earlier {unit}",
-    "later": "Later {unit}",
-    "earlierTen": "Ten years earlier",
-    "laterTen": "Ten years later",
-    "selected": "{date}"
+    "change": "Opens the calendar to change the date"
   }
 }

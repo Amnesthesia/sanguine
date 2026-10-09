@@ -6,9 +6,10 @@ export function moreRows(e: { fertilityTools: boolean; sexLogging: boolean }): A
     { id: 'temperature', show: true },
     { id: 'lh', show: e.fertilityTools },
     { id: 'mucus', show: e.fertilityTools },
-    { id: 'cervix', show: e.fertilityTools },
     { id: 'sex', show: e.sexLogging },
     { id: 'note', show: true },
+    // last: few people check their cervix, so it should not sit above the rows most people use (owner, 2026-10-10)
+    { id: 'cervix', show: e.fertilityTools },
   ];
   return all.filter((r) => r.show).map(({ id }) => ({ id }));
 }
