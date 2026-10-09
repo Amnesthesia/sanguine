@@ -59,7 +59,7 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 - [ ] P3-5b Android Glance widget when expo-widgets' Android renderer is more than a placeholder (D-047).
 - [x] P3-6 Alternate app icons (discreet "Notes"); screenshot protection. (§8.8, §9.9)
 - [ ] P3-7 Cloud backup upload: iCloud Drive container (entitlement) and Google Drive appDataFolder (expo-auth-session); restore E2E across two simulators. (§6.3)
-- [ ] P3-8 Final icon and splash assets built natively (Icon Composer layers, adaptive icon). (§9.9)
+- [x] P3-8 Final icon and splash assets built natively (Icon Composer layers, adaptive icon). (§9.9)
 - [x] P3-9 Period runs join across gaps up to 7 days unless the user splits them; `period.start { merge: false }` splits. (§5.4, client review 1 #3)
 - [x] P3-10 λ documentation fix: PLAN §4.3/§4.12/§11.1 and types.ts say the shipped default (λ = 1, D-021); fixtures pinned to RECENCY_LAMBDA. (client review 1 #4)
 - [x] P3-11 Mockup weekday labels corrected (10 Oct 2026 is a Saturday). (client review 1 #5)
