@@ -30,12 +30,12 @@ const eventsOf = async (bytes: Uint8Array) => {
 describe('backup and HealthKit data', () => {
   it('leaves out events imported from HealthKit and their retracts, keeps everything else', async () => {
     const mine = await store.append(flow('2026-09-01'));
-    const hk = await store.append({ ...flow('2026-09-29'), provenance: 'imported', source_app: 'com.other', external_id: 'hk1' });
-    const hc = await store.append({ ...flow('2026-10-01'), provenance: 'imported', source_app: 'com.other', external_id: 'hc1' });
-    const gone = await store.append({ ...flow('2026-10-02'), provenance: 'imported', source_app: 'com.other', external_id: 'hk2' });
+    const hk = await store.append({ ...flow('2026-09-29'), provenance: 'imported', source_app: 'com.other', external_id: 'healthkit:hk1' });
+    const hc = await store.append({ ...flow('2026-10-01'), provenance: 'imported', source_app: 'com.other', external_id: 'healthconnect:hc1' });
+    const gone = await store.append({ ...flow('2026-10-02'), provenance: 'imported', source_app: 'com.other', external_id: 'healthkit:hk2' });
     await store.retract(gone.id);
     await link(hk.id, 'healthkit', 'hk1');
-    await link(gone.id, 'healthkit', 'hk2');
+    // no link for `gone`: the platform deleted the record, so its link was removed, and it must still stay out
     await link(hc.id, 'healthconnect', 'hc1');
     await link(mine.id, 'healthkit', 'hk-dup'); // a duplicate link on our own manual event: the event is ours
     const bytes = await createBackup(db, store, { passphrase: 'pw', deviceSecret: secret, clock: clock(), kdf: fast });
@@ -44,7 +44,7 @@ describe('backup and HealthKit data', () => {
     expect(names).not.toContain('daily.csv'); // derived files would carry the same days
   });
   it('restores into a fresh database without a dangling retract', async () => {
-    const hk = await store.append({ ...flow('2026-09-29'), provenance: 'imported', source_app: 'com.other', external_id: 'hk1' });
+    const hk = await store.append({ ...flow('2026-09-29'), provenance: 'imported', source_app: 'com.other', external_id: 'healthkit:hk1' });
     await store.append(flow('2026-09-01'));
     await store.retract(hk.id);
     await link(hk.id, 'healthkit', 'hk1');

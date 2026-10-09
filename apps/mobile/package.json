@@ -12,6 +12,7 @@
     "@sanguine/ui-tokens": "workspace:*",
     "expo": "~57.0.27",
     "expo-alternate-app-icons": "^8.0.0",
+    "expo-auth-session": "~57.0.14",
     "expo-background-task": "~57.0.21",
     "expo-blur": "~57.0.3",
     "expo-build-properties": "~57.0.22",

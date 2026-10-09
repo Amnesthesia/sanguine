@@ -42,16 +42,33 @@ describe('sampleToRecord', () => {
     expect(rec('sex', { value: 0, metadata: { HKSexualActivityProtectionUsed: false } })).toMatchObject({ value: { protected: false } });
     expect(rec('sex', { value: 0, metadata: {} })).toEqual({ skipped: 'protection unknown' });
   });
+  it('reads booleans that come back as 1 and 0', () => {
+    expect(rec('sex', { value: 0, metadata: { HKSexualActivityProtectionUsed: 1 } })).toMatchObject({ value: { protected: true } });
+    expect(rec('sex', { value: 0, metadata: { HKSexualActivityProtectionUsed: 0 } })).toMatchObject({ value: { protected: false } });
+    expect(rec('period_flow', { value: 3, metadata: { HKMenstrualCycleStart: 1 } })).toMatchObject({ value: { cycleStart: true } });
+    expect(sampleToRecord('period_flow', sample({ value: 3, metadata: { 'com.sanguine.seed': 1 } }), M, true)).toMatchObject({ source: 'dev.seed' });
+  });
   it('an unknown category value is skipped, not guessed', () => expect(rec('lh', { value: 9 })).toEqual({ skipped: 'unknown value 9' }));
+});
+
+describe('development seed', () => {
+  it('gives a seeded sample a foreign source only when asked to', () => {
+    expect(sampleToRecord('period_flow', sample({ value: 3, metadata: { 'com.sanguine.seed': true } }), M, true)).toMatchObject({ source: 'dev.seed' });
+    expect(sampleToRecord('period_flow', sample({ value: 3, metadata: { 'com.sanguine.seed': true } }), M)).toMatchObject({ source: 'com.other' });
+  });
 });
 
 describe('recordToSave', () => {
   const base = { zone: 'Australia/Brisbane', clientRecordId: 'ev-1', start: '2026-10-09T00:00:00+10:00', end: '2026-10-10T00:00:00+10:00' };
   it('period flow keeps level, cycle start, event id and zone in the metadata', () => {
     expect(recordToSave({ ...base, type: 'period_flow', value: { kind: 'flow', level: 'heavy', cycleStart: true } })).toEqual({
-      kind: 'category', id: HK_TYPES.period_flow.id, value: 4, start: new Date('2026-10-08T14:00:00Z'), end: new Date('2026-10-09T14:00:00Z'),
+      kind: 'category', id: HK_TYPES.period_flow.id, value: 4, start: new Date('2026-10-08T14:00:00Z'), end: new Date('2026-10-09T13:59:59Z'),
       metadata: { 'com.sanguine.eventId': 'ev-1', HKTimeZone: 'Australia/Brisbane', HKMenstrualCycleStart: true },
     });
+  });
+  it('every flow sample carries the cycle-start key, true or false (HealthKit crashes without it)', () => {
+    expect(recordToSave({ ...base, type: 'period_flow', value: { kind: 'flow', level: 'light' } })?.metadata).toMatchObject({ HKMenstrualCycleStart: false });
+    expect(recordToSave({ ...base, type: 'period_flow', value: { kind: 'flow', level: 'light', cycleStart: true } })?.metadata).toMatchObject({ HKMenstrualCycleStart: true });
   });
   it('spotting is written as light flow, as HealthKit has no spotting level', () => expect(recordToSave({ ...base, type: 'period_flow', value: { kind: 'flow', level: 'spotting' } })).toMatchObject({ value: 2 }));
   it('basal temperature is a degC quantity', () => expect(recordToSave({ ...base, type: 'bbt', value: { kind: 'temp', celsius: 36.4 } })).toMatchObject({ kind: 'quantity', id: HK_TYPES.bbt.id, unit: 'degC', value: 36.4 }));
@@ -60,6 +77,13 @@ describe('recordToSave', () => {
     expect(recordToSave({ ...base, type: 'lh', value: { kind: 'lh', result: 'positive' } })).toMatchObject({ value: 2 });
   });
   it('sexual activity carries the protection flag', () => expect(recordToSave({ ...base, type: 'sex', value: { kind: 'sex', protected: true } })?.metadata).toMatchObject({ HKSexualActivityProtectionUsed: true }));
+  it('a flow sample never spans a whole day (HealthKit crashes on it)', () => {
+    for (const type of ['period_flow', 'intermenstrual'] as const) {
+      const v = type === 'period_flow' ? ({ kind: 'flow', level: 'light' } as const) : ({ kind: 'bleeding' } as const);
+      const save = recordToSave({ ...base, type, value: v });
+      expect((save?.end.getTime() ?? 0) - (save?.start.getTime() ?? 0)).toBeLessThan(86_400_000);
+    }
+  });
   it('wrist temperature is never saved', () => expect(recordToSave({ ...base, type: 'skin_temp', value: { kind: 'temp', celsius: 35 } })).toBeNull());
   it('an offset zone is not written as HKTimeZone', () => expect(recordToSave({ ...base, zone: '+10:00', type: 'intermenstrual', value: { kind: 'bleeding' } })?.metadata).toEqual({ 'com.sanguine.eventId': 'ev-1' }));
 });

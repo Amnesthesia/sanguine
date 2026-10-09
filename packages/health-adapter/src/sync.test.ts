@@ -24,7 +24,7 @@ describe('import', () => {
     const rep = await run();
     expect(rep.imported).toBe(1);
     expect(sink.list).toHaveLength(1);
-    expect(sink.list[0]).toMatchObject({ kind: 'flow', provenance: 'imported', externalId: r?.externalId, payload: { day: '2026-10-05', level: 'medium', flow_kind: 'period' } });
+    expect(sink.list[0]).toMatchObject({ kind: 'flow', provenance: 'imported', externalId: `healthkit:${r?.externalId}`, payload: { day: '2026-10-05', level: 'medium', flow_kind: 'period' } });
     expect(await links.byExternalId('healthkit', r?.externalId as string)).toMatchObject({ direction: 'read', eventId: sink.list[0]?.id });
   });
   it('a second sync adds nothing', async () => {

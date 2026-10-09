@@ -48,7 +48,7 @@ export async function syncType(d: PlatformDriver, links: LinkStore, sink: EventS
 
     const add = async () => {
       const { kind, payload } = recordToEvent(r, day);
-      const ev = await sink.append({ kind, payload, provenance: 'imported', source_app: r.source, external_id: r.externalId });
+      const ev = await sink.append({ kind, payload, provenance: 'imported', source_app: r.source, external_id: `${platform}:${r.externalId}` });
       events = [...events, ev];
       await link(ev.id);
       return ev;

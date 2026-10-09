@@ -29,6 +29,8 @@ export interface Prefs {
   /** Health types the user switched on (PLAN.md §7.5: none until they ask), and how far back the first import reads. */
   healthTypes: HealthType[];
   healthWindow: HealthWindow;
+  /** Automatic encrypted copy in the user's own iCloud Drive or Google Drive (PLAN.md §6.3, D-061): off until they ask. */
+  cloudBackup: boolean;
 }
 
 export const DEFAULT_SYMPTOMS: string[] = symptomCatalog.symptoms.filter((s) => s.defaultVisible).map((s) => s.code);
@@ -48,6 +50,7 @@ export const DEFAULT_PREFS: Prefs = {
   screenProtection: true,
   healthTypes: [],
   healthWindow: '2y',
+  cloudBackup: false,
 };
 
 export async function loadPrefs(db: Database): Promise<Prefs> {

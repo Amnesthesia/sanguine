@@ -22,6 +22,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | eslint-config-expo | 57.0.2 | ~57.0.2 | dev/build only | apps/mobile |
 | expo | 57.0.27 | ~57.0.27 | ships in app | apps/mobile |
 | expo-alternate-app-icons | 8.0.0 | ^8.0.0 | ships in app | apps/mobile |
+| expo-auth-session | 57.0.14 | ~57.0.14 | ships in app | apps/mobile |
 | expo-background-task | 57.0.21 | ~57.0.21 | ships in app | apps/mobile |
 | expo-blur | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-build-properties | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |

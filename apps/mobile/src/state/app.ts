@@ -8,6 +8,7 @@ import { deleteDeviceSecret, deleteNoteKey } from '@/services/secrets';
 import { removeAllTempFiles } from '@/services/tempFiles';
 import { loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
 import { sqliteLinks } from '@/data/healthLinks';
+import { SyncGate } from '@/data/syncGate';
 import { mergeReports } from '@/data/healthSync';
 import { syncHealthOnce, watchHealth } from '@/services/health';
 import type { SyncReport } from '@sanguine/health-adapter';
@@ -26,6 +27,7 @@ import { todayLocal } from '@/services/clock';
 export type HealthAsk = SyncReport['asks'][number] & { platform: 'healthkit' | 'healthconnect' };
 export interface HealthState { running: boolean; lastAt?: string; last?: SyncReport; asks: HealthAsk[] }
 const HEALTH_MIN_GAP_MS = 60_000;
+const healthGate = new SyncGate();
 let healthTimer: ReturnType<typeof setTimeout> | undefined;
 let unwatchHealth: (() => void) | undefined;
 let foregroundHooked = false;
@@ -133,19 +135,21 @@ export const useApp = create<AppState>((set, get) => ({
       healthTimer ??= setTimeout(() => { healthTimer = undefined; void get().syncHealth(); }, wait);
       return null;
     }
-    set({ health: { ...health, running: true } });
-    let report: SyncReport | null = null;
-    try {
-      report = await syncHealthOnce(db, store, prefs);
-    } catch (e) {
-      report = { ...mergeReports([]), failed: [{ op: 'read', error: (e as Error).message }] };
-    }
-    const platform = Platform.OS === 'ios' ? 'healthkit' : 'healthconnect';
-    const asks = [...get().health.asks, ...(report?.asks ?? []).map((a) => ({ ...a, platform }) as HealthAsk)];
-    if (report?.asks.length) await setSetting(db, 'healthAsks', asks);
-    set({ health: { running: false, lastAt: new Date().toISOString(), ...(report ? { last: report } : {}), asks } });
-    if (report && report.imported + report.retracted > 0) await get().refresh();
-    return report;
+    return healthGate.run(async () => {
+      set({ health: { ...get().health, running: true } });
+      let report: SyncReport | null = null;
+      try {
+        report = await syncHealthOnce(db, store, prefs);
+      } catch (e) {
+        report = { ...mergeReports([]), failed: [{ op: 'read', error: (e as Error).message }] };
+      }
+      const platform = Platform.OS === 'ios' ? 'healthkit' : 'healthconnect';
+      const asks = [...get().health.asks, ...(report?.asks ?? []).map((a) => ({ ...a, platform }) as HealthAsk)];
+      if (report?.asks.length) await setSetting(db, 'healthAsks', asks);
+      set({ health: { running: false, lastAt: new Date().toISOString(), ...(report ? { last: report } : {}), asks } });
+      if (report && report.imported + report.retracted > 0) await get().refresh();
+      return report;
+    });
   },
 
   async resolveHealthAsk(ask, removeHere) {
@@ -209,13 +213,22 @@ export const useApp = create<AppState>((set, get) => ({
   async deleteEverything() {
     const { db } = get();
     if (!db) return;
-    await wipeAll(db);
-    await Promise.all([deleteDeviceSecret(), deleteNoteKey()]);
+    // stop health sync first and keep it stopped until the preferences are reset: a pass that is still running, or started with the old
+    // preferences, would write the platform's records back into the emptied database
+    clearTimeout(healthTimer);
+    healthTimer = undefined;
     rewatch([], () => {});
-    removeAllTempFiles();
-    // the widget and the home-screen icon hold nothing of the deleted data: reset the icon and blank the widget
-    void setDiscreetIcon(false).catch(() => {});
-    set({ prefs: DEFAULT_PREFS, health: { running: false, asks: [] }, profile: {}, onboarded: false, history: undefined, settings: undefined, prediction: undefined, version: get().version + 1 });
+    await healthGate.close();
+    try {
+      await wipeAll(db);
+      await Promise.all([deleteDeviceSecret(), deleteNoteKey()]);
+      removeAllTempFiles();
+      // the widget and the home-screen icon hold nothing of the deleted data: reset the icon and blank the widget
+      void setDiscreetIcon(false).catch(() => {});
+      set({ prefs: DEFAULT_PREFS, health: { running: false, asks: [] }, profile: {}, onboarded: false, history: undefined, settings: undefined, prediction: undefined, version: get().version + 1 });
+    } finally {
+      healthGate.open();
+    }
     await get().refresh();
   },
 

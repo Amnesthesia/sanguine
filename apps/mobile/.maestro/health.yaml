@@ -1,0 +1,90 @@
+appId: ${APP_ID}
+name: Health sync - permissions, import, second sync adds nothing, remote deletion (HealthKit, simulator)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=empty
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-health
+- extendedWaitUntil:
+    visible:
+      id: health-row-period_flow
+    timeout: 20000
+- assertVisible:
+    id: health-row-bbt
+- assertVisible:
+    id: health-row-skin_temp
+- assertNotVisible:
+    id: health-row-sex
+- assertVisible: "Read only.*"
+- takeScreenshot: rows
+# seed HealthKit with three foreign periods and 40 temperatures (the system asks for access once)
+- openLink: ${LINKBASE}dev/health-seed?action=seed
+- extendedWaitUntil:
+    visible: "(Turn On All|Allow|Health Access)"
+    timeout: 30000
+    optional: true
+- runFlow:
+    when:
+      visible: "Turn On All"
+    commands:
+      - tapOn: "Turn On All"
+      - tapOn: "Allow"
+- extendedWaitUntil:
+    visible:
+      id: health-row-period_flow
+    timeout: 60000
+- tapOn:
+    id: health-row-period_flow
+- extendedWaitUntil:
+    visible:
+      id: health-result
+    timeout: 60000
+- assertVisible: "Added 15.*"
+- takeScreenshot: imported-flow
+- tapOn:
+    id: health-row-bbt
+- extendedWaitUntil:
+    visible: "Added 40.*"
+    timeout: 60000
+- takeScreenshot: imported-bbt
+# a second pass adds nothing
+- tapOn:
+    id: health-sync-now
+- extendedWaitUntil:
+    visible: "Added 0, matched 0.*"
+    timeout: 60000
+# the imported history is in the log: the Calendar shows it
+- openLink: ${LINKBASE}calendar
+- extendedWaitUntil:
+    visible:
+      id: screen-calendar
+    timeout: 20000
+- takeScreenshot: calendar-after-import
+# the other app deletes its records: the imported entries are retracted on the next pass
+- openLink: ${LINKBASE}dev/health-seed?action=clear
+- extendedWaitUntil:
+    visible:
+      id: health-sync-now
+    timeout: 60000
+# iOS background delivery may already have run the pass; otherwise run it
+- extendedWaitUntil:
+    visible: ".*removed 55.*"
+    timeout: 15000
+    optional: true
+- runFlow:
+    when:
+      notVisible: ".*removed 55.*"
+    commands:
+      - tapOn:
+          id: health-sync-now
+      - extendedWaitUntil:
+          visible: ".*removed 55.*"
+          timeout: 60000
+- takeScreenshot: after-delete

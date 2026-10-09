@@ -68,6 +68,7 @@ function Shell() {
           <Stack.Screen name="settings/about" />
         </Stack.Protected>
         <Stack.Screen name="dev/seed" />
+        <Stack.Screen name="dev/health-seed" />
       </Stack>
     </NavThemeProvider>
   );

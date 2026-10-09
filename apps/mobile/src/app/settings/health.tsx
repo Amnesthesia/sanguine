@@ -47,20 +47,6 @@ export default function HealthScreen() {
   return (
     <SubScreen testID="screen-health" title={t('settings.health.title')}>
       <Text variant="bodySmall" color="textSecondary">{t('settings.health.intro', { platform })}</Text>
-      <Group>
-        {rows.map((r, i) => (
-          <SwitchRow
-            key={r.type} testID={`health-row-${r.type}`} title={t(r.titleKey)}
-            description={`${r.readOnly ? t('settings.health.readOnly') : t('settings.health.readWrite')}. ${t(r.bodyKey, { platform })}`}
-            value={prefs.healthTypes.includes(r.type)} onChange={(v) => void toggle(r.type, v)} last={i === rows.length - 1} />
-        ))}
-      </Group>
-      <Text variant="bodySmall" color="textSecondary">{t('settings.health.offNote')}</Text>
-
-      <Text variant="heading" accessibilityRole="header">{t('settings.health.since')}</Text>
-      <Chips testIDPrefix="health-since" value={prefs.healthWindow} onChange={(v) => void updatePrefs({ healthWindow: v })} options={(['30d', '1y', '2y'] as const).map((w) => ({ value: w, label: t(`settings.health.window.${w}`) }))} />
-      <Text variant="bodySmall" color="textSecondary">{t('settings.health.windowNote')}</Text>
-
       {health.asks.map((a) => (
         <Card key={a.externalId} testID={`health-ask-${a.externalId}`}>
           <Text variant="heading">{t('settings.health.ask.title', { platform })}</Text>
@@ -76,7 +62,7 @@ export default function HealthScreen() {
       <Text testID="health-last" variant="bodySmall" color="textSecondary" accessibilityLiveRegion="polite">
         {health.lastAt ? t('settings.health.lastSync', { when: new Date(health.lastAt).toLocaleTimeString() }) : t('settings.health.never')}
       </Text>
-      {last ? <Text testID="health-result" variant="bodySmall">{t('settings.health.result', last)}</Text> : null}
+      {last ? <Text testID="health-result" variant="bodySmall">{t('settings.health.result', { imported: last.imported, duplicates: last.duplicates, retracted: last.retracted, written: last.written })}</Text> : null}
       {last && last.failed.length > 0 ? <Text testID="health-failed" variant="bodySmall" color="textSecondary">{t('settings.health.failed', { n: last.failed.length })}</Text> : null}
       {empty ? (
         <>
@@ -84,6 +70,20 @@ export default function HealthScreen() {
           <Button testID="health-open-settings" kind="secondary" label={t('settings.health.openSettings')} onPress={() => void Linking.openSettings()} />
         </>
       ) : null}
+      <Group>
+        {rows.map((r, i) => (
+          <SwitchRow
+            key={r.type} testID={`health-row-${r.type}`} title={t(r.titleKey)}
+            description={`${r.readOnly ? t('settings.health.readOnly') : t('settings.health.readWrite')}. ${t(r.bodyKey, { platform })}`}
+            value={prefs.healthTypes.includes(r.type)} onChange={(v) => void toggle(r.type, v)} last={i === rows.length - 1} />
+        ))}
+      </Group>
+      <Text variant="bodySmall" color="textSecondary">{t('settings.health.offNote')}</Text>
+
+      <Text variant="heading" accessibilityRole="header">{t('settings.health.since')}</Text>
+      <Chips testIDPrefix="health-since" value={prefs.healthWindow} onChange={(v) => void updatePrefs({ healthWindow: v })} options={(['30d', '1y', '2y'] as const).map((w) => ({ value: w, label: t(`settings.health.window.${w}`) }))} />
+      <Text variant="bodySmall" color="textSecondary">{t('settings.health.windowNote')}</Text>
+
       <Text variant="bodySmall" color="textSecondary">{t('settings.health.shared', { platform })}</Text>
     </SubScreen>
   );

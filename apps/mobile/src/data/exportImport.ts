@@ -18,8 +18,8 @@ export interface ExportResult { zip: Uint8Array; eventCount: number }
 export async function exportBundle(db: Database, store: EventStore, clock: Clock, o: { forBackup?: boolean } = {}): Promise<ExportResult> {
   let events = await store.events();
   if (o.forBackup) {
-    const fromHealthKit = new Set((await db.all<{ event_id: string }>(
-      "SELECT l.event_id FROM health_link l JOIN event e ON e.id = l.event_id WHERE l.platform = 'healthkit' AND l.direction = 'read' AND e.provenance = 'imported'")).map((r) => r.event_id));
+    // by the id prefix the sync writes, not by a link: a link is removed when the platform deletes the record, and the event must stay out of the backup
+    const fromHealthKit = new Set(events.filter((e) => e.provenance === 'imported' && e.external_id?.startsWith('healthkit:')).map((e) => e.id));
     events = events.filter((e) => !fromHealthKit.has(e.id) && !(e.retracts && fromHealthKit.has(e.retracts)));
     // a retract of a retract of a left-out event would dangle too: drop until stable
     for (let again = true; again;) { const ids = new Set(events.map((e) => e.id)); const kept = events.filter((e) => !e.retracts || ids.has(e.retracts)); again = kept.length !== events.length; events = kept; }

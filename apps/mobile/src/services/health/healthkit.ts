@@ -12,7 +12,8 @@ interface HkApi {
   queryQuantitySamplesWithAnchor(id: string, o: { anchor?: string; limit: number; unit?: string; filter?: { date?: { startDate?: Date } } }): Promise<Anchored>;
   saveCategorySample(id: string, value: number, start: Date, end: Date, metadata?: Record<string, unknown>): Promise<{ uuid: string } | undefined>;
   saveQuantitySample(id: string, unit: string, value: number, start: Date, end: Date, metadata?: Record<string, unknown>): Promise<{ uuid: string } | undefined>;
-  deleteObjects(id: string, filter: { uuid: string }): Promise<number>;
+  deleteObjects(id: string, filter: { uuid: string } | { sources: unknown[] }): Promise<number>;
+  currentAppSource(): unknown;
 }
 interface Anchored { samples: readonly HkSample[]; deletedSamples: ReadonlyArray<{ uuid: string }>; newAnchor: string }
 const hk = HealthKit as unknown as HkApi;
@@ -41,7 +42,7 @@ export function createHealthKitDriver(): PlatformDriver {
       const records = [];
       const skipped = [];
       for (const s of res.samples) {
-        const r = sampleToRecord(type, s, modifiedAt);
+        const r = sampleToRecord(type, s, modifiedAt, __DEV__);
         if (r === null) continue;
         if ('skipped' in r) skipped.push({ externalId: s.uuid, reason: r.skipped });
         else records.push(r);
@@ -79,4 +80,27 @@ export function watchHealthKit(types: HealthType[], onChange: () => void): () =>
     void api.enableBackgroundDelivery(id, kind === 'category' ? api.UpdateFrequency.immediate : api.UpdateFrequency.hourly).catch(() => {});
   }
   return () => { for (const s of subs) s.remove(); };
+}
+
+/** Development only (simulator): fills HealthKit with foreign-looking history so the import path can be driven end to end, or removes what this app wrote. */
+export async function devSeedHealthKit(action: 'seed' | 'clear', today: string): Promise<string> {
+  const types: HealthType[] = ['period_flow', 'bbt'];
+  if (action === 'clear') {
+    for (const t of types) await hk.deleteObjects(HK_TYPES[t].id, { sources: [hk.currentAppSource()] });
+    return 'cleared';
+  }
+  await hk.requestAuthorization({ toRead: types.map((t) => HK_TYPES[t].id), toShare: types.map((t) => HK_TYPES[t].id) });
+  for (const t of types) await hk.deleteObjects(HK_TYPES[t].id, { sources: [hk.currentAppSource()] }); // start from a known state
+  const day = (offset: number, hour = 0) => { const d = new Date(`${today}T00:00:00`); d.setDate(d.getDate() + offset); d.setHours(hour); return d; };
+  let n = 0;
+  for (const startOffset of [-38, -66, -94]) {
+    for (let i = 0; i < 5; i++) {
+      const start = day(startOffset + i);
+      const md = { 'com.sanguine.seed': true, HKMenstrualCycleStart: i === 0 };
+      await hk.saveCategorySample(HK_TYPES.period_flow.id, i === 0 || i === 1 ? 4 : 3, start, new Date(start.getTime() + 86_399_000), md);
+      n++;
+    }
+  }
+  for (let o = -40; o <= -1; o++) { await hk.saveQuantitySample(HK_TYPES.bbt.id, 'degC', o % 28 < 14 ? 36.3 : 36.6, day(o, 6), day(o, 6), { 'com.sanguine.seed': true }); n++; }
+  return `seeded ${n}`;
 }

@@ -67,3 +67,5 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - P6-2 (tools part): `tools/ci/i18n.ts` exports 460-odd source strings to `docs/i18n/strings-for-translation.csv` (regulatory rows flagged), validates a returned CSV (keys, placeholders, length) and writes `copy/<locale>.json`; translator brief in `docs/i18n/README.md`. Needs human: translators and a clinician check for de, fr, es, pt-BR.
 
 - P3-8 final icon and splash assets: native iOS icon (light/dark/tinted catalog) installed and seen on the simulator; splash verified earlier; Android adaptive icon built, on-device look deferred to P3-14 (D-059).
+- P4-1..P4-4 health sync (D-057, D-060): adapter core, HealthKit and Health Connect drivers, Settings > Health sync, sync wiring. iOS simulator flow `health.yaml` green (import, second pass adds nothing, remote deletion retracts). Needs human: a real Apple Watch check for wrist temperature (P4-5); Android runtime check in P3-14 (also the unverified Health Connect permission strings, D-060 (7)).
+
