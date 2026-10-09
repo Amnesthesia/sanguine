@@ -1,7 +1,7 @@
 import { argon2id } from '@noble/hashes/argon2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import { describe, expect, it } from 'vitest';
-import { BackupError, DEFAULT_KDF, HEADER_BYTES, openBackup, precomputeKey, readHeader, sealBackup } from './backup';
+import { type Argon2id, BackupError, DEFAULT_KDF, HEADER_BYTES, openBackup, precomputeKey, readHeader, sealBackup } from './backup';
 import { newDeviceSecret, recoveryWordsToSecret, secretToRecoveryWords } from './recovery';
 
 /** Deterministic "random": fills each request with a counter-offset pattern. */
@@ -178,5 +178,30 @@ describe('precomputed key (D-061)', () => {
     const file = await sealBackup({ payload, passphrase: 'pw', deviceSecret: secret, random: rnd, kdf: { memKiB: 19 * 1024, iterations: 2, parallelism: 1 } });
     expect(readHeader(file).kdf).toEqual({ memKiB: 19 * 1024, iterations: 2, parallelism: 1 });
     expect(new TextDecoder().decode(await openBackup(file, 'pw', secret))).toBe('events');
+  });
+});
+
+describe('injected Argon2id (native libsodium on the phone)', () => {
+  const fast = { memKiB: 64, iterations: 1, parallelism: 1 };
+  const rnd = (n: number) => Uint8Array.from({ length: n }, (_, i) => (i * 11 + n) % 256);
+  const secret = new Uint8Array(32).fill(3);
+  const payload = new TextEncoder().encode('events');
+  // stands in for libsodium: any implementation of the standard function gives the same bytes
+  const viaNoble: Argon2id = async (pw, salt, k) => argon2id(pw, salt, { t: k.iterations, m: k.memKiB, p: k.parallelism, dkLen: 32 });
+  it('a file sealed with the injected function opens with the built-in one and the other way round', async () => {
+    let calls = 0;
+    const counted: Argon2id = async (...a) => { calls++; return viaNoble(...a); };
+    const sealed = await sealBackup({ payload, passphrase: 'pw', deviceSecret: secret, random: rnd, kdf: fast, argon2id: counted });
+    expect(calls).toBe(1);
+    expect(new TextDecoder().decode(await openBackup(sealed, 'pw', secret))).toBe('events');
+    const builtIn = await sealBackup({ payload, passphrase: 'pw', deviceSecret: secret, random: rnd, kdf: fast });
+    expect(new TextDecoder().decode(await openBackup(builtIn, 'pw', secret, undefined, counted))).toBe('events');
+    expect(calls).toBe(2);
+  });
+  it('precomputeKey uses it too', async () => {
+    let calls = 0;
+    const counted: Argon2id = async (...a) => { calls++; return viaNoble(...a); };
+    await precomputeKey('pw', rnd, fast, undefined, counted);
+    expect(calls).toBe(1);
   });
 });

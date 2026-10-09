@@ -28,6 +28,8 @@ export class BackupError extends Error {
 }
 
 export type Random = (n: number) => Uint8Array;
+/** Argon2id (version 1.3, one lane). The default is the JavaScript one; the app injects libsodium's native one, which gives the same output. */
+export type Argon2id = (password: Uint8Array, salt: Uint8Array, kdf: KdfParams, onProgress?: (fraction: number) => void) => Promise<Uint8Array>;
 export interface SealOptions {
   payload: Uint8Array;
   passphrase: string;
@@ -37,6 +39,7 @@ export interface SealOptions {
   onProgress?: (fraction: number) => void;
   /** A key from `precomputeKey`: skips the KDF so an automatic upload needs no passphrase (D-061). The file still opens with the passphrase. */
   precomputed?: PrecomputedKey;
+  argon2id?: Argon2id;
 }
 export interface PrecomputedKey { salt: Uint8Array; k0: Uint8Array; kdf: KdfParams }
 
@@ -59,7 +62,8 @@ function concat(...xs: Uint8Array[]): Uint8Array {
   return out;
 }
 
-function argon(passphrase: string, salt: Uint8Array, kdf: KdfParams, onProgress?: (f: number) => void): Promise<Uint8Array> {
+function argon(passphrase: string, salt: Uint8Array, kdf: KdfParams, onProgress?: (f: number) => void, native?: Argon2id): Promise<Uint8Array> {
+  if (native) return native(enc.encode(norm(passphrase)), salt, kdf, onProgress);
   return argon2idAsync(enc.encode(norm(passphrase)), salt, {
     t: kdf.iterations, m: kdf.memKiB, p: kdf.parallelism, dkLen: 32, asyncTick: 10, maxmem: MAX_KDF.memKiB * 1024 * 2,
     ...(onProgress ? { onProgress } : {}),
@@ -67,15 +71,15 @@ function argon(passphrase: string, salt: Uint8Array, kdf: KdfParams, onProgress?
 }
 
 /** Runs the KDF once. The result is what `SealOptions.precomputed` takes; keep it only in the system keystore. */
-export async function precomputeKey(passphrase: string, random: Random, kdf?: Partial<KdfParams>, onProgress?: (f: number) => void): Promise<PrecomputedKey> {
+export async function precomputeKey(passphrase: string, random: Random, kdf?: Partial<KdfParams>, onProgress?: (f: number) => void, argon2id?: Argon2id): Promise<PrecomputedKey> {
   if (passphrase.length === 0) throw new BackupError('params', 'passphrase must not be empty');
   const params = { ...DEFAULT_KDF, ...kdf };
   const salt = random(SALT_BYTES);
-  return { salt, k0: await argon(passphrase, salt, params, onProgress), kdf: params };
+  return { salt, k0: await argon(passphrase, salt, params, onProgress, argon2id), kdf: params };
 }
 
-async function deriveKeys(passphrase: string, salt: Uint8Array, kdf: KdfParams, deviceSecret: Uint8Array, onProgress?: (f: number) => void, k0Known?: Uint8Array) {
-  const k0 = k0Known ?? (await argon(passphrase, salt, kdf, onProgress));
+async function deriveKeys(passphrase: string, salt: Uint8Array, kdf: KdfParams, deviceSecret: Uint8Array, onProgress?: (f: number) => void, k0Known?: Uint8Array, native?: Argon2id) {
+  const k0 = k0Known ?? (await argon(passphrase, salt, kdf, onProgress, native));
   const base = new Uint8Array(32);
   for (let i = 0; i < 32; i++) base[i] = (k0[i] as number) ^ (deviceSecret[i] as number);
   return {
@@ -107,7 +111,7 @@ export async function sealBackup(o: SealOptions): Promise<Uint8Array> {
     throw new BackupError('params', 'KDF parameters out of range');
   const salt = o.precomputed ? o.precomputed.salt : o.random(SALT_BYTES);
   const nonce = o.random(NONCE_BYTES);
-  const { encKey, macKey } = await deriveKeys(o.passphrase, salt, kdf, o.deviceSecret, o.onProgress, o.precomputed?.k0);
+  const { encKey, macKey } = await deriveKeys(o.passphrase, salt, kdf, o.deviceSecret, o.onProgress, o.precomputed?.k0, o.argon2id);
   const header = writeHeader(kdf, salt, nonce, o.payload.length + TAG_BYTES);
   const ct = xchacha20poly1305(encKey, nonce, header).encrypt(o.payload);
   const mac = hmac(sha256, macKey, concat(header, ct));
@@ -128,10 +132,10 @@ export function readHeader(file: Uint8Array): { kdf: KdfParams; salt: Uint8Array
   return { kdf, salt: file.slice(16, 32), nonce: file.slice(32, 56), ctLen, header: file.slice(0, HEADER_BYTES) };
 }
 
-export async function openBackup(file: Uint8Array, passphrase: string, deviceSecret: Uint8Array, onProgress?: (f: number) => void): Promise<Uint8Array> {
+export async function openBackup(file: Uint8Array, passphrase: string, deviceSecret: Uint8Array, onProgress?: (f: number) => void, argon2id?: Argon2id): Promise<Uint8Array> {
   checkSecret(deviceSecret);
   const h = readHeader(file);
-  const { encKey, macKey } = await deriveKeys(passphrase, h.salt, h.kdf, deviceSecret, onProgress);
+  const { encKey, macKey } = await deriveKeys(passphrase, h.salt, h.kdf, deviceSecret, onProgress, undefined, argon2id);
   const ct = file.subarray(HEADER_BYTES, HEADER_BYTES + h.ctLen);
   const mac = file.subarray(HEADER_BYTES + h.ctLen);
   if (!equal(mac, hmac(sha256, macKey, concat(h.header, ct)))) throw new BackupError('auth', 'wrong passphrase or device secret, or the file was changed');

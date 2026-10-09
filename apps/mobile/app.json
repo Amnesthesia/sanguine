@@ -133,7 +133,11 @@
           "background": true
         }
       ],
-      "react-native-health-connect"
+      "react-native-health-connect",
+      [
+        "react-native-libsodium",
+        {}
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -145,7 +149,14 @@
       "infoPlist": {
         "EXDevMenuShowFloatingActionButton": false,
         "EXDevMenuShowsAtLaunch": false,
-        "EXDevMenuIsOnboardingFinished": true
+        "EXDevMenuIsOnboardingFinished": true,
+        "NSUbiquitousContainers": {
+          "iCloud.app.sanguine.mobile": {
+            "NSUbiquitousContainerIsDocumentScopePublic": true,
+            "NSUbiquitousContainerName": "Sanguine",
+            "NSUbiquitousContainerSupportedFolderLevels": "Any"
+          }
+        }
       },
       "icon": {
         "light": "./assets/brand/icon.png",
@@ -181,6 +192,17 @@
               "E174.1"
             ]
           }
+        ]
+      },
+      "entitlements": {
+        "com.apple.developer.icloud-container-identifiers": [
+          "iCloud.app.sanguine.mobile"
+        ],
+        "com.apple.developer.icloud-services": [
+          "CloudDocuments"
+        ],
+        "com.apple.developer.ubiquity-container-identifiers": [
+          "iCloud.app.sanguine.mobile"
         ]
       }
     }

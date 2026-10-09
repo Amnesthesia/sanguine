@@ -10,6 +10,7 @@ import { loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
 import { sqliteLinks } from '@/data/healthLinks';
 import { SyncGate } from '@/data/syncGate';
 import { mergeReports } from '@/data/healthSync';
+import { clearCloudSecrets, uploadCloudIfDue } from '@/services/cloud';
 import { syncHealthOnce, watchHealth } from '@/services/health';
 import type { SyncReport } from '@sanguine/health-adapter';
 import { AppState as RNAppState, Platform } from 'react-native';
@@ -99,7 +100,7 @@ export const useApp = create<AppState>((set, get) => ({
       rewatch(get().prefs.healthTypes, () => void get().syncHealth({ force: true }));
       if (!foregroundHooked) {
         foregroundHooked = true;
-        RNAppState.addEventListener('change', (st) => { if (st === 'active') void get().syncHealth(); });
+        RNAppState.addEventListener('change', (st) => { if (st === 'active') { void get().syncHealth(); const { db: d, store: st2, prefs: p } = get(); if (d && st2) void uploadCloudIfDue(d, st2, p.cloudBackup); } });
       }
     } catch (e) {
       set({ status: 'error', error: (e as Error).message, keyMismatch: e instanceof KeyMismatchError });
@@ -124,6 +125,7 @@ export const useApp = create<AppState>((set, get) => ({
     void get().syncReminders();
     void get().syncWidgets();
     void get().syncHealth();
+    void uploadCloudIfDue(db, store, get().prefs.cloudBackup);
   },
 
   /** One health pass: at most one at a time and one a minute (a skipped call is retried once the minute is up), force skips the minute. */
@@ -221,7 +223,7 @@ export const useApp = create<AppState>((set, get) => ({
     await healthGate.close();
     try {
       await wipeAll(db);
-      await Promise.all([deleteDeviceSecret(), deleteNoteKey()]);
+      await Promise.all([deleteDeviceSecret(), deleteNoteKey(), clearCloudSecrets()]);
       removeAllTempFiles();
       // the widget and the home-screen icon hold nothing of the deleted data: reset the icon and blank the widget
       void setDiscreetIcon(false).catch(() => {});

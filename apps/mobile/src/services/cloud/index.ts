@@ -3,10 +3,10 @@ import { type PrecomputedKey, precomputeKey } from '@sanguine/crypto';
 import * as Network from 'expo-network';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
-import { BACKUP_KDF } from '@/data/backup';
 import type { Database } from '@/data/database';
 import type { EventStore } from '@/data/store';
 import { deviceClock } from '../clock';
+import { backupCrypto } from '../argon2';
 import { getDeviceSecret } from '../secrets';
 import { localCloudStore } from './local';
 import type { CloudStore } from './types';
@@ -46,11 +46,22 @@ async function loadKey(): Promise<PrecomputedKey | null> {
 }
 /** Runs the key derivation once (the slow part) and keeps the result on this phone only. */
 export async function enableAutoBackup(passphrase: string, onProgress?: (f: number) => void): Promise<void> {
-  const k = await precomputeKey(passphrase, (n) => deviceClock.randomBytes(n), BACKUP_KDF, onProgress);
+  const { kdf, argon2id } = backupCrypto();
+  const k = await precomputeKey(passphrase, (n) => deviceClock.randomBytes(n), kdf, onProgress, argon2id);
   await SecureStore.setItemAsync(KEY, JSON.stringify({ salt: hex(k.salt), k0: hex(k.k0), kdf: k.kdf }), OPTS);
 }
 export async function disableAutoBackup(): Promise<void> {
   await SecureStore.deleteItemAsync(KEY, OPTS);
+}
+
+/** "Delete everything": removes the derived backup key and the Google sign-in from this phone. Files already in the user's cloud account stay there. */
+export async function clearCloudSecrets(): Promise<void> {
+  await disableAutoBackup();
+  try {
+    await (require('./drive') as typeof import('./drive')).signOutOfDrive();
+  } catch {
+    // no Drive module on this platform
+  }
 }
 
 /** Uploads when due (after a change, on Wi-Fi, at most hourly). Safe to call often; never throws. */

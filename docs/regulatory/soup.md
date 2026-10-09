@@ -63,6 +63,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | react-native | 0.86.3 | 0.86.3 | ships in app | apps/mobile |
 | react-native-gesture-handler | 2.32.0 | ~2.32.0 | ships in app | apps/mobile |
 | react-native-health-connect | 4.1.3 | 4.1.3 | ships in app | apps/mobile |
+| react-native-libsodium | 1.7.0 | 1.7.0 | ships in app | apps/mobile |
 | react-native-nitro-modules | 0.37.1 | 0.37.1 | ships in app | apps/mobile |
 | react-native-reanimated | 4.5.1 | 4.5.1 | ships in app | apps/mobile |
 | react-native-safe-area-context | 5.7.0 | ~5.7.0 | ships in app | apps/mobile |
