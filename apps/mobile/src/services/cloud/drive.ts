@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import * as AuthSession from 'expo-auth-session';
 import * as SecureStore from 'expo-secure-store';
 import { deviceClock } from '../clock';
-import { createDriveStore, DRIVE_SCOPE } from './driveApi';
+import { createDriveStore, DRIVE_SCOPE, driveEnabled } from './driveApi';
 import type { CloudStore } from './types';
 
 const KEY = 'sanguine.drive.tokens';
@@ -47,7 +47,9 @@ export async function signOutOfDrive(): Promise<void> {
   await SecureStore.deleteItemAsync(KEY, OPTS);
 }
 
+export const driveConfigured = (): boolean => driveEnabled(clientId());
+
 export function driveStore(): CloudStore {
-  if (!clientId()) throw new Error('Google Drive is not configured');
+  if (!driveConfigured()) throw new Error('Google Drive is not configured');
   return createDriveStore((url, init) => fetch(url, init as RequestInit), token, () => String(deviceClock.nowMs()));
 }

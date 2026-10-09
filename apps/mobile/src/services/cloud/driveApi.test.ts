@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDriveStore, type Fetch, multipartBody } from './driveApi';
+import { createDriveStore, driveEnabled, type Fetch, multipartBody } from './driveApi';
 
 interface Call { url: string; method: string; headers: Record<string, string>; body?: unknown }
 function fakeFetch(files: Array<{ id: string; name: string }>, status = 200) {
@@ -59,5 +59,14 @@ describe('Google Drive app-data store', () => {
     expect(await store([], null).s.available()).toBe(false);
     await expect(store([], 'tok', 403).s.list()).rejects.toThrow('403');
     await expect(store([], null).s.list()).rejects.toThrow('not signed in');
+  });
+});
+
+describe('driveEnabled', () => {
+  it('is off until a real OAuth client id is configured', () => {
+    expect(driveEnabled(undefined)).toBe(false);
+    expect(driveEnabled('')).toBe(false);
+    expect(driveEnabled('placeholder')).toBe(false);
+    expect(driveEnabled('1234-abc.apps.googleusercontent.com')).toBe(true);
   });
 });

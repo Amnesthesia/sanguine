@@ -13,6 +13,7 @@ import { ScreenProtection } from '@/features/lock/ScreenProtection';
 import { BrandSplash } from '@/features/splash/BrandSplash';
 import { taglineFor } from '@/features/splash/tagline';
 import { isTeen } from '@/data/prefs';
+import '@/services/health/backgroundTask';
 import { ThemeProvider, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 

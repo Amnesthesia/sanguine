@@ -58,3 +58,6 @@ export function createDriveStore(f: Fetch, getToken: () => Promise<string | null
     },
   };
 }
+
+/** Google Drive backup is offered only once the owner has put an OAuth client id in `app.json` (`expo.extra.googleDriveClientId`). Until then Android has no cloud copy. */
+export const driveEnabled = (clientId: string | undefined | null): boolean => typeof clientId === 'string' && /^[\w-]+\.apps\.googleusercontent\.com$/.test(clientId.trim());

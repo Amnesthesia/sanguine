@@ -18,6 +18,7 @@ import { defaultTempUnit, pickTranslated } from '@/i18n/locale';
 import { deviceLocale } from '@/services/locale';
 import { setFormatLocale } from '@/ui/format';
 import { syncHealthOnce, watchHealth } from '@/services/health';
+import { setHealthBackground } from '@/services/health/backgroundTask';
 import type { SyncReport } from '@sanguine/health-adapter';
 import { AppState as RNAppState, Platform } from 'react-native';
 import type { Profile } from '@/data/project';
@@ -111,6 +112,7 @@ export const useApp = create<AppState>((set, get) => ({
       set({ status: 'ready' });
       void get().syncHealth({ force: true });
       rewatch(get().prefs.healthTypes, () => void get().syncHealth({ force: true }));
+      void setHealthBackground(get().prefs.healthTypes.length > 0 || get().prefs.cloudBackup);
       if (!foregroundHooked) {
         foregroundHooked = true;
         RNAppState.addEventListener('change', (st) => { if (st === 'active') { void get().syncHealth(); const { db: d, store: st2, prefs: p } = get(); if (d && st2) void uploadCloudIfDue(d, st2, p.cloudBackup); } });
@@ -209,6 +211,7 @@ export const useApp = create<AppState>((set, get) => ({
     if (patch.notifications || patch.discreetIcon !== undefined) void get().syncReminders();
     if (patch.widgetDetails !== undefined || patch.discreetIcon !== undefined) void get().syncWidgets();
     if (patch.healthTypes) rewatch(next.healthTypes, () => void get().syncHealth({ force: true }));
+    if (patch.healthTypes || patch.cloudBackup !== undefined) void setHealthBackground(next.healthTypes.length > 0 || next.cloudBackup);
   },
 
   async muteFlag(code) {
@@ -233,6 +236,7 @@ export const useApp = create<AppState>((set, get) => ({
     clearTimeout(healthTimer);
     healthTimer = undefined;
     rewatch([], () => {});
+    void setHealthBackground(false);
     await healthGate.close();
     try {
       await wipeAll(db);

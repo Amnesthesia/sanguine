@@ -28,8 +28,10 @@ export async function getCloudStore(): Promise<CloudStore | null> {
       if (await s.available()) return s;
     } else if (Platform.OS === 'android') {
       const m = require('./drive') as typeof import('./drive');
-      const s = m.driveStore();
-      if (await s.available()) return s;
+      if (m.driveConfigured()) {
+        const s = m.driveStore();
+        if (await s.available()) return s;
+      }
     }
   } catch {
     // the native module or the account is missing
