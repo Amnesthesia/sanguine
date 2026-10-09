@@ -9,6 +9,7 @@ instead of a page of context. Nothing here overrides `CLAUDE.md`, `docs/PLAN.md`
 | [runbook.md](runbook.md) | You will run tests, Metro, a native build, a simulator or Maestro, or something broke (gotcha table at the end) |
 | [conventions.md](conventions.md) | You will write or review code, copy, docs or a commit; the non-negotiables in one page |
 | [task-briefs.md](task-briefs.md) | You are delegating: copy a brief, fill the blanks |
+| [handoff.md](handoff.md) | You are starting fresh (new session or after `/clear`): what was in flight and what comes next |
 
 ## Ground rules for anyone touching this repo
 
