@@ -60,6 +60,14 @@ name: Insights - history, charts, accuracy, missed-log prompt, cycle detail
     direction: UP
 - tapOn:
     id: cycle-detail-link
+# on Android a tap that lands while the list is still settling after the confirm above is dropped: tap again
+- runFlow:
+    when:
+      notVisible:
+        id: screen-cycle
+    commands:
+      - tapOn:
+          id: cycle-detail-link
 - extendedWaitUntil:
     visible:
       id: screen-cycle

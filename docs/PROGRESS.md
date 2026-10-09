@@ -6,7 +6,7 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 
 - Controller/operator identity, privacy contact and email in `docs/privacy-policy.md`, `docs/consumer-health-data-policy.md`, `docs/dpia.md` (marked TBD (human)); legal review of all three drafts before publication.
 - Run the VoiceOver / TalkBack script in `docs/accessibility.md` on a real device and record the result.
-- Android: app lock through the device-credential prompt and Android local reminders cannot be exercised in Expo Go on the emulator (P3-1, P3-1b).
+- Android: app lock through the device-credential prompt is still untested (setting a PIN locks the emulator itself); Android reminders pass on the dev client (P3-1b).
 - Legal review of the three policy drafts and a clinician / regulatory read of `copy/*.json` and the fixtures before any public release (no reviewer exists; defaults are in docs/DECISIONS.md).
 - Brand (D-042, D-045): check that the horned mark and the splash taglines (`app.taglines`) do not infringe a third party's trademark ("Blood God" and "Lord of Rage" echo Games Workshop Warhammer phrasing) before any store listing; also confirm the taglines suit the store's health-category review.
 - Splash (D-045): run `.maestro/splash.yaml` on the Android emulator once the Android dev client is rebuilt; this session verified iOS only.
@@ -55,3 +55,5 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - Brand: horned mark, brand red #B8324A, splash with rotating taglines (D-042); splash redesign with the Cinzel wordmark, vignette and bottom tagline from the owner's mock-ups (D-045).
 - P3-2 SQLCipher at rest with a device-bound Secure Store key; plain database migrated in place; at-rest check in the suite (D-043).
 - P3-3 Liquid Glass quick-log pill with Reduce Transparency and pre-iOS 26 fallbacks; tab bar already system glass (D-044).
+- P3-1 (Android) and P3-1b: full Maestro suite green on the Android dev client (API 35 emulator), including Android reminders and the SQLCipher at-rest check; onboarding keyboard fix for edge-to-edge (D-041).
+- P3-4 Material 3 Expressive: native Compose floating toolbar through @expo/ui (D-046); shape morph on press is a recorded gap.

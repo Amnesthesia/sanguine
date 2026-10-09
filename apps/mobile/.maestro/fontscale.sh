@@ -12,4 +12,4 @@ else
   adb shell settings put system font_scale 1.5
   trap 'adb shell settings put system font_scale 1.0' EXIT
 fi
-ITEM=P2-14 .maestro/run.sh "$platform" fontscale.yaml
+ITEM="${ITEM:-P2-14}" .maestro/run.sh "$platform" fontscale.yaml

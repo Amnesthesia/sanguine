@@ -81,8 +81,9 @@ export function OnboardingFlow() {
   const dateLabel = a.lifeState === 'postHormonal' ? 'onboarding.s4.whenStopped' : a.lifeState === 'postpartum' ? 'onboarding.s4.whenBirth' : 'onboarding.s4.whenStarted';
   const needsDate = a.lifeState === 'postHormonal' || a.lifeState === 'pregnant' || a.lifeState === 'postpartum';
 
+  // padding on both platforms: the dev client is edge-to-edge on Android, where adjustResize no longer lifts the Continue button above the keyboard (P3-1)
   return (
-    <KeyboardAvoidingView testID="screen-onboarding" behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: t.screenBg, paddingTop: insets.top + 12 }}>
+    <KeyboardAvoidingView testID="screen-onboarding" behavior="padding" style={{ flex: 1, backgroundColor: t.screenBg, paddingTop: insets.top + 12 }}>
       <ProgressDots step={step} total={TOTAL_STEPS} />
       <ScrollView contentContainerStyle={{ padding: 24, gap: 16, flexGrow: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {step === 0 && (<>
