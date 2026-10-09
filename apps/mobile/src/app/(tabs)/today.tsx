@@ -16,7 +16,7 @@ import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
 export default function TodayScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const msg = useMsg();
   const { prediction, history, settings, today, prefs, profile, db, version } = useApp();
   const muteFlag = useApp((s) => s.muteFlag);
@@ -70,8 +70,8 @@ export default function TodayScreen() {
       ) : null}
       {note.length ? (
         <Card testID="symptom-note" accessibilityRole="summary">
-          {/* ponytail: label lower-cased for mid-sentence use; a language where nouns keep capitals needs inline label keys */}
-          {note.map((l) => <Text key={l.code} variant="bodySmall" testID={`symptom-note-${l.code}`}>{t('today.symptomNote.line', { hits: l.hits, cycles: l.cycles, name: t(`symptom.${l.code}`).toLocaleLowerCase('en-AU') })}</Text>)}
+          {/* labels are lower-cased mid-sentence in English only; other languages keep their own casing (German nouns, Turkish I) */}
+          {note.map((l) => <Text key={l.code} variant="bodySmall" testID={`symptom-note-${l.code}`}>{t('today.symptomNote.line', { hits: l.hits, cycles: l.cycles, name: i18n.language.startsWith('en') ? t(`symptom.${l.code}`).toLocaleLowerCase(i18n.language) : t(`symptom.${l.code}`) })}</Text>)}
           <Text variant="caption" color="textSecondary">{t('today.symptomNote.caption')}</Text>
         </Card>
       ) : null}

@@ -77,7 +77,7 @@ describe('symptomNote', () => {
   it('allow-list holds only catalogued, non-fertility codes (teen mode needs no extra gate)', () => {
     const known = new Set(symptomCatalog.symptoms.map((s) => s.code));
     for (const c of NOTE_SYMPTOMS) expect(known.has(c)).toBe(true);
-    for (const c of ['midcycle_spotting', 'mid_cycle_pain', 'low_libido', 'high_libido']) expect(NOTE_SYMPTOMS.has(c)).toBe(false);
+    for (const c of ['midcycle_spotting', 'mid_cycle_pain', 'low_libido', 'high_libido', 'breast_tenderness', 'pelvic_pain']) expect(NOTE_SYMPTOMS.has(c)).toBe(false);
   });
 });
 

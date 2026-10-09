@@ -3,9 +3,9 @@
 import { addDays, type CycleRecord, type DailyLog, type ISODate } from '@sanguine/engine';
 import type { TodayModel } from './todayModel';
 
-/** Physical, non-intimate codes only (D-087): no mood, libido, bowel, bleeding or mid-cycle codes on a screen others may glance at. */
+/** Physical, non-intimate codes only (D-087): no mood, libido, bowel, breast, pelvic, bleeding or mid-cycle codes on a screen others may glance at. */
 export const NOTE_SYMPTOMS: ReadonlySet<string> = new Set([
-  'cramps', 'headache', 'bloating', 'breast_tenderness', 'acne', 'fatigue', 'back_pain', 'joint_pain', 'pelvic_pain',
+  'cramps', 'headache', 'bloating', 'acne', 'fatigue', 'back_pain', 'joint_pain',
   'nausea', 'dizziness', 'insomnia', 'food_cravings', 'appetite_increase', 'oily_skin', 'puffiness', 'smell_sensitivity',
 ]);
 const LOOKBACK = 6; // closed cycles looked at
@@ -23,7 +23,7 @@ export function symptomNote(cycles: CycleRecord[], logs: DailyLog[], dayOfCycle:
   if (dayOfCycle === undefined) return [];
   const past = cycles
     .filter((c) => c.quality === 'valid' && c.length !== undefined && c.nextStart !== undefined)
-    .sort((a, b) => (a.start < b.start ? -1 : 1))
+    .sort((a, b) => a.start.localeCompare(b.start))
     .slice(-LOOKBACK);
   if (past.length < MIN_CYCLES) return [];
   const byDay = new Map<ISODate, string[]>();
@@ -40,7 +40,7 @@ export function symptomNote(cycles: CycleRecord[], logs: DailyLog[], dayOfCycle:
   }
   return [...hits]
     .filter(([, h]) => h >= MIN_HITS && h / past.length >= MIN_SHARE)
-    .sort(([a, x], [b, y]) => y - x || (a < b ? -1 : 1))
+    .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
     .slice(0, MAX_LINES)
     .map(([code, h]) => ({ code, hits: h, cycles: past.length }));
 }
