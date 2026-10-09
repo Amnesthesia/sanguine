@@ -450,6 +450,7 @@
       "deleteConfirmAction": "Delete all my data",
       "deleted": "Everything was deleted.",
       "exportDone": "Export ready.",
+      "exportFailed": "The export could not be made.",
       "importDone": "Imported {n} records.",
       "importSkipped": "Not everything could be imported:",
       "importMore": "and {n} more.",

@@ -16,13 +16,13 @@ export default function PrivacyScreen() {
   const router = useRouter();
   const { db, store, prefs, updatePrefs, refresh, deleteEverything } = useApp();
   const [msg, setMsg] = useState<string | undefined>();
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<'export' | 'import' | undefined>();
 
-  async function run(fn: () => Promise<string | undefined>) {
+  async function run(what: 'export' | 'import', fn: () => Promise<string | undefined>) {
     if (busy) return;
-    setBusy(true);
+    setBusy(what);
     setMsg(undefined);
-    try { setMsg(await fn()); } catch (e) { setMsg(`${t('settings.privacy.importFailed')} ${(e as Error).message}`); } finally { setBusy(false); }
+    try { setMsg(await fn()); } catch (e) { setMsg(`${t(what === 'export' ? 'settings.privacy.exportFailed' : 'settings.privacy.importFailed')} ${(e as Error).message}`); } finally { setBusy(undefined); }
   }
   // Saved first: on Android the switch closes the app, so nothing after it is guaranteed to run. Reverted if it fails.
   async function switchIcon(on: boolean) {
@@ -37,8 +37,8 @@ export default function PrivacyScreen() {
     <SubScreen testID="screen-privacy" title={t('settings.privacy.title')}>
       <Card><Text>{t('settings.privacy.intro')}</Text></Card>
       <Group>
-        <SettingsRow testID="privacy-export" title={t('settings.privacy.export')} description={busy ? t('settings.privacy.exportBusy') : t('settings.privacy.exportDesc')} onPress={() => db && store && void run(async () => { await shareExport(db, store); return t('settings.privacy.exportDone'); })} />
-        <SettingsRow testID="privacy-import" title={t('settings.privacy.import')} description={t('settings.privacy.importDesc')} onPress={() => db && store && void run(async () => {
+        <SettingsRow testID="privacy-export" title={t('settings.privacy.export')} description={busy === 'export' ? t('settings.privacy.exportBusy') : t('settings.privacy.exportDesc')} onPress={() => db && store && void run('export', async () => { await shareExport(db, store); return t('settings.privacy.exportDone'); })} />
+        <SettingsRow testID="privacy-import" title={t('settings.privacy.import')} description={t('settings.privacy.importDesc')} onPress={() => db && store && void run('import', async () => {
           const r = await pickAndImport(db, store);
           if (r.kind === 'cancelled') return undefined;
           await refresh();
