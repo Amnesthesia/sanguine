@@ -1,0 +1,113 @@
+appId: ${APP_ID}
+name: Discretion - discreet icon, screen protection, widget details (P3-5, P3-6)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-privacy
+- scrollUntilVisible:
+    element:
+      id: privacy-protect
+- assertVisible: "Hide the app in screenshots and recent apps"
+- takeScreenshot: privacy-discretion
+# discreet icon on. iOS confirms with a system alert; Android closes the app when the launcher alias changes.
+- tapOn:
+    id: privacy-icon
+- extendedWaitUntil:
+    visible: "OK"
+    timeout: 8000
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: icon-on
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      # reopen from the launcher; the switch must have been saved before the app closed
+      - launchApp:
+          appId: ${APP_ID}
+          stopApp: false
+      - extendedWaitUntil:
+          visible:
+            id: screen-today
+          timeout: 90000
+      - extendedWaitUntil:
+          notVisible:
+            id: brand-splash
+          timeout: 15000
+      - tapOn: Settings
+      - tapOn:
+          id: settings-privacy
+      - scrollUntilVisible:
+          element:
+            id: privacy-icon
+- assertVisible:
+    id: privacy-icon
+    checked: true
+- takeScreenshot: icon-on-saved
+# and off again
+- tapOn:
+    id: privacy-icon
+- extendedWaitUntil:
+    visible: "OK"
+    timeout: 8000
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - launchApp:
+          appId: ${APP_ID}
+          stopApp: false
+      - extendedWaitUntil:
+          visible:
+            id: screen-today
+          timeout: 90000
+      - extendedWaitUntil:
+          notVisible:
+            id: brand-splash
+          timeout: 15000
+      - tapOn: Settings
+      - tapOn:
+          id: settings-privacy
+      - scrollUntilVisible:
+          element:
+            id: privacy-icon
+- assertVisible:
+    id: privacy-icon
+    checked: false
+# widget details (iOS only; Android shows the "iPhone for now" line)
+- tapOn:
+    id: back
+- tapOn:
+    id: settings-notifications
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          id: widget-details
+      - assertVisible: "Show details in widgets"
+      - takeScreenshot: widget-details-on
+      - tapOn:
+          id: widget-details
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible: "Widgets are available on iPhone for now."
+      - takeScreenshot: widgets-android

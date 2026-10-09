@@ -57,3 +57,5 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - P3-3 Liquid Glass quick-log pill with Reduce Transparency and pre-iOS 26 fallbacks; tab bar already system glass (D-044).
 - P3-1 (Android) and P3-1b: full Maestro suite green on the Android dev client (API 35 emulator), including Android reminders and the SQLCipher at-rest check; onboarding keyboard fix for edge-to-edge (D-041).
 - P3-4 Material 3 Expressive: native Compose floating toolbar through @expo/ui (D-046); shape morph on press is a recorded gap.
+- P3-5 iOS widget (small, medium, lock screen) from an App Group snapshot, discreet by default (D-047). P3-6 discreet "Notes" icon and screen protection (D-048); Android Glance widget deferred (P3-5b).
+- Needs human: confirm on a phone that screen protection blanks screenshots and the recent-apps picture (the simulators bypass it).

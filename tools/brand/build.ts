@@ -110,6 +110,17 @@ export function glyphGroup(box: number): string {
 const vignette = `<defs><radialGradient id="v" cx="50%" cy="35%" r="75%"><stop offset="0.6" stop-color="${WINE}"/><stop offset="1" stop-color="${WINE_EDGE}"/></radialGradient></defs>`;
 const svg1024 = (inner: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">${inner}</svg>`;
 
+/** Discreet alternate icon "Notes" (PLAN.md §8.8, P3-6): a white leaf on neutral grey #6B6165, no brand colour. */
+export const NOTES_GREY = '#6B6165';
+export function leafGroup(box: number): string {
+  // leaf on a 1024 canvas: a pointed blade with a midrib cut back to the field colour
+  const s = box / 720;
+  const tx = 512 - 512 * s, ty = 512 - 512 * s;
+  const blade = 'M512 152 C296 300 236 620 512 872 C788 620 728 300 512 152Z';
+  const rib = 'M512 212 C500 420 500 640 512 836';
+  return `<g transform="translate(${tx} ${ty}) scale(${s}) rotate(-22 512 512)"><path d="${blade}" fill="#FFFFFF"/><path d="${rib}" fill="none" stroke="${NOTES_GREY}" stroke-width="26" stroke-linecap="round"/></g>`;
+}
+
 export function build(): void {
   mkdirSync(out, { recursive: true });
   const wm = wordmarkSvg();
@@ -123,6 +134,10 @@ export function build(): void {
   writeFileSync(join(out, 'android-icon-foreground.png'), png(svg1024(adaptive)));
   writeFileSync(join(out, 'android-icon-monochrome.png'), png(svg1024(adaptive)));
   writeFileSync(join(out, 'android-icon-background.png'), png(svg1024(`<rect width="1024" height="1024" fill="${WINE}"/>`)));
+  // alternate icon "Notes" (P3-6)
+  writeFileSync(join(out, 'notes-icon.png'), png(svg1024(`<rect width="1024" height="1024" fill="${NOTES_GREY}"/>${leafGroup(0.62 * 1024)}`)));
+  writeFileSync(join(out, 'notes-android-foreground.png'), png(svg1024(leafGroup(0.44 * 1024))));
+  writeFileSync(join(out, 'notes-android-background.png'), png(svg1024(`<rect width="1024" height="1024" fill="${NOTES_GREY}"/>`)));
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) build();

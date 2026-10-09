@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { shareExport, pickAndImport } from '@/services/exportImport';
 import { deviceHasLock } from '@/services/lockAuth';
+import { discreetIconSupported, setDiscreetIcon } from '@/services/discreet';
 import { useApp } from '@/state/app';
 import { Card } from '@/ui/Card';
 import { Group, SettingsRow, SwitchRow } from '@/ui/SettingsRow';
@@ -23,6 +24,11 @@ export default function PrivacyScreen() {
     setMsg(undefined);
     try { setMsg(await fn()); } catch (e) { setMsg(`${t('settings.privacy.importFailed')} ${(e as Error).message}`); } finally { setBusy(false); }
   }
+  // Saved first: on Android the switch closes the app, so nothing after it is guaranteed to run. Reverted if it fails.
+  async function switchIcon(on: boolean) {
+    await updatePrefs({ discreetIcon: on });
+    if ((await setDiscreetIcon(on).catch(() => !on)) !== on) await updatePrefs({ discreetIcon: !on });
+  }
   const confirmDelete = () => Alert.alert(t('settings.privacy.deleteConfirmTitle'), t('settings.privacy.deleteConfirmBody'), [
     { text: t('common.cancel'), style: 'cancel' },
     { text: t('settings.privacy.deleteConfirmAction'), style: 'destructive', onPress: () => void deleteEverything().then(() => router.replace('/')) },
@@ -40,7 +46,8 @@ export default function PrivacyScreen() {
         })} />
         <SettingsRow testID="privacy-backup" title={t('settings.privacy.backup')} description={t('settings.privacy.backupDesc')} onPress={() => router.push('/settings/backup' as never)} />
         <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setMsg(t('settings.privacy.appLockOnly')); return; } setMsg(undefined); await updatePrefs({ appLock: v }); })()} />
-        <SwitchRow testID="privacy-icon" title={t('settings.privacy.discreetIcon')} description={t('settings.privacy.discreetSoon')} value={false} onChange={() => {}} disabled />
+        <SwitchRow testID="privacy-icon" title={t('settings.privacy.discreetIcon')} description={discreetIconSupported() ? t(Platform.OS === 'android' ? 'settings.privacy.discreetIconDescAndroid' : 'settings.privacy.discreetIconDesc') : t('settings.privacy.discreetIconUnavailable')} disabled={!discreetIconSupported()} value={prefs.discreetIcon} onChange={(v) => void switchIcon(v)} />
+        <SwitchRow testID="privacy-protect" title={t('settings.privacy.screenProtection')} description={t('settings.privacy.screenProtectionDesc')} value={prefs.screenProtection} onChange={(v) => void updatePrefs({ screenProtection: v })} />
         <SettingsRow testID="privacy-delete" title={t('settings.privacy.deleteAll')} destructive onPress={confirmDelete} last />
       </Group>
       {msg ? <Text variant="bodySmall" testID="privacy-message" accessibilityLiveRegion="polite">{msg}</Text> : null}

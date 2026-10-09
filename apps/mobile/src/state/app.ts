@@ -14,6 +14,8 @@ import { planReminder } from '@/features/notifications/plan';
 import { appData, startFreshDatabase } from '@/services/appData';
 import { KeyMismatchError } from '@/data/cipher';
 import { syncReminder } from '@/services/notifications';
+import { displayName, setDiscreetIcon } from '@/services/discreet';
+import { syncWidget, widgetSnapshot } from '@/services/widgets';
 import { todayLocal } from '@/services/clock';
 
 interface AppState {
@@ -35,6 +37,7 @@ interface AppState {
   /** Date the next local reminder will fire, if one is scheduled. */
   nextReminder: string | undefined;
   syncReminders: () => Promise<void>;
+  syncWidgets: () => Promise<void>;
   init: () => Promise<void>;
   /** Deletes an unreadable database and starts empty; only after the user confirms. */
   startFresh: () => Promise<void>;
@@ -84,6 +87,17 @@ export const useApp = create<AppState>((set, get) => ({
     await recordRaised(db, prediction.flags, flagState);
     set((s) => ({ today, history, settings: inputs.settings, profile, prediction, version: s.version + 1 }));
     void get().syncReminders();
+    void get().syncWidgets();
+  },
+
+  /** Hands the widget today's snapshot: the ring and the day, plus the headline only if the user opted in (§8.8). */
+  async syncWidgets() {
+    const { prediction, history, prefs, today } = get();
+    try {
+      await syncWidget(widgetSnapshot({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, descriptive: prefs.widgetDetails, appName: displayName(prefs.discreetIcon) }));
+    } catch {
+      // a widget that cannot update must never break the app
+    }
   },
 
   async syncReminders() {
@@ -91,7 +105,7 @@ export const useApp = create<AppState>((set, get) => ({
     const hour = new Date().getHours();
     try {
       const plan = planReminder(prediction, prefs.notifications.period, prefs.notifications.descriptive, today, hour);
-      set({ nextReminder: await syncReminder(plan) });
+      set({ nextReminder: await syncReminder(plan, prefs.discreetIcon) });
     } catch {
       set({ nextReminder: undefined });
     }
@@ -103,7 +117,8 @@ export const useApp = create<AppState>((set, get) => ({
     const next = { ...prefs, ...patch };
     await savePrefs(db, next);
     set({ prefs: next });
-    if (patch.notifications) void get().syncReminders();
+    if (patch.notifications || patch.discreetIcon !== undefined) void get().syncReminders();
+    if (patch.widgetDetails !== undefined || patch.discreetIcon !== undefined) void get().syncWidgets();
   },
 
   async muteFlag(code) {
@@ -126,6 +141,8 @@ export const useApp = create<AppState>((set, get) => ({
     await wipeAll(db);
     await Promise.all([deleteDeviceSecret(), deleteNoteKey()]);
     removeAllTempFiles();
+    // the widget and the home-screen icon hold nothing of the deleted data: reset the icon and blank the widget
+    void setDiscreetIcon(false).catch(() => {});
     set({ prefs: DEFAULT_PREFS, profile: {}, onboarded: false, history: undefined, settings: undefined, prediction: undefined, version: get().version + 1 });
     await get().refresh();
   },

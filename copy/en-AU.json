@@ -1,6 +1,7 @@
 {
   "app": {
     "name": "Sanguine",
+    "discreetName": "Notes",
     "taglines": ["Blood demands blood.", "The River of Blood never empties; it only crests.", "By blood bound, by brass crowned.", "Offerings of bone, rivers of red.", "The earth drinks deep, yet the Blood God thirsts.", "An ocean of red for the Lord of Rage."]
   },
   "tabs": {
@@ -421,7 +422,11 @@
       "appLock": "App lock",
       "appLockDesc": "Use Face ID, fingerprint or your passcode to open Sanguine.",
       "discreetIcon": "Discreet app icon",
-      "discreetIconDesc": "Shows the app as Notes. Available in a later update.",
+      "discreetIconDesc": "Shows a leaf icon on your home screen. Reminders and widgets say Notes.",
+      "discreetIconDescAndroid": "Shows the app as Notes, with a leaf icon, on your home screen. The app closes when this changes; open it again from the home screen.",
+      "discreetIconUnavailable": "Not available on this phone.",
+      "screenProtection": "Hide the app in screenshots and recent apps",
+      "screenProtectionDesc": "On: screenshots and the recent-apps picture are blocked. The recovery code screen always blocks them.",
       "deleteAll": "Delete everything",
       "deleteConfirmTitle": "Delete everything?",
       "deleteConfirmBody": "This removes every log, setting and backup key from this phone. It cannot be undone.",
@@ -466,7 +471,9 @@
       "defaultText": "Sanguine: a reminder",
       "descriptiveText": "Sanguine: Period likely in {lo}–{hi} days",
       "widgets": "Widgets",
-      "widgetsDesc": "Available in a later update.",
+      "widgetsDesc": "Widgets are available on iPhone for now.",
+      "widgetDetails": "Show details in widgets",
+      "widgetDetailsDesc": "Off: widgets show only the day of your cycle.",
       "next": "Next reminder: {date}",
       "none": "No reminder is scheduled yet. Log a period to get estimates.",
       "denied": "Notifications are turned off for Sanguine in your phone's settings.",

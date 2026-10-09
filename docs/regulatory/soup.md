@@ -22,6 +22,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | eslint | 9.39.5 | ^9.0.0 | dev/build only | apps/mobile |
 | eslint-config-expo | 57.0.2 | ~57.0.2 | dev/build only | apps/mobile |
 | expo | 57.0.27 | ~57.0.27 | ships in app | apps/mobile |
+| expo-alternate-app-icons | 8.0.0 | ^8.0.0 | ships in app | apps/mobile |
 | expo-blur | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-constants | 57.0.21 | ~57.0.21 | ships in app | apps/mobile |
 | expo-crypto | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
@@ -38,6 +39,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-localization | 57.0.2 | ~57.0.2 | ships in app | apps/mobile |
 | expo-notifications | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
 | expo-router | 57.0.25 | ~57.0.25 | ships in app | apps/mobile |
+| expo-screen-capture | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
 | expo-secure-store | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
 | expo-sharing | 57.0.22 | ~57.0.22 | ships in app | apps/mobile |
 | expo-splash-screen | 57.0.9 | ~57.0.9 | ships in app | apps/mobile |
@@ -46,6 +48,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-symbols | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-system-ui | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
 | expo-web-browser | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
+| expo-widgets | 57.0.23 | ~57.0.23 | ships in app | apps/mobile |
 | fast-check | 4.10.2 | ^4.0.0 | dev/build only | root |
 | fflate | 0.8.3 | ^0.8.3 | ships in app | apps/mobile |
 | i18next | 26.4.2 | ^26.4.2 | ships in app | apps/mobile |

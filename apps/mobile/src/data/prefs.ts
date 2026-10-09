@@ -17,6 +17,12 @@ export interface Prefs {
   teenUnlockEstimate: boolean;
   notifications: { period: boolean; descriptive: boolean };
   appLock: boolean;
+  /** Widgets show the headline text only when on (PLAN.md §8.8): off = the ring and the day count. */
+  widgetDetails: boolean;
+  /** The home-screen icon and name are "Notes" (PLAN.md §8.8). */
+  discreetIcon: boolean;
+  /** Screenshots and the recent-apps thumbnail are blocked (PLAN.md §8.8). On by default. */
+  screenProtection: boolean;
 }
 
 export const DEFAULT_SYMPTOMS: string[] = symptomCatalog.symptoms.filter((s) => s.defaultVisible).map((s) => s.code);
@@ -31,6 +37,9 @@ export const DEFAULT_PREFS: Prefs = {
   teenUnlockEstimate: false,
   notifications: { period: false, descriptive: false },
   appLock: true,
+  widgetDetails: false,
+  discreetIcon: false,
+  screenProtection: true,
 };
 
 export async function loadPrefs(db: Database): Promise<Prefs> {

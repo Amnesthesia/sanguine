@@ -2,6 +2,7 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import i18n from '@/i18n';
+import { displayName } from './discreet';
 import type { ReminderPlan } from '@/features/notifications/plan';
 
 const ID = 'sanguine-period';
@@ -32,7 +33,7 @@ export async function ensurePermission(): Promise<boolean> {
 }
 
 /** Replaces any scheduled reminder with `plan` (or none). Returns the fire date, or undefined. */
-export async function syncReminder(plan: ReminderPlan | undefined): Promise<string | undefined> {
+export async function syncReminder(plan: ReminderPlan | undefined, discreet = false): Promise<string | undefined> {
   if (!remindersSupported) return undefined;
   const Notifications = lib();
   await Notifications.cancelScheduledNotificationAsync(ID).catch(() => {});
@@ -44,7 +45,7 @@ export async function syncReminder(plan: ReminderPlan | undefined): Promise<stri
   await Notifications.scheduleNotificationAsync({
     identifier: ID,
     content: {
-      title: i18n.t('notifications.defaultTitle'),
+      title: displayName(discreet),
       // discreet by default: no health words on the lock screen unless the user turned the details on (§8.8)
       body: plan.descriptive ? i18n.t('notifications.periodBody', { lo: plan.lo, hi: plan.hi }) : i18n.t('notifications.defaultBody'),
     },

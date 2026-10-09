@@ -42,7 +42,52 @@
       "expo-secure-store",
       "expo-sharing",
       "expo-localization",
-      "./plugins/withDevMenuMetaData"
+      "./plugins/withDevMenuMetaData",
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "app.sanguine.mobile.widgets",
+          "groupIdentifier": "group.app.sanguine.mobile",
+          "enableAndroid": false,
+          "widgets": [
+            {
+              "name": "TodayWidget",
+              "displayName": "Sanguine",
+              "description": "The day of your cycle.",
+              "supportedFamilies": [
+                "systemSmall",
+                "systemMedium",
+                "accessoryCircular",
+                "accessoryRectangular"
+              ],
+              "contentMarginsDisabled": false,
+              "ios": {
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium",
+                  "accessoryCircular",
+                  "accessoryRectangular"
+                ],
+                "contentMarginsDisabled": false
+              }
+            }
+          ]
+        }
+      ],
+      "./plugins/withDiscreetLabel",
+      [
+        "expo-alternate-app-icons",
+        [
+          {
+            "name": "Notes",
+            "ios": "./assets/brand/notes-icon.png",
+            "android": {
+              "foregroundImage": "./assets/brand/notes-android-foreground.png",
+              "backgroundColor": "#6B6165"
+            }
+          }
+        ]
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

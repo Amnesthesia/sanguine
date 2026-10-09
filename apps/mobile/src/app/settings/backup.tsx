@@ -8,6 +8,7 @@ import { deviceClock, todayLocal } from '@/services/clock';
 import { getDeviceSecret, getOrCreateDeviceSecret } from '@/services/secrets';
 import { pickAndRestore } from '@/services/backup';
 import { shareFile } from '@/services/shareFile';
+import { NoCapture } from '@/features/lock/ScreenProtection';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
@@ -66,6 +67,7 @@ export default function BackupScreen() {
   if (pending) {
     return (
       <SubScreen testID="screen-recovery" title={t('settings.privacy.recoveryCode.title')}>
+        <NoCapture />
         <Card testID="recovery-words">
           <Text variant="heading">{t('settings.privacy.recoveryCode.words')}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>

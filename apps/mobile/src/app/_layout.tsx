@@ -10,6 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/i18n';
 import { useApp } from '@/state/app';
 import { LockGate } from '@/features/lock/LockGate';
+import { ScreenProtection } from '@/features/lock/ScreenProtection';
 import { BrandSplash } from '@/features/splash/BrandSplash';
 import { ThemeProvider, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -96,6 +97,7 @@ export default function RootLayout() {
         <LockGate>
           <Shell />
         </LockGate>
+        <ScreenProtection />
         {!splashShown && <BrandSplash onDone={splashDone} />}
       </ThemeProvider>
     </SafeAreaProvider>

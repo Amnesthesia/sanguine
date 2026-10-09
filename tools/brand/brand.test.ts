@@ -25,6 +25,12 @@ describe('brand config (PLAN.md §9.9)', () => {
       expect(statSync(f).size, r).toBeGreaterThan(1000);
     }
   });
+  it('the discreet "Notes" icon exists on a neutral grey field with no brand colour (P3-6)', () => {
+    for (const f of ['notes-icon.png', 'notes-android-foreground.png', 'notes-android-background.png']) expect(statSync(join(mobile, 'assets/brand', f)).size).toBeGreaterThan(500);
+    const src = readFileSync(join(__dirname, 'build.ts'), 'utf8');
+    expect(src).toMatch(/NOTES_GREY = '#6B6165'/);
+    expect(src.slice(src.indexOf("'notes-icon.png'"), src.indexOf("'notes-android-background.png'"))).not.toMatch(/WINE/);
+  });
   it('never uses the Fana Studio font', () => {
     const src = readFileSync(join(__dirname, 'build.ts'), 'utf8');
     expect(src).not.toMatch(/fana/i);

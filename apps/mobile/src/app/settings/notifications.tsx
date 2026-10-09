@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ensurePermission, remindersSupported } from '@/services/notifications';
+import { widgetsSupported } from '@/services/widgets';
 import { useApp } from '@/state/app';
 import { Card } from '@/ui/Card';
 import { Group, SettingsRow, SwitchRow } from '@/ui/SettingsRow';
@@ -31,7 +32,11 @@ export default function NotificationsScreen() {
       {prefs.notifications.period ? <Text variant="bodySmall" color="textSecondary" testID="notif-next">{nextReminder ? t('settings.notifications.next', { date: formatDay(nextReminder) }) : t('settings.notifications.none')}</Text> : null}
       <Text variant="heading" accessibilityRole="header">{t('settings.notifications.preview')}</Text>
       <Card testID="notif-preview"><Text>{prefs.notifications.descriptive ? t('settings.notifications.descriptiveText', { lo, hi }) : t('settings.notifications.defaultText')}</Text></Card>
-      <Group title={t('settings.notifications.widgets')}><SettingsRow title={t('settings.notifications.widgetsDesc')} disabled last /></Group>
+      <Group title={t('settings.notifications.widgets')}>
+        {widgetsSupported
+          ? <SwitchRow testID="widget-details" title={t('settings.notifications.widgetDetails')} description={t('settings.notifications.widgetDetailsDesc')} value={prefs.widgetDetails} onChange={(v) => void updatePrefs({ widgetDetails: v })} last />
+          : <SettingsRow title={t('settings.notifications.widgetsDesc')} disabled last />}
+      </Group>
     </SubScreen>
   );
 }

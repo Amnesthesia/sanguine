@@ -55,8 +55,9 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 - [x] P3-2 SQLCipher: `useSQLCipher: true`, key generated on first launch into expo-secure-store, `PRAGMA key` on open; migration of any existing plain DB; test that the file is unreadable without the key. (§6.1)
 - [x] P3-3 Liquid Glass tab bar and quick-log pill with expo-glass-effect; Reduce Transparency and pre-iOS 26 fallbacks. (§9.1)
 - [x] P3-4 Material 3 Expressive theme via @expo/ui jetpack-compose with `MotionScheme.expressive()`; shape-morphing Period button; system animation-scale check. (§9.1)
-- [ ] P3-5 Widgets: iOS lock screen/home, Android Glance; discreet defaults. (§8.3)
-- [ ] P3-6 Alternate app icons (discreet "Notes"); screenshot protection. (§8.8, §9.9)
+- [x] P3-5 Widgets: iOS lock screen/home; discreet defaults. (§8.3) Android Glance moved to P3-5b.
+- [ ] P3-5b Android Glance widget when expo-widgets' Android renderer is more than a placeholder (D-047).
+- [x] P3-6 Alternate app icons (discreet "Notes"); screenshot protection. (§8.8, §9.9)
 - [ ] P3-7 Cloud backup upload: iCloud Drive container (entitlement) and Google Drive appDataFolder (expo-auth-session); restore E2E across two simulators. (§6.3)
 - [ ] P3-8 Final icon and splash assets built natively (Icon Composer layers, adaptive icon). (§9.9)
 
