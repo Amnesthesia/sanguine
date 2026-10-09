@@ -76,6 +76,7 @@
     "eas:init": "npx eas-cli init",
     "build:android:dev": "EAS_NO_VCS=1 npx eas-cli build --profile development --platform android",
     "build:android:preview": "EAS_NO_VCS=1 npx eas-cli build --profile preview --platform android",
+    "build:android:local": "scripts/build-android-local.sh",
     "build:android:production": "EAS_NO_VCS=1 npx eas-cli build --profile production --platform android",
     "build:ios:dev": "EAS_NO_VCS=1 npx eas-cli build --profile development --platform ios",
     "build:ios:preview": "EAS_NO_VCS=1 npx eas-cli build --profile preview --platform ios",

@@ -37,3 +37,6 @@ credentials.json
 google-services.json
 *.xlsx
 *.xls
+
+# local EAS build output
+apps/mobile/build/

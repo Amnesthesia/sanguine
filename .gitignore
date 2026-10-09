@@ -11,3 +11,6 @@ apps/mobile/android
 
 # personal data exports used to build importers: never commit
 NaturalCycles-*.xlsx
+
+# local EAS build output
+apps/mobile/build/
