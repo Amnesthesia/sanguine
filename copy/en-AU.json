@@ -77,12 +77,14 @@
         "postHormonal": "Recently stopped contraception",
         "pregnant": "Pregnant",
         "postpartum": "Recently gave birth",
+        "afterLoss": "After a pregnancy loss",
         "perimenopause": "Perimenopause",
         "irregular": "Irregular cycles"
       },
       "method": "Method",
       "whenStopped": "When did you stop?",
       "whenBirth": "When did you give birth?",
+      "whenLoss": "When did the pregnancy end?",
       "whenStarted": "Since when?"
     },
     "s5": {
@@ -150,6 +152,8 @@
     "newPeriod": "This will start a new period on {date}",
     "withdrawalBleed": "Withdrawal bleed",
     "otherBleed": "Other",
+    "afterPregnancyBleed": "Bleeding after pregnancy",
+    "periodBleed": "My period",
     "intensity": "Intensity {n} of 3",
     "temperature": "Temperature",
     "ovulationTest": "Ovulation test",
@@ -237,7 +241,8 @@
         "period": "",
         "withdrawal_bleed": " · withdrawal bleed",
         "intermenstrual": " · between periods",
-        "on_contraception": " · other bleeding"
+        "on_contraception": " · other bleeding",
+        "post_pregnancy": " · after pregnancy"
       },
       "symptom": "{name} {n}/3",
       "lh": "Ovulation test: {result}",
@@ -316,12 +321,18 @@
     },
     "quality": {
       "valid": "typical",
-      "suspect_skip": "possibly a missed log",
+      "suspect_skip": "unusually long",
       "suspect_short": "very short",
       "user_excluded": "excluded",
       "life_state": "paused period"
     },
     "missedLogPrompt": "Was there a period in between?",
+    "wasPregnant": "I was pregnant",
+    "pregnancyOutcome": "How did the pregnancy end?",
+    "outcome": {
+      "birth": "I gave birth",
+      "loss": "Pregnancy loss"
+    },
     "charts": {
       "cycleLength": "Cycle length",
       "temperature": "Temperature",
@@ -385,6 +396,7 @@
         "postHormonal": "Recently stopped contraception",
         "pregnant": "Pregnant",
         "postpartum": "Recently gave birth",
+        "afterLoss": "After a pregnancy loss",
         "perimenopause": "Perimenopause",
         "irregular": "Irregular cycles"
       },
@@ -398,6 +410,7 @@
         "patch": "Patch"
       },
       "breastfeeding": "Breastfeeding",
+      "pregnancyEnded": "If the pregnancy has ended, choose \"Recently gave birth\" or \"After a pregnancy loss\".",
       "effect": {
         "paused": "Estimates are paused while this is set. Your logs are kept.",
         "warmup": "Estimates use general starting ranges for your first three cycles.",

@@ -34,14 +34,18 @@ export function LogSheet() {
   const [summaries, setSummaries] = useState<Record<string, string>>({});
   const [startsHere, setStartsHere] = useState(false);
   const [bleedKind, setBleedKind] = useState<BleedKind>('withdrawal_bleed');
+  const [afterPregnancy, setAfterPregnancy] = useState(false); // D-053: within the post-pregnancy window, bleeding defaults to not a period
+  const [ppKind, setPpKind] = useState<'post_pregnancy' | 'period'>('post_pregnancy');
   const section = params.section;
   const quick = section === 'period' || section === 'symptoms';
   const hormonal = (settings?.lifeStates ?? []).some((s) => s.kind === 'hormonal_contraception' && s.since <= day && (!s.until || day <= s.until));
 
   const reload = useCallback(async () => {
     if (!db || !store) return;
-    const [s, evs, cyc] = await Promise.all([dayState(db, day), dayEvents(store, day), db.get('SELECT 1 AS x FROM cycle WHERE start_day = ?', [day])]);
+    const [s, evs, cyc, ctx] = await Promise.all([dayState(db, day), dayEvents(store, day), db.get('SELECT 1 AS x FROM cycle WHERE start_day = ?', [day]), periodContext(db, day)]);
     setState(s);
+    setAfterPregnancy(Boolean(ctx.afterPregnancy));
+    if (s.flowKind === 'period' || s.flowKind === 'post_pregnancy') setPpKind(s.flowKind);
     setStartsHere(Boolean(cyc));
     const sum: Record<string, string> = {};
     for (const e of evs) {
@@ -59,7 +63,7 @@ export function LogSheet() {
 
   async function onFlow(level: Exclude<FlowLevel, 'none'>) {
     if (!db || !store) return;
-    const kind = hormonal ? bleedKind : 'period';
+    const kind = hormonal ? bleedKind : afterPregnancy ? ppKind : 'period';
     if (state.flow === level) { await setFlow(store, day, 'none', { kind }); await saved(); return; }
     const ctx = await periodContext(db, day);
     const write = async (splitAt?: string) => {
@@ -104,9 +108,11 @@ export function LogSheet() {
       </View>
 
       <ScrollView style={{ flex: 1 }} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: insets.bottom + 32, gap: 16 }}>
-        {heading(hormonal ? 'log.bleeding' : 'log.flow')}
+        {heading(hormonal || afterPregnancy ? 'log.bleeding' : 'log.flow')}
         {hormonal ? (
           <Chips testIDPrefix="bleed-kind" value={bleedKind} onChange={setBleedKind} options={[{ value: 'withdrawal_bleed', label: tr('log.withdrawalBleed') }, { value: 'on_contraception', label: tr('log.otherBleed') }]} />
+        ) : afterPregnancy ? (
+          <Chips testIDPrefix="pp-kind" value={ppKind} onChange={setPpKind} options={[{ value: 'post_pregnancy', label: tr('log.afterPregnancyBleed') }, { value: 'period', label: tr('log.periodBleed') }]} />
         ) : null}
         <FlowSelector value={state.flow === 'none' ? null : state.flow} onChange={(l) => void onFlow(l)} />
         {startsHere && !hormonal && state.flow && state.flow !== 'none' && state.flow !== 'spotting' ? <Text variant="caption" color="textSecondary" testID="new-period-caption">{tr('log.newPeriod', { date: formatDay(day) })}</Text> : null}

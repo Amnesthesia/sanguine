@@ -55,6 +55,28 @@ name: Settings - appearance, tracking options, life state, backup recovery code,
 - tapOn: Today
 - assertVisible: "Estimates are paused while “Pregnant” is set."
 - takeScreenshot: today-paused
+# P3-12 (D-053): ending a pregnancy with a loss
+- tapOn: Settings
+- tapOn:
+    id: settings-life
+- assertVisible:
+    id: pregnancy-ended-hint
+- scrollUntilVisible:
+    element:
+      id: life-afterLoss
+- tapOn:
+    id: life-afterLoss
+- assertVisible: "Estimates use general starting ranges for your first three cycles."
+- scrollUntilVisible:
+    element:
+      id: life-apply
+- tapOn:
+    id: life-apply
+- assertVisible:
+    id: life-saved
+- takeScreenshot: lifestate-after-loss
+- tapOn:
+    id: back
 # about
 - tapOn: Settings
 - tapOn:

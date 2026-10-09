@@ -20,22 +20,32 @@ describe('migrations', () => {
   });
   it('records each version once and is idempotent', async () => {
     const first = await migrate(db, MIGRATIONS, () => '2026-10-10T00:00:00Z');
-    expect(first).toEqual({ applied: [1], current: 1 });
-    expect(await migrate(db)).toEqual({ applied: [], current: 1 });
-    expect(await db.all('SELECT * FROM schema_migration')).toEqual([{ version: 1, applied_at: '2026-10-10T00:00:00Z' }]);
+    expect(first).toEqual({ applied: MIGRATIONS.map((m) => m.version), current: MIGRATIONS.length });
+    expect(await migrate(db)).toEqual({ applied: [], current: MIGRATIONS.length });
+    expect(await db.all('SELECT * FROM schema_migration')).toEqual(MIGRATIONS.map((m) => ({ version: m.version, applied_at: '2026-10-10T00:00:00Z' })));
+  });
+  it('002 widens daily_log.flow_kind for post_pregnancy and keeps existing rows (P3-12)', async () => {
+    await migrate(db, MIGRATIONS.slice(0, 1));
+    await ev('e1');
+    await db.run("INSERT INTO daily_log (day, flow, flow_kind, updated_event) VALUES ('2026-10-09', 'medium', 'period', 'e1')");
+    expect(await migrate(db)).toMatchObject({ applied: [2] });
+    expect(await db.all('SELECT day, flow_kind FROM daily_log')).toEqual([{ day: '2026-10-09', flow_kind: 'period' }]);
+    await db.run("INSERT INTO daily_log (day, flow, flow_kind, updated_event) VALUES ('2026-10-10', 'heavy', 'post_pregnancy', 'e1')");
+    await expect(db.run("INSERT INTO daily_log (day, flow, flow_kind, updated_event) VALUES ('2026-10-11', 'heavy', 'nonsense', 'e1')")).rejects.toThrow(/CHECK/);
   });
   it('applies later migrations in order and only the pending ones', async () => {
     await migrate(db);
-    const two = [...MIGRATIONS, { version: 2, name: 'extra', sql: 'CREATE TABLE extra (x INTEGER);' }];
-    expect(await migrate(db, two)).toEqual({ applied: [2], current: 2 });
+    const next = MIGRATIONS.length + 1;
+    const more = [...MIGRATIONS, { version: next, name: 'extra', sql: 'CREATE TABLE extra (x INTEGER);' }];
+    expect(await migrate(db, more)).toEqual({ applied: [next], current: next });
     expect(await tables()).toContain('extra');
   });
   it('rolls a failing migration back completely and does not record it', async () => {
     await migrate(db);
-    const bad = [...MIGRATIONS, { version: 2, name: 'bad', sql: 'CREATE TABLE half (x INTEGER); CREATE TABLE half (y INTEGER);' }];
+    const bad = [...MIGRATIONS, { version: MIGRATIONS.length + 1, name: 'bad', sql: 'CREATE TABLE half (x INTEGER); CREATE TABLE half (y INTEGER);' }];
     await expect(migrate(db, bad)).rejects.toThrow();
     expect(await tables()).not.toContain('half');
-    expect((await db.all<{ version: number }>('SELECT version FROM schema_migration')).map((r) => r.version)).toEqual([1]);
+    expect((await db.all<{ version: number }>('SELECT version FROM schema_migration')).map((r) => r.version)).toEqual(MIGRATIONS.map((m) => m.version));
   });
   it('refuses a database that is newer than the app', async () => {
     await migrate(db);

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Switch, View } from 'react-native';
 import { LIFE_CHOICES, METHODS, type LifeChoice, type Method } from '@/features/onboarding/model';
-import { CHOICE_OF, changeLifeState, currentLifeStates, lifeStateHistory, type LifeStateRow } from '@/features/settings/lifeState';
+import { changeLifeState, choiceOf, currentLifeStates, lifeStateHistory, type LifeStateRow } from '@/features/settings/lifeState';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -15,7 +15,7 @@ import { OptionList } from '@/ui/OptionList';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
 
-const EFFECT: Record<LifeChoice, string | undefined> = { none: undefined, hormonal: 'paused', postHormonal: 'warmup', pregnant: 'paused', postpartum: 'warmup', perimenopause: 'wider', irregular: 'wider' };
+const EFFECT: Record<LifeChoice, string | undefined> = { none: undefined, hormonal: 'paused', postHormonal: 'warmup', pregnant: 'paused', postpartum: 'warmup', afterLoss: 'warmup', perimenopause: 'wider', irregular: 'wider' };
 
 export default function LifeStateScreen() {
   const { t: tr } = useTranslation();
@@ -27,13 +27,15 @@ export default function LifeStateScreen() {
   const [day, setDay] = useState(today);
   const [bf, setBf] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [pregnant, setPregnant] = useState(false);
 
   const load = async () => {
     if (!db) return;
     const r = await lifeStateHistory(db);
     setRows(r);
     const cur = currentLifeStates(r, today)[0];
-    setChoice(cur ? (CHOICE_OF[cur.kind] ?? 'none') : 'none');
+    setChoice(cur ? choiceOf(cur) : 'none');
+    setPregnant(cur?.kind === 'pregnant');
     if (cur) { setDay(cur.from_day); setMethod(((cur.detail.method as Method | undefined) ?? 'combined_pill')); setBf(Boolean(cur.detail.breastfeeding)); }
   };
   // biome-ignore lint/correctness/useExhaustiveDependencies: load once on open
@@ -51,6 +53,7 @@ export default function LifeStateScreen() {
   return (
     <SubScreen testID="screen-lifestate" title={tr('settings.lifeState.title')}>
       <OptionList testIDPrefix="life" value={choice} onChange={(c) => { setChoice(c); setSaved(false); }} options={LIFE_CHOICES.map((v) => ({ value: v, label: tr(`settings.lifeState.options.${v}`) }))} />
+      {pregnant ? <Text variant="bodySmall" color="textSecondary" testID="pregnancy-ended-hint">{tr('settings.lifeState.pregnancyEnded')}</Text> : null}
       {needsMethod ? <Chips testIDPrefix="method" value={method} onChange={setMethod} options={METHODS.map((m) => ({ value: m, label: tr(`settings.lifeState.methods.${m}`) }))} /> : null}
       {choice !== 'none' ? (<View style={{ gap: 8 }}>
         <Text variant="bodySmall" color="textSecondary">{tr('settings.lifeState.since', { date: formatDayYear(day) })}</Text>
@@ -68,7 +71,7 @@ export default function LifeStateScreen() {
         <Text variant="heading" accessibilityRole="header" style={{ marginTop: 8 }}>{tr('settings.lifeState.history')}</Text>
         {[...rows].reverse().map((r) => (
           <Card key={r.id}>
-            <Text>{tr(`settings.lifeState.options.${CHOICE_OF[r.kind] ?? 'none'}`)}</Text>
+            <Text>{tr(`settings.lifeState.options.${choiceOf(r)}`)}</Text>
             <Text variant="bodySmall" color="textSecondary">{`${formatDayYear(r.from_day)}${r.until_day ? ` – ${formatDayYear(r.until_day)}` : ''}`}</Text>
           </Card>
         ))}

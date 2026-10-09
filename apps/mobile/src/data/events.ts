@@ -3,7 +3,8 @@ import type { ISODate } from '@sanguine/engine';
 
 export type Provenance = 'manual' | 'imported' | 'sensor';
 export const FLOW_LEVELS = ['none', 'spotting', 'light', 'medium', 'heavy'] as const;
-export const FLOW_KINDS = ['period', 'withdrawal_bleed', 'intermenstrual', 'on_contraception'] as const;
+export const FLOW_KINDS = ['period', 'withdrawal_bleed', 'intermenstrual', 'on_contraception', 'post_pregnancy'] as const;
+export const PREGNANCY_OUTCOMES = ['birth', 'loss'] as const;
 export const BIOMARKER_TYPES = ['bbt', 'skin_temp', 'lh', 'mucus', 'cervix', 'preg_test', 'progesterone'] as const;
 export const LIFE_STATE_KINDS = ['hormonal_contraception', 'post_contraception', 'pregnant', 'postpartum', 'perimenopause', 'known_irregular'] as const;
 export type FlowLevel = (typeof FLOW_LEVELS)[number];
@@ -72,6 +73,8 @@ export function validateEvent(e: NewEvent): ISODate {
       return day();
     case 'life_state.end':
       if (!oneOf(LIFE_STATE_KINDS, p.kind)) fail(e.kind, 'kind');
+      // optional, so logs and exports from before P3-12 still validate
+      if (p.outcome !== undefined && (p.kind !== 'pregnant' || !oneOf(PREGNANCY_OUTCOMES, p.outcome))) fail(e.kind, 'outcome');
       return day();
     case 'cycle.exclude':
     case 'cycle.confirm_long':

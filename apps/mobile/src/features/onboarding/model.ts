@@ -7,8 +7,8 @@ import type { Profile } from '@/data/project';
 export const MIN_AGE = 13;
 export const TOTAL_STEPS = 5;
 
-export type LifeChoice = 'none' | 'hormonal' | 'postHormonal' | 'pregnant' | 'postpartum' | 'perimenopause' | 'irregular';
-export const LIFE_CHOICES: LifeChoice[] = ['none', 'hormonal', 'postHormonal', 'pregnant', 'postpartum', 'perimenopause', 'irregular'];
+export type LifeChoice = 'none' | 'hormonal' | 'postHormonal' | 'pregnant' | 'postpartum' | 'afterLoss' | 'perimenopause' | 'irregular';
+export const LIFE_CHOICES: LifeChoice[] = ['none', 'hormonal', 'postHormonal', 'pregnant', 'postpartum', 'afterLoss', 'perimenopause', 'irregular'];
 export const METHODS = ['combined_pill', 'pop', 'implant', 'injection', 'hormonal_iud', 'ring', 'patch'] as const;
 export type Method = (typeof METHODS)[number];
 
@@ -68,7 +68,8 @@ export function buildOnboardingWrites(a: Answers, today: ISODate): { profile: Pr
     case 'hormonal': set('hormonal_contraception', { method: a.method }, a.stateDate); break;
     case 'postHormonal': set('post_contraception', { method: a.method }, a.stateDate); break;
     case 'pregnant': set('pregnant', {}, a.stateDate); break;
-    case 'postpartum': set('postpartum', { breastfeeding: a.breastfeeding }, a.stateDate); break;
+    case 'postpartum': set('postpartum', { breastfeeding: a.breastfeeding, after: 'birth' }, a.stateDate); break;
+    case 'afterLoss': set('postpartum', { breastfeeding: false, after: 'loss' }, a.stateDate); break; // engine: the postpartum rule (D-053)
     case 'perimenopause': set('perimenopause', {}, a.stateDate); break;
     case 'irregular': set('known_irregular', { reason: 'other' }, a.stateDate); break;
     case 'none': break;

@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CHOICE_OF, currentLifeStates, lifeStateHistory } from '@/features/settings/lifeState';
+import { choiceOf, currentLifeStates, lifeStateHistory } from '@/features/settings/lifeState';
 import { useApp } from '@/state/app';
 import { Group, SettingsRow } from '@/ui/SettingsRow';
 import { Screen } from '@/ui/Screen';
@@ -18,7 +18,7 @@ export default function SettingsScreen() {
     if (!db) return;
     void lifeStateHistory(db).then((rows) => {
       const cur = currentLifeStates(rows, today)[0];
-      setLife(t(`settings.lifeState.options.${cur ? (CHOICE_OF[cur.kind] ?? 'none') : 'none'}`));
+      setLife(t(`settings.lifeState.options.${cur ? choiceOf(cur) : 'none'}`));
     });
   }, [db, today, version, t]);
   const go = (path: string): (() => void) => () => router.push(path as Href);

@@ -1,6 +1,10 @@
 import { sql as m001 } from './001_init';
+import { sql as m002 } from './002_post_pregnancy';
 
 export interface Migration { version: number; name: string; sql: string }
 
 /** Numbered, applied in order inside a transaction each (PLAN.md §5.4). Never edit a shipped migration: add the next number. */
-export const MIGRATIONS: Migration[] = [{ version: 1, name: 'init', sql: m001 }];
+export const MIGRATIONS: Migration[] = [
+  { version: 1, name: 'init', sql: m001 },
+  { version: 2, name: 'post_pregnancy_flow_kind', sql: m002 },
+];

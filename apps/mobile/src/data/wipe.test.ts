@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { migrate } from './migrate';
+import { MIGRATIONS } from './migrations';
 import { EventStore } from './store';
 import { openTestDb } from './testDb';
 import { wipeAll } from './wipe';
@@ -23,7 +24,7 @@ describe('wipeAll', () => {
     const again = new EventStore(db, { nowMs: () => 9, iso: () => 'x', tz: () => 'UTC', randomBytes: (k) => new Uint8Array(k).fill(7) });
     await again.append({ kind: 'flow', payload: { day: '2026-10-01', level: 'light', flow_kind: 'period' } });
     await expect(db.run("UPDATE event SET kind = 'x'")).rejects.toThrow(/append-only/);
-    expect((await db.all('SELECT version FROM schema_migration')).length).toBe(1);
+    expect((await db.all('SELECT version FROM schema_migration')).length).toBe(MIGRATIONS.length);
   });
 });
 

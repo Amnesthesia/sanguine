@@ -154,3 +154,34 @@ describe('day detail corrections', () => {
     expect([e?.provenance, e?.source_app]).toEqual(['imported', 'csv']);
   });
 });
+
+describe('bleeding after a pregnancy (P3-12, D-053)', () => {
+  const lossOn = (day: string) => store.appendMany([
+    { kind: 'life_state.set', payload: { kind: 'pregnant', detail: {}, day: '2026-01-10' } },
+    { kind: 'life_state.end', payload: { kind: 'pregnant', day, outcome: 'loss' } },
+    { kind: 'life_state.set', payload: { kind: 'postpartum', detail: { breastfeeding: false, after: 'loss' }, day } },
+  ]);
+  it('within 14 days of a loss the sheet is told, so it can default to post-pregnancy bleeding', async () => {
+    await lossOn('2026-03-01');
+    expect((await periodContext(db, '2026-03-05')).afterPregnancy).toBe('loss');
+    expect((await periodContext(db, '2026-03-15')).afterPregnancy).toBe('loss');
+    expect((await periodContext(db, '2026-03-16')).afterPregnancy).toBeUndefined();
+    expect((await periodContext(db, '2026-02-20')).afterPregnancy).toBeUndefined();
+  });
+  it('within 42 days of a birth', async () => {
+    await store.append({ kind: 'life_state.set', payload: { kind: 'postpartum', detail: { breastfeeding: true, after: 'birth' }, day: '2026-08-01' } });
+    expect((await periodContext(db, '2026-09-12')).afterPregnancy).toBe('birth');
+    expect((await periodContext(db, '2026-09-13')).afterPregnancy).toBeUndefined();
+  });
+  it('a postpartum state from before P3-12 has no outcome and counts as a birth', async () => {
+    await store.append({ kind: 'life_state.set', payload: { kind: 'postpartum', detail: { breastfeeding: false }, day: '2026-08-01' } });
+    expect((await periodContext(db, '2026-09-01')).afterPregnancy).toBe('birth');
+  });
+  it('post-pregnancy bleeding never starts a cycle; choosing "My period" does', async () => {
+    await lossOn('2026-03-01');
+    await setFlow(store, '2026-03-05', 'heavy', { kind: 'post_pregnancy' });
+    expect(await cycles()).toEqual([]);
+    await setFlow(store, '2026-03-05', 'heavy', { kind: 'period' });
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-03-05']);
+  });
+});

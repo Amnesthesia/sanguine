@@ -14,9 +14,9 @@ describe('historyRows (§8.3 Insights history)', () => {
     expect(rows[0]).toMatchObject({ start: '30 Sep', current: true, lengthDays: undefined, dayOfCycle: 11, bleedDays: 4, basis: 'calendar', quality: 'valid' });
     expect(rows[1]).toMatchObject({ start: '1 Sep', lengthDays: 29, current: false });
   });
-  it('carries a biomarker basis and flags a possibly-missed log with its two actions', () => {
+  it('carries a biomarker basis and flags an unusually long cycle with its three actions (incl. "I was pregnant", which needs the next start)', () => {
     const rows = historyRows([cyc('x', '2026-05-01', 56, { quality: 'suspect_skip', ovulation: { point: '2026-05-20', sd: 1, basis: 'lh' } }), cyc('y', '2026-06-26', undefined)], '2026-07-01');
-    expect(rows[1]).toMatchObject({ basis: 'lh', quality: 'suspect_skip', offerMissedLog: true, midDay: '2026-05-29' });
+    expect(rows[1]).toMatchObject({ basis: 'lh', quality: 'suspect_skip', offerMissedLog: true, midDay: '2026-05-29', nextStartISO: '2026-06-26' });
     expect(rows[0]?.offerMissedLog).toBe(false);
   });
 });

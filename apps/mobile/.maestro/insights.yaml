@@ -1,5 +1,5 @@
 appId: ${APP_ID}
-name: Insights - history, charts, accuracy, missed-log prompt, cycle detail
+name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
 ---
 - runFlow:
     file: _open.yaml
@@ -46,13 +46,15 @@ name: Insights - history, charts, accuracy, missed-log prompt, cycle detail
       id: screen-insights
     timeout: 10000
 - scrollUntilVisible:
-    element: "possibly a missed log"
+    element: "unusually long"
 - assertVisible:
     id: missed-log
 - takeScreenshot: missed-log
+- assertVisible:
+    id: was-pregnant
 - tapOn:
     id: confirm-long
-- assertNotVisible: "possibly a missed log"
+- assertNotVisible: "unusually long"
 # cycle detail and excluding a cycle
 - scrollUntilVisible:
     element:
@@ -78,3 +80,19 @@ name: Insights - history, charts, accuracy, missed-log prompt, cycle detail
 - assertVisible: "Status: excluded"
 - assertVisible: "This cycle is left out of your estimates."
 - takeScreenshot: cycle-detail
+# P3-12 (D-053): an unusually long cycle can be marked as a pregnancy; it is then paused, not a possible missed log
+      id: screen-today
+- tapOn: Insights
+      id: screen-insights
+- scrollUntilVisible:
+    element:
+      id: was-pregnant
+- tapOn:
+    id: was-pregnant
+    visible: "How did the pregnancy end\\?"
+- takeScreenshot: pregnancy-outcome
+- tapOn: "Pregnancy loss"
+    notVisible: "unusually long"
+- scrollUntilVisible:
+    element: "paused period"
+- takeScreenshot: marked-pregnancy

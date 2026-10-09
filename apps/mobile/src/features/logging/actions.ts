@@ -30,9 +30,27 @@ export interface PeriodContext {
   startsNew: boolean;
   /** The period (by start day) this day would join across a gap of 3 to 7 days, before or after: the sheet asks whether it is the same period (§5.4, D-052). */
   joins?: ISODate;
+  /** Within POST_PREGNANCY_BLEED_DAYS after a birth or loss: the sheet defaults to post-pregnancy bleeding, which is not a period (D-053). */
+  afterPregnancy?: 'birth' | 'loss';
+}
+
+/** §11.1 (D-053): bleeding this soon after a pregnancy is not a period unless the user says so. Birth: lochia up to 6 weeks; loss: 2 weeks. */
+export const POST_PREGNANCY_BLEED_DAYS = { birth: 42, loss: 14 } as const;
+
+async function afterPregnancy(db: Database, day: ISODate): Promise<'birth' | 'loss' | undefined> {
+  const pp = await db.get<{ from_day: string; detail: string }>("SELECT from_day, detail FROM life_state WHERE kind = 'postpartum' AND from_day <= ? ORDER BY from_day DESC LIMIT 1", [day]);
+  if (!pp) return undefined;
+  const after = (JSON.parse(pp.detail) as { after?: unknown }).after ?? 'birth'; // states written before P3-12 only ever meant a birth
+  return (after === 'birth' || after === 'loss') && diffDays(day, pp.from_day) <= POST_PREGNANCY_BLEED_DAYS[after] ? after : undefined;
 }
 
 export async function periodContext(db: Database, day: ISODate): Promise<PeriodContext> {
+  const after = await afterPregnancy(db, day);
+  const ctx = await periodRunContext(db, day);
+  return after ? { ...ctx, afterPregnancy: after } : ctx;
+}
+
+async function periodRunContext(db: Database, day: ISODate): Promise<PeriodContext> {
   const cycles = await db.all<{ start_day: string; end_day: string | null }>('SELECT start_day, end_day FROM cycle ORDER BY start_day');
   const covering = cycles.find((c) => c.start_day <= day && day <= (c.end_day ?? c.start_day));
   if (covering) return { startsNew: false };

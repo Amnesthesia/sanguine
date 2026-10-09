@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { migrate } from '@/data/migrate';
 import { EventStore } from '@/data/store';
 import { openTestDb } from '@/data/testDb';
-import { changeLifeState, currentLifeStates, lifeStateHistory } from './lifeState';
+import { addPastPregnancy, changeLifeState, choiceOf, currentLifeStates, lifeStateHistory } from './lifeState';
 
 async function setup() {
   const db = openTestDb();
@@ -37,5 +37,36 @@ describe('changeLifeState', () => {
     const { db, store } = await setup();
     await changeLifeState(store, db, { choice: 'none', day: '2026-10-01' });
     expect(await store.events()).toEqual([]);
+  });
+});
+
+describe('pregnancy outcome (P3-12, D-053)', () => {
+  it('"after a pregnancy loss" ends the pregnancy with outcome loss and pauses estimates until the next period', async () => {
+    const { db, store } = await setup();
+    await changeLifeState(store, db, { choice: 'pregnant', day: '2026-01-10' });
+    await changeLifeState(store, db, { choice: 'afterLoss', day: '2026-03-01' });
+    const ends = (await store.events()).filter((e) => e.kind === 'life_state.end').map((e) => JSON.parse(e.payload));
+    expect(ends).toEqual([{ kind: 'pregnant', day: '2026-03-01', outcome: 'loss' }]);
+    const rows = await lifeStateHistory(db);
+    expect(rows.map((r) => [r.kind, r.from_day, r.until_day])).toEqual([['pregnant', '2026-01-10', '2026-03-01'], ['postpartum', '2026-03-01', null]]);
+    expect(rows[1]?.detail).toEqual({ breastfeeding: false, after: 'loss' });
+    expect(choiceOf(rows[1] as never)).toBe('afterLoss');
+    expect((await store.engineInputs()).settings.lifeStates.at(-1)).toEqual({ kind: 'postpartum', delivered: '2026-03-01', breastfeeding: false });
+  });
+  it('"recently gave birth" after pregnant records outcome birth', async () => {
+    const { db, store } = await setup();
+    await changeLifeState(store, db, { choice: 'pregnant', day: '2026-01-10' });
+    await changeLifeState(store, db, { choice: 'postpartum', day: '2026-09-20', breastfeeding: true });
+    const end = (await store.events()).find((e) => e.kind === 'life_state.end');
+    expect(JSON.parse(end?.payload ?? '{}')).toMatchObject({ outcome: 'birth' });
+    expect(choiceOf((await lifeStateHistory(db))[1] as never)).toBe('postpartum');
+  });
+  it('a past pregnancy turns the long cycle and the bleed that ended it into paused cycles, not possible missed logs', async () => {
+    const { db, store } = await setup();
+    for (const d of ['2025-01-01', '2025-01-29', '2025-02-26', '2025-03-26', '2025-12-01', '2026-01-02', '2026-01-30']) await store.append({ kind: 'flow', payload: { day: d, level: 'medium', flow_kind: 'period' } });
+    const quality = async () => (await db.all<{ start_day: string; quality: string }>('SELECT start_day, quality FROM cycle ORDER BY start_day')).map((c) => c.quality);
+    expect((await quality())[3]).toBe('suspect_skip'); // 250 days
+    await addPastPregnancy(store, { from: '2025-03-26', until: '2025-12-01', outcome: 'loss' });
+    expect(await quality()).toEqual(['valid', 'valid', 'valid', 'life_state', 'life_state', 'valid', 'valid']);
   });
 });

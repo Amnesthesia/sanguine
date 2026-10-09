@@ -13,8 +13,9 @@ export interface HistoryRow {
   basis: string;
   quality: CycleRecord['quality'];
   current: boolean;
-  /** A very long cycle that may hide a missed log: offer "Was there a period in between?" and "this was this long". */
+  /** An unusually long cycle: offer "Was there a period in between?", "I was pregnant" and "this was this long" (D-053). */
   offerMissedLog: boolean;
+  nextStartISO: ISODate | undefined;
   midDay: ISODate | undefined;
 }
 
@@ -23,7 +24,7 @@ export function historyRows(cycles: CycleRecord[], today: ISODate): HistoryRow[]
     id: c.id, start: formatDay(c.start), startISO: c.start, lengthDays: c.length,
     dayOfCycle: c.length === undefined ? diffDays(today, c.start) + 1 : undefined, bleedDays: c.bleedDays,
     basis: c.ovulation && c.ovulation.basis !== 'calendar' ? c.ovulation.basis : 'calendar', quality: c.quality,
-    current: c.nextStart === undefined,
+    current: c.nextStart === undefined, nextStartISO: c.nextStart,
     offerMissedLog: c.quality === 'suspect_skip' && c.length !== undefined,
     midDay: c.quality === 'suspect_skip' && c.length !== undefined ? addDays(c.start, Math.round(c.length / 2)) : undefined,
   }));

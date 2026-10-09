@@ -2,11 +2,12 @@ import { analyzeCycles, detectBbtShift, diffDays } from '@sanguine/engine';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { ledgerSummary, type LedgerSummary } from '@/data/ledger';
 import { fromC } from '@/features/logging/actions';
 import { LengthChart, TempChart } from '@/features/insights/charts';
 import { accuracyText, cycleLengthSeries, historyRows, phaseBars } from '@/features/insights/insightsModel';
+import { addPastPregnancy } from '@/features/settings/lifeState';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -62,6 +63,14 @@ export default function InsightsScreen() {
               {r.offerMissedLog && r.midDay ? (
                 <View style={{ gap: 2 }}>
                   <Button kind="text" testID="missed-log" label={tr('insights.missedLogPrompt')} onPress={() => router.push({ pathname: '/log', params: { day: r.midDay as string, section: 'period' } })} />
+                  {r.nextStartISO ? <Button kind="text" testID="was-pregnant" label={tr('insights.wasPregnant')} onPress={() => {
+                    const mark = (outcome: 'birth' | 'loss') => { if (store && r.nextStartISO) void addPastPregnancy(store, { from: r.startISO, until: r.nextStartISO, outcome }).then(refresh); };
+                    Alert.alert(tr('insights.pregnancyOutcome'), undefined, [
+                      { text: tr('insights.outcome.birth'), onPress: () => mark('birth') },
+                      { text: tr('insights.outcome.loss'), onPress: () => mark('loss') },
+                      { text: tr('common.cancel'), style: 'cancel' },
+                    ]);
+                  }} /> : null}
                   <Button kind="text" testID="confirm-long" label={tr('insights.confirmLong')} onPress={() => void store?.append({ kind: 'cycle.confirm_long', payload: { cycle_start: r.startISO, reason: 'user_confirmed' } }).then(refresh)} />
                 </View>
               ) : null}

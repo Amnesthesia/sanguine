@@ -78,8 +78,8 @@ export function OnboardingFlow() {
 
   const title = (key: string) => <Text variant="title" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 34 }}>{tr(key)}</Text>;
   const needsMethod = a.lifeState === 'hormonal' || a.lifeState === 'postHormonal';
-  const dateLabel = a.lifeState === 'postHormonal' ? 'onboarding.s4.whenStopped' : a.lifeState === 'postpartum' ? 'onboarding.s4.whenBirth' : 'onboarding.s4.whenStarted';
-  const needsDate = a.lifeState === 'postHormonal' || a.lifeState === 'pregnant' || a.lifeState === 'postpartum';
+  const dateLabel = a.lifeState === 'postHormonal' ? 'onboarding.s4.whenStopped' : a.lifeState === 'postpartum' ? 'onboarding.s4.whenBirth' : a.lifeState === 'afterLoss' ? 'onboarding.s4.whenLoss' : 'onboarding.s4.whenStarted';
+  const needsDate = a.lifeState === 'postHormonal' || a.lifeState === 'pregnant' || a.lifeState === 'postpartum' || a.lifeState === 'afterLoss';
 
   // padding on both platforms: the dev client is edge-to-edge on Android, where adjustResize no longer lifts the Continue button above the keyboard (P3-1)
   return (
