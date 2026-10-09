@@ -112,3 +112,21 @@ describe('suggestPerimenopause (STRAW+10 early transition, age >= 40)', () => {
   it('does not suggest when already set', () =>
     expect(suggestPerimenopause(cycles([28, 36, 27, 35]), { ...s40, lifeStates: [{ kind: 'perimenopause', since: '2025-01-01' }] }, TODAY)).toBe(false));
 });
+
+describe('paused cycles are not periods for warm-up (D-053 follow-up)', () => {
+  const rec = (start: string, length: number | undefined, quality: CycleRecord['quality'] = 'valid'): CycleRecord =>
+    ({ id: start, start, quality, ...(length ? { length, nextStart: addDays(start, length) } : {}) });
+  it('a life_state cycle starting on the delivery day neither ends suspension nor counts toward the three', () => {
+    const pp = settings({ kind: 'postpartum', delivered: '2026-01-10', breastfeeding: false });
+    expect(evaluateLifeStates([rec('2026-01-10', 30, 'life_state')], pp, '2026-02-20').suspended?.reason).toBe('postpartum');
+    const after = [rec('2026-01-10', 30, 'life_state'), rec('2026-02-09', 28), rec('2026-03-09', 29), rec('2026-04-07', undefined)];
+    expect(evaluateLifeStates(after, pp, '2026-04-20').confidenceCap).toBe('low'); // 2 ordinary closed cycles: still warming up
+    const three = [...after.slice(0, 3), rec('2026-04-07', 28), rec('2026-05-05', undefined)];
+    expect(evaluateLifeStates(three, pp, '2026-05-10').confidenceCap).toBeUndefined();
+  });
+  it('the same holds after stopping contraception', () => {
+    const pc = settings({ kind: 'post_contraception', stopped: '2026-01-10', method: 'combined_pill' });
+    const cyc = [rec('2026-01-10', 30, 'life_state'), rec('2026-02-09', 28), rec('2026-03-09', 29), rec('2026-04-07', undefined)];
+    expect(evaluateLifeStates(cyc, pc, '2026-04-20').confidenceCap).toBe('low');
+  });
+});

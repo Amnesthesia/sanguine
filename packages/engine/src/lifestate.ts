@@ -37,20 +37,21 @@ export function evaluateLifeStates(cycles: CycleRecord[], settings: EngineSettin
   const states = (settings.lifeStates as Stated[]).filter((s) => active(s, today));
   const gate: LifeGate = { lambda: settings.recencyLambda, varianceScale: 1, calendarEstimate: true, cycleWeight: () => 1 };
   const warmups: ISODate[] = []; // post-stop / post-delivery dates whose warm-up is still running
+  const periods = cycles.filter((c) => c.quality !== 'life_state'); // a paused cycle is not a period for suspension or warm-up (D-053)
 
   for (const s of states) {
     switch (s.kind) {
       case 'hormonal_contraception': gate.suspended ??= { reason: 'hormonal_contraception' }; break;
       case 'pregnant': gate.suspended ??= { reason: 'pregnant' }; break;
       case 'postpartum': {
-        if (!cycles.some((c) => c.start >= s.delivered)) { gate.suspended ??= { reason: 'postpartum' }; break; }
-        const done = cycles.filter((c) => c.start >= s.delivered && c.length !== undefined).length;
+        if (!periods.some((c) => c.start >= s.delivered)) { gate.suspended ??= { reason: 'postpartum' }; break; }
+        const done = periods.filter((c) => c.start >= s.delivered && c.length !== undefined).length;
         if (done < WARMUP_CYCLES) warmups.push(s.delivered);
         if (s.breastfeeding && !cycles.some((c) => c.start >= s.delivered && c.ovulation && c.ovulation.basis !== 'calendar')) gate.calendarEstimate = false;
         break;
       }
       case 'post_contraception': {
-        const done = cycles.filter((c) => c.start >= s.stopped && c.length !== undefined).length;
+        const done = periods.filter((c) => c.start >= s.stopped && c.length !== undefined).length;
         if (done < WARMUP_CYCLES) warmups.push(s.stopped);
         break;
       }
