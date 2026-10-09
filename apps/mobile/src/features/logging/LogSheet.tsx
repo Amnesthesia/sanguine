@@ -66,7 +66,7 @@ export function LogSheet() {
     const kind = hormonal ? bleedKind : afterPregnancy ? ppKind : 'period';
     if (state.flow === level) { await setFlow(store, day, 'none', { kind }); await saved(); return; }
     const ctx = await periodContext(db, day);
-    const write = async (answer: { splitAt?: string; mergeAt?: string } = {}) => {
+    const write = async (answer: { splitAt?: string; mergeAt?: string; askedOn?: string } = {}) => {
       await setFlow(store, day, level, { kind, ...answer });
       await saved();
       if (quick) router.back();
@@ -76,8 +76,8 @@ export function LogSheet() {
     const later = ctx.startsNew && joins ? joins : day;
     if (kind === 'period' && level !== 'spotting' && joins) {
       Alert.alert(tr('day.joinPrompt', { date: formatDay(joins) }), undefined, [
-        { text: tr('day.samePeriod'), onPress: () => void write({ mergeAt: later }) },
-        { text: tr('day.newPeriod'), onPress: () => void write({ splitAt: later }) },
+        { text: tr('day.samePeriod'), onPress: () => void write({ mergeAt: later, askedOn: day }) },
+        { text: tr('day.newPeriod'), onPress: () => void write({ splitAt: later, askedOn: day }) },
         { text: tr('common.cancel'), style: 'cancel' },
       ]);
       return;

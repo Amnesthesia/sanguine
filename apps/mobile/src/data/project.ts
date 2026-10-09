@@ -88,7 +88,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
       case 'symptom': { const x = day(e.effective_day, e.id); if (p.intensity === 0) x.symptoms.delete(p.code as string); else x.symptoms.set(p.code as string, p.intensity as number); break; }
       case 'sex': day(e.effective_day, e.id).sex = { protected: p.protected as boolean }; break;
       case 'note': day(e.effective_day, e.id).note = p.cipher as string; break;
-      case 'period.start': periodStarts.add(e.effective_day); if (p.merge === false) splitStarts.add(e.effective_day); else if (p.merge === true) joinStarts.add(e.effective_day); break;
+      case 'period.start': periodStarts.add(e.effective_day); if (p.merge === false) { splitStarts.add(e.effective_day); joinStarts.delete(e.effective_day); } else if (p.merge === true) { joinStarts.add(e.effective_day); splitStarts.delete(e.effective_day); } break; // log order: the latest answer for a day wins
       case 'period.end': periodEnds.push(e.effective_day); break;
       case 'cycle.exclude': excluded.push(p.cycle_start as ISODate); break;
       case 'cycle.confirm_long': confirmedLong.push(p.cycle_start as ISODate); break;

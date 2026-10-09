@@ -94,6 +94,14 @@ describe('cycles from flow (§5.4)', () => {
     await periodsOf(Array.from({ length: 20 }, (_, i) => `2026-10-${String(i + 1).padStart(2, '0')}`));
     expect(await cycles()).toMatchObject([{ start_day: '2026-10-01', end_day: '2026-10-20', bleed_days: 20 }]);
   });
+  it('the latest answer for a day wins', async () => {
+    await periodsOf(['2026-09-03', '2026-09-10']);
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-10', merge: false } });
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-10', merge: true } });
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-03']);
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-10', merge: false } });
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-03', '2026-09-10']);
+  });
   it('an 8-day gap starts a new cycle', async () => {
     await periodsOf(['2026-09-03', '2026-09-04', '2026-09-12']);
     expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-03', '2026-09-12']);

@@ -59,6 +59,14 @@ describe('period logging: two taps (§8.4)', () => {
     await setFlow(store, '2026-10-08', 'none'); // clearing drops the answer with the day
     expect(await cycles()).toEqual([{ start_day: '2026-10-01', end_day: '2026-10-03' }]);
   });
+  it('clearing the asking day retracts the answer it wrote on the later period', async () => {
+    await setFlow(store, '2026-10-10', 'medium');
+    await setFlow(store, '2026-10-05', 'medium', { splitAt: '2026-10-10', askedOn: '2026-10-05' });
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-10-05', '2026-10-10']);
+    await setFlow(store, '2026-10-05', 'none');
+    await setFlow(store, '2026-10-07', 'light'); // a write with no prompt (import-style): must join, the old split is gone
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-10-07']);
+  });
   it('clearing the flow on a split day retracts the split', async () => {
     await setFlow(store, '2026-09-01', 'medium');
     await setFlow(store, '2026-09-05', 'medium', { splitAt: '2026-09-05' });

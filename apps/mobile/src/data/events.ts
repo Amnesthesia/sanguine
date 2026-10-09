@@ -41,6 +41,7 @@ export function validateEvent(e: NewEvent): ISODate {
   switch (e.kind) {
     case 'period.start':
       if (p.merge !== undefined && typeof p.merge !== 'boolean') fail(e.kind, 'merge');
+      if (p.asked_on !== undefined && (!isDay(p.asked_on) || typeof p.merge !== 'boolean')) fail(e.kind, 'asked_on'); // the day whose logging asked (D-052)
       return day();
     case 'period.end':
       return day();

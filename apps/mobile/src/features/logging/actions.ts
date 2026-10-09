@@ -65,13 +65,20 @@ async function periodRunContext(db: Database, day: ISODate): Promise<PeriodConte
 
 /** Sets or clears the flow for a day. Tapping the level already set clears it. `splitAt` records the user's answer that a day inside the
  *  join window is a separate period: that day (this one, or the start of the period it would join) begins a new period (D-052). */
-export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel, o: { kind?: FlowKind; clots?: boolean; splitAt?: ISODate; mergeAt?: ISODate } = {}): Promise<void> {
+export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel, o: { kind?: FlowKind; clots?: boolean; splitAt?: ISODate; mergeAt?: ISODate; askedOn?: ISODate } = {}): Promise<void> {
   const kind = o.kind ?? 'period';
-  // clearing a day also drops a split written on it, or a bleed-less one-day period would remain (a split is itself a period day)
-  if (level === 'none') for (const e of await dayEvents(store, day)) if (e.kind === 'period.start' && typeof e.data.merge === 'boolean') await store.retract(e.id);
+  // clearing a day drops every join answer written on it or asked from it: an answer on itself would leave a bleed-less one-day period, and
+  // an answer it caused on another day would later apply to different data (D-052)
+  if (level === 'none') {
+    for (const e of activeEvents(await store.events())) {
+      if (e.kind !== 'period.start') continue;
+      const p = JSON.parse(e.payload) as { merge?: unknown; asked_on?: unknown };
+      if (typeof p.merge === 'boolean' && (e.effective_day === day || p.asked_on === day)) await store.retract(e.id);
+    }
+  }
   const events: NewEvent[] = [{ kind: 'flow', payload: { day, level, flow_kind: kind, ...(o.clots ? { clots: true } : {}) } }];
-  if (o.splitAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.splitAt, merge: false } });
-  else if (o.mergeAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.mergeAt, merge: true } });
+  if (o.splitAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.splitAt, merge: false, ...(o.askedOn ? { asked_on: o.askedOn } : {}) } });
+  else if (o.mergeAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.mergeAt, merge: true, ...(o.askedOn ? { asked_on: o.askedOn } : {}) } });
   await store.appendMany(events);
 }
 
