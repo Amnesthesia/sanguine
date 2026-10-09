@@ -788,7 +788,7 @@ A glossary file (`copy/glossary.en-AU.json`) fixes terms: period, bleeding, spot
 
 ### 8.10 Data portability
 
-Export produces a zip with `events.jsonl` (the full log, schema-versioned), `cycles.csv`, `daily.csv`, `biomarkers.csv`, and a `README.md` describing the columns, so the file is useful without Sanguine. Import accepts the same format, plus Flo's and Clue's data-export files where their current formats are documented (both let users request a data export under GDPR; the Clue export is JSON and the Flo export is a zip of JSON, formats to be re-verified against current exports at Phase 3, VERIFY) and a generic CSV of period start dates. Imported records carry `provenance = 'imported'` and `source_app`.
+Export produces a zip with `events.jsonl` (the full log, schema-versioned), `cycles.csv`, `daily.csv`, `biomarkers.csv`, and a `README.md` describing the columns, so the file is useful without Sanguine. Import accepts the same format, plus Flo's and Clue's data-export files where their current formats are documented (both let users request a data export under GDPR; the Clue export is JSON and the Flo export is a zip of JSON, formats to be re-verified against current exports at Phase 3, VERIFY) a Natural Cycles export (its `Daily Entries.csv`: flow, temperatures, tests and notes, not only period dates; parser pending a sample export, D-056), and a generic CSV of period start dates. Every daily importer writes through one shared writer (`data/importDaily.ts`), so flow, temperature, tests, sex and notes survive the move. Imported records carry `provenance = 'imported'` and `source_app`.
 
 ## 9. Design system and screen mockups
 
