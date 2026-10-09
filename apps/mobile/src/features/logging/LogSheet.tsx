@@ -62,20 +62,22 @@ export function LogSheet() {
     const kind = hormonal ? bleedKind : 'period';
     if (state.flow === level) { await setFlow(store, day, 'none', { kind }); await saved(); return; }
     const ctx = await periodContext(db, day);
-    const write = async (merge: boolean) => {
-      await setFlow(store, day, level, { kind, merge });
+    const write = async (splitAt?: string) => {
+      await setFlow(store, day, level, { kind, ...(splitAt ? { splitAt } : {}) });
       await saved();
       if (quick) router.back();
     };
-    if (kind === 'period' && level !== 'spotting' && ctx.startsNew && ctx.mergeWith) {
-      Alert.alert(tr('day.mergePrompt'), undefined, [
-        { text: tr('day.merge'), onPress: () => void write(true) },
-        { text: tr('day.keepSeparate'), onPress: () => void write(false) },
+    // within a week of another period (D-052): joined by default; "A new period" splits at the later of the two days
+    const joins = ctx.joins;
+    if (kind === 'period' && level !== 'spotting' && joins) {
+      Alert.alert(tr('day.joinPrompt', { date: formatDay(joins) }), undefined, [
+        { text: tr('day.samePeriod'), onPress: () => void write() },
+        { text: tr('day.newPeriod'), onPress: () => void write(ctx.startsNew ? joins : day) },
         { text: tr('common.cancel'), style: 'cancel' },
       ]);
       return;
     }
-    await write(false);
+    await write();
   }
   async function onSymptom(code: string, n: 0 | 1 | 2 | 3) {
     if (!store) return;

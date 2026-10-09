@@ -2,9 +2,9 @@
 import { diffDays, type ISODate } from '@sanguine/engine';
 import { sealNote } from '@sanguine/crypto';
 import type { Database } from '@/data/database';
-import type { EventRow, FlowKind, FlowLevel } from '@/data/events';
+import type { EventRow, FlowKind, FlowLevel, NewEvent } from '@/data/events';
 import type { Clock } from '@/data/ids';
-import { activeEvents, MERGE_WINDOW_DAYS } from '@/data/project';
+import { activeEvents, PERIOD_JOIN_DAYS } from '@/data/project';
 import type { EventStore } from '@/data/store';
 
 export interface DayState {
@@ -28,8 +28,8 @@ export async function dayState(db: Database, day: ISODate): Promise<DayState> {
 export interface PeriodContext {
   /** True when logging a period flow on this day would begin a new period. */
   startsNew: boolean;
-  /** An existing period starts within 7 days after this day: the UI offers to merge (§5.4). */
-  mergeWith?: ISODate;
+  /** The period (by start day) this day would join across a gap of 3 to 7 days, before or after: the sheet asks whether it is the same period (§5.4, D-052). */
+  joins?: ISODate;
 }
 
 export async function periodContext(db: Database, day: ISODate): Promise<PeriodContext> {
@@ -38,16 +38,21 @@ export async function periodContext(db: Database, day: ISODate): Promise<PeriodC
   if (covering) return { startsNew: false };
   // a period day directly after an ongoing period (one missing day allowed) extends it
   const before = [...cycles].reverse().find((c) => c.start_day <= day);
-  if (before && diffDays(day, before.end_day ?? before.start_day) <= 2) return { startsNew: false };
-  const next = cycles.find((c) => c.start_day > day && diffDays(c.start_day, day) <= MERGE_WINDOW_DAYS);
-  return next ? { startsNew: true, mergeWith: next.start_day } : { startsNew: true };
+  const gap = before ? diffDays(day, before.end_day ?? before.start_day) : Number.POSITIVE_INFINITY;
+  if (before && gap <= 2) return { startsNew: false }; // one missing day: obviously the same period
+  if (before && gap <= PERIOD_JOIN_DAYS) return { startsNew: false, joins: before.start_day };
+  const next = cycles.find((c) => c.start_day > day && diffDays(c.start_day, day) <= PERIOD_JOIN_DAYS);
+  return next ? { startsNew: true, joins: next.start_day } : { startsNew: true };
 }
 
-/** Sets or clears the flow for a day. Tapping the level already set clears it. `merge` records the user's confirmation to merge into a period starting within 7 days after. */
-export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel, o: { kind?: FlowKind; clots?: boolean; merge?: boolean } = {}): Promise<void> {
+/** Sets or clears the flow for a day. Tapping the level already set clears it. `splitAt` records the user's answer that a day inside the
+ *  join window is a separate period: that day (this one, or the start of the period it would join) begins a new period (D-052). */
+export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel, o: { kind?: FlowKind; clots?: boolean; splitAt?: ISODate } = {}): Promise<void> {
   const kind = o.kind ?? 'period';
-  const events = [{ kind: 'flow', payload: { day, level, flow_kind: kind, ...(o.clots ? { clots: true } : {}) } }];
-  if (o.merge && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day, merge: true } } as never);
+  // clearing a day also drops a split written on it, or a bleed-less one-day period would remain (a split is itself a period day)
+  if (level === 'none') for (const e of await dayEvents(store, day)) if (e.kind === 'period.start' && e.data.merge === false) await store.retract(e.id);
+  const events: NewEvent[] = [{ kind: 'flow', payload: { day, level, flow_kind: kind, ...(o.clots ? { clots: true } : {}) } }];
+  if (o.splitAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.splitAt, merge: false } });
   await store.appendMany(events);
 }
 

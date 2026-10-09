@@ -76,3 +76,43 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
     id: event-delete-symptom
 - assertNotVisible: "Cramps 2/3"
 - assertVisible: "Medium flow"
+
+# P3-9 (D-052): a day 4 days before a period asks "Is it the same period?"; same joins, new splits
+- evalScript: ${output.minus4 = (function(){var d=new Date(Date.now()-4*86400000);var p=function(n){return (n<10?'0':'')+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());})()}
+- openLink: ${LINKBASE}log?day=${output.minus4}&section=period
+- extendedWaitUntil:
+    visible:
+      id: flow-light
+    timeout: 20000
+- tapOn:
+    id: flow-light
+- extendedWaitUntil:
+    visible: ".*Is it the same period\\?"
+    timeout: 10000
+- takeScreenshot: join-prompt
+- tapOn: "Same period"
+- runFlow: _close-sheet.yaml
+- openLink: ${LINKBASE}today
+- extendedWaitUntil:
+    visible: "Day 5 of your period"
+    timeout: 20000
+- takeScreenshot: today-joined
+- openLink: ${LINKBASE}log?day=${output.minus4}&section=period
+- extendedWaitUntil:
+    visible:
+      id: flow-light
+    timeout: 20000
+- tapOn:
+    id: flow-light
+- tapOn:
+    id: flow-light
+- extendedWaitUntil:
+    visible: ".*Is it the same period\\?"
+    timeout: 10000
+- tapOn: "A new period"
+- runFlow: _close-sheet.yaml
+- openLink: ${LINKBASE}today
+- extendedWaitUntil:
+    visible: "Day 1 of your period"
+    timeout: 20000
+- takeScreenshot: today-split

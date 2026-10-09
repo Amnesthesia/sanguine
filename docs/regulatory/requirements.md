@@ -46,3 +46,4 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-40 | Property: intervals contain the point; 95% contains 80%; an identical extra cycle never widens the interval; shifting dates by k shifts outputs by k | PLAN §4.15 | `properties.test.ts` | done P1-8 |
 | ER-41 | Backtest: coverage within ±5 points of nominal; MAE ≤ 2.8 d at 8 cycles | PLAN §4.15, §10 | `tools/backtest` | done P1-8 |
 | ER-42 | The engine package has no runtime dependencies and no platform imports | PLAN §4.1 | `tools/ci/soup.test.ts`, `purity.test.ts` | done P1-8 |
+| ER-43 | Cycle boundaries (app projection feeding the engine): period days up to 7 apart are one period unless ≥ 2 no-flow days lie between or the user split it | PLAN §5.4; D-052 | `store.test.ts` (cycles from flow), `actions.test.ts` (splitAt) | done P3-9 |

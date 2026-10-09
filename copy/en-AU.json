@@ -226,9 +226,9 @@
       "sensor": "From a sensor"
     },
     "confirmImported": "Confirm",
-    "mergePrompt": "This is within 7 days of an earlier period start. Merge them?",
-    "merge": "Merge",
-    "keepSeparate": "Keep separate",
+    "joinPrompt": "This is within a week of the period that started on {date}. Is it the same period?",
+    "samePeriod": "Same period",
+    "newPeriod": "A new period",
     "edit": "Edit",
     "deleteEntry": "Delete this entry",
     "entry": {

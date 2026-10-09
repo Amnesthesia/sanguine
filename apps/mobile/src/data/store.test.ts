@@ -77,6 +77,41 @@ describe('cycles from flow (§5.4)', () => {
       { start_day: '2026-10-01', end_day: '2026-10-02', next_start: null },
     ]);
   });
+  it('period days up to 7 days apart are one period (D-052)', async () => {
+    await periodsOf(['2026-10-01', '2026-10-02', '2026-10-05', '2026-10-12']);
+    expect(await cycles()).toMatchObject([{ start_day: '2026-10-01', end_day: '2026-10-12', bleed_days: 12, next_start: null }]);
+  });
+  it('an 8-day gap starts a new cycle', async () => {
+    await periodsOf(['2026-09-03', '2026-09-04', '2026-09-12']);
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-03', '2026-09-12']);
+  });
+  it('a period.start with merge:false splits a run inside the join window', async () => {
+    await periodsOf(['2026-09-03', '2026-09-04', '2026-09-10']);
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-10', merge: false } });
+    expect(await cycles()).toMatchObject([
+      { start_day: '2026-09-03', end_day: '2026-09-04', next_start: '2026-09-10', length_days: 7 },
+      { start_day: '2026-09-10' },
+    ]);
+  });
+  it('retracting the split restores the join', async () => {
+    await periodsOf(['2026-09-03', '2026-09-10']);
+    const split = await store.append({ kind: 'period.start', payload: { day: '2026-09-10', merge: false } });
+    await store.retract(split.id);
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-03']);
+  });
+  it('a bare period.start inside the join window joins (back-filling an earlier day)', async () => {
+    await store.append(flow('2026-09-25'));
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-20' } });
+    expect(await cycles()).toMatchObject([{ start_day: '2026-09-20', end_day: '2026-09-25' }]);
+  });
+  it('one explicit no-flow day inside the gap still joins; two split', async () => {
+    await periodsOf(['2026-09-01', '2026-09-02']);
+    await store.append(flow('2026-09-04', 'none'));
+    await store.append(flow('2026-09-06'));
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-01']);
+    await store.append(flow('2026-09-05', 'none'));
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-01', '2026-09-06']);
+  });
   it('spotting and non-period bleeding never start a cycle', async () => {
     await store.append(flow('2026-10-01', 'spotting'));
     await store.append(flow('2026-10-05', 'medium', 'withdrawal_bleed'));
@@ -240,8 +275,10 @@ describe('projection is order independent (property)', () => {
 });
 
 describe('merging a start into a later one (§5.4)', () => {
-  it('without the user confirming, a start 5 days before another is a separate cycle', async () => {
+  it('a start 5 days before another joins it unless the later day is split (D-052)', async () => {
     await periodsOf(['2026-09-20', '2026-09-25']);
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-20']);
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-25', merge: false } });
     expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-20', '2026-09-25']);
   });
   it('with a confirmed merge the two starts are one period beginning on the earlier day', async () => {

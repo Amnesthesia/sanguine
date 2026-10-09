@@ -25,18 +25,31 @@ describe('period logging: two taps (§8.4)', () => {
     await setFlow(store, '2026-10-10', 'medium');
     expect(await periodContext(db, '2026-10-11')).toEqual({ startsNew: false });
     expect(await periodContext(db, '2026-10-10')).toEqual({ startsNew: false });
-    expect(await periodContext(db, '2026-10-12')).toEqual({ startsNew: false }); // one missing day allowed
-    expect((await periodContext(db, '2026-10-13')).startsNew).toBe(true);
+    expect(await periodContext(db, '2026-10-12')).toEqual({ startsNew: false }); // one missing day: same period, nothing to ask
+    expect(await periodContext(db, '2026-10-13')).toEqual({ startsNew: false, joins: '2026-10-10' }); // up to 7 days: joins, the sheet asks
+    expect(await periodContext(db, '2026-10-17')).toEqual({ startsNew: false, joins: '2026-10-10' });
+    expect(await periodContext(db, '2026-10-18')).toEqual({ startsNew: true });
   });
-  it('offers a merge when another period starts within 7 days after the day', async () => {
+  it('a day up to 7 days before a period joins it and becomes its start', async () => {
     await setFlow(store, '2026-10-10', 'medium');
-    expect(await periodContext(db, '2026-10-05')).toEqual({ startsNew: true, mergeWith: '2026-10-10' });
-    expect((await periodContext(db, '2026-10-02')).mergeWith).toBeUndefined(); // 8 days
-  });
-  it('a confirmed merge turns both into one period from the earlier day', async () => {
-    await setFlow(store, '2026-10-10', 'medium');
-    await setFlow(store, '2026-10-05', 'medium', { merge: true });
+    expect(await periodContext(db, '2026-10-05')).toEqual({ startsNew: true, joins: '2026-10-10' });
+    expect(await periodContext(db, '2026-10-02')).toEqual({ startsNew: true }); // 8 days
+    await setFlow(store, '2026-10-05', 'medium');
     expect(await cycles()).toEqual([{ start_day: '2026-10-05', end_day: '2026-10-10' }]);
+  });
+  it('splitAt keeps a joining day as its own period, before or after', async () => {
+    await setFlow(store, '2026-09-01', 'medium');
+    await setFlow(store, '2026-09-03', 'light');
+    await setFlow(store, '2026-09-08', 'medium', { splitAt: '2026-09-08' });
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-09-01', '2026-09-08']);
+    await setFlow(store, '2026-08-27', 'medium', { splitAt: '2026-09-01' });
+    expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-08-27', '2026-09-01', '2026-09-08']);
+  });
+  it('clearing the flow on a split day retracts the split', async () => {
+    await setFlow(store, '2026-09-01', 'medium');
+    await setFlow(store, '2026-09-05', 'medium', { splitAt: '2026-09-05' });
+    await setFlow(store, '2026-09-05', 'none');
+    expect(await cycles()).toEqual([{ start_day: '2026-09-01', end_day: '2026-09-01' }]);
   });
   it('tapping the same level again is a clear: write level none', async () => {
     await setFlow(store, '2026-10-10', 'medium');

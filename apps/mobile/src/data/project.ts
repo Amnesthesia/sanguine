@@ -1,6 +1,6 @@
 // Pure projection of the event log (PLAN.md §5.3-5.4). Same events in, same rows out, in any input order.
 import {
-  analyzeCycles, RECENCY_LAMBDA, diffDays,
+  addDays, analyzeCycles, RECENCY_LAMBDA, diffDays,
   type CervixObs, type CycleRecord, type DailyLog, type EngineSettings, type History, type ISODate, type LhTest, type LifeState,
   type MucusObs, type TemperatureReading,
 } from '@sanguine/engine';
@@ -23,8 +23,11 @@ export interface LifeStateRow { id: string; kind: string; detail: string; from_d
 export interface Projection { cycles: CycleRow[]; dailyLog: DailyLogRow[]; biomarkers: BiomarkerRow[]; lifeStates: LifeStateRow[]; history: History; settings: EngineSettings }
 
 const byOrder = (a: EventRow, b: EventRow) => a.lamport - b.lamport || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-const PERIOD_GAP_DAYS = 2; // consecutive period days may be one missing day apart
-export const MERGE_WINDOW_DAYS = 7; // §5.4: a start within 7 days before an existing start can be merged into it
+/** §5.4 (D-052): period days up to 7 days apart are one period. A cycle shorter than MIN_VALID_LENGTH (15 d) is never valid, so joining
+ *  only removes fragments the engine would discard; a user who knows better splits with period.start { merge: false }. */
+export const PERIOD_JOIN_DAYS = 7;
+/** Explicit "no flow" days inside the gap: one is tolerated (a mistaken day cleared), two or more mean the user said the bleeding stopped. */
+export const PERIOD_JOIN_NONE_MAX = 1;
 
 /** Events that have not been retracted, in log order. A retract can itself be retracted, which restores its target. */
 export function activeEvents(events: EventRow[]): EventRow[] {
@@ -68,7 +71,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
     return x;
   };
   const periodStarts = new Set<ISODate>();
-  const mergeStarts = new Set<ISODate>(); // user-confirmed: this start belongs to the period that begins within 7 days after it
+  const splitStarts = new Set<ISODate>(); // user-confirmed: this day begins a new period even inside the join window
   const periodEnds: ISODate[] = [];
   const excluded: ISODate[] = [];
   const confirmedLong: ISODate[] = [];
@@ -82,7 +85,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
       case 'symptom': { const x = day(e.effective_day, e.id); if (p.intensity === 0) x.symptoms.delete(p.code as string); else x.symptoms.set(p.code as string, p.intensity as number); break; }
       case 'sex': day(e.effective_day, e.id).sex = { protected: p.protected as boolean }; break;
       case 'note': day(e.effective_day, e.id).note = p.cipher as string; break;
-      case 'period.start': periodStarts.add(e.effective_day); if (p.merge === true) mergeStarts.add(e.effective_day); break;
+      case 'period.start': periodStarts.add(e.effective_day); if (p.merge === false) splitStarts.add(e.effective_day); break;
       case 'period.end': periodEnds.push(e.effective_day); break;
       case 'cycle.exclude': excluded.push(p.cycle_start as ISODate); break;
       case 'cycle.confirm_long': confirmedLong.push(p.cycle_start as ISODate); break;
@@ -115,10 +118,15 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   for (const r of dailyLog) if (r.flow_kind === 'period' && (r.flow === 'light' || r.flow === 'medium' || r.flow === 'heavy')) periodDays.add(r.day);
   const sortedDays = [...periodDays].sort();
   const runs: Array<{ start: ISODate; end: ISODate }> = [];
+  const noneDays = new Set(dailyLog.filter((r) => r.flow === 'none').map((r) => r.day));
+  const explicitNones = (from: ISODate, to: ISODate): number => {
+    let n = 0;
+    for (let d = addDays(from, 1); d < to; d = addDays(d, 1)) if (noneDays.has(d)) n++;
+    return n;
+  };
   for (const d of sortedDays) {
     const last = runs.at(-1);
-    const gap = last ? diffDays(d, last.end) : 0;
-    if (last && (gap <= PERIOD_GAP_DAYS || (gap <= MERGE_WINDOW_DAYS && mergeStarts.has(last.start)))) last.end = d;
+    if (last && !splitStarts.has(d) && diffDays(d, last.end) <= PERIOD_JOIN_DAYS && explicitNones(last.end, d) <= PERIOD_JOIN_NONE_MAX) last.end = d;
     else runs.push({ start: d, end: d });
   }
   runs.forEach((r, i) => {
