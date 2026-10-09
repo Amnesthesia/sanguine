@@ -26,6 +26,7 @@ All application data resides exclusively in a local database on your phone. Star
 ## 5. Access and Correction (APP 12 and APP 13)
 Because the developer maintains no central user accounts and holds no copy of your records, you exercise access, export, correction, and deletion directly within the application:
 - Access and export: You can export your entire event log at any time as JSON or CSV files via Settings -> Privacy and data.
+- Calendar file: Settings -> Privacy and data -> Add to someone's calendar creates a calendar file holding only your predicted period date range (and, if you choose, your estimated fertile date range), under event titles you choose. The file goes only where you send it through your phone's share sheet; once sent, it is in the recipient's calendar and outside Sanguine's control.
 - Correction: You can edit or retract any logged entry directly on the day detail screen.
 - Erasure: You can permanently erase all data on your device at any time by selecting "Delete everything" in Settings -> Privacy and data.
 

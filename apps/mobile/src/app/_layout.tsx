@@ -67,6 +67,7 @@ function Shell() {
           <Stack.Screen name="settings/lifestate" />
           <Stack.Screen name="settings/health" />
           <Stack.Screen name="settings/privacy" />
+          <Stack.Screen name="settings/calendar" />
           <Stack.Screen name="settings/backup" />
           <Stack.Screen name="settings/legal" />
           <Stack.Screen name="settings/notifications" />

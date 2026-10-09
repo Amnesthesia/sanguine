@@ -81,6 +81,10 @@ export const POLICIES = {
       },
       {
         "type": "li",
+        "text": "Calendar file: Settings -> Privacy and data -> Add to someone's calendar creates a calendar file holding only your predicted period date range (and, if you choose, your estimated fertile date range), under event titles you choose. The file goes only where you send it through your phone's share sheet; once sent, it is in the recipient's calendar and outside Sanguine's control."
+      },
+      {
+        "type": "li",
         "text": "Correction: You can edit or retract any logged entry directly on the day detail screen."
       },
       {

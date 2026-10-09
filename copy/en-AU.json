@@ -504,6 +504,22 @@
         "keep": "Keep it"
       }
     },
+    "calendar": {
+      "title": "Add to someone's calendar",
+      "rowDesc": "Send your predicted period range as a calendar file.",
+      "intro": "This makes a calendar file with your predicted period as a range of days. You send it with the share sheet, for example to a partner, who adds it to their calendar. Nothing is sent unless you send it.",
+      "period": "Period likely {range}",
+      "fertile": "Fertile window estimate {range}",
+      "none": "There is no period estimate yet. Log a period to make one.",
+      "eventTitle": "Event title",
+      "eventTitleHelp": "What the other calendar shows. A single letter keeps it private.",
+      "includeFertile": "Include the fertile window estimate",
+      "includeFertileDesc": "Added as a range of days, never a single day. It is an estimate only.",
+      "fertileTitle": "Fertile window event title",
+      "share": "Share calendar file",
+      "resend": "To update the dates later, send a new file. Calendars that recognise the event replace it; in others, delete the earlier event first.",
+      "failed": "The calendar file could not be shared."
+    },
     "privacy": {
       "title": "Privacy and data",
       "intro": "Your data is stored only on this phone, in an encrypted database. Sanguine has no account and no server.",

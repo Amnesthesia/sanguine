@@ -8,6 +8,7 @@ import { buildToday } from '@/features/today/todayModel';
 import { calendarLegend } from '@/features/calendar/calendarModel';
 import { healthRows } from '@/features/health/healthModel';
 import { moreRows } from '@/features/logging/moreRows';
+import { calendarRanges } from '@/features/share/ics';
 
 const today = '2026-10-09';
 const teenProfile = { birthDate: '2010-10-10' }; // 15, and 16 tomorrow
@@ -66,6 +67,17 @@ describe('surfaces', () => {
   });
 });
 
+describe('calendar export (P8-2, D-079)', () => {
+  it('offers no fertile range when the estimate is hidden (teen until unlocked), even if asked', () => {
+    const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
+    const starts = ['2026-07-06', '2026-08-03', '2026-09-01', '2026-10-01'];
+    const h: History = { cycles: starts.map((st, i) => ({ id: `c${i}`, start: st, end: addDays(st, 4), quality: 'valid' as const })), temperatures: [], lh: [], mucus: [], cervix: [], logs: [] };
+    const p = predict(h, S, '2026-10-10');
+    expect(calendarRanges(p, { fertile: eff(teenProfile).showOvulationEstimate }).fertile).toBeUndefined();
+    expect(calendarRanges(p, { fertile: eff(adultProfile).showOvulationEstimate }).fertile).toBeDefined(); // the same data does for an adult
+  });
+});
+
 describe('every surface reads the teen rules', () => {
   const root = join(__dirname, '..', '..');
   const read = (p: string) => readFileSync(join(root, p), 'utf8');
@@ -78,5 +90,6 @@ describe('every surface reads the teen rules', () => {
     ['app/settings/health.tsx', 'fertilityTools'],
     ['app/_layout.tsx', 'isTeen'],
     ['app/settings/about.tsx', 'isTeen'],
+    ['app/settings/calendar.tsx', 'effectivePrefs(prefs, profile, today).showOvulationEstimate'],
   ])('%s uses %s', (file, word) => expect(read(file)).toContain(word));
 });

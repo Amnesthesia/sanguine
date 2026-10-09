@@ -90,7 +90,7 @@ As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the h
 ## Phase 8 — Competitive gaps (docs/ROADMAP.md §2.3; plan docs/superpowers/plans/2026-10-10-competitive-gaps.md)
 
 - [x] P8-1 drip import through the shared DailyRow writer, cervix included (D-078; roadmap R2-4).
-- [ ] P8-2 Calendar (.ics) export of the predicted period range, optional fertile range, teen-gated (D-079; R2-3, owner approved in D-077).
+- [x] P8-2 Calendar (.ics) export of the predicted period range, optional fertile range, teen-gated (D-079; R2-3, owner approved in D-077).
 - [ ] P8-3 "How Sanguine estimates" reference pages under About (R2-6).
 - [ ] P8-4 Perimenopause view in Insights: variability facts, vasomotor symptom counts, no stage label, no 12-month milestone (R3-1).
 - [ ] P8-5 Pregnancy view on Today: gestational week and day, due date as a range (R3-2).

@@ -1,0 +1,35 @@
+appId: ${APP_ID}
+name: Add to someone's calendar shows the period range and opens the share sheet with a calendar file (P8-2, D-079)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-privacy
+- tapOn:
+    id: privacy-calendar
+- extendedWaitUntil:
+    visible:
+      id: calendar-export-preview
+    timeout: 10000
+- assertVisible: "Period likely .*"
+- assertNotVisible: "Fertile window estimate .*"
+- tapOn:
+    id: calendar-export-fertile
+- assertVisible: "Fertile window estimate .*"
+- takeScreenshot: calendar-export
+- scrollUntilVisible:
+    element:
+      id: calendar-export-share
+- tapOn:
+    id: calendar-export-share
+- extendedWaitUntil:
+    visible: "(?i)(save to files|copy|more|airdrop|messages|calendar|cancel|close).*"
+    timeout: 20000
+- takeScreenshot: calendar-share-sheet
