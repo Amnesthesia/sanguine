@@ -1,47 +1,49 @@
-# Handoff (state at 2026-10-09 13:45; refresh when you pick this up)
+# Handoff (state at 2026-10-09 15:10; refresh when you pick this up)
 
-Read `docs/agents/README.md` first. This file is only "what was in flight and what comes next". It goes stale fast: check
-`git log --oneline -15`, `git status`, and `docs/BACKLOG.md` before trusting it.
+Read `docs/agents/README.md` first. This file is only "what is done, what is open, what bites". It goes stale fast: check
+`git log --oneline -15`, `git status` and `docs/BACKLOG.md` before trusting it.
 
-## In flight when this was written
+## Where things stand
 
-- A full **iOS Maestro suite** was running on the reverted tree (brand v2 cut back by D-051, plus the date-of-birth change D-055):
-  `CLIENT=dev ITEM=D-051-revert apps/mobile/.maestro/suite.sh ios`, output in `/private/tmp/claude-501/suite-ios-dev.txt`
-  (may be gone). Screenshots go to `docs/screenshots/D-051-revert-devclient/` (not yet committed).
-  A screen recording of it was also running (`xcrun simctl io … recordVideo`, `/private/tmp/claude-501/suite-ios.mp4`); stop
-  it with `pkill -f recordVideo` if still running.
-- If the suite is not green or was cut off: rerun it (or only the failing flows) on the iPhone 17 Pro Max, then commit the
-  screenshots by explicit path. Everything else from this session is committed (last commits: 83b3540 P3-14 backlog,
-  c66fdee P3-13 importer). Unit tests: 632 pass, typecheck and lint clean.
+Everything in `docs/BACKLOG.md` that does not need a person, an Android emulator or hardware is built, tested and committed:
+Phase 4 health sync (core, HealthKit and Health Connect drivers, settings), P3-7 cloud backup, P3-8 icons, Phase 5 release
+readiness, open-source files, under-18 audit, Phase 6 locale rules, translation pipeline and GDPR consent. Decisions D-057 to D-064
+record the choices; the implementation plan that was followed is `docs/superpowers/plans/2026-10-09-remaining-work.md`.
 
-## Ground rules that changed today (owner decisions)
+A full iOS Maestro suite (`CLIENT=dev ITEM=suite-p4 apps/mobile/.maestro/suite.sh ios`, output in
+`/private/tmp/claude-501/suite-ios-p4.txt`) was started on the finished tree: look at its result before anything else.
 
-- **iOS simulator only** for device testing (iPhone 17 Pro Max `1C4C0CE9-4A7A-441F-8FCA-5EDBD373D757`). Never boot the Android
-  emulator: memory is exhausted. A full Android check and fix-up is backlog **P3-14**, to be run later as one pass.
-- One simulator, one Maestro run at a time across all sessions; Metro on **8090** only; no app-source edits while a suite runs
-  (a save reloads the app under it). Other sessions share this checkout: stage by explicit path, ask before editing files
-  someone else has modified, announce new decision ids (next free is **D-057**; check `grep -n "^- D-0" docs/DECISIONS.md`).
-- Brand: logo, splash, taglines, icons and the About band are the client's v2 assets; the in-app palette and fonts are the
-  pre-v2 white/black design (D-051). The emblem/logotype PNGs were cut from reference renders because the originals were
-  not delivered (D-049): needs the client's files.
-- Copy addresses women (D-050). Onboarding asks for a date of birth (D-055).
+## Still open
 
-## Next steps, in order
+| Item | Why | What it needs |
+| --- | --- | --- |
+| P3-14 full Android pass (and P4-3 runtime, P3-5b) | owner rule: no Android emulator until one dedicated pass | rebuild the Android dev client; run `suite.sh android`; check the unverified Health Connect permission strings and `getChanges` behaviour (D-060 (7)); schedule the hourly Android background read |
+| P4-5 wrist temperature | the platform type is read-only, so no sample can be seeded | a real Apple Watch or Health Connect device |
+| P5-1 Flo and Clue importers | no documented export format (D-062) | one real export from each app |
+| Phase 7 | optional, funded, separate decision | owner |
 
-1. Close out the iOS verification above; commit `docs/screenshots/D-051-revert-devclient/`; tell the other sessions the
-   simulator is free.
-2. **P3-7** cloud backup upload (iCloud Drive container entitlement; Google Drive appDataFolder via expo-auth-session);
-   restore E2E; move Argon2 back to 64 MiB × 3 with native libsodium (D-034). Needs a native build and entitlements: plan it
-   and record any step that needs the owner (Apple/Google accounts).
-3. **P3-8** final native icon and splash assets (Icon Composer layers, adaptive icon) and a check on the iOS home screen.
-4. **P3-13** Natural Cycles importer (another session was working on it; check git log before starting).
-5. **Phase 4 health sync**: P4-1 `packages/health-adapter` core with a fake driver (pure, test-first), then P4-2 iOS
-   HealthKit driver, P4-3 Android Health Connect driver, P4-4 settings and permission UX, P4-5 wearable temperature.
-6. **P3-14** full Android pass; **P3-5b** Android widget when expo-widgets' Android renderer exists.
-7. Phase 5+ needs the owner (store accounts, signing, legal review).
+## Needs the owner (also in `docs/PROGRESS.md`)
 
-## Needs a human (also in `docs/PROGRESS.md`)
+Store accounts, signing, `EXPO_TOKEN` secret, export-compliance answers, age-rating questionnaires, privacy-policy URL and the policy
+placeholders (controller, contact, response times: the in-app policy screens stay hidden until they are filled and `pnpm policy`
+is rerun), a GDPR representative, legal review, translators and a clinician check for de/fr/es/pt-BR (`docs/i18n/README.md`), an Apple
+team with the iCloud container `iCloud.app.sanguine.mobile`, a Google OAuth client id (`extra.googleDriveClientId`), the client's
+original brand files and permission to publish them, the trademark check on the taglines, making the repository public, the real-phone
+checks (screen protection, VoiceOver and TalkBack, Apple Watch).
 
-Client's original emblem.png / logotype.png / client-logo.jpeg; real-phone check that screen protection blanks screenshots;
-the VoiceOver/TalkBack script in `docs/accessibility.md`; legal review of the three policy drafts; trademark check on the
-six taglines; Natural Cycles sample export for the importer (if still missing).
+## Things that bit this session (so they do not bite again)
+
+- **Never `git stash` on this shared tree.** Other sessions have uncommitted work in it. Stage by explicit path; check
+  `git diff --cached --name-only` before every commit.
+- `pnpm install` prunes and re-adds packages (it prints "-123"): harmless, but run it only when a dependency changed. Use
+  `--ignore-scripts`. `pnpm typecheck` (not `-s`) shows the real output; also run `npx tsc --noEmit -p .` in `apps/mobile`.
+- Generated files that tests keep current: `pnpm soup` (SOUP list), `pnpm i18n:extract` (strings CSV), `pnpm i18n:index`,
+  `pnpm policy` (in-app policies). A copy, dependency or policy change needs the matching command.
+- HealthKit raises an uncatchable native exception (the app dies) for a menstrual flow sample without the cycle-start key or one that
+  lasts a full day; it returns some booleans as 1 and 0. See D-060.
+- Network calls are allowed only in `apps/mobile/src/services/cloud/` (`tools/ci/network.test.ts`).
+- A native rebuild (new native module, plugin or entitlement) is `npx expo prebuild --platform ios --no-install` then
+  `npx expo run:ios --device <udid> --no-bundler` (about 25 minutes cold); tell other sessions first, it replaces the installed app.
+- On the simulator, deep links that replace the route leave the previous screen behind: Maestro flows navigate by deep link
+  (`sanguine://settings/health`) instead of `back`.
+- The `agy-bridge` web lookup returned empty twice this session; WebSearch and WebFetch worked.
