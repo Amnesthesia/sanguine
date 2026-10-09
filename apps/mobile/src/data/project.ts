@@ -6,7 +6,7 @@ import {
 } from '@sanguine/engine';
 import type { EventRow } from './events';
 
-export interface Profile { birthYear?: number; menarcheYear?: number; recencyLambda?: number; window?: number; usualCycleLength?: number }
+export interface Profile { birthYear?: number; birthDate?: string; menarcheYear?: number; recencyLambda?: number; window?: number; usualCycleLength?: number }
 
 export interface CycleRow {
   id: string; start_day: ISODate; end_day: ISODate | null; next_start: ISODate | null; length_days: number | null; bleed_days: number | null;

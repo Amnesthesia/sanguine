@@ -74,7 +74,7 @@ xcrun simctl io booted screenshot /tmp/x.png          # iOS
 adb exec-out screencap -p > /tmp/x.png                # Android
 ```
 
-With screen protection on, hand screenshots can be blank; the dev seed route turns protection off unless `protect=1`.
+Screen protection (default on) blanks screenshots, but it is inert in debug builds (`__DEV__`, D-055), so dev-client screenshots always work; if one is black anyway, look for a release build.
 Downscale before reading them (`sips -Z 700 in.png --out out.png`).
 
 ## 5. Gotchas (symptom → cause → fix)

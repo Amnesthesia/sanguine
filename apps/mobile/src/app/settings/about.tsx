@@ -21,8 +21,9 @@ export default function AboutScreen() {
   const theme = useTheme();
   const brand = BRAND[theme.scheme]; // the brand field lives here and on the splash only (D-051)
   const launchCount = useApp((s) => s.launchCount);
-  const birthYear = useApp((s) => s.profile.birthYear);
-  const tagline = taglineFor(launchCount, t('app.taglines', { returnObjects: true }) as string[], isTeen(birthYear, new Date().getFullYear()));
+  const profile = useApp((s) => s.profile);
+  const today = useApp((s) => s.today);
+  const tagline = taglineFor(launchCount, t('app.taglines', { returnObjects: true }) as string[], isTeen(profile, today));
   const version = Constants.expoConfig?.version ?? '0';
   return (
     <SubScreen testID="screen-about" title={t('settings.about.title')}>

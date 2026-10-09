@@ -22,8 +22,7 @@ export default function TodayScreen() {
     void db?.get<{ flow: string | null }>('SELECT flow FROM daily_log WHERE day = ?', [today]).then((r) => setTodayFlow(r?.flow ?? undefined));
   }, [db, today, version]);
 
-  const year = Number(today.slice(0, 4));
-  const eff = effectivePrefs(prefs, profile.birthYear, year);
+  const eff = effectivePrefs(prefs, profile, today);
   const lastCycle = history?.cycles.at(-1);
   const bleedDays = lastCycle?.end ? diffDays(lastCycle.end, lastCycle.start) + 1 : undefined;
   const model = useMemo(

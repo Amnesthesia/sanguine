@@ -30,12 +30,14 @@ describe('prefs', () => {
     expect(await loadPrefs(db)).toMatchObject({ theme: 'dark', notifications: { period: true, descriptive: false }, tempUnit: 'C' });
   });
   it('teen mode (13-17) hides the ovulation estimate until unlocked; adults follow the preference', () => {
-    expect(isTeen(2012, 2026)).toBe(true);
-    expect(isTeen(2008, 2026)).toBe(false);
-    expect(isTeen(undefined, 2026)).toBe(false);
-    expect(effectivePrefs(DEFAULT_PREFS, 2012, 2026).showOvulationEstimate).toBe(false);
-    expect(effectivePrefs({ ...DEFAULT_PREFS, teenUnlockEstimate: true }, 2012, 2026).showOvulationEstimate).toBe(true);
-    expect(effectivePrefs(DEFAULT_PREFS, 1990, 2026).showOvulationEstimate).toBe(true);
-    expect(effectivePrefs({ ...DEFAULT_PREFS, showOvulationEstimate: false }, 1990, 2026).showOvulationEstimate).toBe(false);
+    const today = '2026-10-09';
+    expect(isTeen({ birthYear: 2012 }, today)).toBe(true);
+    expect(isTeen({ birthYear: 2008 }, today)).toBe(false);
+    expect(isTeen({}, today)).toBe(false);
+    expect(isTeen({ birthDate: '2008-10-10', birthYear: 2008 }, today)).toBe(true); // 17 until tomorrow
+    expect(effectivePrefs(DEFAULT_PREFS, { birthYear: 2012 }, today).showOvulationEstimate).toBe(false);
+    expect(effectivePrefs({ ...DEFAULT_PREFS, teenUnlockEstimate: true }, { birthYear: 2012 }, today).showOvulationEstimate).toBe(true);
+    expect(effectivePrefs(DEFAULT_PREFS, { birthYear: 1990 }, today).showOvulationEstimate).toBe(true);
+    expect(effectivePrefs({ ...DEFAULT_PREFS, showOvulationEstimate: false }, { birthYear: 1990 }, today).showOvulationEstimate).toBe(false);
   });
 });

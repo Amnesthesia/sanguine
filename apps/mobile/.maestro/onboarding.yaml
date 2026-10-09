@@ -15,9 +15,11 @@ name: Onboarding, five steps (adult, with last period and life state)
     id: onboarding-continue
 # step 2: age is required
 - assertVisible: "How old are you?"
+# the date-of-birth selector starts thirty years back; ten years earlier makes it forty
+- assertVisible:
+    id: birth-date
 - tapOn:
-    id: birth-year
-- inputText: "1990"
+    id: birth-date-year-down10
 - takeScreenshot: step2-age
 - tapOn:
     id: onboarding-continue

@@ -12,7 +12,9 @@ const APP_KEY = 'sanguine.app';
 export function ScreenProtection() {
   const on = useApp((s) => s.prefs.screenProtection);
   useEffect(() => {
-    if (Platform.OS === 'web') return;
+    // Debug builds never block capture: it also blanks the simulators' own screenshots, which the Maestro flows depend on
+    // (unseeded flows such as onboarding included). Release builds are unaffected (D-055).
+    if (Platform.OS === 'web' || __DEV__) return;
     if (on) {
       void preventScreenCaptureAsync(APP_KEY).catch(() => {});
       if (Platform.OS === 'ios') void enableAppSwitcherProtectionAsync(0.5).catch(() => {});
@@ -24,8 +26,12 @@ export function ScreenProtection() {
   return null;
 }
 
-/** Mount inside a screen that must never be captured (the recovery code). */
-export function NoCapture() {
+function Block() {
   usePreventScreenCapture('sanguine.recovery');
   return null;
+}
+
+/** Mount inside a screen that must never be captured (the recovery code). Inert in debug builds, like the app-wide block. */
+export function NoCapture() {
+  return __DEV__ ? null : <Block />;
 }

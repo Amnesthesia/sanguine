@@ -17,8 +17,9 @@ import { OptionList } from '@/ui/OptionList';
 import { ProgressDots } from '@/ui/ProgressDots';
 import { TextField } from '@/ui/TextField';
 import { Text } from '@/ui/Text';
+import { defaultBirthDate, isTeenOn, validateBirthDate } from '@/data/age';
 import {
-  type Answers, buildOnboardingWrites, canContinue, isTeenYear, LIFE_CHOICES, METHODS, TOTAL_STEPS, validateBirthYear, validateMenarcheYear, validateUsualLength,
+  type Answers, buildOnboardingWrites, canContinue, LIFE_CHOICES, METHODS, TOTAL_STEPS, validateMenarcheYear, validateUsualLength,
 } from './model';
 
 type LastChoice = 'today' | 'yesterday' | 'weekAgo' | 'other';
@@ -37,7 +38,7 @@ export function OnboardingFlow() {
   const year = Number(today.slice(0, 4));
 
   const [step, setStep] = useState(0);
-  const [birthText, setBirthText] = useState('');
+  const [birthDate, setBirthDate] = useState(defaultBirthDate(today)); // the selector starts 30 years back; the age gate is checked on the chosen date
   const [menarcheText, setMenarcheText] = useState('');
   const [usualText, setUsualText] = useState('');
   const [lastChoice, setLastChoice] = useState<LastChoice | undefined>();
@@ -49,14 +50,13 @@ export function OnboardingFlow() {
   const [lockAvailable, setLockAvailable] = useState<boolean | undefined>();
   useEffect(() => { void deviceHasLock().then(setLockAvailable); }, []);
 
-  const birthYear = num(birthText, 4);
   const lastPeriod = lastChoice === 'today' ? today : lastChoice === 'yesterday' ? addDays(today, -1) : lastChoice === 'weekAgo' ? addDays(today, -7) : lastChoice === 'other' ? other : undefined;
-  const answers: Answers = { birthYear, menarcheYear: num(menarcheText, 4), lastPeriod, usualLength: num(usualText), ...a };
-  const birthCheck = birthText.length === 4 ? validateBirthYear(birthYear, year) : { ok: true as const };
-  const menarcheCheck = menarcheText.length === 4 ? validateMenarcheYear(answers.menarcheYear, birthYear, year) : { ok: true as const };
+  const answers: Answers = { birthDate, menarcheYear: num(menarcheText, 4), lastPeriod, usualLength: num(usualText), ...a };
+  const birthCheck = validateBirthDate(birthDate, today);
+  const menarcheCheck = menarcheText.length === 4 ? validateMenarcheYear(answers.menarcheYear, birthDate, year) : { ok: true as const };
   const usualCheck = validateUsualLength(answers.usualLength);
-  const teen = birthYear !== undefined && birthCheck.ok && isTeenYear(birthYear, year);
-  const ok = canContinue(step, answers, year);
+  const teen = birthCheck.ok && isTeenOn({ birthDate }, today);
+  const ok = canContinue(step, answers, today);
   const healthLabel = Platform.OS === 'ios' ? tr('onboarding.s5.importIos') : tr('onboarding.s5.importAndroid');
 
   async function finish() {
@@ -93,8 +93,10 @@ export function OnboardingFlow() {
 
         {step === 1 && (<>
           {title('onboarding.s2.title')}
-          <TextField testID="birth-year" label={tr('onboarding.s2.yearLabel')} value={birthText} onChangeText={(s) => setBirthText(digits(s).slice(0, 4))} maxLength={4} placeholder="1990" helper={tr('onboarding.s2.ageHelp')}
-            error={!birthCheck.ok ? (birthCheck.reason === 'tooYoung' ? tr('onboarding.s2.tooYoung') : tr('onboarding.s2.invalidYear')) : undefined} />
+          <Text variant="bodySmall" color="textSecondary">{tr('onboarding.s2.dateLabel')}</Text>
+          <DateField testID="birth-date" value={birthDate} onChange={setBirthDate} min={addDays(today, -365 * 110)} max={today} yearJump />
+          <Text variant="bodySmall" color="textSecondary">{tr('onboarding.s2.ageHelp')}</Text>
+          {!birthCheck.ok ? <Text variant="bodySmall" testID="birth-error" style={{ color: t.c.period }} accessibilityLiveRegion="polite">{birthCheck.reason === 'tooYoung' ? tr('onboarding.s2.tooYoung') : tr('onboarding.s2.invalidDate')}</Text> : null}
           <TextField testID="menarche-year" label={tr('onboarding.s2.menarcheLabel')} value={menarcheText} onChangeText={(s) => setMenarcheText(digits(s).slice(0, 4))} maxLength={4} error={!menarcheCheck.ok ? tr('onboarding.s2.invalidYear') : undefined} />
           {teen ? <Text variant="bodySmall" color="textSecondary" testID="teen-note">{tr('onboarding.teenNote')}</Text> : null}
         </>)}

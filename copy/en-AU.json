@@ -50,11 +50,12 @@
     },
     "s2": {
       "title": "How old are you?",
-      "yearLabel": "Year of birth",
+      "dateLabel": "Date of birth",
       "menarcheLabel": "Year of first period (optional)",
       "tooYoung": "Sanguine is for people aged 13 and over.",
-      "ageHelp": "Your age sets the starting ranges for estimates. It stays on this phone.",
-      "invalidYear": "Enter a four-digit year."
+      "ageHelp": "Your age sets the starting ranges for estimates. Your date of birth stays on this phone.",
+      "invalidYear": "Enter a four-digit year.",
+      "invalidDate": "Choose a real date of birth."
     },
     "s3": {
       "title": "When did your last period start?",
@@ -570,6 +571,8 @@
     "year": "Year",
     "earlier": "Earlier {unit}",
     "later": "Later {unit}",
+    "earlierTen": "Ten years earlier",
+    "laterTen": "Ten years later",
     "selected": "{date}"
   }
 }

@@ -39,8 +39,7 @@ export default function CalendarScreen() {
   const [selected, setSelected] = useState<ISODate>(today);
   const [summary, setSummary] = useState<string[]>([]);
 
-  const year = Number(today.slice(0, 4));
-  const showEstimate = SHOW_OVULATION_ESTIMATE && effectivePrefs(prefs, profile.birthYear, year).showOvulationEstimate;
+  const showEstimate = SHOW_OVULATION_ESTIMATE && effectivePrefs(prefs, profile, today).showOvulationEstimate;
   const model = useMemo(() => buildMonth({ month, today, periodDays, loggedDays, prediction, showEstimate }), [month, today, periodDays, loggedDays, prediction, showEstimate]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the day after every write

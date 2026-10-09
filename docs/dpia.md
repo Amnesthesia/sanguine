@@ -21,7 +21,7 @@ This assessment evaluates processing operations within Sanguine, a free on-devic
 ## 3. Necessity, Proportionality, and Lawful Basis
 - Lawful basis: Explicit consent under GDPR Article 9(2)(a), obtained via a dedicated onboarding screen prior to any data entry. Users may withdraw consent at any time.
 - Proportionality: Sanguine processes only the specific data points entered by the user to calculate cycle estimates and display calendar views. No secondary processing or automated profiling occurs.
-- Data minimisation: Age is the sole required onboarding field to confirm eligibility. All other logging is optional. Data stays on the device until erased by the user.
+- Data minimisation: Age, entered as a date of birth (D-055, so the minimum age of 13 is checked exactly), is the sole required onboarding field to confirm eligibility. All other logging is optional. Data stays on the device until erased by the user.
 
 ## 4. Assessment of Hazards, Mitigations, and Residual Levels
 

@@ -3,8 +3,9 @@ import type { ISODate } from '@sanguine/engine';
 import type { NewEvent } from '@/data/events';
 import type { Profile } from '@/data/project';
 
-/** Minimum age (PLAN.md §2.4). Checked by year of birth because that is all the engine needs and all we ask for. */
-export const MIN_AGE = 13;
+import { type Check, MIN_AGE, validateBirthDate } from '@/data/age';
+
+export { MIN_AGE };
 export const TOTAL_STEPS = 5;
 
 export type LifeChoice = 'none' | 'hormonal' | 'postHormonal' | 'pregnant' | 'postpartum' | 'afterLoss' | 'perimenopause' | 'irregular';
@@ -13,7 +14,8 @@ export const METHODS = ['combined_pill', 'pop', 'implant', 'injection', 'hormona
 export type Method = (typeof METHODS)[number];
 
 export interface Answers {
-  birthYear: number | undefined;
+  /** Date of birth (D-054). The engine still receives only the year. */
+  birthDate: ISODate | undefined;
   menarcheYear: number | undefined;
   lastPeriod: ISODate | undefined;
   usualLength: number | undefined;
@@ -25,19 +27,10 @@ export interface Answers {
   consent: boolean;
 }
 
-export type Check = { ok: true } | { ok: false; reason: 'required' | 'tooYoung' | 'invalid' };
 const OK: Check = { ok: true };
 
-/** Teen mode: 13-17 by year of birth (PLAN.md §8.6). */
-export const isTeenYear = (birthYear: number, year: number): boolean => year - birthYear < 18;
-export const ageByYear = (birthYear: number, year: number): number => year - birthYear;
-
-export function validateBirthYear(y: number | undefined, year: number): Check {
-  if (y === undefined) return { ok: false, reason: 'required' };
-  if (!Number.isInteger(y) || y < year - 120) return { ok: false, reason: 'invalid' };
-  return ageByYear(y, year) < MIN_AGE ? { ok: false, reason: 'tooYoung' } : OK;
-}
-export function validateMenarcheYear(m: number | undefined, birthYear: number | undefined, year: number): Check {
+export function validateMenarcheYear(m: number | undefined, birthDate: ISODate | undefined, year: number): Check {
+  const birthYear = birthDate === undefined ? undefined : Number(birthDate.slice(0, 4));
   if (m === undefined) return OK;
   if (!Number.isInteger(m) || m > year || (birthYear !== undefined && m - birthYear < 8)) return { ok: false, reason: 'invalid' };
   return OK;
@@ -48,8 +41,8 @@ export function validateUsualLength(n: number | undefined): Check {
 }
 
 /** Only age is required (step index 1); the last step needs the data-handling acknowledgement. */
-export function canContinue(step: number, a: Answers, year: number): boolean {
-  if (step === 1) return validateBirthYear(a.birthYear, year).ok && validateMenarcheYear(a.menarcheYear, a.birthYear, year).ok;
+export function canContinue(step: number, a: Answers, today: ISODate): boolean {
+  if (step === 1) return validateBirthDate(a.birthDate, today).ok && validateMenarcheYear(a.menarcheYear, a.birthDate, Number(today.slice(0, 4))).ok;
   if (step === 2) return validateUsualLength(a.usualLength).ok;
   if (step === TOTAL_STEPS - 1) return a.consent;
   return true;
@@ -57,7 +50,7 @@ export function canContinue(step: number, a: Answers, year: number): boolean {
 
 export function buildOnboardingWrites(a: Answers, today: ISODate): { profile: Profile; events: NewEvent[] } {
   const profile: Profile = {
-    ...(a.birthYear !== undefined ? { birthYear: a.birthYear } : {}),
+    ...(a.birthDate !== undefined ? { birthDate: a.birthDate, birthYear: Number(a.birthDate.slice(0, 4)) } : {}),
     ...(a.menarcheYear !== undefined ? { menarcheYear: a.menarcheYear } : {}),
     ...(a.usualLength !== undefined ? { usualCycleLength: a.usualLength } : {}),
   };

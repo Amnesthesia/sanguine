@@ -82,7 +82,8 @@ export default function RootLayout() {
   const [splashShown, setSplashShown] = useState(false);
   const splashDone = useCallback(() => setSplashShown(true), []);
   const launchCount = useApp((s) => s.launchCount);
-  const birthYear = useApp((s) => s.profile.birthYear);
+  const profile = useApp((s) => s.profile);
+  const today = useApp((s) => s.today);
   const { t: trSplash } = useTranslation();
 
   useEffect(() => { void init(); }, [init]);
@@ -103,7 +104,7 @@ export default function RootLayout() {
           <Shell />
         </LockGate>
         <ScreenProtection />
-        {!splashShown && <BrandSplash tagline={taglineFor(launchCount, trSplash('app.taglines', { returnObjects: true }) as string[], isTeen(birthYear, new Date().getFullYear()))} onDone={splashDone} />}
+        {!splashShown && <BrandSplash tagline={taglineFor(launchCount, trSplash('app.taglines', { returnObjects: true }) as string[], isTeen(profile, today))} onDone={splashDone} />}
       </ThemeProvider>
     </SafeAreaProvider>
   );

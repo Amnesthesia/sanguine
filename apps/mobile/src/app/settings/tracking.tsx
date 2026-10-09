@@ -10,7 +10,7 @@ import { Text } from '@/ui/Text';
 export default function TrackingScreen() {
   const { t } = useTranslation();
   const { prefs, profile, today, updatePrefs } = useApp();
-  const eff = effectivePrefs(prefs, profile.birthYear, Number(today.slice(0, 4)));
+  const eff = effectivePrefs(prefs, profile, today);
   const toggleSymptom = (code: string, on: boolean) => {
     const set = new Set(prefs.symptoms);
     if (on) set.add(code); else set.delete(code);

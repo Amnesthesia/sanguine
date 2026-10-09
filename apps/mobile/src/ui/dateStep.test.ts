@@ -14,6 +14,11 @@ describe('stepDate', () => {
     expect(stepDate('2026-01-15', 'month', -1, MIN, MAX)).toBe('2025-12-15');
     expect(stepDate('2025-12-15', 'month', 1, MIN, MAX)).toBe('2026-01-15');
   });
+  it('a year jump of ten steps ten years and still clamps', () => {
+    expect(stepDate('2000-06-15', 'year', -1, '1900-01-01', MAX, 10)).toBe('1990-06-15');
+    expect(stepDate('2000-02-29', 'year', 1, '1900-01-01', '2030-01-01', 10)).toBe('2010-02-28');
+    expect(stepDate('1905-06-15', 'year', -1, '1900-01-01', MAX, 10)).toBe('1900-01-01');
+  });
   it('years clamp the leap day', () => expect(stepDate('2024-02-29', 'year', 1, MIN, MAX)).toBe('2025-02-28'));
   it('never leaves [min, max]', () => {
     expect(stepDate(MAX, 'day', 1, MIN, MAX)).toBe(MAX);
