@@ -35,9 +35,10 @@ name: Health sync (Android) - Health Connect permission screen, first pass runs 
       visible: "^Allow$"
     commands:
       - tapOn: "^Allow$"
-- extendedWaitUntil:
-    visible:
+- scrollUntilVisible:
+    element:
       id: health-result
+    direction: UP
     timeout: 60000
 - assertVisible: "Added 0.*"
 - assertNotVisible:
