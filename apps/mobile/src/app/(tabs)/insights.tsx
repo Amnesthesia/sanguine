@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 import { ledgerSummary, type LedgerSummary } from '@/data/ledger';
 import { fromC } from '@/features/logging/actions';
+import { effectivePrefs } from '@/data/prefs';
 import { LengthChart, TempChart } from '@/features/insights/charts';
 import { accuracyText, cycleLengthSeries, historyRows, phaseBars } from '@/features/insights/insightsModel';
 import { addPastPregnancy } from '@/features/settings/lifeState';
@@ -22,7 +23,8 @@ export default function InsightsScreen() {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const router = useRouter();
-  const { history, settings, prediction, today, prefs, db, store, refresh, version } = useApp();
+  const { history, settings, prediction, today, prefs, profile, db, store, refresh, version } = useApp();
+  const { fertilityTools } = effectivePrefs(prefs, profile, today);
   const [tab, setTab] = useState<Tab>('history');
   const [ledger, setLedger] = useState<LedgerSummary>({ total: 0, in80: 0, in95: 0, meanAbsError: 0 });
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the ledger after every write
@@ -37,8 +39,8 @@ export default function InsightsScreen() {
   const temps = useMemo(() => {
     if (!open || !history) return { points: [] as Array<{ day: number; value: number }>, coverline: undefined as number | undefined };
     const mine = history.temperatures.filter((r) => r.date >= open.start && !r.disturbed && (r.source === 'oral' || r.source === 'vaginal' || r.source === 'other'));
-    return { points: mine.map((r) => ({ day: diffDays(r.date, open.start) + 1, value: fromC(r.valueC, prefs.tempUnit) })), coverline: detectBbtShift(history.temperatures, open.start)?.coverlineC };
-  }, [open, history, prefs.tempUnit]);
+    return { points: mine.map((r) => ({ day: diffDays(r.date, open.start) + 1, value: fromC(r.valueC, prefs.tempUnit) })), coverline: fertilityTools ? detectBbtShift(history.temperatures, open.start)?.coverlineC : undefined };
+  }, [open, history, prefs.tempUnit, fertilityTools]);
   const acc = accuracyText(ledger);
   const empty = closed < 2;
 
@@ -58,7 +60,7 @@ export default function InsightsScreen() {
           rows.map((r) => (
             <Card key={r.id} testID={`history-${r.id}`}>
               <Text variant="heading" accessibilityRole="header">{[r.start, r.lengthDays ? `${r.lengthDays} days` : tr('insights.dayN', { day: r.dayOfCycle })].join(' · ')}</Text>
-              <Text variant="bodySmall" color="textSecondary">{[r.bleedDays ? `${r.bleedDays} bleed days` : null, tr(`insights.ovulationBasis.${r.basis}`)].filter(Boolean).join(' · ')}</Text>
+              <Text variant="bodySmall" color="textSecondary">{[r.bleedDays ? `${r.bleedDays} bleed days` : null, fertilityTools ? tr(`insights.ovulationBasis.${r.basis}`) : null].filter(Boolean).join(' · ')}</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>{r.current ? <View style={{ backgroundColor: t.chipBg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}><Text variant="caption" color="textSecondary">{tr('insights.current')}</Text></View> : chip(r.quality)}</View>
               {r.offerMissedLog && r.midDay ? (
                 <View style={{ gap: 2 }}>

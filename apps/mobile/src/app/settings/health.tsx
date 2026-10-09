@@ -42,7 +42,7 @@ export default function HealthScreen() {
 
   const last = health.last;
   const empty = last !== undefined && last.imported + last.duplicates + last.echoed + last.retracted + last.written === 0 && last.failed.length === 0;
-  const rows = healthRows({ teen: eff.teen, sexLogging: eff.sexLogging });
+  const rows = healthRows({ teen: eff.teen, sexLogging: eff.sexLogging, fertilityTools: eff.fertilityTools });
 
   return (
     <SubScreen testID="screen-health" title={t('settings.health.title')}>

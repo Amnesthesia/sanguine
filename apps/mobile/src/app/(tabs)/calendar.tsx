@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
-import { buildMonth, monthOf, shiftMonth } from '@/features/calendar/calendarModel';
+import { buildMonth, calendarLegend, type LegendKind, monthOf, shiftMonth } from '@/features/calendar/calendarModel';
 import { weekdayLabels } from '@/i18n/locale';
 import { deviceWeekStart } from '@/services/locale';
 import { DayCellView } from '@/features/calendar/DayCellView';
@@ -65,7 +65,7 @@ export default function CalendarScreen() {
       <Text variant="heading">{delta < 0 ? '‹' : '›'}</Text>
     </Pressable>
   );
-  const legend: Array<[Parameters<typeof Swatch>[0]['kind'], string]> = [['period', 'period'], ['predicted', 'predicted'], ['fertile', 'fertile'], ['ovulation', 'ovulation'], ['logged', 'logged']];
+  const legend: Array<[LegendKind, string]> = calendarLegend(showEstimate).map((k) => [k, k]);
   return (
     <Screen testID="screen-calendar" title={tr('calendar.title')}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>

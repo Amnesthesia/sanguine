@@ -3,8 +3,11 @@ import { HEALTH_TYPES, type HealthType, READ_ONLY_TYPES } from '@sanguine/health
 
 export interface HealthRow { type: HealthType; readOnly: boolean; titleKey: string; bodyKey: string }
 
-export function healthRows(o: { teen: boolean; sexLogging: boolean }): HealthRow[] {
-  return HEALTH_TYPES.filter((t) => t !== 'sex' || o.sexLogging).map((type) => ({
+/** Ovulation tests and cervical mucus are fertility tools: not offered under 18 until unlocked (PLAN.md §8.6). */
+const FERTILITY_TYPES: readonly HealthType[] = ['lh', 'mucus'];
+
+export function healthRows(o: { teen: boolean; sexLogging: boolean; fertilityTools: boolean }): HealthRow[] {
+  return HEALTH_TYPES.filter((t) => (t !== 'sex' || o.sexLogging) && (o.fertilityTools || !FERTILITY_TYPES.includes(t))).map((type) => ({
     type,
     readOnly: READ_ONLY_TYPES.includes(type),
     titleKey: `settings.health.types.${type}.title`,

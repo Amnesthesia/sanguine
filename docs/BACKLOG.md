@@ -79,7 +79,7 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the human; the items below are everything that does not.
 
 - [ ] P5-1 (blocked: no documented export format, D-062; needs sample exports from the owner) Flo and Clue importers through the shared DailyRow writer (§8.10; VERIFY current export formats).
-- [ ] P5-2 Teen-mode audit: every surface checked against the teen rules by a test; Maestro teen flow. (§2.4, §11)
+- [x] P5-2 (D-064) Teen-mode audit: every surface checked against the teen rules by a test; Maestro teen flow. (§2.4, §11)
 - [x] P5-3 Release readiness: privacy manifest, EAS profiles, tag-triggered release workflow (no OTA), store listing, review notes and Play health declaration drafts, checked by `tools/ci/store.test.ts` (D-058). Owner: accounts, signing, `EXPO_TOKEN`, submission.
 - [x] P5-4 (code and files done; the owner's items are in PROGRESS) Open-source and policy files (AGPL `LICENSE`, `TRADEMARK.md`, `SECURITY.md`, `CONTRIBUTING.md`, README claims table: done in D-058); in-app policy screens and the consent record. Owner: publishing the repository, brand permission, legal review.
 - [x] P6-1 (D-063) Localisation infrastructure with en-GB and en-US overrides, °F display and entry for en-US, device first weekday, locale snapshot tests. (§6.4)

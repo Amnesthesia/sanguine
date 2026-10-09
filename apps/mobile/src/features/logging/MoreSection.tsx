@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, Pressable, Switch, TextInput, View } from 'react-native';
 import type { Database } from '@/data/database';
-import type { Prefs } from '@/data/prefs';
+import { effectivePrefs, type Prefs } from '@/data/prefs';
 import type { EventStore } from '@/data/store';
 import { deviceClock } from '@/services/clock';
+import { useApp } from '@/state/app';
+import { moreRows } from './moreRows';
 import { getNoteKey } from '@/services/secrets';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -40,17 +42,12 @@ export function MoreSection({ day, store, db, prefs, state, summaries, openRow, 
   const toggle = (r: Row) => setOpen(open === r ? undefined : r);
   const done = () => { setOpen(undefined); onSaved(); };
 
-  const rows: Array<{ id: Row; label: string; show: boolean }> = [
-    { id: 'temperature', label: tr('log.temperature'), show: true },
-    { id: 'lh', label: tr('log.ovulationTest'), show: true },
-    { id: 'mucus', label: tr('log.mucus'), show: true },
-    { id: 'cervix', label: tr('log.cervix'), show: true },
-    { id: 'sex', label: tr('log.sex'), show: prefs.sexLogging },
-    { id: 'note', label: tr('log.note'), show: true },
-  ];
+  const { profile, today } = useApp();
+  const LABELS: Record<Row, string> = { temperature: tr('log.temperature'), lh: tr('log.ovulationTest'), mucus: tr('log.mucus'), cervix: tr('log.cervix'), sex: tr('log.sex'), note: tr('log.note') };
+  const rows = moreRows(effectivePrefs(prefs, profile, today)).map((r) => ({ id: r.id as Row, label: LABELS[r.id] }));
   return (
     <View>
-      {rows.filter((r) => r.show).map((r) => (
+      {rows.map((r) => (
         <View key={r.id} style={{ borderTopWidth: 1, borderTopColor: t.hairline }}>
           <Pressable testID={`more-${r.id}`} accessibilityRole="button" accessibilityLabel={`${r.label}. ${summaries[r.id] ?? tr('log.add')}`} aria-expanded={open === r.id} onPress={() => toggle(r.id)}
             style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>

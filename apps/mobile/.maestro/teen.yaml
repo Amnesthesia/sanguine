@@ -1,0 +1,63 @@
+appId: ${APP_ID}
+name: Under 18 - no ovulation card, no fertile wording, no fertility rows in the logging sheet or Health sync; the unlock is in Tracking options
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=typical&teen=1
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- assertNotVisible: ".*[Oo]vulation.*"
+- assertNotVisible: ".*fertile.*"
+- takeScreenshot: today
+# calendar legend
+- tapOn: Calendar
+- extendedWaitUntil:
+    visible:
+      id: screen-calendar
+    timeout: 20000
+- assertVisible: "Predicted period"
+- assertNotVisible: ".*[Ff]ertile.*"
+- assertNotVisible: ".*[Oo]vulation.*"
+- takeScreenshot: calendar
+# logging sheet: temperature and notes only
+- tapOn: Today
+- tapOn:
+    id: quick-symptoms
+- extendedWaitUntil:
+    visible:
+      id: more-temperature
+    timeout: 10000
+- assertVisible:
+    id: more-note
+- assertNotVisible:
+    id: more-lh
+- assertNotVisible:
+    id: more-mucus
+- assertNotVisible:
+    id: more-cervix
+- assertNotVisible:
+    id: more-sex
+- takeScreenshot: sheet
+- runFlow: _close-sheet.yaml
+# Health sync: period flow yes, ovulation tests and mucus no
+- openLink: ${LINKBASE}settings/health
+- extendedWaitUntil:
+    visible:
+      id: health-row-period_flow
+    timeout: 30000
+- assertNotVisible:
+    id: health-row-lh
+- assertNotVisible:
+    id: health-row-mucus
+- assertNotVisible: ".*ovulation.*"
+- takeScreenshot: health
+# the unlock lives in Tracking options
+- openLink: ${LINKBASE}settings/tracking
+- scrollUntilVisible:
+    element:
+      id: track-estimate
+- assertVisible: "Hidden by default for under 18s. You can turn it on here."
+- takeScreenshot: tracking

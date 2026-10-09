@@ -68,3 +68,7 @@ export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<I
   });
   return { month: i.month, title: formatMonthYear(first), cells, ovulationUncertain: uncertain };
 }
+
+export type LegendKind = 'period' | 'predicted' | 'fertile' | 'ovulation' | 'logged';
+/** The legend names the fertile window and ovulation only while those estimates are shown (PLAN.md §8.6: hidden under 18 by default). */
+export const calendarLegend = (showEstimate: boolean): LegendKind[] => (showEstimate ? ['period', 'predicted', 'fertile', 'ovulation', 'logged'] : ['period', 'predicted', 'logged']);
