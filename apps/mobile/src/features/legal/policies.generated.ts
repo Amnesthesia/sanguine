@@ -93,7 +93,7 @@ export const POLICIES = {
       },
       {
         "type": "p",
-        "text": "Sanguine does not disclose, transmit, sell, or rent your health information to third parties, commercial brokers, or overseas recipients. Cycle data never leaves your device unless you independently export your data or enable optional encrypted backups to your personal cloud account."
+        "text": "Sanguine does not disclose, transmit, sell, or rent your health information to third parties, commercial brokers, or overseas recipients. Cycle data never leaves your device unless you independently export your data or enable optional encrypted backups to your personal cloud account. When it starts, the app asks Expo's update service (expo.dev, operated by 650 Industries in the United States) whether a newer version of the app's code is available, and downloads it if so. That request carries no health or cycle information: only the app version, the device platform, a random installation identifier the update service uses, and your IP address, as with any internet request."
       },
       {
         "type": "h",

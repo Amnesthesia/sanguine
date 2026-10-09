@@ -13,7 +13,7 @@ This assessment evaluates processing operations within Sanguine, a free on-devic
 
 ## 2. Description of Processing Operations
 - Nature of data: Special category personal data under GDPR Article 9(1), comprising health data (menstrual dates, flow intensity, basal body temperature, cervical mucus observations, ovulation tests, symptoms, notes) and optional data concerning sexual life.
-- Architecture: Zero remote transmission. The application has no user accounts, operates no servers, and contains no analytics SDKs, crash trackers, or advertising SDKs.
+- Architecture: No transmission of personal or health data. The only routine request is the app-code update check to Expo's update service (D-069), which carries the app version, platform, a random installation identifier and the IP address, and no cycle data. The application has no user accounts, operates no servers, and contains no analytics SDKs, crash trackers, or advertising SDKs.
 - Local storage: All data is written to a local database encrypted with SQLCipher from the first native release.
 - Optional backup: Users can configure end-to-end encrypted backup files to their personal iCloud Drive or Google Drive application folder. Backups use Argon2id and XChaCha20-Poly1305 encryption. The developer cannot decrypt or inspect these files.
 - Optional platform sync: Future releases will provide optional sync with Apple Health or Health Connect, configured strictly per data category.

@@ -51,6 +51,7 @@ Engine-affecting packages are those used by `packages/engine`: it has no runtime
 | expo-symbols | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-system-ui | 57.0.4 | ~57.0.4 | ships in app | apps/mobile |
 | expo-task-manager | 57.0.21 | ~57.0.21 | ships in app | apps/mobile |
+| expo-updates | 57.0.25 | ~57.0.25 | ships in app | apps/mobile |
 | expo-web-browser | 57.0.3 | ~57.0.3 | ships in app | apps/mobile |
 | expo-widgets | 57.0.23 | ~57.0.23 | ships in app | apps/mobile |
 | fast-check | 4.10.2 | ^4.0.0 | dev/build only | root |

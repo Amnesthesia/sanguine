@@ -41,6 +41,7 @@
     "expo-symbols": "~57.0.3",
     "expo-system-ui": "~57.0.4",
     "expo-task-manager": "~57.0.21",
+    "expo-updates": "~57.0.25",
     "expo-web-browser": "~57.0.3",
     "expo-widgets": "~57.0.23",
     "fflate": "^0.8.3",
@@ -79,6 +80,8 @@
     "build:ios:dev": "EAS_NO_VCS=1 npx eas-cli build --profile development --platform ios",
     "build:ios:preview": "EAS_NO_VCS=1 npx eas-cli build --profile preview --platform ios",
     "build:ios:production": "EAS_NO_VCS=1 npx eas-cli build --profile production --platform ios",
+    "update:preview": "npx eas-cli update --channel preview --environment preview",
+    "update:production": "npx eas-cli update --channel production --environment production",
     "submit:android": "npx eas-cli submit --profile production --platform android --latest",
     "submit:ios": "npx eas-cli submit --profile production --platform ios --latest"
   },

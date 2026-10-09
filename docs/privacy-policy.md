@@ -32,7 +32,7 @@ Because the developer maintains no central user accounts and holds no copy of yo
 - Erasure: You can permanently erase all data on your device at any time by selecting "Delete everything" in Settings -> Privacy and data.
 
 ## 6. Disclosure and Secondary Use (APP 6 and APP 8)
-Sanguine does not disclose, transmit, sell, or rent your health information to third parties, commercial brokers, or overseas recipients. Cycle data never leaves your device unless you independently export your data or enable optional encrypted backups to your personal cloud account.
+Sanguine does not disclose, transmit, sell, or rent your health information to third parties, commercial brokers, or overseas recipients. Cycle data never leaves your device unless you independently export your data or enable optional encrypted backups to your personal cloud account. When it starts, the app asks Expo's update service (expo.dev, operated by 650 Industries in the United States) whether a newer version of the app's code is available, and downloads it if so. That request carries no health or cycle information: only the app version, the device platform, a random installation identifier the update service uses, and your IP address, as with any internet request.
 
 ## 7. Notifiable Data Breach (NDB) Procedure
 Under the Australian Notifiable Data Breach scheme, entities must assess suspected data breaches and notify affected individuals and the OAIC if serious harm is likely. Because Sanguine stores no information on external servers, the developer cannot suffer a central server data breach.
