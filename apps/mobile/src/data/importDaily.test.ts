@@ -22,7 +22,7 @@ describe('importDailyRows (P3-13): every daily field, not only period starts', (
       { day: '2026-09-02', flow: 'heavy', tempC: 36.9, tempExcluded: true },
       { day: '2026-09-14', lh: 'positive', mucus: 'eggwhite', sex: { protected: false } },
     ], opts({ noteKey: KEY }));
-    expect(r).toEqual({ added: 8, skipped: 0, notesDropped: 0 });
+    expect(r).toEqual({ added: 8, skipped: 0, duplicates: 0, notesDropped: 0 });
     const events = await store.events();
     expect(events.filter((e) => e.kind !== 'import.batch').every((e) => e.provenance === 'imported' && e.source_app === 'natural_cycles' && e.external_id)).toBe(true);
     expect(await db.all('SELECT start_day, end_day, bleed_days FROM cycle')).toEqual([{ start_day: '2026-09-01', end_day: '2026-09-02', bleed_days: 2 }]);
@@ -51,11 +51,23 @@ describe('importDailyRows (P3-13): every daily field, not only period starts', (
     const rows = [{ day: '2026-09-01', flow: 'medium' as const, tempC: 36.4 }];
     await importDailyRows(db, store, rows, opts());
     const before = (await store.events()).length;
-    expect(await importDailyRows(db, store, rows, opts())).toEqual({ added: 0, skipped: 2, notesDropped: 0 });
+    expect(await importDailyRows(db, store, rows, opts())).toEqual({ added: 0, skipped: 2, duplicates: 0, notesDropped: 0 });
     expect((await store.events()).length).toBe(before);
   });
+  it('two rows for one day import each field once and report the repeat as a duplicate', async () => {
+    const r = await importDailyRows(db, store, [{ day: '2026-09-01', flow: 'medium' }, { day: '2026-09-01', flow: 'heavy', tempC: 36.4 }], opts());
+    expect(r).toEqual({ added: 2, skipped: 0, duplicates: 1, notesDropped: 0 });
+    expect(await db.all('SELECT flow FROM daily_log')).toEqual([{ flow: 'medium' }]);
+  });
+  it('a retracted imported entry does not come back on re-import', async () => {
+    const rows = [{ day: '2026-09-01', flow: 'medium' as const }];
+    await importDailyRows(db, store, rows, opts());
+    const e = (await store.events()).find((x) => x.kind === 'flow');
+    await store.retract(e?.id as string);
+    expect((await importDailyRows(db, store, rows, opts())).added).toBe(0);
+  });
   it('notes are dropped and counted when no note key is given', async () => {
-    expect(await importDailyRows(db, store, [{ day: '2026-09-01', note: 'x' }], opts())).toEqual({ added: 0, skipped: 0, notesDropped: 1 });
+    expect(await importDailyRows(db, store, [{ day: '2026-09-01', note: 'x' }], opts())).toEqual({ added: 0, skipped: 0, duplicates: 0, notesDropped: 1 });
     expect(await store.events()).toEqual([]);
   });
   it('a sparse import of a 12-day period with gaps is one period (D-052)', async () => {

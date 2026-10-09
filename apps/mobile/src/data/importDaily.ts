@@ -20,19 +20,23 @@ export interface DailyRow {
   sex?: { protected: boolean };
   note?: string;
 }
-export interface DailyImportResult { added: number; skipped: number; notesDropped: number }
+/** `skipped`: fields an earlier import already wrote. `duplicates`: the same day and field repeated inside this file (the first is kept). */
+export interface DailyImportResult { added: number; skipped: number; duplicates: number; notesDropped: number }
 
 /** Writes the rows as `imported` events in one transaction. Each event carries `external_id` `<source>:<day>:<field>`, so importing the
  *  same file twice adds nothing. Notes are sealed with the notes key; without a key they are left out and counted. */
 export async function importDailyRows(db: Database, store: EventStore, rows: DailyRow[], o: { sourceApp: string; today: ISODate; clock: Clock; noteKey?: Uint8Array }): Promise<DailyImportResult> {
   const known = new Set((await db.all<{ external_id: string }>('SELECT external_id FROM event WHERE source_app = ? AND external_id IS NOT NULL', [o.sourceApp])).map((r) => r.external_id));
   const events: NewEvent[] = [];
+  const inFile = new Set<string>();
   let skipped = 0;
+  let duplicates = 0;
   let notesDropped = 0;
   const add = (field: string, day: ISODate, kind: string, payload: Record<string, unknown>) => {
     const external_id = `${o.sourceApp}:${day}:${field}`;
+    if (inFile.has(external_id)) { duplicates++; return; }
+    inFile.add(external_id);
     if (known.has(external_id)) { skipped++; return; }
-    known.add(external_id);
     events.push({ kind, payload: { day, ...payload }, provenance: 'imported', source_app: o.sourceApp, external_id });
   };
   for (const r of [...rows].sort((a, b) => (a.day < b.day ? -1 : a.day > b.day ? 1 : 0))) {
@@ -54,5 +58,5 @@ export async function importDailyRows(db: Database, store: EventStore, rows: Dai
   if (events.length > 0) {
     await store.appendMany([{ kind: 'import.batch', payload: { source: o.sourceApp, count: events.length }, effective_day: o.today, provenance: 'imported', source_app: o.sourceApp }, ...events]);
   }
-  return { added: events.length, skipped, notesDropped };
+  return { added: events.length, skipped, duplicates, notesDropped };
 }
