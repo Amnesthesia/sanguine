@@ -99,7 +99,7 @@ export default function BackupScreen() {
         await enableAutoBackup(pass, (f) => setPct(Math.round(f * 100)));
         await updatePrefs({ cloudBackup: true });
         const r = await uploadCloudIfDue(db, store, true);
-        setMsg(r === 'failed' ? t('settings.privacy.cloud.failed', { service }) : t('settings.privacy.cloud.uploaded', { service }));
+        setMsg(r === 'failed' ? t('settings.privacy.cloud.failed', { service }) : r === 'skipped' ? t('settings.privacy.cloud.waitingWifi') : t('settings.privacy.cloud.uploaded', { service }));
         reloadLast();
       } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); setPass(''); setPass2(''); }
     };

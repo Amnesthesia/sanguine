@@ -8,7 +8,7 @@
     "scheme": "sanguine",
     "userInterfaceStyle": "automatic",
     "android": {
-      "package": "app.sanguine.mobile",
+      "package": "lol.sanguine.app",
       "adaptiveIcon": {
         "backgroundColor": "#F5E8E2",
         "foregroundImage": "./assets/brand/android-icon-foreground.png",
@@ -205,6 +205,30 @@
           "iCloud.app.sanguine.mobile"
         ]
       }
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "build": {
+          "experimental": {
+            "ios": {
+              "appExtensions": [
+                {
+                  "targetName": "ExpoWidgetsTarget",
+                  "bundleIdentifier": "app.sanguine.mobile.widgets",
+                  "entitlements": {
+                    "com.apple.security.application-groups": [
+                      "group.app.sanguine.mobile"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "projectId": "5857c038-4eda-498f-aed3-948f823f8187"
+      }
+    },
+    "primaryColor": "#BC4560"
   }
 }

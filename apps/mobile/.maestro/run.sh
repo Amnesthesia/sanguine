@@ -8,10 +8,10 @@ client="${CLIENT:-expogo}"; port="${METRO_PORT:-8090}"
 if [ "$platform" = ios ]; then
   dev="${IOS_UDID:-1C4C0CE9-4A7A-441F-8FCA-5EDBD373D757}"; host="$(ipconfig getifaddr en0)"; expoid=host.exp.Exponent
 else
-  dev="${ANDROID_SERIAL:-emulator-5554}"; host="10.0.2.2"; expoid=host.exp.exponent
+  dev="${ANDROID_SERIAL:-emulator-5554}"; host="10.0.2.2"; expoid=host.exp.exponent; androidpkg="$(node -p "require('./app.json').expo.android.package")"
 fi
 if [ "$client" = dev ]; then
-  appid=app.sanguine.mobile; linkbase="sanguine://"; connect="exp+sanguine://expo-development-client/?url=http%3A%2F%2F$host%3A$port"
+  appid=app.sanguine.mobile; [ "$platform" = android ] && appid="$androidpkg"; linkbase="sanguine://"; connect="exp+sanguine://expo-development-client/?url=http%3A%2F%2F$host%3A$port"
 else
   appid="$expoid"; linkbase="exp://$host:$port/--/"; connect=""
 fi

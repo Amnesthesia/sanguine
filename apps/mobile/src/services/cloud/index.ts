@@ -74,7 +74,8 @@ export async function uploadCloudIfDue(db: Database, store: EventStore, enabled:
   try {
     const cloud = await getCloudStore();
     if (!cloud) return 'skipped';
-    const onWifi = (await Network.getNetworkStateAsync()).type === Network.NetworkStateType.WIFI;
+    // the development test folder uploads on any network: an emulator has no Wi-Fi
+    const onWifi = (__DEV__ && cloud.name === 'local') || (await Network.getNetworkStateAsync()).type === Network.NetworkStateType.WIFI;
     return await uploadIfDue({ db, store, cloud, clock: deviceClock, deviceSecret: await getDeviceSecret(), key: await loadKey(), enabled, onWifi, nowMs: deviceClock.nowMs() });
   } catch {
     return 'failed';

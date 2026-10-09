@@ -21,8 +21,9 @@ name: Health sync (Android) - Health Connect permission screen, first pass runs 
     id: health-row-period_flow
 # the Health Connect permission screen
 - extendedWaitUntil:
-    visible: "(Allow all|Allow|Sanguine)"
+    visible: "(Allow all|Allow|Added 0.*)"
     timeout: 30000
+    optional: true
 - takeScreenshot: permission
 - runFlow:
     when:

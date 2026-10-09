@@ -8,12 +8,13 @@ export default function TabsLayout() {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const m = m3[t.scheme];
-  // Android: the active pill is solid garnet with the icon on it in onPrimary, so the active tab stands out from the bar (6.9:1)
-  // instead of a pale pink pill (1.2:1). iOS ignores indicatorColor and keeps the garnet tint (D-066).
+  // Android: the active pill is solid rose with the icon on it in onPrimary, so the active tab stands out from the bar (5.1:1)
+  // instead of a pale pink pill (1.2:1). iOS ignores indicatorColor and keeps the rose tint (D-066).
   return (
     <NativeTabs
       backgroundColor={t.screenBg}
       indicatorColor={m.primary}
+      rippleColor={`${m.primary}33`}
       tintColor={t.c.accent}
       iconColor={t.isIOS ? undefined : { default: t.c.textSecondary, selected: m.onPrimary }}
       labelStyle={{ selected: { color: t.c.accent } }}>

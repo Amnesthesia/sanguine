@@ -546,6 +546,7 @@
         "working": "Setting up…",
         "uploadNow": "Upload now",
         "uploaded": "Uploaded to {service}.",
+      "waitingWifi": "Saved. The first upload happens when this phone is on Wi-Fi.",
         "lastUpload": "Last upload {when}",
         "failed": "Could not reach {service}. Sanguine will try again.",
         "unavailable": "{service} is not available on this phone.",

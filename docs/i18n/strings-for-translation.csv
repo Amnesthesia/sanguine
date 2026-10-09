@@ -426,6 +426,7 @@ settings.privacy.cloud.needPass,Type your backup passphrase above first.,no,sett
 settings.privacy.cloud.working,Setting up…,no,settings,
 settings.privacy.cloud.uploadNow,Upload now,no,settings,
 settings.privacy.cloud.uploaded,Uploaded to {service}.,no,settings,
+settings.privacy.cloud.waitingWifi,Saved. The first upload happens when this phone is on Wi-Fi.,no,settings,
 settings.privacy.cloud.lastUpload,Last upload {when},no,settings,
 settings.privacy.cloud.failed,Could not reach {service}. Sanguine will try again.,no,settings,
 settings.privacy.cloud.unavailable,{service} is not available on this phone.,no,settings,

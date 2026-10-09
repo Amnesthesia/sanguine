@@ -40,7 +40,7 @@ export function SwitchRow({ title, description, value, onChange, testID, last, d
   return (
     <SettingsRow
       title={title} description={description} last={last} disabled={disabled}
-      right={<Switch testID={testID} accessibilityLabel={title} value={value} disabled={disabled} onValueChange={onChange} trackColor={{ true: t.c.accent }} />}
+      right={<Switch testID={testID} accessibilityLabel={title} value={value} disabled={disabled} onValueChange={onChange} trackColor={{ true: t.c.accent }} thumbColor={t.scheme === 'dark' ? '#F4EEEF' : '#FFFFFF'} />}
     />
   );
 }

@@ -1,5 +1,6 @@
 // Health sync wiring (PLAN.md §7): picks the platform driver, runs a pass for the enabled types, watches for platform changes.
 // The drivers import native modules, so they are loaded lazily and a missing module (Expo Go, unsupported device) means "no driver".
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import type { HealthType, PlatformDriver, SyncReport } from '@sanguine/health-adapter';
 import type { Database } from '@/data/database';
@@ -8,7 +9,8 @@ import type { Prefs } from '@/data/prefs';
 import type { EventStore } from '@/data/store';
 import { deviceClock, todayLocal } from '../clock';
 
-const ANDROID_PACKAGE = 'app.sanguine.mobile';
+/** Our own package name, from the app config, so the echo guard keeps working if the id changes. */
+const ANDROID_PACKAGE = Constants.expoConfig?.android?.package ?? 'app.sanguine.mobile';
 let cached: PlatformDriver | null | undefined;
 
 /** The platform driver, or null where the native module or the platform feature is missing. */
