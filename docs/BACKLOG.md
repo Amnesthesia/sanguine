@@ -65,6 +65,7 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 - [x] P3-11 Mockup weekday labels corrected (10 Oct 2026 is a Saturday). (client review 1 #5)
 - [x] P3-12 Pregnancy outcome (birth / loss) on ending the pregnant state; post-pregnancy bleeding kind; "I was pregnant" action on long cycles; neutral long-cycle wording. (§4.9, client review 1 #2)
 - [ ] P3-13 Natural Cycles import ("Daily Entries.csv" inside the export zip): flow, temperature, LH, notes, sex, via a shared DailyRow writer. Writer done (`data/importDaily.ts`); parser blocked on a sample export from the client (D-056). (§8.10, client review 1 #1)
+- [ ] P3-14 Full Android check and fix-up, run as one dedicated pass when memory allows (owner decision 2026-10-09: iOS-only testing until then): rebuild the Android dev client, run `.maestro/suite.sh android` and `fontscale.sh android`, retake the Android screenshots, fix what fails (known untested: app lock through the device-credential prompt; Android launcher-alias deep links; dark-mode toolbar contrast), and record the outcome.
 
 ## Phase 4 — Health sync (§7)
 
