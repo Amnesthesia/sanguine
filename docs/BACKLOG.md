@@ -76,4 +76,12 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 - [ ] P4-5 Wrist/finger temperature import into the wearable series. (§4.6)
 
 ## Phase 5 — Launch (Australia), Phase 6 — International, Phase 7 — Regulated tier
-As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the human; nothing else does.
+As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the human; the items below are everything that does not.
+
+- [ ] P5-1 Flo and Clue importers through the shared DailyRow writer (§8.10; VERIFY current export formats).
+- [ ] P5-2 Teen-mode audit: every surface checked against the teen rules by a test; Maestro teen flow. (§2.4, §11)
+- [x] P5-3 Release readiness: privacy manifest, EAS profiles, tag-triggered release workflow (no OTA), store listing, review notes and Play health declaration drafts, checked by `tools/ci/store.test.ts` (D-058). Owner: accounts, signing, `EXPO_TOKEN`, submission.
+- [ ] P5-4 Open-source and policy files (AGPL `LICENSE`, `TRADEMARK.md`, `SECURITY.md`, `CONTRIBUTING.md`, README claims table: done in D-058); in-app policy screens and the consent record. Owner: publishing the repository, brand permission, legal review.
+- [ ] P6-1 Localisation infrastructure with en-GB and en-US overrides, °F display and entry for en-US, device first weekday, locale snapshot tests. (§6.4)
+- [ ] P6-2 Translation pipeline for de, fr, es, pt-BR (extract, validate, load): no machine translation; the translations themselves need translators and a clinician check.
+- [ ] P6-3 GDPR Article 9 explicit-consent step for EU/UK regions, US state health-data policy text. Owner: controller identity, GDPR representative, legal review.

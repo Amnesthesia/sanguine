@@ -1,0 +1,51 @@
+# Store release (PLAN.md §6.6). Builds run on a version tag; submission is a manual dispatch.
+# Owner-supplied: the EXPO_TOKEN secret, App Store Connect and Play credentials registered with EAS.
+# Over-the-air updates are deliberately absent: engine parameters ship only as versioned builds.
+name: release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      submit:
+        description: 'Submit the latest production builds to TestFlight and the Play internal track'
+        type: boolean
+        default: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .tool-versions, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+  build:
+    needs: verify
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env: { EXPO_TOKEN: '${{ secrets.EXPO_TOKEN }}' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .tool-versions, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: npx eas-cli build --non-interactive --no-wait --profile production --platform all
+        working-directory: apps/mobile
+  submit:
+    needs: verify
+    if: github.event_name == 'workflow_dispatch' && inputs.submit
+    runs-on: ubuntu-latest
+    env: { EXPO_TOKEN: '${{ secrets.EXPO_TOKEN }}' }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .tool-versions, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: npx eas-cli submit --non-interactive --profile production --platform all --latest
+        working-directory: apps/mobile

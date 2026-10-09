@@ -47,3 +47,19 @@ ITEM=P2-15 .maestro/suite.sh android    # all flows on the Android emulator
 ```
 
 Screenshots land in `docs/screenshots/<item>/`.
+
+## Licence
+
+The app is AGPL-3.0 (`LICENSE`); `packages/engine` is MIT. The name and artwork are not licensed for reuse (`TRADEMARK.md`). Contributions: `CONTRIBUTING.md`. Security reports: `SECURITY.md`. Store listing drafts and review notes: `docs/store/`.
+
+## What is enforced, and where
+
+| Claim | Test |
+| --- | --- |
+| The engine is pure and deterministic | `packages/engine/src/purity.test.ts`, `properties.test.ts` |
+| The health sync core is pure | `packages/health-adapter/src/purity.test.ts` |
+| Health sync never duplicates over three cycles | `packages/health-adapter/src/roundTrip.test.ts` |
+| No analytics or ad packages; Expo Go allow-list | `tools/ci/deny-list.test.ts` |
+| No forbidden words in copy | `copy/copy.test.ts` |
+| Symptoms never change a prediction | `packages/engine/src/properties.test.ts` |
+
