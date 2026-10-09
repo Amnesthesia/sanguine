@@ -11,13 +11,14 @@ on:
         description: 'Submit the latest production builds to TestFlight and the Play internal track'
         type: boolean
         default: false
+permissions: { contents: read }
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with: { node-version-file: .tool-versions, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
@@ -27,25 +28,25 @@ jobs:
     needs: verify
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    env: { EXPO_TOKEN: '${{ secrets.EXPO_TOKEN }}' }
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with: { node-version-file: .tool-versions, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: npx eas-cli build --non-interactive --no-wait --profile production --platform all
         working-directory: apps/mobile
+        env: { EXPO_TOKEN: '${{ secrets.EXPO_TOKEN }}' }
   submit:
     needs: verify
     if: github.event_name == 'workflow_dispatch' && inputs.submit
     runs-on: ubuntu-latest
-    env: { EXPO_TOKEN: '${{ secrets.EXPO_TOKEN }}' }
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with: { node-version-file: .tool-versions, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: npx eas-cli submit --non-interactive --profile production --platform all --latest
         working-directory: apps/mobile
+        env: { EXPO_TOKEN: '${{ secrets.EXPO_TOKEN }}' }

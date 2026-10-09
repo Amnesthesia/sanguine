@@ -21,6 +21,16 @@ describe('release configuration', () => {
     expect(wf).toMatch(/tags: \['v\*'\]/);
     expect(wf).toMatch(/needs: verify/);
   });
+  it('every workflow action is pinned to a full commit SHA (a movable tag could read a secret)', () => {
+    for (const f of readdirSync(join(root, '.github/workflows'))) for (const m of read(`.github/workflows/${f}`).matchAll(/uses:\s*(\S+)/g)) expect(m[1], f).toMatch(/@[0-9a-f]{40}$/);
+  });
+  it('the Expo token reaches only the eas-cli steps, never a job-wide env or a third-party action', () => {
+    const wf = read('.github/workflows/release.yml');
+    expect(wf).not.toMatch(/^\s{4}env:.*EXPO_TOKEN/m);
+    const steps = wf.split(/\n\s+- /).filter((s) => s.includes('secrets.EXPO_TOKEN'));
+    expect(steps.length).toBeGreaterThan(0);
+    for (const s of steps) expect(s).toMatch(/^run: npx eas-cli /);
+  });
   it('the Apple privacy manifest declares no tracking and no collected data', () => {
     const pm = json('apps/mobile/app.json').expo.ios.privacyManifests;
     expect(pm.NSPrivacyTracking).toBe(false);
