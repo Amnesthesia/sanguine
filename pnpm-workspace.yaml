@@ -2,3 +2,21 @@ packages:
   - apps/*
   - packages/*
   - tools/*
+
+# pnpm 11 refuses packages published less than a day ago (minimumReleaseAge). These four were in the lockfile
+# before that rule applied; they are allowed by name so the existing lockfile installs. Remove after 2026-10-10.
+minimumReleaseAgeExclude:
+  - '@asamuzakjp/css-color'
+  - babel-plugin-react-native-web
+  - node-releases
+  - react-native-web
+
+# pnpm 11 reads settings from this file and ignores .npmrc for them: keep the hoisted layout Metro and Expo autolinking need
+nodeLinker: hoisted
+
+# install scripts pnpm 11 may run (it blocks all others): native addons and binaries the build and tests need
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  react-native-libsodium: true
+  unrs-resolver: true
