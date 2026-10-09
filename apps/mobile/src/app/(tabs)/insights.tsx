@@ -9,6 +9,7 @@ import { effectivePrefs } from '@/data/prefs';
 import { LengthChart, TempChart } from '@/features/insights/charts';
 import { accuracyText, cycleLengthSeries, historyRows, phaseBars } from '@/features/insights/insightsModel';
 import { addPastPregnancy } from '@/features/settings/lifeState';
+import { cyclePattern, inPatternState } from '@/features/insights/patternModel';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -40,6 +41,7 @@ export default function InsightsScreen() {
   const rows = useMemo(() => historyRows(cycles, today), [cycles, today]);
   const series = useMemo(() => cycleLengthSeries(cycles, prediction?.cycleLength), [cycles, prediction]);
   const bars = useMemo(() => phaseBars(cycles, history?.logs ?? [], today), [cycles, history, today]);
+  const pattern = useMemo(() => (settings && inPatternState(settings.lifeStates, today) ? cyclePattern(cycles, history?.logs ?? [], today) : undefined), [settings, cycles, history, today]);
   const open = cycles.at(-1);
   const temps = useMemo(() => {
     if (!open || !history) return { points: [] as Array<{ day: number; value: number }>, coverline: undefined as number | undefined };
@@ -93,6 +95,22 @@ export default function InsightsScreen() {
             </Pressable>
           ))
         )
+      ) : null}
+
+      {tab === 'charts' && pattern ? (
+        <Card testID="card-pattern">
+          <Text variant="heading" accessibilityRole="header">{tr('insights.pattern.title')}</Text>
+          {pattern.daysSinceStart === undefined ? <Text variant="bodySmall" color="textSecondary">{tr('insights.pattern.none')}</Text> : (<>
+            <Text testID="pattern-since">{tr('insights.pattern.since', { n: pattern.daysSinceStart })}</Text>
+            {pattern.spread ? <Text testID="pattern-spread" variant="bodySmall">{tr('insights.pattern.spread', { n: pattern.lengths.length, min: pattern.spread.min, max: pattern.spread.max })}</Text> : null}
+            {pattern.lengths.length > 1 ? <Text testID="pattern-changes" variant="bodySmall">{tr('insights.pattern.changes', { n: pattern.changes7 })}</Text> : null}
+            {pattern.lengths.length ? <Text testID="pattern-long" variant="bodySmall">{tr('insights.pattern.long', { n: pattern.longCycles })}</Text> : null}
+          </>)}
+          <Text variant="caption" color="textSecondary" style={{ marginTop: 6 }}>{tr('insights.pattern.intro')}</Text>
+          <Text variant="bodySmall" style={{ marginTop: 10, fontWeight: '600' }}>{tr('insights.pattern.symptomsTitle')}</Text>
+          {pattern.symptoms.map((x) => <Text key={x.code} variant="bodySmall" testID={`pattern-${x.code}`}>{tr('insights.pattern.symptomLine', { name: tr(`symptom.${x.code}`, { defaultValue: x.code }), w4: x.last4w, w12: x.last12w })}</Text>)}
+          <Text variant="caption" color="textSecondary">{tr('insights.pattern.symptomsNote')}</Text>
+        </Card>
       ) : null}
 
       {tab === 'charts' ? (

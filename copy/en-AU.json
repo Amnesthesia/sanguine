@@ -108,6 +108,13 @@
       "title": "Log your period to start",
       "body": "Sanguine needs one period date to begin; two or three cycles make estimates useful."
     },
+    "pregnancy": {
+      "week": "Week {week}, day {day}",
+      "due": "Due date likely {range}",
+      "fromDue": "Counted from the due date you entered.",
+      "fromPeriod": "Counted from your last period start. You can enter a due date in Settings, Life state.",
+      "none": "Enter a due date in Settings, Life state, to see the week count."
+    },
     "periodInProgress": "Day {day} of your period",
     "periodLogged": "Logged: {flow} flow",
     "periodLikely": "Period likely in {lo}–{hi} days",
@@ -314,6 +321,18 @@
     "legendLogged": "Logged"
   },
   "insights": {
+    "pattern": {
+      "title": "Your cycle pattern",
+      "intro": "Counts from your own logs, compared with two markers used in published descriptions of cycle changes from the 40s (STRAW+10, Harlow et al. 2012). They describe your logs; they are not an assessment.",
+      "spread": "Your last {n} cycles were {min} to {max} days long.",
+      "changes": "Consecutive cycles that differed by 7 days or more: {n}.",
+      "long": "Cycles of 60 days or more: {n}.",
+      "since": "{n} days since your last period started.",
+      "symptomsTitle": "Days logged",
+      "symptomLine": "{name}: {w4} in the last 4 weeks, {w12} in the last 12.",
+      "symptomsNote": "Symptoms never change an estimate.",
+      "none": "Log period starts to see your cycle pattern here."
+    },
     "title": "Insights",
     "segments": {
       "history": "History",
@@ -434,6 +453,9 @@
         "ring": "Ring",
         "patch": "Patch"
       },
+      "knowDue": "I know my due date",
+      "dueDate": "Due date {date}",
+      "patternSymptoms": "Hot flushes, night sweats and trouble sleeping are added to your logging sheet.",
       "breastfeeding": "Breastfeeding",
       "pregnancyEnded": "If the pregnancy has ended, choose \"Recently gave birth\" or \"After a pregnancy loss\".",
       "effect": {
@@ -503,6 +525,24 @@
         "remove": "Remove it here",
         "keep": "Keep it"
       }
+    },
+    "how": {
+      "title": "How Sanguine estimates",
+      "rowDesc": "How the ranges are worked out, what the confidence words mean and what changes them.",
+      "rangeTitle": "Where the period range comes from",
+      "rangeBody": "Sanguine looks at the lengths of your last 12 cycles. Before you have logged a few, it starts from published averages for your age group (Bull et al. 2019) and moves towards your own pattern as cycles are added. In most life states, recent cycles and older ones count the same. A cycle that looks like a missed log, or that falls in a life change you set (such as pregnancy, or the months after stopping a hormonal method), is left out or counted less. The result is the range of days that has an 80% likelihood of holding your next period start; the calendar also shows the wider 95% range.",
+      "confidenceTitle": "What the confidence words mean",
+      "confidenceHigh": "Confident: at least six cycles and a period range no wider than about a week.",
+      "confidenceMedium": "Fair estimate: at least two cycles and a period range of up to about 11 days.",
+      "confidenceLow": "Rough estimate: fewer than two cycles, or cycles that vary so much the range is wider than about 11 days. The range is wide on purpose.",
+      "confidenceNone": "No estimate: not enough data yet, or a life change you set pauses the estimates.",
+      "narrowTitle": "What narrows the range",
+      "narrowBody": "Logging every period start, including the first day, matters most. Morning temperature, ovulation tests, cervical mucus and cervical position can date ovulation in a cycle after it happens, which sharpens the next period estimate and the fertile window estimate.",
+      "narrowBodyTeen": "Logging every period start, including the first day, matters most. The more cycles you log, the narrower the range becomes.",
+      "symptomsTitle": "What does not change the estimates",
+      "symptomsBody": "Symptoms, mood and notes never change an estimate. They show up in Insights so you can see your own patterns, but there is no published evidence that they predict when a period starts.",
+      "accuracyTitle": "How well it has done for you",
+      "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gave at the start of that cycle held the real start date. Insights, Your accuracy, shows the count."
     },
     "calendar": {
       "title": "Add to someone's calendar",

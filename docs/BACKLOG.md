@@ -91,9 +91,9 @@ As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the h
 
 - [x] P8-1 drip import through the shared DailyRow writer, cervix included (D-078; roadmap R2-4).
 - [x] P8-2 Calendar (.ics) export of the predicted period range, optional fertile range, teen-gated (D-079; R2-3, owner approved in D-077).
-- [ ] P8-3 "How Sanguine estimates" reference pages under About (R2-6).
-- [ ] P8-4 Perimenopause view in Insights: variability facts, vasomotor symptom counts, no stage label, no 12-month milestone (R3-1).
-- [ ] P8-5 Pregnancy view on Today: gestational week and day, due date as a range (R3-2).
+- [x] P8-3 "How Sanguine estimates" reference pages under About (R2-6).
+- [x] P8-4 Perimenopause view in Insights: variability facts, vasomotor symptom counts, no stage label, no 12-month milestone (R3-1, D-081).
+- [x] P8-5 Pregnancy view on Today: gestational week and day, due date as a range (R3-2, D-082).
 - [ ] P8-6 Report for a doctor, PDF on the device through expo-print (R2-1); needs a dev-client rebuild.
 - [ ] P8-7 Sync between the user's own devices: merge core with property tests first, then transport through the backup channel (R5-1, D-077).
 - [ ] P8-8 Siri, Shortcuts, Control Center and Android shortcuts: spike first (R2-2).

@@ -24,7 +24,11 @@ export async function lifeStateHistory(db: Database): Promise<LifeStateRow[]> {
 export const currentLifeStates = (rows: LifeStateRow[], today: ISODate): LifeStateRow[] =>
   rows.filter((r) => r.from_day <= today && (r.until_day === null || r.until_day >= today)).sort((a, b) => (a.from_day < b.from_day ? 1 : a.from_day > b.from_day ? -1 : 0));
 
-export async function changeLifeState(store: EventStore, db: Database, o: { choice: LifeChoice; day: ISODate; method?: Method; breastfeeding?: boolean }): Promise<void> {
+/** Symptoms that join the logging sheet when a life state is set (P8-4): the codes exist for every state but are hidden by default. */
+export const LIFE_SYMPTOMS: Partial<Record<LifeChoice, string[]>> = { perimenopause: ['hot_flushes', 'night_sweats', 'insomnia'] };
+export const symptomsForChoice = (choice: LifeChoice, current: string[]): string[] => [...new Set([...current, ...(LIFE_SYMPTOMS[choice] ?? [])])];
+
+export async function changeLifeState(store: EventStore, db: Database, o: { choice: LifeChoice; day: ISODate; method?: Method; breastfeeding?: boolean; dueDate?: ISODate | undefined }): Promise<void> {
   const open = (await lifeStateHistory(db)).filter((r) => r.until_day === null);
   const outcome = OUTCOME_OF[o.choice];
   const events: NewEvent[] = open.map((r) => ({ kind: 'life_state.end', payload: { kind: r.kind, day: o.day, ...(r.kind === 'pregnant' && outcome ? { outcome } : {}) } }));
@@ -33,7 +37,8 @@ export async function changeLifeState(store: EventStore, db: Database, o: { choi
       o.choice === 'hormonal' || o.choice === 'postHormonal' ? { method: o.method ?? 'combined_pill' }
         : o.choice === 'postpartum' ? { breastfeeding: Boolean(o.breastfeeding), after: 'birth' }
           : o.choice === 'afterLoss' ? { breastfeeding: false, after: 'loss' }
-            : o.choice === 'irregular' ? { reason: 'other' } : {};
+            : o.choice === 'irregular' ? { reason: 'other' }
+              : o.choice === 'pregnant' && o.dueDate ? { dueDate: o.dueDate } : {};
     events.push({ kind: 'life_state.set', payload: { kind: KIND_OF[o.choice], detail, day: o.day } });
   }
   if (events.length) await store.appendMany(events);

@@ -74,6 +74,7 @@ function Shell() {
           <Stack.Screen name="settings/appearance" />
           <Stack.Screen name="settings/tracking" />
           <Stack.Screen name="settings/about" />
+          <Stack.Screen name="settings/how" />
         </Stack.Protected>
         <Stack.Screen name="dev/seed" />
         <Stack.Screen name="dev/health-seed" />

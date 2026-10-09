@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+name: (sub-flow) without the life state, no cycle pattern card
+---
+- openLink: ${LINKBASE}dev/seed?scenario=typical&wipeData=1
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 30000
+- tapOn: Insights
+- tapOn:
+    id: insights-tab-charts
+- assertNotVisible:
+    id: card-pattern

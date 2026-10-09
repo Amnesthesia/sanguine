@@ -90,6 +90,7 @@ describe('every surface reads the teen rules', () => {
     ['app/settings/health.tsx', 'fertilityTools'],
     ['app/_layout.tsx', 'isTeen'],
     ['app/settings/about.tsx', 'isTeen'],
+    ['app/settings/how.tsx', 'fertilityTools'],
     ['app/settings/calendar.tsx', 'effectivePrefs(prefs, profile, today).showOvulationEstimate'],
   ])('%s uses %s', (file, word) => expect(read(file)).toContain(word));
 });

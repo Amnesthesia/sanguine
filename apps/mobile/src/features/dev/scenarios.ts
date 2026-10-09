@@ -3,8 +3,8 @@ import { addDays, type ISODate } from '@sanguine/engine';
 import type { NewEvent } from '@/data/events';
 import type { Profile } from '@/data/project';
 
-export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog';
-export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog'];
+export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog' | 'pattern' | 'pregnant';
+export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant'];
 
 const period = (start: ISODate, bleed = 4, level: 'light' | 'medium' | 'heavy' = 'medium'): NewEvent[] =>
   Array.from({ length: bleed }, (_, i) => ({ kind: 'flow', payload: { day: addDays(start, i), level, flow_kind: 'period' } }));
@@ -28,6 +28,20 @@ export function scenario(name: ScenarioName, today: ISODate): { profile: Profile
     // PLAN.md fixture B: one 56-day cycle that is probably a missed log
     const starts = startsFrom(addDays(today, -12), [27, 29, 56, 28, 30, 28]);
     return { profile, events: starts.flatMap((s) => period(s, 4)) };
+  }
+  if (name === 'pattern') {
+    // P8-4: age 47, the perimenopause life state, cycles that vary, vasomotor symptoms logged
+    const starts = startsFrom(addDays(today, -40), [27, 34, 25, 63, 29, 22]);
+    const lifeState: NewEvent = { kind: 'life_state.set', payload: { kind: 'perimenopause', detail: {}, day: addDays(today, -200) } };
+    const days = [-1, -3, -9, -20, -50];
+    return { profile: { birthYear: Number(today.slice(0, 4)) - 47 }, events: [...starts.flatMap((s) => period(s, 5)), lifeState,
+      ...days.map((d): NewEvent => ({ kind: 'symptom', payload: { day: addDays(today, d), code: 'hot_flushes', intensity: 2 } })),
+      { kind: 'symptom', payload: { day: addDays(today, -2), code: 'night_sweats', intensity: 2 } }] };
+  }
+  if (name === 'pregnant') {
+    // P8-5: pregnancy set 3 weeks ago, last period start 7 weeks ago
+    const starts = startsFrom(addDays(today, -49), [28, 29]);
+    return { profile, events: [...starts.flatMap((s) => period(s, 4)), { kind: 'life_state.set', payload: { kind: 'pregnant', detail: {}, day: addDays(today, -21) } }] };
   }
   if (name === 'inProgress') {
     const starts = startsFrom(addDays(today, -1), [28, 29]);

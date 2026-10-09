@@ -1,0 +1,27 @@
+appId: ${APP_ID}
+name: About opens "How Sanguine estimates" with every section (P8-3)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-about
+- scrollUntilVisible:
+    element:
+      id: about-how
+- tapOn:
+    id: about-how
+- assertVisible:
+    id: screen-how
+- assertVisible: "Where the period range comes from"
+- takeScreenshot: how-top
+- scrollUntilVisible:
+    element: "How well it has done for you"
+- assertVisible: "What does not change the estimates"
+- takeScreenshot: how-bottom

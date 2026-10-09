@@ -76,3 +76,6 @@ One line per finished backlog item. "Needs human" lists what cannot be done with
 - D-076 UI pass from the 2026-10-10 review: double top inset removed, one text-button style, estimate title without the repeated range, visible fertile band floor, sparse-chart thresholds, settings subtitles, native dark mode follows the theme. iOS flows green; screenshots in docs/screenshots/D-076-devclient.
 - P8-1 drip import: drip's CSV (bleeding, temperature, mucus, cervix, sex, pain, mood, desire, notes) through the shared DailyRow writer; unmapped fields reported (D-078).
 - P8-2 Add to someone's calendar: .ics of the 80% period range and an optional fertile range (never one day, teen-gated), stable UIDs; share-calendar.yaml green on iOS (D-079).
+- P8-3 "How Sanguine estimates" under About: range, confidence words, what narrows the range, what does not, accuracy; teen wording; how.yaml green on iOS.
+- P8-4 Cycle pattern card in Insights for the perimenopause life state: STRAW+10 marker counts and vasomotor symptom days, no stage label; pattern.yaml green on iOS (D-081).
+- P8-5 Pregnancy week and due-date range on Today, optional due date in Life state; pregnancy.yaml green on iOS (D-082).

@@ -44,6 +44,7 @@ export default function AboutScreen() {
       <Card testID="about-disclaimer"><Text>{t('legal.aboutDisclaimer')}</Text><Text variant="bodySmall" color="textSecondary">{t('legal.notMedicalDevice')}</Text></Card>
       <Text variant="heading" accessibilityRole="header">{t('settings.about.wording')}</Text>
       <Card><Text variant="bodySmall">{about.howToRead}</Text></Card>
+      <Group><SettingsRow testID="about-how" title={t('settings.how.title')} description={t('settings.how.rowDesc')} onPress={() => router.push('/settings/how' as never)} last /></Group>
       <Card>
         {Object.entries(glossary.terms).map(([term, def]) => (
           <View key={term} style={{ marginBottom: 6 }}><Text variant="bodySmall" style={{ fontWeight: '600' }}>{term}</Text><Text variant="bodySmall" color="textSecondary">{def}</Text></View>

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { migrate } from '@/data/migrate';
 import { EventStore } from '@/data/store';
 import { openTestDb } from '@/data/testDb';
-import { addPastPregnancy, changeLifeState, choiceOf, currentLifeStates, lifeStateHistory } from './lifeState';
+import { addPastPregnancy, changeLifeState, choiceOf, currentLifeStates, lifeStateHistory, symptomsForChoice } from './lifeState';
 
 async function setup() {
   const db = openTestDb();
@@ -74,5 +74,20 @@ describe('pregnancy outcome (P3-12, D-053)', () => {
     await changeLifeState(store, db, { choice: 'hormonal', day: '2026-01-01', method: 'implant' });
     await addPastPregnancy(store, { from: '2024-03-01', until: '2024-10-20', outcome: 'loss' });
     expect(currentLifeStates(await lifeStateHistory(db), '2026-10-10')[0]?.kind).toBe('hormonal_contraception');
+  });
+});
+
+describe('symptomsForChoice (P8-4)', () => {
+  it('adds hot flushes, night sweats and trouble sleeping for the perimenopause state, once', () => {
+    expect(symptomsForChoice('perimenopause', ['cramps', 'insomnia'])).toEqual(['cramps', 'insomnia', 'hot_flushes', 'night_sweats']);
+    expect(symptomsForChoice('pregnant', ['cramps'])).toEqual(['cramps']);
+  });
+});
+
+describe('pregnancy due date (P8-5)', () => {
+  it('is kept in the life-state detail', async () => {
+    const { db, store } = await setup();
+    await changeLifeState(store, db, { choice: 'pregnant', day: '2026-09-01', dueDate: '2027-05-25' });
+    expect((await lifeStateHistory(db))[0]?.detail).toEqual({ dueDate: '2027-05-25' });
   });
 });

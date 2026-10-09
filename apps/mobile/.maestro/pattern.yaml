@@ -1,0 +1,26 @@
+appId: ${APP_ID}
+name: Cycle pattern card in Insights while the perimenopause life state is set; no stage label (P8-4)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=pattern
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Insights
+- tapOn:
+    id: insights-tab-charts
+- extendedWaitUntil:
+    visible:
+      id: card-pattern
+    timeout: 10000
+- assertVisible: "40 days since your last period started."
+- assertVisible: "Your last 6 cycles were 22 to 63 days long."
+- assertVisible: "Cycles of 60 days or more: 1."
+- assertVisible: "Hot flushes: 4 in the last 4 weeks, 5 in the last 12."
+- assertNotVisible: "(?i).*(early|late) stage.*"
+- takeScreenshot: pattern
+- runFlow:
+    file: typical-charts.yaml

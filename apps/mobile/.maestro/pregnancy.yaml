@@ -1,0 +1,36 @@
+appId: ${APP_ID}
+name: Pregnancy week on Today from the last period, then from an entered due date (P8-5)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=pregnant
+- extendedWaitUntil:
+    visible:
+      id: pregnancy-card
+    timeout: 90000
+- assertVisible: "Week 7, day 0"
+- assertVisible: "Due date likely .*"
+- assertVisible: "Counted from your last period start.*"
+- takeScreenshot: pregnancy-today
+- tapOn: Settings
+- tapOn:
+    id: settings-life
+- tapOn:
+    id: know-due
+- assertVisible:
+    id: due-date
+- takeScreenshot: pregnancy-due-setting
+- scrollUntilVisible:
+    element:
+      id: life-apply
+- tapOn:
+    id: life-apply
+- extendedWaitUntil:
+    visible:
+      id: life-saved
+    timeout: 10000
+- tapOn:
+    id: back
+- tapOn: Today
+- assertVisible: "Counted from the due date you entered."

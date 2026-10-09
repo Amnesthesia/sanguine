@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Switch, View } from 'react-native';
 import { LIFE_CHOICES, METHODS, type LifeChoice, type Method } from '@/features/onboarding/model';
-import { changeLifeState, choiceOf, currentLifeStates, lifeStateHistory, type LifeStateRow } from '@/features/settings/lifeState';
+import { changeLifeState, choiceOf, symptomsForChoice, currentLifeStates, lifeStateHistory, type LifeStateRow } from '@/features/settings/lifeState';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -20,7 +20,7 @@ const EFFECT: Record<LifeChoice, string | undefined> = { none: undefined, hormon
 export default function LifeStateScreen() {
   const { t: tr } = useTranslation();
   const t = useTheme();
-  const { db, store, today, refresh } = useApp();
+  const { db, store, today, refresh, prefs, updatePrefs } = useApp();
   const [rows, setRows] = useState<LifeStateRow[]>([]);
   const [choice, setChoice] = useState<LifeChoice>('none');
   const [method, setMethod] = useState<Method>('combined_pill');
@@ -28,6 +28,8 @@ export default function LifeStateScreen() {
   const [bf, setBf] = useState(false);
   const [saved, setSaved] = useState(false);
   const [pregnant, setPregnant] = useState(false);
+  const [knowDue, setKnowDue] = useState(false);
+  const [due, setDue] = useState(addDays(today, 200));
 
   const load = async () => {
     if (!db) return;
@@ -36,6 +38,7 @@ export default function LifeStateScreen() {
     const cur = currentLifeStates(r, today)[0];
     setChoice(cur ? choiceOf(cur) : 'none');
     setPregnant(cur?.kind === 'pregnant');
+    if (cur?.kind === 'pregnant' && typeof cur.detail.dueDate === 'string') { setKnowDue(true); setDue(cur.detail.dueDate); }
     if (cur) { setDay(cur.from_day); setMethod(((cur.detail.method as Method | undefined) ?? 'combined_pill')); setBf(Boolean(cur.detail.breastfeeding)); }
   };
   // biome-ignore lint/correctness/useExhaustiveDependencies: load once on open
@@ -43,7 +46,9 @@ export default function LifeStateScreen() {
 
   async function apply() {
     if (!db || !store) return;
-    await changeLifeState(store, db, { choice, day, method, breastfeeding: bf });
+    await changeLifeState(store, db, { choice, day, method, breastfeeding: bf, dueDate: choice === 'pregnant' && knowDue ? due : undefined });
+    const symptoms = symptomsForChoice(choice, prefs.symptoms);
+    if (symptoms.length !== prefs.symptoms.length) await updatePrefs({ symptoms });
     await refresh();
     await load();
     setSaved(true);
@@ -59,6 +64,17 @@ export default function LifeStateScreen() {
         <Text variant="bodySmall" color="textSecondary">{tr('settings.lifeState.since', { date: formatDayYear(day) })}</Text>
         <DateField testID="state-date" value={day} onChange={setDay} min={addDays(today, -3650)} max={today} />
       </View>) : null}
+      {choice === 'pregnant' ? (<View style={{ gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 }}>
+          <Text>{tr('settings.lifeState.knowDue')}</Text>
+          <Switch testID="know-due" accessibilityLabel={tr('settings.lifeState.knowDue')} value={knowDue} onValueChange={setKnowDue} trackColor={{ true: t.c.accent }} />
+        </View>
+        {knowDue ? (<>
+          <Text variant="bodySmall" color="textSecondary">{tr('settings.lifeState.dueDate', { date: formatDayYear(due) })}</Text>
+          <DateField testID="due-date" value={due} onChange={setDue} min={today} max={addDays(today, 300)} />
+        </>) : null}
+      </View>) : null}
+      {choice === 'perimenopause' ? <Text variant="bodySmall" color="textSecondary" testID="pattern-symptoms-note">{tr('settings.lifeState.patternSymptoms')}</Text> : null}
       {choice === 'postpartum' ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48 }}>
           <Text>{tr('settings.lifeState.breastfeeding')}</Text>
