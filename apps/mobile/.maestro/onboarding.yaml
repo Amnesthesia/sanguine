@@ -48,8 +48,22 @@ name: Onboarding, five steps (adult, with last period and life state)
     id: health-note
 - tapOn:
     id: consent
+- runFlow:
+    when:
+      visible:
+        id: consent-explicit
+    commands:
+      - tapOn:
+          id: consent-explicit
 - tapOn:
     id: onboarding-continue
+# the Health offer opens Health sync once the setup is finished
+- extendedWaitUntil:
+    visible:
+      id: screen-health
+    timeout: 20000
+- tapOn:
+    id: back
 - extendedWaitUntil:
     visible:
       id: screen-today

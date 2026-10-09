@@ -5,8 +5,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { todayLocal } from '@/services/clock';
+import { deviceClock, todayLocal } from '@/services/clock';
 import { deviceHasLock } from '@/services/lockAuth';
+import { consentRequirement, recordConsent } from '@/data/consent';
+import { deviceRegion } from '@/services/locale';
 import { useApp } from '@/state/app';
 import { useLock } from '@/state/lock';
 import { useTheme } from '@/theme';
@@ -32,6 +34,7 @@ export function OnboardingFlow() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const store = useApp((s) => s.store);
+  const db = useApp((s) => s.db);
   const refresh = useApp((s) => s.refresh);
   const complete = useApp((s) => s.completeOnboarding);
   const today = useMemo(() => todayLocal(), []);
@@ -45,6 +48,8 @@ export function OnboardingFlow() {
   const [other, setOther] = useState(addDays(today, -14));
   const [a, setA] = useState<Pick<Answers, 'lifeState' | 'method' | 'stateDate' | 'breastfeeding' | 'consent'>>({ lifeState: 'none', method: 'combined_pill', stateDate: today, breastfeeding: false, consent: false });
   const [healthNote, setHealthNote] = useState(false);
+  const explicit = useMemo(() => consentRequirement(deviceRegion()) === 'explicit', []);
+  const [explicitOk, setExplicitOk] = useState(false);
   const [backupIntent, setBackupIntent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [lockAvailable, setLockAvailable] = useState<boolean | undefined>();
@@ -56,7 +61,7 @@ export function OnboardingFlow() {
   const menarcheCheck = menarcheText.length === 4 ? validateMenarcheYear(answers.menarcheYear, birthDate, year) : { ok: true as const };
   const usualCheck = validateUsualLength(answers.usualLength);
   const teen = birthCheck.ok && isTeenOn({ birthDate }, today);
-  const ok = canContinue(step, answers, today);
+  const ok = canContinue(step, answers, today) && (step !== TOTAL_STEPS - 1 || !explicit || explicitOk);
   const healthLabel = Platform.OS === 'ios' ? tr('onboarding.s5.importIos') : tr('onboarding.s5.importAndroid');
 
   async function finish() {
@@ -67,9 +72,11 @@ export function OnboardingFlow() {
       await store.setProfile(w.profile);
       if (w.events.length) await store.appendMany(w.events);
       useLock.setState({ unlockedThisSession: true }); // the person is here: no lock prompt straight after setup
+      if (db) await recordConsent(db, deviceClock.iso(), explicit ? 'art9-explicit' : 'standard');
       await complete();
       await refresh();
       router.replace(backupIntent ? '/settings' : '/today');
+      if (healthNote) router.push('/settings/health' as never);
     } finally {
       setBusy(false);
     }
@@ -136,8 +143,16 @@ export function OnboardingFlow() {
             </View>
             <Text style={{ flex: 1 }}>{tr('onboarding.s5.consent')}</Text>
           </Pressable>
+          {explicit ? (
+            <Pressable testID="consent-explicit" accessibilityRole="checkbox" accessibilityLabel={tr('onboarding.s5.consentExplicit')} aria-checked={explicitOk} onPress={() => setExplicitOk(!explicitOk)}
+              style={{ flexDirection: 'row', gap: 12, alignItems: 'center', minHeight: 52 }}>
+              <View style={{ width: 26, height: 26, borderRadius: 6, borderWidth: 2, borderColor: t.c.accent, backgroundColor: explicitOk ? t.c.accent : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
+                {explicitOk ? <Text style={{ color: t.scheme === 'dark' ? '#3A0A14' : '#FFFFFF', fontWeight: '700' }}>✓</Text> : null}
+              </View>
+              <Text style={{ flex: 1 }}>{tr('onboarding.s5.consentExplicit')}</Text>
+            </Pressable>) : null}
           <Button testID="health-offer" kind="secondary" label={healthLabel} onPress={() => setHealthNote(true)} />
-          {healthNote ? <Text variant="bodySmall" color="textSecondary" testID="health-note">{tr('onboarding.s5.healthUnavailable')}</Text> : null}
+          {healthNote ? <Text variant="bodySmall" color="textSecondary" testID="health-note">{tr('onboarding.s5.healthLater')}</Text> : null}
           <Button testID="backup-offer" kind="secondary" label={tr('onboarding.s5.backup')} onPress={() => setBackupIntent(true)} />
           {backupIntent ? <Text variant="bodySmall" color="textSecondary" testID="backup-note">{tr('onboarding.s5.backupHint')}</Text> : null}
         </>)}

@@ -95,6 +95,8 @@
       "backup": "Set up encrypted backup",
       "consent": "I understand what Sanguine stores and where.",
       "healthUnavailable": "Health import arrives in a later update. Nothing is shared.",
+      "healthLater": "Health sync opens when you finish. Nothing is switched on until you choose it.",
+      "consentExplicit": "I agree that Sanguine stores my health information on this phone, as described above.",
       "backupHint": "You can set up an encrypted backup in Settings, under Privacy and data."
     },
     "teenNote": "Some features are hidden by default for under 18s. You can change this in Settings."
@@ -502,6 +504,9 @@
       "discreetIconUnavailable": "Not available on this phone.",
       "screenProtection": "Hide the app in screenshots and recent apps",
       "screenProtectionDesc": "On: screenshots and the recent-apps picture are blocked. The recovery code screen always blocks them.",
+      "consentTitle": "Your consent",
+      "consentGiven": "Given on {date}. To withdraw it, delete your data.",
+      "consentNone": "No consent is recorded on this phone.",
       "deleteAll": "Delete everything",
       "deleteConfirmTitle": "Delete everything?",
       "deleteConfirmBody": "This removes every log, setting and backup key from this phone. It cannot be undone. Backups you saved in iCloud Drive, Google Drive or Files, and entries written to Apple Health or Health Connect, stay where they are until you delete them there.",
@@ -599,6 +604,8 @@
       "version": "Version {v}",
       "engine": "Estimate engine {v}",
       "engineHash": "Engine hash {h}",
+      "privacyPolicy": "Privacy policy",
+      "consumerHealthPolicy": "Consumer health data policy",
       "sources": "Sources",
       "sourcesDesc": "The published studies the estimates are based on.",
       "licences": "Licences",

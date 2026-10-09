@@ -11,6 +11,12 @@ import { sqliteLinks } from '@/data/healthLinks';
 import { SyncGate } from '@/data/syncGate';
 import { mergeReports } from '@/data/healthSync';
 import { clearCloudSecrets, uploadCloudIfDue } from '@/services/cloud';
+import i18next from 'i18next';
+import { TRANSLATIONS } from '@/i18n/translations';
+import { getLocales } from 'expo-localization';
+import { defaultTempUnit, pickTranslated } from '@/i18n/locale';
+import { deviceLocale } from '@/services/locale';
+import { setFormatLocale } from '@/ui/format';
 import { syncHealthOnce, watchHealth } from '@/services/health';
 import type { SyncReport } from '@sanguine/health-adapter';
 import { AppState as RNAppState, Platform } from 'react-native';
@@ -89,7 +95,14 @@ export const useApp = create<AppState>((set, get) => ({
   async init() {
     try {
       const { db, store } = await appData();
-      const [prefs, onboarded, launches] = await Promise.all([loadPrefs(db), getSetting(db, 'onboarded', false), getSetting(db, 'launchCount', 0)]);
+      const [loaded, onboarded, launches, savedPrefs] = await Promise.all([loadPrefs(db), getSetting(db, 'onboarded', false), getSetting(db, 'launchCount', 0), getSetting<unknown>(db, 'prefs', null)]);
+      const locale = deviceLocale();
+      setFormatLocale(locale);
+      const translated = pickTranslated(getLocales().map((l) => l.languageTag), Object.keys(TRANSLATIONS));
+      if (translated) await i18next.changeLanguage(translated);
+      // first run: the temperature unit follows the device region (°F for en-US); the Tracking setting wins afterwards
+      const prefs = savedPrefs === null ? { ...loaded, tempUnit: defaultTempUnit(locale) } : loaded;
+      if (savedPrefs === null && prefs.tempUnit !== loaded.tempUnit) await savePrefs(db, prefs);
       const launchCount = launches + 1;
       await setSetting(db, 'launchCount', launchCount);
       const asks = await getSetting<HealthAsk[]>(db, 'healthAsks', []);

@@ -5,8 +5,10 @@ import enAU from '../../../../copy/en-AU.json';
 import flags from '../../../../copy/flags.en-AU.json';
 import legal from '../../../../copy/legal.en-AU.json';
 import symptoms from '../../../../copy/symptoms.json';
+import { TRANSLATIONS } from './translations';
 
-export const resources = {
+/** Copy for every language we have: en-AU is complete; a translated file may lack keys and falls back to it. */
+export const resources: Record<string, { translation: Record<string, unknown> }> = {
   'en-AU': {
     translation: {
       ...enAU,
@@ -16,6 +18,8 @@ export const resources = {
     },
   },
 };
+
+for (const [lang, tree] of Object.entries(TRANSLATIONS)) resources[lang] = { translation: tree };
 
 void i18next.use(initReactI18next).init({
   resources,

@@ -23,7 +23,7 @@ All application data resides exclusively in a local database on your phone. Star
 
 ## 4. Optional Backups and Platform Sync
 - Optional encrypted backup: You can choose to create end-to-end encrypted backups stored in your personal iCloud Drive or Google Drive application folder. Backups use Argon2id key derivation XORed with a device-generated secret, alongside XChaCha20-Poly1305 encryption. The developer cannot decrypt or read these backups; only your personal passphrase and device secret can decrypt the file.
-- Optional health sync: A future release will offer optional sync with Apple Health or Health Connect. This integration is disabled by default and requires explicit opt-in for each specific data category. Data synchronised to Apple Health or Health Connect becomes subject to Apple or Google terms and permissions.
+- Optional health sync: Sanguine can sync with Apple Health or Health Connect. This is off by default and you choose each data category yourself in Settings. What you log here is written to the health store only for the categories you switch on; wrist temperature is read and never written. Data in Apple Health or Health Connect is subject to Apple or Google terms and permissions, and a backup never contains records that were only imported from Apple Health.
 
 ## 5. Access and Correction (APP 12 and APP 13)
 Because the developer maintains no central user accounts and holds no copy of your records, you exercise access, export, correction, and deletion directly within the application:

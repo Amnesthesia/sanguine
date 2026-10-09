@@ -10,7 +10,9 @@
     "engine-hash": "tsx tools/ci/engine-hash.ts",
     "lint": "biome lint .",
     "i18n:extract": "tsx tools/ci/i18n.ts extract",
-    "i18n:import": "tsx tools/ci/i18n.ts import"
+    "i18n:import": "tsx tools/ci/i18n.ts import",
+    "i18n:index": "tsx tools/ci/i18n.ts index",
+    "policy": "tsx tools/ci/policy.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

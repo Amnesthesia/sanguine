@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import i18n from '../../apps/mobile/src/i18n';
-import { CSV_PATH, extractRows, flatten, isRegulatory, parseCsv, renderSourceCsv, sourceTree, toCsv, unflatten, validateTranslation } from './i18n';
+import { CSV_PATH, extractRows, INDEX_PATH, renderTranslationsIndex, flatten, isRegulatory, parseCsv, renderSourceCsv, sourceTree, toCsv, unflatten, validateTranslation } from './i18n';
 
 describe('translation pipeline (PLAN.md §6.4)', () => {
   it('the source tree is exactly what the app loads for en-AU', () => {
@@ -43,5 +43,15 @@ describe('translation pipeline (PLAN.md §6.4)', () => {
       expect(errs.some((e) => e.startsWith('today.periodLikely: placeholders'))).toBe(true);
       expect(errs.some((e) => e.startsWith('tabs.today: longer'))).toBe(true);
     });
+  });
+  describe('translations index', () => {
+    it('lists nothing while no translated file exists, and one import per file that does', () => {
+      expect(renderTranslationsIndex(() => false)).toContain('export const TRANSLATIONS: Record<string, Record<string, unknown>> = { };');
+      const out = renderTranslationsIndex((l) => l === 'de' || l === 'pt-BR');
+      expect(out).toContain("import de from '../../../../copy/de.json';");
+      expect(out).toContain("import pt_BR from '../../../../copy/pt-BR.json';");
+      expect(out).toContain("'de': de, 'pt-BR': pt_BR,");
+    });
+    it('the generated file is current (run `pnpm i18n:index`)', () => expect(readFileSync(INDEX_PATH, 'utf8')).toBe(renderTranslationsIndex()));
   });
 });

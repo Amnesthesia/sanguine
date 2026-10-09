@@ -4,12 +4,13 @@ import { useEffect } from 'react';
 import { Text } from 'react-native';
 import { scenario, SCENARIOS, type ScenarioName } from '@/features/dev/scenarios';
 import { setSetting } from '@/data/settings';
+import { wipeAll } from '@/data/wipe';
 import { todayLocal } from '@/services/clock';
 import { deleteDeviceSecret, deleteNoteKey } from '@/services/secrets';
 import { useApp } from '@/state/app';
 
 export default function Seed() {
-  const params = useLocalSearchParams<{ scenario?: string; theme?: string; resetSecrets?: string; lock?: string; protect?: string }>();
+  const params = useLocalSearchParams<{ scenario?: string; theme?: string; resetSecrets?: string; lock?: string; protect?: string; wipeData?: string }>();
   const router = useRouter();
   const status = useApp((s) => s.status);
   useEffect(() => {
@@ -19,6 +20,8 @@ export default function Seed() {
       if (!store || !db) return;
       // Keychain items survive an app-data reset on iOS; tests that need a first-run backup start from none
       if (params.resetSecrets === '1') await Promise.all([deleteDeviceSecret(), deleteNoteKey()]);
+      // drops every table but keeps the keys: a restore test needs the device secret to survive
+      if (params.wipeData === '1') await wipeAll(db);
       const name = (SCENARIOS.includes(params.scenario as ScenarioName) ? params.scenario : 'typical') as ScenarioName;
       const s = scenario(name, todayLocal());
       await store.setProfile(s.profile);
@@ -30,7 +33,7 @@ export default function Seed() {
       await refresh();
       router.replace('/today');
     })();
-  }, [status, params.scenario, params.theme, params.resetSecrets, params.lock, params.protect, router]);
+  }, [status, params.scenario, params.theme, params.resetSecrets, params.lock, params.protect, params.wipeData, router]);
   if (!__DEV__) return <Redirect href="/" />;
   return <Text>Loading sample data…</Text>;
 }

@@ -1,5 +1,6 @@
 import { ENGINE_BUILD_HASH, ENGINE_VERSION } from '@sanguine/engine';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Image, View } from 'react-native';
 import lockupDark from '../../../assets/brand/splash-lockup-dark.png';
@@ -11,13 +12,16 @@ import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import about from '../../../../../copy/about.en-AU.json';
 import glossary from '../../../../../copy/glossary.en-AU.json';
+import { POLICIES } from '@/features/legal/policies.generated';
 import { Card } from '@/ui/Card';
+import { Group, SettingsRow } from '@/ui/SettingsRow';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
 
 
 export default function AboutScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const theme = useTheme();
   const brand = BRAND[theme.scheme]; // the brand field lives here and on the splash only (D-051)
   const launchCount = useApp((s) => s.launchCount);
@@ -52,6 +56,12 @@ export default function AboutScreen() {
           <View key={s.cite} style={{ marginBottom: 6 }}><Text variant="bodySmall" style={{ fontWeight: '600' }}>{s.cite}</Text><Text variant="bodySmall" color="textSecondary">{s.use}</Text></View>
         ))}
       </Card>
+      {POLICIES.privacy.ready || POLICIES.consumerHealth.ready ? (
+        <Group>
+          {POLICIES.privacy.ready ? <SettingsRow testID="about-privacy-policy" title={t('settings.about.privacyPolicy')} onPress={() => router.push({ pathname: '/settings/legal', params: { doc: 'privacy' } } as never)} last={!POLICIES.consumerHealth.ready} /> : null}
+          {POLICIES.consumerHealth.ready ? <SettingsRow testID="about-health-policy" title={t('settings.about.consumerHealthPolicy')} onPress={() => router.push({ pathname: '/settings/legal', params: { doc: 'consumerHealth' } } as never)} last /> : null}
+        </Group>
+      ) : null}
       <Text variant="heading" accessibilityRole="header">{t('settings.about.licences')}</Text>
       <Card>
         {about.licences.map((l) => (

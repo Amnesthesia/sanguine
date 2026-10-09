@@ -128,3 +128,21 @@ describe('months without a prediction', () => {
     expect(m.cells).toHaveLength(42);
   });
 });
+
+describe('week start', () => {
+  it('Monday-first is the default and starts the grid on a Monday', () => {
+    const m = month('2026-10');
+    expect(m.cells[0]?.date).toBe('2026-09-28'); // 1 Oct 2026 is a Thursday
+    expect(month('2026-10', { weekStart: 'mon' }).cells[0]?.date).toBe('2026-09-28');
+  });
+  it('Sunday-first starts the grid on the Sunday before', () => {
+    const m = month('2026-10', { weekStart: 'sun' });
+    expect(m.cells[0]?.date).toBe('2026-09-27');
+    expect(m.cells).toHaveLength(42);
+    expect(m.cells.filter((c) => c.inMonth)).toHaveLength(31);
+  });
+  it('a month starting on a Sunday has no leading days Sunday-first and six Monday-first', () => {
+    expect(month('2026-11', { weekStart: 'sun' }).cells[0]?.date).toBe('2026-11-01');
+    expect(month('2026-11').cells[0]?.date).toBe('2026-10-26');
+  });
+});

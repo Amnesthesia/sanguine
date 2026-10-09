@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
 import { buildMonth, monthOf, shiftMonth } from '@/features/calendar/calendarModel';
+import { weekdayLabels } from '@/i18n/locale';
+import { deviceWeekStart } from '@/services/locale';
 import { DayCellView } from '@/features/calendar/DayCellView';
 import { useCalendarData } from '@/features/calendar/useCalendarData';
 import { dayEvents } from '@/features/logging/actions';
@@ -40,7 +42,8 @@ export default function CalendarScreen() {
   const [summary, setSummary] = useState<string[]>([]);
 
   const showEstimate = SHOW_OVULATION_ESTIMATE && effectivePrefs(prefs, profile, today).showOvulationEstimate;
-  const model = useMemo(() => buildMonth({ month, today, periodDays, loggedDays, prediction, showEstimate }), [month, today, periodDays, loggedDays, prediction, showEstimate]);
+  const weekStart = useMemo(deviceWeekStart, []);
+  const model = useMemo(() => buildMonth({ month, today, periodDays, loggedDays, prediction, showEstimate, weekStart }), [month, today, periodDays, loggedDays, prediction, showEstimate, weekStart]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the day after every write
   useEffect(() => {
@@ -71,7 +74,7 @@ export default function CalendarScreen() {
         {nav(1, 'cal-next', tr('calendar.nextMonth'))}
       </View>
       <View style={{ flexDirection: 'row' }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        {(tr('calendar.weekdays', { returnObjects: true }) as unknown as string[]).map((w) => <Text key={w} variant="caption" color="textSecondary" style={{ width: `${100 / 7}%`, textAlign: 'center' }}>{w}</Text>)}
+        {weekdayLabels(tr('calendar.weekdays', { returnObjects: true }) as unknown as string[], weekStart).map((w) => <Text key={w} variant="caption" color="textSecondary" style={{ width: `${100 / 7}%`, textAlign: 'center' }}>{w}</Text>)}
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap' }} testID="cal-grid">
         {model.cells.map((c) => <DayCellView key={c.date} cell={c} selected={c.date === selected} onPress={() => { setSelected(c.date); if (!c.inMonth) setMonth(monthOf(c.date)); }} />)}

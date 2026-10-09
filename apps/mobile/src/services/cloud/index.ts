@@ -47,7 +47,9 @@ async function loadKey(): Promise<PrecomputedKey | null> {
 /** Runs the key derivation once (the slow part) and keeps the result on this phone only. */
 export async function enableAutoBackup(passphrase: string, onProgress?: (f: number) => void): Promise<void> {
   const { kdf, argon2id } = backupCrypto();
+  const started = deviceClock.nowMs();
   const k = await precomputeKey(passphrase, (n) => deviceClock.randomBytes(n), kdf, onProgress, argon2id);
+  if (__DEV__) console.log(`[backup] key derived with ${argon2id ? 'native' : 'JavaScript'} Argon2id, ${kdf.memKiB / 1024} MiB x ${kdf.iterations}, in ${deviceClock.nowMs() - started} ms`);
   await SecureStore.setItemAsync(KEY, JSON.stringify({ salt: hex(k.salt), k0: hex(k.k0), kdf: k.kdf }), OPTS);
 }
 export async function disableAutoBackup(): Promise<void> {

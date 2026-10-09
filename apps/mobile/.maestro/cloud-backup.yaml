@@ -1,0 +1,58 @@
+appId: ${APP_ID}
+name: Cloud backup - switch on (recovery code first), encrypted upload, wipe the data, restore from the cloud copy
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=typical&resetSecrets=1
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-privacy
+- tapOn:
+    id: privacy-backup
+- tapOn:
+    id: backup-pass
+- inputText: "correct horse battery"
+- pressKey: Enter
+- tapOn:
+    id: cloud-switch
+# the recovery code comes first, before anything leaves the phone
+- extendedWaitUntil:
+    visible:
+      id: recovery-words
+    timeout: 60000
+- tapOn:
+    id: recovery-saved
+- extendedWaitUntil:
+    visible: "Uploaded to .*"
+    timeout: 120000
+- takeScreenshot: uploaded
+- assertVisible:
+    id: cloud-last
+# the data is gone, the keys stay: restore from the cloud copy
+- openLink: ${LINKBASE}dev/seed?scenario=empty&wipeData=1
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Settings
+- tapOn:
+    id: settings-privacy
+- tapOn:
+    id: privacy-backup
+- tapOn:
+    id: backup-mode-restore
+- tapOn:
+    id: backup-pass
+- inputText: "correct horse battery"
+- pressKey: Enter
+- tapOn:
+    id: cloud-restore
+- extendedWaitUntil:
+    visible: "Imported .* records.*"
+    timeout: 120000
+- takeScreenshot: restored

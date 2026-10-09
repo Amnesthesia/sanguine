@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getConsent } from '@/data/consent';
 import { useTranslation } from 'react-i18next';
 import { Alert, Platform } from 'react-native';
 import { shareExport, pickAndImport } from '@/services/exportImport';
@@ -17,6 +18,8 @@ export default function PrivacyScreen() {
   const { db, store, prefs, updatePrefs, refresh, deleteEverything } = useApp();
   const [msg, setMsg] = useState<string | undefined>();
   const [busy, setBusy] = useState<'export' | 'import' | undefined>();
+  const [consentAt, setConsentAt] = useState<string | null>(null);
+  useEffect(() => { if (db) void getConsent(db).then((c) => setConsentAt(c?.at ?? null)); }, [db]);
 
   async function run(what: 'export' | 'import', fn: () => Promise<string | undefined>) {
     if (busy) return;
@@ -51,6 +54,7 @@ export default function PrivacyScreen() {
         <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setMsg(t('settings.privacy.appLockOnly')); return; } setMsg(undefined); await updatePrefs({ appLock: v }); })()} />
         <SwitchRow testID="privacy-icon" title={t('settings.privacy.discreetIcon')} description={discreetIconSupported() ? t(Platform.OS === 'android' ? 'settings.privacy.discreetIconDescAndroid' : 'settings.privacy.discreetIconDesc') : t('settings.privacy.discreetIconUnavailable')} disabled={!discreetIconSupported()} value={prefs.discreetIcon} onChange={(v) => void switchIcon(v)} />
         <SwitchRow testID="privacy-protect" title={t('settings.privacy.screenProtection')} description={t('settings.privacy.screenProtectionDesc')} value={prefs.screenProtection} onChange={(v) => void updatePrefs({ screenProtection: v })} />
+        <SettingsRow testID="privacy-consent" title={t('settings.privacy.consentTitle')} description={consentAt ? t('settings.privacy.consentGiven', { date: consentAt.slice(0, 10) }) : t('settings.privacy.consentNone')} />
         <SettingsRow testID="privacy-delete" title={t('settings.privacy.deleteAll')} destructive onPress={confirmDelete} last />
       </Group>
       {msg ? <Text variant="bodySmall" testID="privacy-message" accessibilityLiveRegion="polite">{msg}</Text> : null}

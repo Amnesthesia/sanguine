@@ -58,7 +58,7 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 - [x] P3-5 Widgets: iOS lock screen/home; discreet defaults. (§8.3) Android Glance moved to P3-5b.
 - [ ] P3-5b Android Glance widget when expo-widgets' Android renderer is more than a placeholder (D-047).
 - [x] P3-6 Alternate app icons (discreet "Notes"); screenshot protection. (§8.8, §9.9)
-- [ ] P3-7 Cloud backup upload: iCloud Drive container (entitlement) and Google Drive appDataFolder (expo-auth-session); restore E2E across two simulators. (§6.3)
+- [x] P3-7 (D-061; verified on the iOS simulator with the local test folder: switch on, recovery code first, encrypted upload, wipe, restore; the iCloud account and a Google OAuth client id are the owner's, see PROGRESS; native Argon2id at 64 MiB x 3 adopted) Cloud backup upload: iCloud Drive container (entitlement) and Google Drive appDataFolder (expo-auth-session); restore E2E across two simulators. (§6.3)
 - [x] P3-8 Final icon and splash assets built natively (Icon Composer layers, adaptive icon). (§9.9)
 - [x] P3-9 Period runs join across gaps up to 7 days unless the user splits them; `period.start { merge: false }` splits. (§5.4, client review 1 #3)
 - [x] P3-10 λ documentation fix: PLAN §4.3/§4.12/§11.1 and types.ts say the shipped default (λ = 1, D-021); fixtures pinned to RECENCY_LAMBDA. (client review 1 #4)
@@ -78,10 +78,10 @@ Screens (each item: component tests + a Maestro flow on both simulators; match `
 ## Phase 5 — Launch (Australia), Phase 6 — International, Phase 7 — Regulated tier
 As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the human; the items below are everything that does not.
 
-- [ ] P5-1 Flo and Clue importers through the shared DailyRow writer (§8.10; VERIFY current export formats).
+- [ ] P5-1 (blocked: no documented export format, D-062; needs sample exports from the owner) Flo and Clue importers through the shared DailyRow writer (§8.10; VERIFY current export formats).
 - [ ] P5-2 Teen-mode audit: every surface checked against the teen rules by a test; Maestro teen flow. (§2.4, §11)
 - [x] P5-3 Release readiness: privacy manifest, EAS profiles, tag-triggered release workflow (no OTA), store listing, review notes and Play health declaration drafts, checked by `tools/ci/store.test.ts` (D-058). Owner: accounts, signing, `EXPO_TOKEN`, submission.
-- [ ] P5-4 Open-source and policy files (AGPL `LICENSE`, `TRADEMARK.md`, `SECURITY.md`, `CONTRIBUTING.md`, README claims table: done in D-058); in-app policy screens and the consent record. Owner: publishing the repository, brand permission, legal review.
-- [ ] P6-1 Localisation infrastructure with en-GB and en-US overrides, °F display and entry for en-US, device first weekday, locale snapshot tests. (§6.4)
-- [ ] P6-2 Translation pipeline for de, fr, es, pt-BR (extract, validate, load): no machine translation; the translations themselves need translators and a clinician check.
-- [ ] P6-3 GDPR Article 9 explicit-consent step for EU/UK regions, US state health-data policy text. Owner: controller identity, GDPR representative, legal review.
+- [x] P5-4 (code and files done; the owner's items are in PROGRESS) Open-source and policy files (AGPL `LICENSE`, `TRADEMARK.md`, `SECURITY.md`, `CONTRIBUTING.md`, README claims table: done in D-058); in-app policy screens and the consent record. Owner: publishing the repository, brand permission, legal review.
+- [x] P6-1 (D-063) Localisation infrastructure with en-GB and en-US overrides, °F display and entry for en-US, device first weekday, locale snapshot tests. (§6.4)
+- [x] P6-2 (pipeline and loader done, D-063; translations need translators and a clinician check, see PROGRESS) Translation pipeline for de, fr, es, pt-BR (extract, validate, load): no machine translation; the translations themselves need translators and a clinician check.
+- [x] P6-3 (D-063; controller, representative and legal review are the owner's) GDPR Article 9 explicit-consent step for EU/UK regions, US state health-data policy text. Owner: controller identity, GDPR representative, legal review.

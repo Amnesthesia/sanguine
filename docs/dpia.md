@@ -19,7 +19,7 @@ This assessment evaluates processing operations within Sanguine, a free on-devic
 - Optional platform sync: Future releases will provide optional sync with Apple Health or Health Connect, configured strictly per data category.
 
 ## 3. Necessity, Proportionality, and Lawful Basis
-- Lawful basis: Explicit consent under GDPR Article 9(2)(a), obtained via a dedicated onboarding screen prior to any data entry. Users may withdraw consent at any time.
+- Lawful basis: Explicit consent under GDPR Article 9(2)(a), obtained via a dedicated onboarding checkbox, shown for EU, EEA, UK and Swiss regions (and when the region is unknown), before anything is saved: answers given in earlier steps are held in memory and written only when the person finishes, after consent. The record (version, time, basis) is kept on the phone and shown in Settings > Privacy and data. Users may withdraw consent at any time.
 - Proportionality: Sanguine processes only the specific data points entered by the user to calculate cycle estimates and display calendar views. No secondary processing or automated profiling occurs.
 - Data minimisation: Age, entered as a date of birth (D-055, so the minimum age of 13 is checked exactly), is the sole required onboarding field to confirm eligibility. All other logging is optional. Data stays on the device until erased by the user.
 
@@ -37,7 +37,7 @@ This assessment evaluates processing operations within Sanguine, a free on-devic
 
 ### 4.3 Health Store Integration Exposure (Apple Health / Health Connect)
 - Potential impact: Third-party applications on the device accessing cycle entries stored in the operating system health store.
-- Mitigations: Integration is disabled by default; requires granular, per-category opt-in; clear permission copy explains platform access; unconfirmed imported samples are excluded from backups.
+- Mitigations: Integration is disabled by default; requires granular, per-category opt-in; clear permission copy explains platform access; samples imported from Apple Health are excluded from backups (identified by the prefix the sync gives their external id, `healthkit:`, and checked by a test); a sync pass cannot run while "Delete everything" is deleting data; sexual activity syncs only while its logging is on, which is off by default and hidden under 18.
 - Residual level: Low.
 
 ### 4.4 Minor and Youth Privacy (Children Under Statutory Age)

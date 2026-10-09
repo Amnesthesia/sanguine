@@ -35,7 +35,7 @@ export default function BackupScreen() {
   const [code, setCode] = useState('');
   const [pct, setPct] = useState<number | undefined>();
   const [msg, setMsg] = useState<string | undefined>();
-  const [pending, setPending] = useState<{ bytes: Uint8Array; words: string } | undefined>();
+  const [pending, setPending] = useState<{ words: string; next: () => Promise<void> } | undefined>();
   const service = cloud ? cloudServiceName(cloud) : '';
   useEffect(() => { void getCloudStore().then(setCloud); }, []);
   const reloadLast = () => { if (db) void getSetting<string | null>(db, 'cloud.lastUploadAt', null).then(setLastUpload); };
@@ -53,8 +53,10 @@ export default function BackupScreen() {
       const { secret, created } = await getOrCreateDeviceSecret();
       const bytes = await createBackup(db, store, { passphrase: pass, deviceSecret: secret, clock: deviceClock, ...backupCrypto(), onProgress: (f) => setPct(Math.round(f * 100)) });
       if (__DEV__) console.log(`[backup] sealed ${bytes.length} bytes in ${Date.now() - started} ms`);
-      if (created) setPending({ bytes, words: recoveryCodeFor(secret) });
-      else { await shareFile(bytes, `sanguine-backup-${todayLocal()}.sgb`, 'application/octet-stream'); setMsg(t('settings.privacy.backupReady')); }
+      const share = async () => { await shareFile(bytes, `sanguine-backup-${todayLocal()}.sgb`, 'application/octet-stream'); setMsg(t('settings.privacy.backupReady')); };
+      // the code is shown until the person has confirmed they saved it, even if they left this screen the first time
+      if (created || !(await getSetting(db, 'recoveryShown', false))) setPending({ words: recoveryCodeFor(secret), next: share });
+      else await share();
     } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); setPass(''); setPass2(''); }
   }
   async function restoreWith(getBytes: () => Promise<Uint8Array | null>, fromCloud = false) {
@@ -91,15 +93,19 @@ export default function BackupScreen() {
       return setMsg(t('settings.privacy.cloud.off', { service }));
     }
     if (pass.length < MIN_PASSPHRASE) return setMsg(t('settings.privacy.cloud.needPass'));
-    try {
-      setPct(0);
-      await getOrCreateDeviceSecret();
-      await enableAutoBackup(pass, (f) => setPct(Math.round(f * 100)));
-      await updatePrefs({ cloudBackup: true });
-      const r = await uploadCloudIfDue(db, store, true);
-      setMsg(r === 'failed' ? t('settings.privacy.cloud.failed', { service }) : t('settings.privacy.cloud.uploaded', { service }));
-      reloadLast();
-    } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); setPass(''); setPass2(''); }
+    const enable = async () => {
+      try {
+        setPct(0);
+        await enableAutoBackup(pass, (f) => setPct(Math.round(f * 100)));
+        await updatePrefs({ cloudBackup: true });
+        const r = await uploadCloudIfDue(db, store, true);
+        setMsg(r === 'failed' ? t('settings.privacy.cloud.failed', { service }) : t('settings.privacy.cloud.uploaded', { service }));
+        reloadLast();
+      } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); setPass(''); setPass2(''); }
+    };
+    const { secret, created } = await getOrCreateDeviceSecret();
+    if (created || !(await getSetting(db, 'recoveryShown', false))) setPending({ words: recoveryCodeFor(secret), next: enable });
+    else await enable();
   }
   async function uploadNow() {
     if (!db || !store || !cloud) return;
@@ -133,8 +139,8 @@ export default function BackupScreen() {
         <Button testID="recovery-saved" label={t('settings.privacy.recoveryCode.saved')} onPress={() => void (async () => {
           const p = pending;
           setPending(undefined);
-          await shareFile(p.bytes, `sanguine-backup-${todayLocal()}.sgb`, 'application/octet-stream');
-          setMsg(t('settings.privacy.backupReady'));
+          if (db) await setSetting(db, 'recoveryShown', true);
+          await p.next();
         })()} />
       </SubScreen>
     );

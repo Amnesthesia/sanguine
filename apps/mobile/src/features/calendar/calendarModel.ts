@@ -1,6 +1,7 @@
 // Month grid view-model (PLAN.md §8.3, §8.5): which marks each day carries. Pure; the screen only draws it.
 import { addDays, diffDays, type ISODate, isoWeekday, type Prediction } from '@sanguine/engine';
 import i18n from '@/i18n';
+import type { WeekStart } from '@/i18n/locale';
 import { formatLong, formatMonthYear } from '@/ui/format';
 
 const FERTILE_MIN = 0.1;
@@ -33,9 +34,9 @@ export function shiftMonth(m: string, delta: number): string {
 const t = (k: string, p?: Record<string, string>) => i18n.t(k, p);
 const between = (d: ISODate, lo: ISODate, hi: ISODate) => d >= lo && d <= hi;
 
-export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<ISODate>; loggedDays: Set<ISODate>; prediction: Prediction | undefined; showEstimate: boolean }): MonthModel {
+export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<ISODate>; loggedDays: Set<ISODate>; prediction: Prediction | undefined; showEstimate: boolean; weekStart?: WeekStart }): MonthModel {
   const first = `${i.month}-01`;
-  const gridStart = addDays(first, -(isoWeekday(first) - 1));
+  const gridStart = addDays(first, -((isoWeekday(first) - 1 + (i.weekStart === 'sun' ? 1 : 0)) % 7));
   const p = i.prediction;
   const next = p?.nextPeriod;
   const ov = i.showEstimate ? p?.ovulation : undefined;
