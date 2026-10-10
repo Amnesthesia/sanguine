@@ -319,6 +319,7 @@
     "summaryNothing": "Nothing logged",
     "details": "Details",
     "edit": "Log this day",
+    "futureNote": "You can log this day once it arrives.",
     "weekdays": [
       "Mon",
       "Tue",

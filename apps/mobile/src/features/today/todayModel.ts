@@ -2,6 +2,7 @@
 import { addDays, type Confidence, diffDays, type HealthFlag, type ISODate, type Prediction } from '@sanguine/engine';
 import i18n from '@/i18n';
 import { formatDay, formatRange } from '@/ui/format';
+import { ovulationUncertain, shownFertileDays } from './fertileShown';
 
 /** R-01 (PLAN.md §11.2): the ovulation estimate card ships; one commit can hide it by flipping this. */
 export const SHOW_OVULATION_ESTIMATE = true;
@@ -47,7 +48,6 @@ export interface TodayInput {
 const DEG = 360;
 const FERTILE_MIN_OPACITY = 0.1;
 const EXPAND_P = 0.2;
-const UNCERTAIN_SPAN_DAYS = 6; // §8.5: arms longer than 6 days read "estimate uncertain"
 const DEFAULT_BLEED_DAYS = 5;
 const MIN_RING_DAYS = 21;
 const LIFE_OPTION: Record<string, string> = { hormonal_contraception: 'hormonal', pregnant: 'pregnant', postpartum: 'postpartum' };
@@ -107,7 +107,7 @@ export function buildToday(i: TodayInput): TodayModel {
   const bleed = i.bleedDays ?? DEFAULT_BLEED_DAYS;
   const ring = ringModel({
     kind: 'cycle', cycleLength: L, dayOfCycle: day, bleedDays: bleed,
-    fertile: i.showEstimate ? (p.fertileDays ?? []).map((f) => ({ day: diffDays(f.date, start) + 1, p: f.pInWindow })) : [],
+    fertile: i.showEstimate ? shownFertileDays(p).map((f) => ({ day: diffDays(f.date, start) + 1, p: f.pInWindow })) : [],
     predicted: next ? { from: diffDays(next.i80.lo, start), to: diffDays(next.i80.hi, start) + 1 } : undefined,
   });
 
@@ -138,7 +138,7 @@ export function buildToday(i: TodayInput): TodayModel {
   if (i.showEstimate && p.ovulation) {
     const o = p.ovulation;
     const r = rangeParts(o.i80.lo, o.i80.hi);
-    const uncertain = diffDays(o.i80.hi, o.i80.lo) > UNCERTAIN_SPAN_DAYS;
+    const uncertain = ovulationUncertain(p);
     const todayP = p.fertileDays?.find((f) => f.date === i.today)?.pInWindow ?? 0;
     estimate = {
       uncertain, confidence: o.confidence, expanded: todayP >= EXPAND_P, basisKey: `today.estimateBasis.${o.basis}`,

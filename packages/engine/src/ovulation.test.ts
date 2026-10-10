@@ -30,17 +30,26 @@ describe('lutealLengths', () => {
 });
 
 describe('calendarOvulation (§4.5)', () => {
-  it('A: day 16.64, SD 3.95', () => {
+  it('round trip: a luteal length measured by lutealLengths gives back the ovulation day it came from (D-098)', () => {
+    // 28-day cycles, ovulation on offset 14 -> luteal 28 - 14 - 1 = 13; the estimate must land on 14, not 15
+    const cycles: CycleRecord[] = Array.from({ length: 60 }, (_, k) => ({
+      id: `c${k}`, start: addDays(LAST_START, 28 * k), nextStart: addDays(LAST_START, 28 * (k + 1)), length: 28, quality: 'valid' as const,
+      ovulation: { point: addDays(LAST_START, 28 * k + 14), sd: 1, basis: 'lh' as const },
+    }));
+    const o = calendarOvulation(cyc(Array(60).fill(28)), fitLuteal(lutealLengths(cycles)), LAST_START);
+    near(o.offset, 14, 0.4); // the cycle and luteal priors shrink it a little; the -1 slip was a whole day
+  });
+  it('A: day 15.64, SD 3.95 (D-098)', () => {
     const o = calendarOvulation(cyc([28, 30, 29]), fitLuteal([]), LAST_START);
-    near(o.offset, 16.64);
+    near(o.offset, 15.64);
     near(o.sd, 3.95);
-    expect(o.point).toBe(addDays(LAST_START, 17));
+    expect(o.point).toBe(addDays(LAST_START, 16));
     expect(o.basis).toBe('calendar');
     expect(o.confidence).toBe('low');
   });
-  it('F: luteal update moves ovulation to 16.81, SD 3.68', () => {
+  it('F: luteal update moves ovulation to 15.81, SD 3.68', () => {
     const o = calendarOvulation(cyc([28, 30, 29]), fitLuteal([11, 12, 12]), LAST_START);
-    near(o.offset, 16.81);
+    near(o.offset, 15.81);
     near(o.sd, 3.68, 0.06);
   });
   it('B/C/D formula values (D-015)', () => {
@@ -61,9 +70,9 @@ describe('confidenceGrade (§4.8)', () => {
 });
 
 describe('ovulationInterval', () => {
-  it('80% = offset +/- 1.2816 SD rounded to dates (A: day 12 to day 22)', () => {
+  it('80% = offset +/- 1.2816 SD rounded to dates (A: day 11 to day 21)', () => {
     const o = calendarOvulation(cyc([28, 30, 29]), fitLuteal([]), LAST_START);
-    expect(ovulationInterval(o, LAST_START)).toEqual({ lo: addDays(LAST_START, 12), hi: addDays(LAST_START, 22) });
+    expect(ovulationInterval(o, LAST_START)).toEqual({ lo: addDays(LAST_START, 11), hi: addDays(LAST_START, 21) });
   });
 });
 
@@ -72,7 +81,7 @@ describe('fertileDayProbabilities (§4.8)', () => {
   const rows = fertileDayProbabilities(o, LAST_START, 40);
   const at = (d: number) => rows.find((r) => r.date === addDays(LAST_START, d))?.pInWindow;
   it('matches the plan table for fixture A', () => {
-    for (const [d, p] of Object.entries({ 8: 0.2, 10: 0.35, 12: 0.49, 14: 0.55, 16: 0.5, 18: 0.37, 20: 0.22, 22: 0.11 })) near(at(Number(d)), p, 0.01);
+    for (const [d, p] of Object.entries({ 7: 0.2, 9: 0.35, 11: 0.49, 13: 0.55, 15: 0.5, 17: 0.37, 19: 0.22, 21: 0.11 })) near(at(Number(d)), p, 0.01);
   });
   it('is a graded band: peaks mid-window and is never a single day', () => {
     const above = rows.filter((r) => r.pInWindow >= 0.2).length;

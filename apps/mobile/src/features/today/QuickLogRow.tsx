@@ -1,5 +1,6 @@
-// Log today: one button to the log sheet (D-097). iOS 26+: Liquid Glass pill holding a tinted glass capsule (PLAN.md §9.1, P3-3);
+// Log today: one button to the log sheet (D-097), floating above the tab bar (D-099); Calendar reuses it for the selected day. iOS 26+: Liquid Glass pill holding a tinted glass capsule (PLAN.md §9.1, P3-3);
 // Reduce Transparency: surface at 94%; older iOS: system blur. Android: tonal capsule (M3 floating toolbar).
+import type { ISODate } from '@sanguine/engine';
 import { glass } from '@sanguine/ui-tokens';
 import { BlurView } from 'expo-blur';
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
@@ -28,24 +29,24 @@ function useReduceTransparency(): boolean {
   return on;
 }
 
-export function QuickLogRow() {
+export function QuickLogRow({ day, label: shown, accessibilityLabel, testID = 'quick-log' }: { day?: ISODate; label?: string; accessibilityLabel?: string; testID?: string } = {}) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const router = useRouter();
   const reduceTransparency = useReduceTransparency();
   const mode = Platform.OS !== 'ios' ? 'tonal' : reduceTransparency ? 'solid' : LIQUID_GLASS ? 'glass' : 'blur';
   const g = glass[t.scheme === 'dark' ? 'dark' : 'light'];
-  const label = tr('today.quick.log');
+  const label = shown ?? tr('today.quick.log');
 
   // one door to the log sheet: every section lives there (D-097)
   const go = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/log');
+    router.push(day ? { pathname: '/log', params: { day } } : '/log');
   };
   const tinted = mode === 'glass';
   const button = (
     <Pressable
-      testID="quick-log" accessibilityRole="button" accessibilityLabel={label} onPress={go}
+      testID={testID} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} onPress={go}
       style={({ pressed }) => ({ minHeight: 48, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: tinted ? 'transparent' : t.c.accent, opacity: pressed ? 0.7 : 1 })}>
       <Text variant="heading" style={{ fontSize: 15, lineHeight: 20, textAlign: 'center', color: tinted ? g.onAccent : t.scheme === 'dark' ? '#3A0A14' : '#FFFFFF' }}>{label}</Text>
     </Pressable>

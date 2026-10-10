@@ -1,12 +1,11 @@
 // Month grid view-model (PLAN.md §8.3, §8.5): which marks each day carries. Pure; the screen only draws it.
-import { addDays, diffDays, type ISODate, isoWeekday, type Prediction } from '@sanguine/engine';
+import { addDays, type ISODate, isoWeekday, type Prediction } from '@sanguine/engine';
 import type { MoonPhase } from './moon';
+import { ovulationUncertain, shownFertileDays } from '@/features/today/fertileShown';
 import i18n from '@/i18n';
 import type { WeekStart } from '@/i18n/locale';
 import { formatLong, formatMonthYear } from '@/ui/format';
 
-const FERTILE_MIN = 0.1;
-const UNCERTAIN_SPAN_DAYS = 6;
 
 export interface DayCell {
   date: ISODate;
@@ -53,9 +52,9 @@ export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<I
   const p = i.prediction;
   const next = p?.nextPeriod;
   const ov = i.showEstimate ? p?.ovulation : undefined;
-  const uncertain = Boolean(ov && diffDays(ov.i80.hi, ov.i80.lo) > UNCERTAIN_SPAN_DAYS);
+  const uncertain = Boolean(ov) && ovulationUncertain(p);
   const fertile = new Map<ISODate, number>();
-  if (i.showEstimate) for (const f of p?.fertileDays ?? []) if (f.pInWindow >= FERTILE_MIN) fertile.set(f.date, Math.min(1, f.pInWindow));
+  if (i.showEstimate) for (const f of shownFertileDays(p)) fertile.set(f.date, Math.min(1, f.pInWindow));
 
   const cells: DayCell[] = Array.from({ length: 42 }, (_, k) => {
     const date = addDays(gridStart, k);

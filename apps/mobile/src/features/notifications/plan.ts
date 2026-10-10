@@ -1,6 +1,7 @@
 // What to schedule (PLAN.md §6.1, §8.8, D-090). Local reminders only: no push, no network. The user keeps a list of rules,
 // "N days before <period | ovulation | fertile window>", each fired at 09:00 on the start of that estimate's 80% range minus N days.
 import { addDays, diffDays, type ISODate, type Prediction } from '@sanguine/engine';
+import { shownFertileDays } from '@/features/today/fertileShown';
 
 export const REMINDER_HOUR = 9;
 export type ReminderEvent = 'period' | 'ovulation' | 'fertile';
@@ -24,7 +25,7 @@ export interface ReminderPlan { id: string; event: ReminderEvent | 'late'; fireD
 export function eventRange(p: Prediction, event: ReminderEvent): { lo: ISODate; hi: ISODate } | undefined {
   if (event === 'period') return p.nextPeriod?.i80;
   if (event === 'ovulation') return p.ovulation && p.ovulation.confidence !== 'none' ? p.ovulation.i80 : undefined;
-  const days = (p.fertileDays ?? []).filter((d) => d.pInWindow >= FERTILE_MIN_P).map((d) => d.date).sort();
+  const days = shownFertileDays(p).filter((d) => d.pInWindow >= FERTILE_MIN_P).map((d) => d.date).sort();
   return days.length >= 2 ? { lo: days[0] as ISODate, hi: days[days.length - 1] as ISODate } : undefined;
 }
 

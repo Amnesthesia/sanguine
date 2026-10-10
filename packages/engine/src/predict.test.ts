@@ -31,7 +31,7 @@ describe('predict', () => {
   });
   it('phase follows the cycle: menstrual, follicular, ovulatory, luteal, late', () => {
     const phase = (d: number) => predict(A(), FIXTURE_SETTINGS, addDays(LAST_START, d)).currentPhase?.phase;
-    expect([phase(2), phase(9), phase(17), phase(24), phase(45)]).toEqual(['menstrual', 'follicular', 'ovulatory', 'luteal', 'late']);
+    expect([phase(2), phase(9), phase(16), phase(24), phase(45)]).toEqual(['menstrual', 'follicular', 'ovulatory', 'luteal', 'late']);
   });
   it('a recency lambda below 1 (0.92, rejected as default in D-021) is applied through the settings below the per-user selection (D-094)', () => {
     const s: EngineSettings = { ...FIXTURE_SETTINGS, recencyLambda: 0.92 };

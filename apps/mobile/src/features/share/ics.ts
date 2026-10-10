@@ -1,6 +1,7 @@
 // Calendar export for someone else (P8-2, roadmap R2-3, owner-approved in D-077, rules in D-079): the predicted period as an
 // all-day range event, optionally the fertile range, as an iCalendar file the user sends through the share sheet. Pure.
 import { addDays, type Interval, type Prediction } from '@sanguine/engine';
+import { shownFertileDays } from '@/features/today/fertileShown';
 
 /** Days at or above this probability of being in the fertile window make the exported range (the §8.3 card threshold). */
 export const ICS_FERTILE_MIN_P = 0.2;
@@ -8,7 +9,7 @@ export const ICS_FERTILE_MIN_P = 0.2;
 /** The ranges to export: the 80% next-period interval, and the fertile range only when asked for and at least two days long. */
 export function calendarRanges(p: Prediction, o: { fertile: boolean }): { period?: Interval; fertile?: Interval } {
   if (p.suspended || !p.nextPeriod) return {};
-  const days = o.fertile ? (p.fertileDays ?? []).filter((d) => d.pInWindow >= ICS_FERTILE_MIN_P).map((d) => d.date).sort() : [];
+  const days = o.fertile ? shownFertileDays(p).filter((d) => d.pInWindow >= ICS_FERTILE_MIN_P).map((d) => d.date).sort() : [];
   const lo = days[0];
   const hi = days[days.length - 1];
   // never a single highlighted day (CLAUDE.md): a one-day range is left out

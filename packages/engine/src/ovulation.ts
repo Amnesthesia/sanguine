@@ -26,9 +26,10 @@ export function confidenceGrade(sd: number): Confidence {
   return 'low';
 }
 
-/** E[O] = m_n - l_n; SD[O] = sqrt(Var L_next + Var luteal) (§4.5). Offset is days after `cycleStart`. */
+/** E[O] = m_n - l_n as a cycle day (day 1 = first bleed day), so offset m_n - l_n - 1 after `cycleStart`: the luteal
+ *  phase ends the day before the next period (lutealLengths, Bull 2019). SD[O] = sqrt(Var L_next + Var luteal) (§4.5, D-098). */
 export function calendarOvulation(cycle: NigPosterior, luteal: NigPosterior, cycleStart: ISODate): OvulationEstimate {
-  const offset = cycle.m - luteal.m;
+  const offset = cycle.m - luteal.m - 1;
   const sd = Math.sqrt(predictiveVariance(cycle) + predictiveVariance(luteal));
   return { point: addDays(cycleStart, offset), offset, sd, basis: 'calendar', confidence: confidenceGrade(sd) };
 }

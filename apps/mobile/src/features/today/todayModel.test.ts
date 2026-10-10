@@ -66,9 +66,16 @@ describe('estimate card (R-01, §2.3, §8.5)', () => {
   it('always carries the fixed wording parameters and never a single fertile day', () => {
     const v = view(hist([28, 30, 29]), '2026-10-10');
     expect(v.estimate?.legal.key).toBe('legal.estimateCard');
-    expect(v.estimate?.legal.params).toMatchObject({ point: '18 Oct', lo: '13', hi: '23 Oct' });
-    expect(v.estimate?.uncertain).toBe(true); // 10-day span > 6
-    expect(v.estimate?.title).toEqual({ key: 'today.ovulationUncertainShort' }); // the dates appear once, in the fixed sentence
+    expect(v.estimate?.legal.params).toMatchObject({ point: '17 Oct', lo: '12', hi: '22 Oct' });
+    expect(v.estimate?.uncertain).toBe(false); // arms of 5 days are within 6 (D-098)
+    expect(v.estimate?.title).toMatchObject({ key: 'today.ovulationTitle' }); // the dates appear once, in the fixed sentence
+  });
+  it('an irregular history reads "estimate uncertain" and the ring draws no fertile band (§9.8 state 4, D-098)', () => {
+    const v = view(hist([24, 38, 31, 45, 27, 36]), '2026-10-10');
+    expect(v.estimate?.uncertain).toBe(true);
+    expect(v.estimate?.title).toEqual({ key: 'today.ovulationUncertainShort' });
+    if (v.ring.kind !== 'cycle') throw new Error('kind');
+    expect(v.ring.fertile).toEqual([]);
   });
   it('a precise (LH) estimate reads "estimated around" with a confidence word', () => {
     const h = hist([28, 30, 29]);
@@ -122,6 +129,7 @@ describe('ring (§9.5)', () => {
     const v = view(hist([28, 30, 29]), '2026-10-10');
     if (v.ring.kind !== 'cycle') throw new Error('kind');
     expect(v.ring.fertile.length).toBeGreaterThan(8);
+    expect(v.ring.fertile.length).toBeLessThan(20); // days under p 0.1 are not drawn, as on the calendar
   });
   it('predicted period is an arc over the 80% range and wraps nothing beyond one turn', () => {
     const v = view(hist([28, 30, 29]), '2026-10-10');

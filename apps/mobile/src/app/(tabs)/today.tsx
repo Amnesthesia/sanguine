@@ -66,9 +66,8 @@ export default function TodayScreen() {
   const shownFlags = model.flags.filter((f) => !f.insightOnly);
 
   return (
-    <Screen testID="screen-today" title={t('tabs.today')}>
+    <Screen testID="screen-today" title={t('tabs.today')} floating={<QuickLogRow />}>
       <PhaseRing ring={model.ring} dayOfCycle={model.dayOfCycle} phase={prediction?.currentPhase?.phase} />
-      <QuickLogRow />
       <HeadlineCard headline={msg(model.headline)} {...(model.subtitle ? { subtitle: msg(model.subtitle) } : {})} {...(word ? { confidenceWord: word } : {})} />
       {pregnantSince ? (
         <Card testID="pregnancy-card">

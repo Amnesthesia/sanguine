@@ -2,7 +2,7 @@
 // A change here is an engine change: update docs/regulatory/engine-changelog.md and requirements.md.
 import type { NigPrior } from './types';
 
-export const ENGINE_VERSION = '0.2.0';
+export const ENGINE_VERSION = '0.2.1';
 
 /** Cycle-length prior (§4.3): population mean 29.3 d by age band, per-person SD 2.6 d. */
 export const CYCLE_PRIOR_KAPPA0 = 0.5;

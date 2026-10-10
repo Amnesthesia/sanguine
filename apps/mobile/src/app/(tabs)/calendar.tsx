@@ -15,10 +15,10 @@ import { useCalendarData } from '@/features/calendar/useCalendarData';
 import { dayEvents } from '@/features/logging/actions';
 import { shortDescribe } from '@/features/logging/describe';
 import { FlagCard } from '@/features/today/cards';
+import { QuickLogRow } from '@/features/today/QuickLogRow';
 import { buildToday, SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
-import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { formatLong } from '@/ui/format';
 import { Screen } from '@/ui/Screen';
@@ -83,7 +83,10 @@ export default function CalendarScreen() {
   );
   const legend: Array<[LegendKind, string]> = [...calendarLegend(showEstimate), ...(moon ? (['moon'] as const) : [])].filter((k) => k !== 'ovulation' || !model.ovulationUncertain).map((k) => [k, k]); // no marker is drawn for an uncertain estimate (U-18)
   return (
-    <Screen testID="screen-calendar" title={tr('calendar.title')}>
+    <Screen
+      testID="screen-calendar" title={tr('calendar.title')}
+      // logging is the one button, pinned above the tab bar (U-20, D-076, D-099); a future day cannot be logged, so it has none
+      floating={isFuture ? undefined : <QuickLogRow day={selected} testID="cal-edit" label={tr('calendar.edit')} accessibilityLabel={`${tr('calendar.edit')}: ${formatLong(selected)}`} />}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         {nav(-1, 'cal-prev', tr('calendar.prevMonth'))}
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 8 }}>
@@ -127,7 +130,7 @@ export default function CalendarScreen() {
       {model.ovulationUncertain ? <Text variant="caption" color="textSecondary" testID="cal-uncertain">{tr('calendar.ovulationUncertainCaption')}</Text> : null}
       {showEstimate ? <Text variant="caption" color="textSecondary">{tr('today.legendFertile')}</Text> : null}
       {moon ? <Text variant="caption" color="textSecondary" testID="cal-moon-note">{tr('calendar.moonNote')}</Text> : null}
-      {/* the card is the way to the day's detail; logging is the one button (U-20, D-076) */}
+      {/* the card is the way to the day's detail */}
       <Pressable testID="cal-details" style={{ minHeight: 56 }} accessibilityRole="button" accessibilityLabel={`${formatLong(selected)}. ${tr('calendar.details')}`} onPress={() => router.push({ pathname: '/day/[date]', params: { date: selected } })}>
         <Card testID="cal-summary" style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={{ flex: 1, gap: 4 }}>
@@ -139,7 +142,7 @@ export default function CalendarScreen() {
           <Text color="textSecondary" accessibilityElementsHidden>›</Text>
         </Card>
       </Pressable>
-      <Button testID="cal-edit" kind="secondary" label={tr('calendar.edit')} disabled={isFuture} onPress={() => router.push({ pathname: '/log', params: { day: selected } })} />
+      {isFuture ? <Text variant="caption" color="textSecondary" testID="cal-future-note">{tr('calendar.futureNote')}</Text> : null}
     </Screen>
   );
 }

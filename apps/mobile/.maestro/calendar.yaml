@@ -13,9 +13,9 @@ name: Calendar - month grid, marks, day summary, back-dating
     ${(function(){
       var p=function(n){return (n<10?'0':'')+n};
       var f=function(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
-      var t=new Date(); var y=new Date(t.getTime()-86400000);
+      var t=new Date(); var y=new Date(t.getTime()-86400000); var n=new Date(t.getTime()+86400000);
       var q=new Date(t.getFullYear(), t.getMonth()-1, 15);
-      output.today=f(t); output.yesterday=f(y); output.prev15=f(q);
+      output.today=f(t); output.yesterday=f(y); output.prev15=f(q); output.tomorrow=f(n);
     })()}
 - tapOn: Calendar
 - extendedWaitUntil:
@@ -35,6 +35,19 @@ name: Calendar - month grid, marks, day summary, back-dating
 - assertVisible: "Fertile window likelihood"
 - assertVisible: "darker = more likely to be in the fertile window"
 - takeScreenshot: month
+# the Log button floats above the tab bar (D-099); a future day has none, and a caption says why
+- assertVisible:
+    id: cal-edit
+- tapOn:
+    id: day-${output.tomorrow}
+- assertNotVisible:
+    id: cal-edit
+- assertVisible:
+    id: cal-future-note
+- tapOn:
+    id: day-${output.today}
+- assertVisible:
+    id: cal-edit
 # swipe the grid sideways between months (D-092); Today and the title return to this month
 - swipe:
     from:
@@ -81,7 +94,6 @@ name: Calendar - month grid, marks, day summary, back-dating
     id: cal-prev
 - tapOn:
     id: day-${output.prev15}
-- scroll
 - tapOn:
     id: cal-edit
 - extendedWaitUntil:

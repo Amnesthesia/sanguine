@@ -99,10 +99,16 @@ describe('fertile band and ovulation marker (§8.5)', () => {
     expect(m.cells.some((c) => c.fertile !== undefined || c.ovulation !== undefined)).toBe(false);
     expect(m.ovulationUncertain).toBe(false);
   });
-  it('a wide calendar-only range shows the uncertain caption and no point marker', () => {
+  it('a typical calendar-only estimate (arms within 6 days) draws the band and a point marker (D-098)', () => {
     const m = month('2026-10');
+    expect(m.ovulationUncertain).toBe(false);
+    expect(m.cells.filter((c) => c.ovulation === 'point')).toHaveLength(1);
+  });
+  it('an irregular history (arms over 6 days) shows the uncertain caption, no marker and no fertile band (§9.8, D-098)', () => {
+    const irregular = hist([24, 38, 31, 45, 27, 36], '2026-10-01');
+    const m = month('2026-10', { prediction: predict(irregular, S, today), periodDays: periodDays(irregular) });
     expect(m.ovulationUncertain).toBe(true);
-    expect(m.cells.some((c) => c.ovulation === 'point')).toBe(false);
+    expect(m.cells.some((c) => c.ovulation !== undefined || c.fertile !== undefined)).toBe(false);
   });
   it('a precise (LH) estimate shows a point marker with arms over the 80% range', () => {
     const h = hist([28, 29], '2026-09-30');
