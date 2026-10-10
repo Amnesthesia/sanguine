@@ -6,6 +6,7 @@ import type { EngineSettings, ISODate } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import { CHALLENGERS, type DateForecast, type DateModel, tally, type Tally } from './src/challengers';
 import { EVENT_AT, EVENTS, type EventKind, historyFrom, timeline } from './src/events';
+import { mlModels, train } from './src/ml';
 import { Rng } from './src/rng';
 import { sampleUsers, WIDE } from './src/synth';
 
@@ -21,7 +22,8 @@ const naive: DateModel = (h, _s, today) => {
   const at = (d: number) => addDays(st.at(-1) as string, d);
   return { point: at(last), i80: { lo: at(last - 2), hi: at(last + 2) }, i95: { lo: at(last - 4), hi: at(last + 4) } };
 };
-const MODELS: Record<string, DateModel> = { ...CHALLENGERS, naive };
+const ML = mlModels(train());
+const MODELS: Record<string, DateModel> = { ...CHALLENGERS, ...ML, naive };
 
 type Segment = 'before' | 'event' | 'after';
 type Rows = Record<string, Record<Segment, Array<{ f: DateForecast; actual: ISODate }>>>;
@@ -123,6 +125,7 @@ describe('engine accuracy around life events (synthetic, seeded)', () => {
     // lossKeep only differs where a loss is marked
     expect(E('lossMarked', 'event', 'lossKeep').mae).not.toBe(E('lossMarked', 'event').mae);
     expect(mid.luteal.n).toBe(mid.engine.n);
+    for (const m of Object.keys(ML)) expect(results.none[m]?.after.n).toBe(results.none.engine?.after.n);
   });
 });
 

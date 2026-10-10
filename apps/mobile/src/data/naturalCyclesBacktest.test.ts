@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { addDays, analyzeCycles, diffDays, predict, type EngineSettings, type History, type ISODate } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import { CHALLENGERS, type DateForecast, type DateModel, tally, type Tally } from '../../../../tools/backtest/src/challengers';
+import { mlModels, train } from '../../../../tools/backtest/src/ml';
 import type { Clock } from './ids';
 import { importDailyRows } from './importDaily';
 import { readNaturalCycles } from './importNaturalCycles';
@@ -65,7 +66,7 @@ const mean3: DateModel = (h, _s, today) => {
   const at = (d: number) => addDays(st.at(-1) as string, d);
   return { point: at(m), i80: { lo: at(m - 2), hi: at(m + 2) }, i95: { lo: at(m - 4), hi: at(m + 4) } };
 };
-const MODELS: Record<string, DateModel> = { ...CHALLENGERS, lastLength, mean3 };
+const MODELS: Record<string, DateModel> = { ...CHALLENGERS, ...mlModels(train()), lastLength, mean3 };
 
 interface Arm { byOffset: Record<number, Record<string, { all: Tally; regular: Tally }>>; suspended: number; ovulationMae: number; ovulationN: number }
 
