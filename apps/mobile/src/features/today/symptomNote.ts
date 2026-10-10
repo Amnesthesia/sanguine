@@ -3,9 +3,9 @@
 import { addDays, type CycleRecord, type DailyLog, type ISODate } from '@sanguine/engine';
 import type { TodayModel } from './todayModel';
 
-/** Physical, non-intimate codes only (D-087): no mood, libido, bowel, breast, pelvic, bleeding or mid-cycle codes on a screen others may glance at. */
+/** Physical, non-intimate codes only (D-087): no mood, libido, bowel, bleeding or mid-cycle codes; breast and pelvic codes stay in (owner) on a screen others may glance at. */
 export const NOTE_SYMPTOMS: ReadonlySet<string> = new Set([
-  'cramps', 'headache', 'bloating', 'acne', 'fatigue', 'back_pain', 'joint_pain',
+  'cramps', 'headache', 'bloating', 'breast_tenderness', 'acne', 'fatigue', 'back_pain', 'joint_pain', 'pelvic_pain',
   'nausea', 'dizziness', 'insomnia', 'food_cravings', 'appetite_increase', 'oily_skin', 'puffiness', 'smell_sensitivity',
 ]);
 const LOOKBACK = 6; // closed cycles looked at
