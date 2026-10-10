@@ -33,10 +33,10 @@ describe('predict', () => {
     const phase = (d: number) => predict(A(), FIXTURE_SETTINGS, addDays(LAST_START, d)).currentPhase?.phase;
     expect([phase(2), phase(9), phase(17), phase(24), phase(45)]).toEqual(['menstrual', 'follicular', 'ovulatory', 'luteal', 'late']);
   });
-  it('a recency lambda below 1 (0.92, rejected as default in D-021) is applied through the settings', () => {
+  it('a recency lambda below 1 (0.92, rejected as default in D-021) is applied through the settings below the per-user selection (D-094)', () => {
     const s: EngineSettings = { ...FIXTURE_SETTINGS, recencyLambda: 0.92 };
-    const p = predict(historyFromLengths([34, 34, 34, 28, 28, 28]), s, TODAY);
-    expect(p.cycleLength.mean).toBeLessThan(predict(historyFromLengths([34, 34, 34, 28, 28, 28]), FIXTURE_SETTINGS, TODAY).cycleLength.mean);
+    const p = predict(historyFromLengths([34, 34, 28, 28, 28]), s, TODAY);
+    expect(p.cycleLength.mean).toBeLessThan(predict(historyFromLengths([34, 34, 28, 28, 28]), FIXTURE_SETTINGS, TODAY).cycleLength.mean);
   });
   it('a usual cycle length counts as one half-weight observation, not truth', () => {
     const none = predict(historyFromLengths([]), FIXTURE_SETTINGS, TODAY).cycleLength;
@@ -57,6 +57,30 @@ describe('predict', () => {
     const q = predict(historyFromLengths([27, 29, 56, 28, 30, 28]), FIXTURE_SETTINGS, TODAY).cycleQuality;
     expect(q).toHaveLength(7);
     expect(q[2]?.reason).toBeTruthy();
+  });
+});
+
+describe('ranges from her own forecast errors (D-094)', () => {
+  const regular = [28, 29, 28, 28, 27, 28, 29, 28, 28, 27, 28, 29, 28, 28];
+  const irregular = [24, 35, 27, 40, 22, 31, 37, 25, 33, 29, 41, 23, 30, 36];
+  const halfWidth = (p: ReturnType<typeof predict>) => (Date.parse(p.nextPeriod?.i80.hi as string) - Date.parse(p.nextPeriod?.i80.lo as string)) / 864e5 / 2;
+  it('a long regular history gets a range no wider than the model gives, and still at least a day either side', () => {
+    const p = predict(historyFromLengths(regular), FIXTURE_SETTINGS, TODAY);
+    expect(halfWidth(p)).toBeLessThanOrEqual(2);
+    expect(halfWidth(p)).toBeGreaterThanOrEqual(1);
+    expect((p.nextPeriod?.i80.lo as string) <= (p.nextPeriod?.point as string) && (p.nextPeriod?.point as string) <= (p.nextPeriod?.i80.hi as string)).toBe(true);
+  });
+  it('the 95% range contains the 80% range', () => {
+    for (const L of [regular, irregular]) {
+      const n = predict(historyFromLengths(L), FIXTURE_SETTINGS, TODAY).nextPeriod;
+      expect((n?.i95.lo as string) <= (n?.i80.lo as string) && (n?.i80.hi as string) <= (n?.i95.hi as string)).toBe(true);
+    }
+  });
+  it('while a life state shapes the model the range only widens', () => {
+    const s: EngineSettings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'known_irregular', reason: 'other', since: '2020-01-01' }] };
+    const narrowing = predict(historyFromLengths(regular), FIXTURE_SETTINGS, TODAY);
+    const widenOnly = predict(historyFromLengths(regular), s, TODAY);
+    expect(halfWidth(widenOnly)).toBeGreaterThanOrEqual(halfWidth(narrowing));
   });
 });
 

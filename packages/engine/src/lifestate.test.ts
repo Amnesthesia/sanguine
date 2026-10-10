@@ -12,6 +12,7 @@ const gate = (lengths: number[], s: EngineSettings, today = TODAY) => {
 };
 
 describe('no life state', () => {
+  it('is steady: a range from her own errors may narrow (D-094)', () => expect(gate([28, 30, 29], FIXTURE_SETTINGS).g.steady).toBe(true));
   it('is a transparent gate', () => {
     const { c, g } = gate([28, 30, 29], settings());
     expect(g.suspended).toBeUndefined();
@@ -67,10 +68,20 @@ describe('postpartum (C-09)', () => {
     expect(g.confidenceCap).toBe('low');
     expect(g.calendarEstimate).toBe(true);
   });
+  it('D-094: after a pregnancy loss, cycles from before it keep weight 0.5 in the warm-up; after a birth they get 0', () => {
+    const { c, g } = gate([28, 30, 29], settings({ kind: 'postpartum', delivered, breastfeeding: false, after: 'loss' }));
+    expect(g.cycleWeight(c[0] as CycleRecord)).toBe(0.5);
+    expect(g.cycleWeight(c.at(-1) as CycleRecord)).toBe(0.5);
+    expect(g.confidenceCap).toBe('low');
+    expect(g.steady).toBe(false);
+    const birth = gate([28, 30, 29], settings({ kind: 'postpartum', delivered, breastfeeding: false }));
+    expect(birth.g.cycleWeight(birth.c[0] as CycleRecord)).toBe(0);
+  });
   it('breastfeeding: no calendar band until an ovulation is biomarker-confirmed', () => {
     const s = settings({ kind: 'postpartum', delivered, breastfeeding: true });
     const { c, g } = gate([28, 30, 29], s);
     expect(g.calendarEstimate).toBe(false);
+    expect(g.steady).toBe(false);
     const confirmed: CycleRecord[] = c.map((x, i) => (i === c.length - 1 ? { ...x, ovulation: { point: x.start, sd: 1, basis: 'lh' as const } } : x));
     expect(evaluateLifeStates(confirmed, s, TODAY).calendarEstimate).toBe(true);
   });

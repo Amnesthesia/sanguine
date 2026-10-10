@@ -104,6 +104,12 @@
     "teenNote": "Some features are hidden by default for under 18s. You can change this in Settings."
   },
   "today": {
+    "shortCycle": {
+      "title": "Was this a period?",
+      "body": "Bleeding started {date}, {days} days after your last period. Your cycles are usually much longer. Bleeding between periods can look like a period, and counting it as one would move your estimates.",
+      "yes": "Yes, it was a period",
+      "no": "No, it was bleeding between periods"
+    },
     "empty": {
       "title": "Log your period to start",
       "body": "Sanguine needs one period date to begin; two or three cycles make estimates useful."

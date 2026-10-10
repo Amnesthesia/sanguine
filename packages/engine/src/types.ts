@@ -44,7 +44,7 @@ export type LifeState =
   | { kind: 'hormonal_contraception'; method: 'combined_pill' | 'pop' | 'implant' | 'injection' | 'hormonal_iud' | 'ring' | 'patch'; since: ISODate }
   | { kind: 'post_contraception'; stopped: ISODate; method: string }
   | { kind: 'pregnant'; since: ISODate }
-  | { kind: 'postpartum'; delivered: ISODate; breastfeeding: boolean }
+  | { kind: 'postpartum'; delivered: ISODate; breastfeeding: boolean; after?: 'birth' | 'loss' } // `after` absent = birth
   | { kind: 'perimenopause'; since: ISODate }
   | { kind: 'known_irregular'; reason: 'pcos' | 'other'; since: ISODate };
 
@@ -89,7 +89,7 @@ export interface HealthFlag {
 export interface DailyLog {
   date: ISODate;
   flow?: 'none' | 'spotting' | 'light' | 'medium' | 'heavy';
-  flowKind?: 'period' | 'withdrawal_bleed' | 'intermenstrual' | 'on_contraception';
+  flowKind?: 'period' | 'withdrawal_bleed' | 'intermenstrual' | 'on_contraception' | 'post_pregnancy'; // post_pregnancy: D-053
   clots?: boolean;
   symptoms?: Array<{ code: string; intensity: 1 | 2 | 3 }>;
   sex?: { protected: boolean };

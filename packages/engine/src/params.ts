@@ -2,7 +2,7 @@
 // A change here is an engine change: update docs/regulatory/engine-changelog.md and requirements.md.
 import type { NigPrior } from './types';
 
-export const ENGINE_VERSION = '0.1.10';
+export const ENGINE_VERSION = '0.2.0';
 
 /** Cycle-length prior (§4.3): population mean 29.3 d by age band, per-person SD 2.6 d. */
 export const CYCLE_PRIOR_KAPPA0 = 0.5;
@@ -19,6 +19,18 @@ export const AGE_BAND_MEANS: Array<{ maxAge: number; mean: number }> = [
  *  measured a gain of ~5% against the required 15%, so the fallback λ = 1 ships (D-021, V-05). */
 export const RECENCY_LAMBDA = 1;
 export const WINDOW_CYCLES = 12;
+/** Per-user recency (D-094, P8-13 item 2): with this many kept cycles, λ and κ0 are chosen per user from these grids by her
+ *  own leave-future-out error; RECENCY_LAMBDA and CYCLE_PRIOR_KAPPA0 apply below it. */
+export const RECENCY_SELECT_MIN_CYCLES = 6;
+export const RECENCY_LAMBDA_GRID = [1, 0.92, 0.9, 0.8];
+export const RECENCY_KAPPA0_GRID = [CYCLE_PRIOR_KAPPA0, 1, 2];
+/** Ranges from her own forecast errors (D-094, P8-13 item 1): split-conformal over the last CONFORMAL_WINDOW kept cycles,
+ *  once CONFORMAL_MIN_ERRORS of them have a forecast from at least CONFORMAL_MIN_HISTORY cycles before them. The range
+ *  never gets narrower than +/- CONFORMAL_MIN_HALFWIDTH days, and narrows only when no life state is shaping the model. */
+export const CONFORMAL_MIN_ERRORS = 8;
+export const CONFORMAL_WINDOW = 12;
+export const CONFORMAL_MIN_HISTORY = 3;
+export const CONFORMAL_MIN_HALFWIDTH = 1;
 export const MIN_VALID_LENGTH = 15;
 export const MAX_VALID_LENGTH = 90;
 

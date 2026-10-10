@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cyclePrior, fitCycleLength, fitWeighted, predictiveInterval, predictiveScale } from './cycleLength';
+import { conformalHalfWidths, cyclePrior, fitCycleLength, fitWeighted, predictiveInterval, predictiveScale, selectRecency } from './cycleLength';
 import { CYCLE_PRIOR_BETA0 } from './params';
 import { LUTEAL_PRIOR } from './params';
 
@@ -103,5 +103,26 @@ describe('predictiveInterval', () => {
     expect(d).toBeGreaterThan(b);
     expect(a).toBeLessThan(p.m);
     expect(b).toBeGreaterThan(p.m);
+  });
+});
+
+describe('selectRecency (D-094)', () => {
+  const step = [28, 28, 29, 28, 27, 28, 33, 34, 33, 34];
+  it('defaults below six kept cycles', () => expect(selectRecency([28, 35, 28, 35, 28], P, 1)).toEqual({ lambda: 1, kappa0: P.kappa0 }));
+  it('a regular history keeps the defaults (a tie goes to the default)', () => expect(selectRecency(Array(10).fill(28), P, 1)).toEqual({ lambda: 1, kappa0: P.kappa0 }));
+  it('after a lasting change it weights recent cycles more', () => expect(selectRecency(step, P, 1).lambda).toBeLessThan(1));
+  it('never goes above the settings or life-state cap', () => expect(selectRecency(step, P, 0.8).lambda).toBe(0.8));
+});
+
+describe('conformalHalfWidths (D-094)', () => {
+  it('undefined until eight past forecasts exist (eleven kept cycles)', () => {
+    expect(conformalHalfWidths(Array(10).fill(28), P, 1)).toBeUndefined();
+    expect(conformalHalfWidths(Array(11).fill(28), P, 1)).toBeDefined();
+  });
+  it('never narrower than one day, and the 95% half-width is at least the 80% one', () => {
+    expect(conformalHalfWidths(Array(14).fill(28), P, 1)).toEqual({ q80: 1, q95: 1 });
+    const q = conformalHalfWidths([28, 31, 26, 29, 33, 27, 28, 30, 25, 29, 32, 28, 27, 31], P, 1);
+    expect(q?.q80).toBeGreaterThan(1);
+    expect(q?.q95).toBeGreaterThanOrEqual(q?.q80 as number);
   });
 });

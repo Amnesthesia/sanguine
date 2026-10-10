@@ -54,7 +54,7 @@ function lifeStateOf(r: LifeStateRow): LifeState & { until?: ISODate } {
     case 'hormonal_contraception': return { kind: 'hormonal_contraception', method: (d.method as never) ?? 'combined_pill', since: r.from_day, ...until };
     case 'post_contraception': return { kind: 'post_contraception', stopped: r.from_day, method: String(d.method ?? ''), ...until };
     case 'pregnant': return { kind: 'pregnant', since: r.from_day, ...until };
-    case 'postpartum': return { kind: 'postpartum', delivered: r.from_day, breastfeeding: Boolean(d.breastfeeding), ...until };
+    case 'postpartum': return { kind: 'postpartum', delivered: r.from_day, breastfeeding: Boolean(d.breastfeeding), ...(d.after === 'loss' ? { after: 'loss' as const } : {}), ...until };
     case 'perimenopause': return { kind: 'perimenopause', since: r.from_day, ...until };
     default: return { kind: 'known_irregular', reason: d.reason === 'pcos' ? 'pcos' : 'other', since: r.from_day, ...until };
   }

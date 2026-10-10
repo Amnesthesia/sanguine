@@ -82,6 +82,18 @@ describe('learning a user cycle by cycle', () => {
     expect(c.at(-1)).toBe('high');
     for (let i = 1; i < c.length; i++) expect(rank[c[i] as keyof typeof rank]).toBeGreaterThanOrEqual(rank[c[i - 1] as keyof typeof rank]);
   });
+  it('every logged cycle is used at once: one more cycle in the model each time, and the gap to her true length shrinks', () => {
+    runs.forEach((r, k) => { expect(r.p.cycleLength.nCyclesUsed).toBe(Math.min(k, FIXTURE_SETTINGS.window)); });
+    const gap = [1, 3, 6, 13].map((k) => Math.abs((runs[k]?.p.cycleLength.mean as number) - 32.2));
+    for (let i = 1; i < gap.length; i++) expect(gap[i]).toBeLessThan(gap[i - 1] as number);
+  });
+  it('after a lasting change (28 to 33 days) the forecast follows within four cycles (D-094 per-user recency)', () => {
+    const lens = [...Array(10).fill(28), 33, 33, 33, 33];
+    const means = [10, 11, 12, 13, 14].map((k) => predict(historyFromLengths(lens.slice(0, k)), FIXTURE_SETTINGS, S0).cycleLength.mean);
+    for (let i = 1; i < means.length; i++) expect(means[i]).toBeGreaterThan(means[i - 1] as number);
+    // λ = 1 over the last 12 (8 x 28, 4 x 33) gives 29.7 d
+    expect(means.at(-1)).toBeGreaterThan(30.5);
+  });
   it('the mean tracks the user: from the prior toward 32', () => {
     expect(runs[0]?.p.cycleLength.mean).toBeCloseTo(29.3, 5);
     expect(Math.abs((runs.at(-1)?.p.cycleLength.mean as number) - 32.2)).toBeLessThan(0.5);
@@ -172,7 +184,7 @@ describe('pregnancy and pregnancy loss', () => {
   const P1 = addDays(LOSS, 35);
   const marked = with_({ lifeStates: [
     { kind: 'pregnant', since: S0, until: LOSS },
-    { kind: 'postpartum', delivered: LOSS, breastfeeding: false },
+    { kind: 'postpartum', delivered: LOSS, breastfeeding: false, after: 'loss' },
   ] });
   it('not marked: a 105-day "cycle" is set aside as unusually long; the forecast picks up from the next period', () => {
     const p = predict(logStart(regular(), P1), FIXTURE_SETTINGS, P1);
@@ -195,15 +207,21 @@ describe('pregnancy and pregnancy loss', () => {
     expect(p.suspended?.reason).toBe('postpartum');
     expect(p.cycleQuality.at(-1)?.quality).toBe('life_state');
   });
-  it('first period after the loss: estimates resume from the population prior only, low confidence', () => {
+  it('first period after the loss: estimates resume from her cycles before the pregnancy at half weight, low confidence (D-094)', () => {
     const p = predict(logStart(regular(), P1), marked, P1);
     expect(p.suspended).toBeUndefined();
-    expect(p.cycleLength.nCyclesUsed).toBe(0); // her six 28-day cycles are not used during the warm-up (D-091 finding)
-    expect(p.cycleLength.mean).toBeCloseTo(29.3, 5);
+    expect(p.cycleLength.nCyclesUsed).toBe(6);
+    expect(p.cycleLength.mean).toBeLessThan(28.5);
     expect(p.nextPeriod?.confidence).toBe('low');
     expect(p.cycleQuality.at(-2)?.quality).toBe('life_state');
   });
-  it('warm-up: post-loss cycles count at half weight, confidence stays low for three cycles, then her whole history returns', () => {
+  it('first period after a birth: the population prior only, as before', () => {
+    const birth = with_({ lifeStates: [{ kind: 'pregnant', since: S0, until: LOSS }, { kind: 'postpartum', delivered: LOSS, breastfeeding: false }] });
+    const p = predict(logStart(regular(), P1), birth, P1);
+    expect(p.cycleLength.nCyclesUsed).toBe(0);
+    expect(p.cycleLength.mean).toBeCloseTo(29.3, 5);
+  });
+  it('warm-up: every cycle counts at half weight, confidence stays low for three cycles, then her whole history at full weight', () => {
     let h = logStart(regular(), P1);
     let start = P1;
     const seen: Prediction[] = [];
@@ -213,13 +231,12 @@ describe('pregnancy and pregnancy loss', () => {
       seen.push(predict(h, marked, start));
     }
     expect(seen.slice(0, 2).map((p) => p.nextPeriod?.confidence)).toEqual(['low', 'low']);
-    expect(seen.slice(0, 2).map((p) => p.cycleLength.nCyclesUsed)).toEqual([1, 2]);
+    expect(seen.slice(0, 2).map((p) => p.cycleLength.nCyclesUsed)).toEqual([7, 8]);
     expect(seen[2]?.cycleLength.nCyclesUsed).toBe(9); // after three post-loss cycles: 6 before + 3 after, all at full weight
     expect(seen[2]?.nextPeriod?.confidence).not.toBe('low');
   });
   it('bleeding after a pregnancy, logged as such, starts no cycle', () => {
-    // the app writes flowKind 'post_pregnancy' (D-053) but the engine's DailyLog type does not list it (D-091 finding), hence the cast
-    const logs = [0, 1, 2].map((d) => ({ date: addDays(LOSS, d), flow: 'medium', flowKind: 'post_pregnancy' })) as unknown as DailyLog[];
+    const logs: DailyLog[] = [0, 1, 2].map((d) => ({ date: addDays(LOSS, d), flow: 'medium', flowKind: 'post_pregnancy' }));
     const p = predict({ ...regular(), logs }, marked, addDays(LOSS, 10));
     expect(p.cycleQuality).toHaveLength(7);
   });
@@ -319,25 +336,29 @@ describe('properties of a newly logged period', () => {
       expect(p.currentPhase?.dayOfCycle).toBe(1);
     }), { numRuns: 500 });
   });
-  const valid = (p: Prediction) => p.cycleQuality.slice(0, -1).map((c) => c.quality).join();
-  // the just-closed cycle counts too: a 44-day cycle inside the limit raises the mean, a 45-day one beyond it is set aside
-  it('a period logged later never gives an earlier next forecast, while the same cycles count', () => {
-    fc.assert(fc.property(lensArb, fc.integer({ min: 18, max: 45 }), fc.integer({ min: 1, max: 10 }), (lens, d, k) => {
+  const justClosed = (p: Prediction) => p.cycleQuality.at(-2)?.quality;
+  // from six closed cycles each cycle is judged by the long-cycle limit as of its own closure (D-094); below that the limit
+  // over all of them applies and a later cycle can still move an earlier one
+  const sixOrMore = fc.array(fc.integer({ min: 22, max: 36 }), { minLength: 6, maxLength: 12 });
+  // only the just-closed cycle may change quality: a 44-day one inside the limit raises the mean, a 46-day one beyond it is
+  // set aside. Older cycles keep theirs (D-094), so they need no precondition (under D-091 they did, finding e)
+  it('a period logged later never gives an earlier next forecast, while the just-closed cycle keeps its quality', () => {
+    fc.assert(fc.property(sixOrMore, fc.integer({ min: 18, max: 45 }), fc.integer({ min: 1, max: 10 }), (lens, d, k) => {
       const h = historyFromLengths(lens);
       const early = predict(logStart(h, day(d)), FIXTURE_SETTINGS, day(d));
       const late = predict(logStart(h, day(d + k)), FIXTURE_SETTINGS, day(d + k));
-      fc.pre(valid(early) === valid(late));
+      fc.pre(justClosed(early) === justClosed(late));
       expect((late.nextPeriod?.point as string) >= (early.nextPeriod?.point as string)).toBe(true);
     }), { numRuns: 500 });
   });
-  it('D-091 finding: logging a day later can tighten the long-cycle limit, drop older cycles and pull the forecast earlier', () => {
-    // found by the property above: with the period on day 24 instead of 23 the MAD limit falls from 36.1 to 33.9 days,
-    // both 34-day cycles leave the model, and the next forecast moves 2 days earlier
+  it('D-094 (fixes D-091 finding e): a cycle kept when it closed is not dropped by a later one, so a day later no longer pulls the forecast earlier', () => {
+    // under D-091 the period on day 24 instead of 23 tightened the limit from 36.1 to 33.9 days and dropped both 34-day cycles;
+    // now both are judged by the limit when the sixth cycle closed, stay, and the forecast does not move earlier
     const h = historyFromLengths([34, 22, 24, 34, 28, 28, 24, 24, 26]);
     const early = predict(logStart(h, day(23)), FIXTURE_SETTINGS, day(23));
     const late = predict(logStart(h, day(24)), FIXTURE_SETTINGS, day(24));
-    expect(early.cycleQuality.filter((c) => c.quality === 'suspect_skip')).toHaveLength(0);
-    expect(late.cycleQuality.filter((c) => c.quality === 'suspect_skip')).toHaveLength(2);
-    expect((late.nextPeriod?.point as string) < (early.nextPeriod?.point as string)).toBe(true);
+    expect(late.cycleQuality.filter((c) => c.quality === 'suspect_skip')).toHaveLength(0);
+    expect((late.nextPeriod?.point as string) >= (early.nextPeriod?.point as string)).toBe(true);
   });
+
 });

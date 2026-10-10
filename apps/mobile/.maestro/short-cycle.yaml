@@ -1,0 +1,25 @@
+appId: ${APP_ID}
+name: Today asks once about a cycle far shorter than usual (P8-13 item 5, D-094)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=shortCycle
+- extendedWaitUntil:
+    visible:
+      id: short-cycle-card
+    timeout: 90000
+- assertVisible: "Was this a period?"
+- waitForAnimationToEnd
+- takeScreenshot: short-cycle-question
+- tapOn:
+    id: short-cycle-no
+# the bleeding is now between periods: the question goes and the cycle it closed is whole again
+- extendedWaitUntil:
+    notVisible:
+      id: short-cycle-card
+    timeout: 10000
+- assertVisible:
+    id: screen-today
+- waitForAnimationToEnd
+- takeScreenshot: short-cycle-answered

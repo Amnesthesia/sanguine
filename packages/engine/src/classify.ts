@@ -9,6 +9,8 @@ export interface ClassifyOptions {
 }
 export interface Classified { record: CycleRecord; reason?: string }
 
+/** D-094: fewest cycles in the pool before each cycle is judged by the limit as of its own closure. */
+const MAD_AS_OF_MIN_POOL = 6;
 const SUSPENDING: Array<LifeState['kind']> = ['hormonal_contraception', 'pregnant'];
 
 function median(xs: number[]): number {
@@ -60,12 +62,20 @@ export function classifyDetailed(cycles: CycleRecord[], settings: EngineSettings
     overlapsSuspendingState(c.start, c.nextStart ? addDays(c.nextStart, -1) : undefined, settings) ? 'life_state'
       : excluded.has(c.start) ? 'user_excluded' : 'ok');
 
-  // MAD statistics over complete cycles that are in range and not excluded or life-state
-  const pool = recs.filter((c, i) => c.length !== undefined && states[i] === 'ok' && c.length >= MIN_VALID_LENGTH && c.length <= MAX_VALID_LENGTH).map((c) => c.length as number);
+  // MAD statistics over complete cycles that are in range and not excluded or life-state, as of each cycle's closure
+  // (D-094): the cycles up to and including it, so a cycle kept when it closed is not dropped by a later one. Cycles closed
+  // before the pool first reaches MAD_AS_OF_MIN_POOL use the limit of that moment; until then the limit over all of them.
   const irregular = settings.lifeStates.some((s) => s.kind === 'known_irregular');
-  const threshold = pool.length >= 3 ? madThreshold(pool, irregular ? 14 : 7) : Number.POSITIVE_INFINITY;
+  const floor = irregular ? 14 : 7;
+  const pool: number[] = [];
+  const asOf = recs.map((c, i) => {
+    if (c.length !== undefined && states[i] === 'ok' && c.length >= MIN_VALID_LENGTH && c.length <= MAX_VALID_LENGTH) pool.push(c.length);
+    return pool.length >= MAD_AS_OF_MIN_POOL ? madThreshold(pool, floor) : undefined;
+  });
+  const first = asOf.find((t) => t !== undefined) ?? (pool.length >= 3 ? madThreshold(pool, floor) : Number.POSITIVE_INFINITY);
 
   return recs.map((c, i) => {
+    const threshold = asOf[i] ?? first;
     const out = (quality: CycleRecord['quality'], reason?: string): Classified => ({ record: { ...c, quality }, ...(reason ? { reason } : {}) });
     if (states[i] === 'life_state') return out('life_state', 'overlaps a life state that pauses estimates');
     if (states[i] === 'user_excluded') return out('user_excluded', 'excluded by you');

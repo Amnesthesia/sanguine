@@ -8,17 +8,19 @@ import { PhaseRing } from '@/features/today/PhaseRing';
 import { QuickLogRow } from '@/features/today/QuickLogRow';
 import { buildToday, SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { pregnancyModel } from '@/features/today/pregnancyModel';
+import { answeredShortCycles, keepAsPeriod, notAPeriod, shortCycleQuestion } from '@/features/today/shortCycle';
 import { noteDay, symptomNote } from '@/features/today/symptomNote';
 import { useApp } from '@/state/app';
+import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
-import { formatRange } from '@/ui/format';
+import { formatDay, formatRange } from '@/ui/format';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
   const msg = useMsg();
-  const { prediction, history, settings, today, prefs, profile, db, version } = useApp();
+  const { prediction, history, settings, today, prefs, profile, db, store, version, refresh } = useApp();
   const muteFlag = useApp((s) => s.muteFlag);
   const [todayFlow, setTodayFlow] = useState<string | undefined>();
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads today's log after every write
@@ -51,6 +53,15 @@ export default function TodayScreen() {
     () => symptomNote(history && settings ? analyzeCycles(history, settings).map((c) => c.record) : [], history?.logs ?? [], noteDay(prefs.symptomNote, model.state, model.dayOfCycle)),
     [history, settings, prefs.symptomNote, model.state, model.dayOfCycle],
   );
+  // P8-13 item 5 (D-094): a cycle far shorter than hers is asked about once, never set aside on its own
+  const [answered, setAnswered] = useState<string[] | undefined>();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads after an answer
+  useEffect(() => { if (db) void answeredShortCycles(db).then(setAnswered); }, [db, version]);
+  const shortQ = useMemo(
+    () => (history && settings && answered ? shortCycleQuestion(analyzeCycles(history, settings).map((c) => c.record), today, answered) : undefined),
+    [history, settings, answered, today],
+  );
+  const answer = (f: () => Promise<unknown>) => void f().then(() => refresh());
   const word = model.confidence && model.state === 'predicted' ? t(`confidence.${model.confidence}`) : undefined;
   const shownFlags = model.flags.filter((f) => !f.insightOnly);
 
@@ -73,6 +84,14 @@ export default function TodayScreen() {
           {/* labels are lower-cased mid-sentence in English only; other languages keep their own casing (German nouns, Turkish I) */}
           {note.map((l) => <Text key={l.code} variant="bodySmall" testID={`symptom-note-${l.code}`}>{t('today.symptomNote.line', { hits: l.hits, cycles: l.cycles, name: i18n.language.startsWith('en') ? t(`symptom.${l.code}`).toLocaleLowerCase(i18n.language) : t(`symptom.${l.code}`) })}</Text>)}
           <Text variant="caption" color="textSecondary">{t('today.symptomNote.caption')}</Text>
+        </Card>
+      ) : null}
+      {shortQ && db && store ? (
+        <Card testID="short-cycle-card">
+          <Text variant="heading">{t('today.shortCycle.title')}</Text>
+          <Text variant="bodySmall">{t('today.shortCycle.body', { date: formatDay(shortQ.start), days: shortQ.length })}</Text>
+          <Button testID="short-cycle-yes" kind="secondary" label={t('today.shortCycle.yes')} onPress={() => answer(() => keepAsPeriod(db, shortQ))} />
+          <Button testID="short-cycle-no" kind="secondary" label={t('today.shortCycle.no')} onPress={() => answer(() => notAPeriod(store, db, shortQ))} />
         </Card>
       ) : null}
       {model.estimate ? <EstimateCard m={model.estimate} /> : null}

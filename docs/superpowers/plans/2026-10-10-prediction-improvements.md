@@ -100,3 +100,7 @@ Each item is one engine change with its own `ENGINE_VERSION` bump, `engine-chang
 4. Item 4, then item 5 (app).
 
 Done means: engine version bumped per item, changelog and requirements rows written, golden fixtures pass or have a documented D-note, P8-12 suite green with updated thresholds, real-export backtest re-run locally and its aggregates recorded.
+
+## Outcome (D-094, engine 0.2.0)
+
+Done on the owner's "action the plan": items 1 (1a and 1b), 2, 3, 4, 5 and the type fix in 6; the late-period range in 6 waits for a UI decision. Changes from the plan, all measured: item 3 alone left the range around a loss holding 60%, so the range is floored at the post-loss-only range (84% held); item 4 judges cycles by the limit as of closure only from 6 pooled cycles (from 3 it set aside early cycles a full history keeps). Figures before and after are in D-094 and `engine-changelog.md` 0.2.0.

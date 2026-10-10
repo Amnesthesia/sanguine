@@ -48,7 +48,7 @@ function markLosses(h: History, s: EngineSettings, positives: ISODate[], lossBle
     if (!since || (loss && seen.has(loss)) || states.some((x) => x.kind === 'pregnant' && x.since === since)) continue;
     if (!loss) { states.push({ kind: 'pregnant', since }); continue; }
     seen.add(loss);
-    states.push({ kind: 'pregnant', since, until: loss }, { kind: 'postpartum', delivered: loss, breastfeeding: false });
+    states.push({ kind: 'pregnant', since, until: loss }, { kind: 'postpartum', delivered: loss, breastfeeding: false, after: 'loss' });
   }
   return { ...s, lifeStates: states };
 }
@@ -68,7 +68,10 @@ const mean3: DateModel = (h, _s, today) => {
 };
 const MODELS: Record<string, DateModel> = { ...CHALLENGERS, ...mlModels(train()), lastLength, mean3 };
 
-interface Arm { byOffset: Record<number, Record<string, { all: Tally; regular: Tally }>>; suspended: number; ovulationMae: number; ovulationN: number }
+interface Arm { byOffset: Record<number, Record<string, { all: Tally; regular: Tally }>>; suspended: number; ovulationMae: number; ovulationN: number; byHistory: Tally[] }
+
+/** Cycles logged before the forecast: learning over time on real data (D-094). */
+const HISTORY_BANDS = [[MIN_HISTORY + 1, 11], [12, 23], [24, 999]] as const;
 
 function backtest(h: History, settingsOn: (today: ISODate) => EngineSettings, end: ISODate): Arm {
   const full = analyzeCycles(h, settingsOn(end)).map((c) => c.record);
@@ -76,6 +79,7 @@ function backtest(h: History, settingsOn: (today: ISODate) => EngineSettings, en
   const byOffset: Arm['byOffset'] = {};
   let suspended = 0;
   let ovErr = 0, ovN = 0;
+  const byHistory = HISTORY_BANDS.map(() => [] as Array<{ f: DateForecast; actual: ISODate }>);
   for (const off of OFFSETS) {
     const rows: Record<string, { all: Array<{ f: DateForecast; actual: ISODate }>; regular: Array<{ f: DateForecast; actual: ISODate }> }> =
       Object.fromEntries(Object.keys(MODELS).map((m) => [m, { all: [], regular: [] }]));
@@ -92,6 +96,7 @@ function backtest(h: History, settingsOn: (today: ISODate) => EngineSettings, en
         if (!f) continue;
         rows[name]?.all.push({ f, actual });
         if (regular) rows[name]?.regular.push({ f, actual });
+        if (regular && off === 0 && name === 'engine') byHistory[HISTORY_BANDS.findIndex(([lo, hi]) => k >= lo && k <= hi)]?.push({ f, actual });
       }
       // the calendar ovulation forecast against the ovulation the whole cycle's tests and temperatures show afterwards
       const retro = full[k - 1]?.ovulation;
@@ -99,7 +104,7 @@ function backtest(h: History, settingsOn: (today: ISODate) => EngineSettings, en
     }
     byOffset[off] = Object.fromEntries(Object.entries(rows).map(([m, r]) => [m, { all: tally(r.all), regular: tally(r.regular) }]));
   }
-  return { byOffset, suspended, ovulationMae: ovN ? ovErr / ovN : 0, ovulationN: ovN };
+  return { byOffset, suspended, ovulationMae: ovN ? ovErr / ovN : 0, ovulationN: ovN, byHistory: byHistory.map(tally) };
 }
 
 const table = (a: Arm) => Object.entries(a.byOffset).flatMap(([off, ms]) => Object.entries(ms).map(([m, t]) => ({
@@ -138,6 +143,7 @@ describe('real Natural Cycles export backtest (local only)', async () => {
     console.log('\n=== as imported ==='); console.table(table(raw));
     console.log(`ovulation forecast vs retrospective: MAE ${raw.ovulationMae.toFixed(2)} d over ${raw.ovulationN} cycles`);
     console.log(`\n=== losses marked (suspended forecasts: ${withLoss.suspended}) ===`); console.table(table(withLoss));
+    console.log('\n=== engine by cycles logged, losses marked ==='); console.table(withLoss.byHistory.map((t, i) => ({ cycles: HISTORY_BANDS[i]?.join('-'), ...t })));
   }
   it('has enough history to mean something', () => expect(at(raw, 0, 'engine').regular.n).toBeGreaterThanOrEqual(30));
   it('on regular cycles the engine is at least as accurate as "same as last time" and "mean of the last 3"', () => {
@@ -161,6 +167,13 @@ describe('real Natural Cycles export backtest (local only)', async () => {
     // what it costs on regular cycles is the post-loss warm-up (D-091 finding c)
     expect(Math.abs(at(withLoss, 0, 'engine').all.mae - at(raw, 0, 'engine').all.mae)).toBeLessThan(0.5);
     expect(at(withLoss, 0, 'engine').regular.mae).toBeGreaterThanOrEqual(at(withLoss, 0, 'lossKeep').regular.mae);
+  });
+  it('over the years: within 2 days in every history band, and the range is widest while she has few cycles (D-094)', () => {
+    // error does not fall steadily here: her later years carry the losses and vary more. Steady learning on a stable user is
+    // tested on synthetic users (tools/backtest/scenarios.test.ts, "predictions improve as data comes in")
+    const bands = withLoss.byHistory.filter((t) => t.n > 0);
+    for (const t of bands) expect(t.mae).toBeLessThanOrEqual(2);
+    expect(Math.max(...bands.map((t) => t.width80))).toBe(bands[0]?.width80);
   });
   it('the calendar ovulation forecast lands within 3 days of the ovulation the cycle\'s tests and temperatures showed', () => {
     if (raw.ovulationN === 0) return;

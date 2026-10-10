@@ -1,8 +1,9 @@
-import { analyzeCycles, predict } from '@sanguine/engine';
+import { addDays, analyzeCycles, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import { migrate } from '@/data/migrate';
 import { EventStore } from '@/data/store';
 import { openTestDb } from '@/data/testDb';
+import { shortCycleQuestion } from '@/features/today/shortCycle';
 import { symptomNote } from '@/features/today/symptomNote';
 import { SCENARIOS, scenario } from './scenarios';
 
@@ -19,7 +20,7 @@ async function load(name: Parameters<typeof scenario>[0], today = '2026-10-10') 
 }
 
 describe('dev scenarios', () => {
-  it('all names are covered', () => expect(SCENARIOS).toEqual(['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback', 'lunar']));
+  it('all names are covered', () => expect(SCENARIOS).toEqual(['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback', 'lunar', 'shortCycle']));
   it('typical: cycle day 11, cycles of 28 and 29 days, a fair-estimate next period', async () => {
     const { prediction: p, history } = await load('typical');
     expect(p.currentPhase?.dayOfCycle).toBe(11);
@@ -32,6 +33,11 @@ describe('dev scenarios', () => {
     expect(p.currentPhase?.dayOfCycle).toBe(2);
     expect(symptomNote(history.cycles, history.logs, 2)).toEqual([]); // raw records lack nextStart: callers pass analyzed cycles
     expect(symptomNote(analyzeCycles(history, settings).map((c) => c.record), history.logs, p.currentPhase?.dayOfCycle)).toEqual([{ code: 'cramps', hits: 3, cycles: 4 }]);
+  });
+  it('shortCycle: Today asks about the bleeding that closed a 16-day cycle (D-094)', async () => {
+    const { history, settings } = await load('shortCycle');
+    const today = history.cycles.at(-1)?.start as string;
+    expect(shortCycleQuestion(analyzeCycles(history, settings).map((c) => c.record), addDays(today, 2), [])?.length).toBe(16);
   });
   it('inProgress: day 2 of a period', async () => {
     const { prediction: p } = await load('inProgress');

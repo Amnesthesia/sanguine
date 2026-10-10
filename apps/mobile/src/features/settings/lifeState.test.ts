@@ -51,7 +51,7 @@ describe('pregnancy outcome (P3-12, D-053)', () => {
     expect(rows.map((r) => [r.kind, r.from_day, r.until_day])).toEqual([['pregnant', '2026-01-10', '2026-03-01'], ['postpartum', '2026-03-01', null]]);
     expect(rows[1]?.detail).toEqual({ breastfeeding: false, after: 'loss' });
     expect(choiceOf(rows[1] as never)).toBe('afterLoss');
-    expect((await store.engineInputs()).settings.lifeStates.at(-1)).toEqual({ kind: 'postpartum', delivered: '2026-03-01', breastfeeding: false });
+    expect((await store.engineInputs()).settings.lifeStates.at(-1)).toEqual({ kind: 'postpartum', delivered: '2026-03-01', breastfeeding: false, after: 'loss' }); // the engine keeps her earlier cycles at half weight after a loss (D-094)
   });
   it('"recently gave birth" after pregnant records outcome birth', async () => {
     const { db, store } = await setup();

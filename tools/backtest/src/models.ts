@@ -1,5 +1,5 @@
 // Models A-C from the prototype and the engine itself. Each returns a point and 80% / 95% intervals in days.
-import { cyclePrior, fitCycleLength, predict, predictiveInterval, studentTQuantile } from '@sanguine/engine';
+import { analyzeCycles, cyclePrior, fitCycleLength, predict, predictiveInterval, studentTQuantile } from '@sanguine/engine';
 import type { CycleRecord, EngineSettings, History } from '@sanguine/engine';
 
 export interface Forecast { point: number; i80: [number, number]; i95: [number, number] }
@@ -55,5 +55,15 @@ export function engineModel(lambda: number): Model {
     const q80 = studentTQuantile(0.9, c.nu) * c.scale;
     const q95 = studentTQuantile(0.975, c.nu) * c.scale;
     return { point: c.mean, i80: [c.mean - q80, c.mean + q80], i95: [c.mean - q95, c.mean + q95] };
+  };
+}
+
+/** The engine's cycle-length model before D-094: the same robust exclusion, a fixed λ and κ0 (the §4.15 baseline). */
+export function fixedEngineModel(lambda: number): Model {
+  const settings: EngineSettings = { lifeStates: [], recencyLambda: lambda, window: 12 };
+  return (lengths) => {
+    const h = historyFor(lengths);
+    const valid = analyzeCycles(h, settings).map((c) => c.record).filter((c) => c.quality === 'valid' && c.length !== undefined).map((c) => c.length as number);
+    return intervals(fitCycleLength(valid, cyclePrior(), lambda, 12));
   };
 }

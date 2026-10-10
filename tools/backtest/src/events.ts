@@ -40,7 +40,7 @@ export function timeline(rng: Rng, u: User, n: number, event: EventKind): Timeli
     if (event === 'loss' && i === EVENT_AT) {
       const loss = addDays(start, Math.round(rng.uniform(42, 84)));
       lossBleed = loss;
-      lifeStates = [{ kind: 'pregnant', since: start, until: loss }, { kind: 'postpartum', delivered: loss, breastfeeding: false }];
+      lifeStates = [{ kind: 'pregnant', since: start, until: loss }, { kind: 'postpartum', delivered: loss, breastfeeding: false, after: 'loss' }];
       len = diffDays(addDays(loss, Math.round(rng.uniform(28, 42))), start);
     } else ovulation.set(start, addDays(start, Math.max(8, len - luteal - 1)));
     starts.push(addDays(start, len));

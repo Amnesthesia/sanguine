@@ -4,7 +4,7 @@ import { detectBbtShift, detectWearableShift } from './bbt';
 import { classifyDetailed } from './classify';
 import { combineOvulation } from './combine';
 import { detectCervixPeak } from './cervix';
-import { cyclePrior, fitWeighted, predictiveInterval, predictiveScale, predictiveVariance } from './cycleLength';
+import { conformalHalfWidths, cyclePrior, fitWeighted, predictiveInterval, predictiveScale, predictiveVariance, selectRecency } from './cycleLength';
 import { addDays, diffDays } from './dates';
 import { fertileDayProbabilities } from './fertile';
 import { evaluateFlags } from './flags';
@@ -63,12 +63,15 @@ export function predict(history: History, settings: EngineSettings, today: ISODa
   const gate = evaluateLifeStates(cycles, settings, today);
   const prior = cyclePrior(settings.birthYear, today, { varianceScale: gate.varianceScale });
 
-  // cycle-length model over valid cycles (weights: recency x warm-up multiplier)
-  const usable = cycles.filter((c) => c.quality === 'valid' && c.length !== undefined && gate.cycleWeight(c) > 0).slice(-settings.window);
+  // cycle-length model over valid cycles (weights: recency x warm-up multiplier); recency and prior strength per user (D-094)
+  const kept = cycles.filter((c) => c.quality === 'valid' && c.length !== undefined && gate.cycleWeight(c) > 0);
+  const keptLengths = kept.map((c) => c.length as number);
+  const recency = selectRecency(keptLengths, prior, gate.lambda, settings.window);
+  const usable = kept.slice(-settings.window);
   const n = usable.length;
-  const obs = usable.map((c, i) => ({ x: c.length as number, w: gate.lambda ** (n - 1 - i) * gate.cycleWeight(c) }));
+  const obs = usable.map((c, i) => ({ x: c.length as number, w: recency.lambda ** (n - 1 - i) * gate.cycleWeight(c) }));
   if (settings.usualCycleLength !== undefined) obs.unshift({ x: settings.usualCycleLength, w: 0.5 });
-  const post: NigPosterior = fitWeighted(obs, prior);
+  const post: NigPosterior = fitWeighted(obs, { ...prior, kappa0: recency.kappa0 });
   const nu = 2 * post.alpha;
   const cycleLength = { mean: post.m, sd: Math.sqrt(predictiveVariance(post)), nu, scale: predictiveScale(post), nCyclesUsed: n };
 
@@ -85,8 +88,24 @@ export function predict(history: History, settings: EngineSettings, today: ISODa
   if (!open) return { ...base, flags: [], cycleQuality: qualityRows(false) };
 
   const start = open.start;
-  const [lo80, hi80] = predictiveInterval(post, 0.8);
-  const [lo95, hi95] = predictiveInterval(post, 0.95);
+  const [modelLo80, modelHi80] = predictiveInterval(post, 0.8);
+  const [modelLo95, modelHi95] = predictiveInterval(post, 0.95);
+  // D-094: ranges from her own past forecast errors once there are enough; they widen the model's range always and narrow it
+  // only when no life state is shaping the model
+  const calib = conformalHalfWidths(keptLengths, prior, gate.lambda, settings.window);
+  const sized = (lo: number, hi: number, q: number | undefined): [number, number] =>
+    q === undefined ? [lo, hi] : gate.steady ? [post.m - q, post.m + q] : [Math.min(lo, post.m - q), Math.max(hi, post.m + q)];
+  // after a loss: never narrower than the range from the post-loss cycles alone, centred on this point (D-094)
+  const floorPost = gate.rangeWeight && fitWeighted(usable.filter((c) => (gate.rangeWeight as (c: CycleRecord) => number)(c) > 0)
+    .map((c) => ({ x: c.length as number, w: (gate.rangeWeight as (c: CycleRecord) => number)(c) })), prior);
+  const floored = (lo: number, hi: number, level: 0.8 | 0.95): [number, number] => {
+    if (!floorPost) return [lo, hi];
+    const [flo, fhi] = predictiveInterval(floorPost, level);
+    const half = (fhi - flo) / 2;
+    return [Math.min(lo, post.m - half), Math.max(hi, post.m + half)];
+  };
+  const [lo80, hi80] = floored(...sized(modelLo80, modelHi80, calib?.q80), 0.8);
+  const [lo95, hi95] = floored(...sized(modelLo95, modelHi95, calib?.q95), 0.95);
   const on = (d: number): ISODate => addDays(start, d);
   const halfWidth = (hi80 - lo80) / 2;
   const nextConfidence: Confidence =
@@ -123,7 +142,7 @@ export function predict(history: History, settings: EngineSettings, today: ISODa
 
   const flags = evaluateFlags(cycles, history.logs, settings, today, {
     ...(history.muted ? { muted: history.muted } : {}), ...(history.lastFlagRaised ? { lastRaised: history.lastFlagRaised } : {}),
-    upper95: hi95, ...(gate.missedGapDays !== undefined ? { gapDays: gate.missedGapDays } : {}),
+    upper95: modelHi95, ...(gate.missedGapDays !== undefined ? { gapDays: gate.missedGapDays } : {}),
   });
 
   return {

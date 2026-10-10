@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { RECENCY_LAMBDA } from '@sanguine/engine';
 import { runCsv } from './src/csv';
 import { evaluate, stepScenario } from './src/evaluate';
-import { bayes, engineModel, naive } from './src/models';
+import { bayes, engineModel, fixedEngineModel, naive } from './src/models';
 import { WIDE } from './src/synth';
 
 const USERS = 1500;
@@ -32,23 +32,18 @@ describe('release gate: accuracy and calibration (§4.15, §10)', () => {
   });
 });
 
-describe('λ acceptance (§4.15, V-05)', () => {
-  const gain = (() => {
-    const a = stepScenario(engineModel(1), WIDE, USERS, SEED, 7);
-    const b = stepScenario(engineModel(0.92), WIDE, USERS, SEED, 7);
-    return 1 - b / a;
-  })();
-  const cleanChange = (() => {
-    const a = stepScenario(engineModel(1), WIDE, USERS, SEED + 7, null);
-    const b = stepScenario(engineModel(0.92), WIDE, USERS, SEED + 7, null);
-    return b / a - 1;
-  })();
+describe('λ acceptance (§4.15, V-05), per-user recency since D-094', () => {
+  // D-021 rejected a fixed λ = 0.92 (gain 4.9% against the 15% bar). D-094 chooses λ and κ0 per user from her own past
+  // cycles; it ships because it costs nothing on clean histories and follows a lasting change (scenarios.test.ts: +5 d step,
+  // 3.81 to 3.17 d two or more cycles on). On this gate's step scenario (cycles 9-14, right after a +7 d change) it gains less.
+  const step = (m: Parameters<typeof stepScenario>[0], shift: number | null, seed: number) => stepScenario(m, WIDE, USERS, seed, shift);
+  const fixed = fixedEngineModel(1);
+  const engine = engineModel(RECENCY_LAMBDA);
+  const gain = 1 - step(engine, 7, SEED) / step(fixed, 7, SEED);
+  const cleanChange = step(engine, null, SEED + 7) / step(fixed, null, SEED + 7) - 1;
   it('does not make clean histories worse by more than 2%', () => expect(cleanChange).toBeLessThanOrEqual(0.02));
-  it('the shipped default follows the rule: 0.92 only if it cuts step-change MAE by >= 15%, else 1', () => {
-    const adopt = gain >= 0.15 && cleanChange <= 0.02;
-    expect(RECENCY_LAMBDA).toBe(adopt ? 0.92 : 1);
-  });
-  it('records the measured gain (informational, in the failure message if the rule flips)', () => expect(gain).toBeGreaterThan(0));
+  it('improves the step-change scenario (measured 9.3%; clean +0.7%)', () => expect(gain).toBeGreaterThan(0.05));
+  it('the default cap stays λ = 1: the user-level choice goes below it, never a fixed lower λ', () => expect(RECENCY_LAMBDA).toBe(1));
 });
 
 describe('csv replay', () => {

@@ -1,6 +1,7 @@
 // PLAN.md §4.3: Normal-Inverse-Gamma cycle-length model with a population prior.
 import {
-  AGE_BAND_MEANS, CYCLE_PRIOR_ALPHA0, CYCLE_PRIOR_BETA0, CYCLE_PRIOR_KAPPA0, POPULATION_MEAN, WINDOW_CYCLES,
+  AGE_BAND_MEANS, CONFORMAL_MIN_ERRORS, CONFORMAL_MIN_HALFWIDTH, CONFORMAL_MIN_HISTORY, CONFORMAL_WINDOW, CYCLE_PRIOR_ALPHA0,
+  CYCLE_PRIOR_BETA0, CYCLE_PRIOR_KAPPA0, POPULATION_MEAN, RECENCY_KAPPA0_GRID, RECENCY_LAMBDA_GRID, RECENCY_SELECT_MIN_CYCLES, WINDOW_CYCLES,
 } from './params';
 import { studentTQuantile } from './studentT';
 import type { NigPosterior, NigPrior } from './types';
@@ -58,4 +59,39 @@ export function predictiveInterval(p: NigPosterior, level: 0.8 | 0.95): [number,
   const q = studentTQuantile(0.5 + level / 2, 2 * p.alpha);
   const s = predictiveScale(p);
   return [p.m - q * s, p.m + q * s];
+}
+
+export interface Recency { lambda: number; kappa0: number }
+
+/** D-094: the recency weight (at most `maxLambda`) and prior strength that best forecast her own kept cycles, each from the
+ *  cycles before it only. `lengths` oldest first. Ties keep the earlier grid entry, so the defaults win a tie. */
+export function selectRecency(lengths: number[], prior: NigPrior, maxLambda: number, window: number = WINDOW_CYCLES): Recency {
+  const lambdas = RECENCY_LAMBDA_GRID.filter((l) => l <= maxLambda);
+  const fallback = { lambda: maxLambda, kappa0: prior.kappa0 };
+  if (lengths.length < RECENCY_SELECT_MIN_CYCLES || lambdas.length === 0) return fallback;
+  let best = { err: Number.POSITIVE_INFINITY, ...fallback };
+  for (const lambda of lambdas) for (const kappa0 of RECENCY_KAPPA0_GRID) {
+    let err = 0;
+    for (let j = CONFORMAL_MIN_HISTORY; j < lengths.length; j++)
+      err += Math.abs(fitCycleLength(lengths.slice(0, j), { ...prior, kappa0 }, lambda, window).m - (lengths[j] as number));
+    if (err < best.err - 1e-9) best = { err, lambda, kappa0 };
+  }
+  return { lambda: best.lambda, kappa0: best.kappa0 };
+}
+
+/** D-094: split-conformal half-widths from her own one-step forecast errors on the last CONFORMAL_WINDOW kept cycles, each
+ *  forecast as the engine would have made it then (recency chosen from the cycles before it). Undefined until there are
+ *  CONFORMAL_MIN_ERRORS errors. */
+export function conformalHalfWidths(lengths: number[], prior: NigPrior, maxLambda: number, window: number = WINDOW_CYCLES): { q80: number; q95: number } | undefined {
+  const errs: number[] = [];
+  for (let j = Math.max(CONFORMAL_MIN_HISTORY, lengths.length - CONFORMAL_WINDOW); j < lengths.length; j++) {
+    const past = lengths.slice(0, j);
+    const r = selectRecency(past, prior, maxLambda, window);
+    errs.push(Math.abs(fitCycleLength(past, { ...prior, kappa0: r.kappa0 }, r.lambda, window).m - (lengths[j] as number)));
+  }
+  if (errs.length < CONFORMAL_MIN_ERRORS) return undefined;
+  errs.sort((a, b) => a - b);
+  // conformal quantile with the finite-sample correction
+  const q = (level: number) => Math.max(CONFORMAL_MIN_HALFWIDTH, errs[Math.min(errs.length - 1, Math.ceil((errs.length + 1) * level) - 1)] as number);
+  return { q80: q(0.8), q95: q(0.95) };
 }
