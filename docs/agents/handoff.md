@@ -1,37 +1,55 @@
-# Handoff (state at 2026-10-09 15:10; refresh when you pick this up)
+# Handoff (state at 2026-10-10 11:50; refresh when you pick this up)
 
 Read `docs/agents/README.md` first. This file is only "what is done, what is open, what bites". It goes stale fast: check
 `git log --oneline -15`, `git status` and `docs/BACKLOG.md` before trusting it.
 
 ## Where things stand
 
-Everything in `docs/BACKLOG.md` that does not need a person, an Android emulator or hardware is built, tested and committed:
-Phase 4 health sync (core, HealthKit and Health Connect drivers, settings), P3-7 cloud backup, P3-8 icons, Phase 5 release
-readiness, open-source files, under-18 audit, Phase 6 locale rules, translation pipeline and GDPR consent. Decisions D-057 to D-064
-record the choices; the implementation plan that was followed is `docs/superpowers/plans/2026-10-09-remaining-work.md`.
+Phases 0-6 are built, tested and committed, except the items in the table below. Since 2026-10-09: the store data and the
+Astro website (P5-5, D-072, D-074), the review fixes and UI pass (D-075, D-076), and Phase 8 P8-1 to P8-8, P8-11 and P8-12 (drip
+import, `.ics` export, "How Sanguine estimates", perimenopause and pregnancy views, report for a doctor, sync between the user's own
+phones, quick actions, the Today look-back note, the prediction test suite), plus D-088 to D-090 (clearer dots, moon phases,
+reminder rules). Plans: `docs/superpowers/plans/2026-10-10-competitive-gaps.md` (Phase 8) and
+`2026-10-10-prediction-improvements.md` (P8-13); the 2026-10-09 remaining-work plan is executed.
 
-A full iOS Maestro suite (`CLIENT=dev ITEM=suite-p4 apps/mobile/.maestro/suite.sh ios`, output in
-`/private/tmp/claude-501/suite-ios-p4.txt`) was started on the finished tree: look at its result before anything else.
+In flight at 11:50 (uncommitted, other sessions): Calendar month swipe (D-092) and P8-13 engine items 1a, 2 and 4 (calibrated
+ranges, per-user recency, as-of long-cycle limit). Item 2 changes a §11.1 default and needs the owner's decision before it ships.
 
-## Still open
+## Open and actionable (no owner, emulator or hardware needed)
+
+| Item | Note |
+| --- | --- |
+| P8-13 items 5 and 6 | item 6 is a type fix; item 5 (short-cycle question on Today) after item 4 lands |
+| P8-14 feedback row (R1-5) | `mailto:` with versions only, GitHub issue template |
+| P8-15 backup reminder (R2-5) | one Today card after the second cycle |
+| P8-16 threat model (R5-2) | `docs/security/threat-model.md` plus crypto test vectors |
+| P8-17 accuracy page (R5-3) | backtest tables on the website, labelled synthetic |
+| Release candidate (ROADMAP R1-3) | full `suite.sh ios`, `fontscale.sh ios`, deny-list; the tag and TestFlight upload wait for the owner |
+
+## Blocked
 
 | Item | Why | What it needs |
 | --- | --- | --- |
-| P3-14 full Android pass (and P4-3 runtime, P3-5b) | owner rule: no Android emulator until one dedicated pass | rebuild the Android dev client; run `suite.sh android`; check the unverified Health Connect permission strings and `getChanges` behaviour (D-060 (7)); schedule the hourly Android background read |
+| P3-14 full Android pass (and P4-3 runtime) | owner rule: no Android emulator until one dedicated pass | rebuild the Android dev client; run `suite.sh android`; check the unverified Health Connect permission strings and `getChanges` behaviour (D-060 (7)); schedule the hourly Android background read; retake the Android store screenshots |
 | P4-5 wrist temperature | the platform type is read-only, so no sample can be seeded | a real Apple Watch or Health Connect device |
-| P5-1 Flo and Clue importers | no documented export format (D-062) | one real export from each app |
+| P5-1 Flo and Clue importers | no documented export format (D-062) | one real export from each app (ROADMAP R1-6) |
+| P8-9 Apple Watch app | spike done (D-086) | owner decision on expo-apple-targets |
+| P3-5b, P8-10 Android widget and Wear OS tile | expo-widgets has no Android renderer | re-check at Expo SDK 58 |
+| P8-8 Siri, App Shortcuts, Control Center | expo-app-intents | Expo SDK 58 |
+| P8-13 items 1b, 2, 3 | loosen or replace §11.1 defaults | owner decision, with the measured tables |
 | Phase 7 | optional, funded, separate decision | owner |
 
 ## Needs the owner (also in `docs/PROGRESS.md`)
 
-Store accounts, signing, `EXPO_TOKEN` secret, export-compliance answers, age-rating questionnaires, privacy-policy URL and the policy
-placeholders (controller, contact, response times: the in-app policy screens stay hidden until they are filled and `pnpm policy`
-is rerun), a GDPR representative, legal review, translators and a clinician check for de/fr/es/pt-BR (`docs/i18n/README.md`), an Apple
-team with the iCloud container `iCloud.app.sanguine.mobile`, a Google OAuth client id (`extra.googleDriveClientId`), the client's
-original brand files and permission to publish them, the trademark check on the taglines, making the repository public, the real-phone
-checks (screen protection, VoiceOver and TalkBack, Apple Watch).
+Store accounts, signing (the Play upload key mismatch: upload the AAB signed with the current key and remove the old certificate),
+`EXPO_TOKEN` secret, export-compliance answers, age-rating questionnaires, GitHub Pages with source "GitHub Actions", the legal operator
+name and App Store copyright, the policy placeholders (controller, response times: rerun `pnpm policy` after), a GDPR representative,
+legal review, translators and a clinician check for de/fr/es/pt-BR (`docs/i18n/README.md`), an Apple team with the iCloud container
+`iCloud.app.sanguine.mobile`, a Google OAuth client id (`extra.googleDriveClientId`), the client's original brand files and permission
+to publish them, the trademark check on the taglines, making the repository public, the real-phone checks (screen protection,
+VoiceOver and TalkBack, Apple Watch).
 
-## Things that bit this session (so they do not bite again)
+## Things that bit earlier sessions (so they do not bite again)
 
 - **Never `git stash` on this shared tree.** Other sessions have uncommitted work in it. Stage by explicit path; check
   `git diff --cached --name-only` before every commit.
@@ -46,4 +64,7 @@ checks (screen protection, VoiceOver and TalkBack, Apple Watch).
   `npx expo run:ios --device <udid> --no-bundler` (about 25 minutes cold); tell other sessions first, it replaces the installed app.
 - On the simulator, deep links that replace the route leave the previous screen behind: Maestro flows navigate by deep link
   (`sanguine://settings/health`) instead of `back`.
-- The `agy-bridge` web lookup returned empty twice this session; WebSearch and WebFetch worked.
+- The `agy-bridge` web lookup returned empty twice on 2026-10-09; WebSearch and WebFetch worked.
+- Several sessions share this tree. Claim decision ids before writing them: two sessions both took D-092 on 2026-10-10. Run
+  `git reset -q` first if the index looks stale, and commit only your own paths.
+- Disk is tight: an iOS build failed with ENOSPC. Delete `apps/mobile/ios/build` after installing, and do not create git worktrees.
