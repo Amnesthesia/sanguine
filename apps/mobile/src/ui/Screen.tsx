@@ -15,7 +15,7 @@ export function Screen({ title, children, testID, bottomInset = 96, header, noTo
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         // iOS: contentInsetAdjustmentBehavior already adds the top safe area, so padding it again stacked the inset twice (U-1, D-076)
-        contentContainerStyle={{ paddingTop: (noTopInset || t.isIOS ? 0 : insets.top) + 8, paddingBottom: bottomInset + insets.bottom, paddingHorizontal: GUTTER, gap: 12 }}>
+        contentContainerStyle={{ paddingTop: (noTopInset || t.isIOS ? 0 : insets.top) + 8, paddingBottom: bottomInset + insets.bottom, paddingHorizontal: GUTTER, gap: 20 }}>
         {header}
         {title ? <Text variant="title" accessibilityRole="header" style={{ fontSize: t.isIOS ? 34 : 28, lineHeight: t.isIOS ? 41 : 34 }}>{title}</Text> : null}
         {children}

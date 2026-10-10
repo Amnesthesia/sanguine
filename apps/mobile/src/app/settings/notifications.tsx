@@ -8,7 +8,6 @@ import { ensurePermission, remindersSupported } from '@/services/notifications';
 import { widgetsSupported } from '@/services/widgets';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
-import { Card } from '@/ui/Card';
 import { Chips } from '@/ui/Chips';
 import { Group, SettingsRow, SwitchRow } from '@/ui/SettingsRow';
 import { SubScreen } from '@/ui/SubScreen';
@@ -49,37 +48,34 @@ export default function NotificationsScreen() {
   }
   const sample = shown[0];
   const preview = sample ? reminderText({ event: sample.event, lo: Math.max(sample.days, 0), hi: sample.days + 5 }) : reminderText({ event: 'late', lo: 0, hi: 0 });
+  const previewText = n.descriptive ? `${t('notifications.defaultTitle')}: ${t(preview.key, preview.params)}` : t('settings.notifications.defaultText');
   return (
     <SubScreen testID="screen-notifications" title={t('settings.notifications.title')}>
       <Group>
         <SwitchRow testID="notif-enabled" title={t('settings.notifications.reminders')} description={remindersSupported ? t('settings.notifications.remindersDesc') : t('settings.notifications.androidLater')} disabled={!remindersSupported} value={n.enabled} onChange={(v) => void toggle(v)} />
         <SwitchRow testID="notif-late" title={t('settings.notifications.late')} description={t('settings.notifications.lateDesc')} disabled={!n.enabled} value={n.late} onChange={(v) => set({ late: v })} />
-        <SwitchRow testID="notif-descriptive" title={t('settings.notifications.descriptive')} description={t('settings.notifications.descriptiveDesc')} value={n.descriptive} onChange={(v) => set({ descriptive: v })} last />
+        <SwitchRow testID="notif-descriptive" title={t('settings.notifications.descriptive')} description={t('settings.notifications.descriptiveDesc', { text: previewText })} value={n.descriptive} onChange={(v) => set({ descriptive: v })} last />
       </Group>
       {denied ? <Text variant="bodySmall" testID="notif-denied" accessibilityLiveRegion="polite">{t('settings.notifications.denied')}</Text> : null}
       {n.enabled ? <Text variant="bodySmall" color="textSecondary" testID="notif-next">{nextReminder ? t('settings.notifications.next', { date: formatDay(nextReminder) }) : t('settings.notifications.none')}</Text> : null}
 
-      <Text variant="heading" accessibilityRole="header">{t('settings.notifications.yourReminders')}</Text>
-      <Group>
+      <Group title={t('settings.notifications.yourReminders')}>
         {shown.length === 0 ? <SettingsRow title={t('settings.notifications.noRules')} disabled last /> : shown.map((r, i) => (
           <SettingsRow key={r.id} testID={`rule-${r.event}-${r.days}`} title={ruleText(r)} last={i === shown.length - 1}
             right={<Button kind="text" testID={`rule-remove-${r.event}-${r.days}`} label={t('settings.notifications.remove')} accessibilityLabel={`${t('settings.notifications.remove')}: ${ruleText(r)}`} onPress={() => set({ rules: n.rules.filter((x) => x.id !== r.id) })} />} />
         ))}
       </Group>
 
-      <Card testID="notif-add">
-        <Text variant="heading" accessibilityRole="header">{t('settings.notifications.notifyMe')}</Text>
-        <View style={{ gap: 10, marginTop: 8 }}>
+      <Group title={t('settings.notifications.notifyMe')}>
+        <View testID="notif-add" style={{ gap: 10, padding: 16 }}>
           <Chips testIDPrefix="rule-days" value={days} onChange={setDays} options={REMINDER_DAYS.map((d) => ({ value: String(d), label: d === 0 ? t('settings.notifications.onTheDay') : t(d === 1 ? 'settings.notifications.days1' : 'settings.notifications.daysN', { n: d }) }))} />
           <Text variant="bodySmall" color="textSecondary">{t('settings.notifications.beforeThe')}</Text>
           <Chips testIDPrefix="rule-event" value={events.includes(event) ? event : 'period'} onChange={setEvent} options={events.map((e) => ({ value: e, label: t(`settings.notifications.eventLabel.${e}`) }))} />
           <Button testID="rule-add" kind="secondary" label={t('settings.notifications.add')} onPress={add} />
           {msg ? <Text variant="bodySmall" accessibilityLiveRegion="polite" testID="rule-message">{msg}</Text> : null}
         </View>
-      </Card>
+      </Group>
 
-      <Text variant="heading" accessibilityRole="header">{t('settings.notifications.preview')}</Text>
-      <Card testID="notif-preview"><Text>{n.descriptive ? `${t('notifications.defaultTitle')}: ${t(preview.key, preview.params)}` : t('settings.notifications.defaultText')}</Text></Card>
       <Group title={t('settings.notifications.widgets')}>
         <SwitchRow testID="quick-actions" title={t('settings.notifications.quickActions')} description={prefs.discreetIcon ? t('settings.notifications.quickActionsDiscreet') : t('settings.notifications.quickActionsDesc')} disabled={prefs.discreetIcon} value={quick && !prefs.discreetIcon} onChange={(v) => void (async () => { if (db) { await setSetting(db, 'quickActions', v); setQuick(v); await refresh(); } })()} />
         {widgetsSupported

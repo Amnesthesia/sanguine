@@ -63,16 +63,10 @@ name: Notifications - discreet text, default reminder rules, add and remove a ru
     id: rule-fertile-7
 - scrollUntilVisible:
     element:
-      id: notif-preview
-- assertVisible: "Sanguine: a reminder"
-- scrollUntilVisible:
-    element:
       id: notif-descriptive
     direction: UP
+- assertVisible: ".*Sanguine: a reminder.*"
 - tapOn:
     id: notif-descriptive
-- scrollUntilVisible:
-    element:
-      id: notif-preview
-- assertVisible: "Sanguine: Ovulation estimate: likely in .*"
+- assertVisible: ".*Sanguine: Ovulation estimate: likely in .*"
 - takeScreenshot: descriptive
