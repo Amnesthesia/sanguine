@@ -17,10 +17,10 @@ name: Screens at about 150% font scale (PLAN.md §8.9)
 - takeScreenshot: fs150-today-bottom
 - scrollUntilVisible:
     element:
-      id: quick-period
+      id: quick-log
     direction: UP
 - tapOn:
-    id: quick-period
+    id: quick-log
 - extendedWaitUntil:
     visible:
       id: flow-medium

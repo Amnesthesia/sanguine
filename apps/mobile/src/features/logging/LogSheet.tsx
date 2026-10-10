@@ -18,7 +18,8 @@ import { GUTTER } from '@/ui/Screen';
 import { formatDay, formatLong } from '@/ui/format';
 import { Text } from '@/ui/Text';
 
-type Section = 'period' | 'symptoms' | 'temperature';
+/** Set only by deep links from outside the app (widget, home-screen quick actions); in-app buttons open the sheet plain (D-097). */
+type Section = 'period' | 'temperature';
 const EMPTY: DayState = { flow: null, flowKind: null, clots: false, symptoms: {}, sex: null, hasNote: false };
 type BleedKind = 'withdrawal_bleed' | 'on_contraception';
 
@@ -37,7 +38,7 @@ export function LogSheet() {
   const [afterPregnancy, setAfterPregnancy] = useState(false); // D-053: within the post-pregnancy window, bleeding defaults to not a period
   const [ppKind, setPpKind] = useState<'post_pregnancy' | 'period'>('post_pregnancy');
   const section = params.section;
-  const quick = section === 'period' || section === 'symptoms';
+  const quick = section === 'period'; // the widget's one-tap period path: the sheet closes after the flow tap
   const hormonal = (settings?.lifeStates ?? []).some((s) => s.kind === 'hormonal_contraception' && s.since <= day && (!s.until || day <= s.until));
 
   const reload = useCallback(async () => {

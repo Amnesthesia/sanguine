@@ -140,7 +140,6 @@ export default function CalendarScreen() {
         </Card>
       </Pressable>
       <Button testID="cal-edit" kind="secondary" label={tr('calendar.edit')} disabled={isFuture} onPress={() => router.push({ pathname: '/log', params: { day: selected } })} />
-      <Button testID="cal-add-earlier" kind="secondary" label={tr('calendar.addEarlier')} onPress={() => router.push({ pathname: '/log', params: { day: isFuture ? today : selected, section: 'period' } })} />
     </Screen>
   );
 }

@@ -83,13 +83,14 @@ name: Calendar - month grid, marks, day summary, back-dating
     id: day-${output.prev15}
 - scroll
 - tapOn:
-    id: cal-add-earlier
+    id: cal-edit
 - extendedWaitUntil:
     visible:
       id: flow-medium
     timeout: 10000
 - tapOn:
     id: flow-medium
+- runFlow: _close-sheet.yaml
 - extendedWaitUntil:
     visible:
       id: screen-calendar

@@ -99,6 +99,15 @@ describe('symptoms: two taps', () => {
     expect((await dayState(db, '2026-10-10')).symptoms).toEqual({ cramps: 3 });
     expect(await cycles()).toEqual([]);
   });
+  it('keeps one entry per symptom and day: each tap replaces the last, off removes it (D-097)', async () => {
+    const symptoms = async () => (await dayEvents(store, '2026-10-10')).filter((e) => e.kind === 'symptom').map((e) => e.data);
+    for (const i of [1, 2, 3] as const) await setSymptom(store, '2026-10-10', 'cramps', i);
+    await setSymptom(store, '2026-10-10', 'headache', 1);
+    expect(await symptoms()).toEqual([{ day: '2026-10-10', code: 'cramps', intensity: 3 }, { day: '2026-10-10', code: 'headache', intensity: 1 }]);
+    await setSymptom(store, '2026-10-10', 'cramps', 0);
+    expect(await symptoms()).toEqual([{ day: '2026-10-10', code: 'headache', intensity: 1 }]);
+    expect((await dayState(db, '2026-10-10')).symptoms).toEqual({ headache: 1 });
+  });
 });
 
 describe('biomarkers: one per type per day', () => {

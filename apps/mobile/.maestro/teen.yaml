@@ -25,7 +25,7 @@ name: Under 18 - no ovulation card, no fertile wording, no fertility rows in the
 # logging sheet: temperature and notes only
 - tapOn: Today
 - tapOn:
-    id: quick-symptoms
+    id: quick-log
 - extendedWaitUntil:
     visible:
       id: more-temperature

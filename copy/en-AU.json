@@ -135,9 +135,7 @@
     "mostLikelyRange": "{range} · most likely {date}",
     "suspended": "Estimates are paused while “{state}” is set.",
     "quick": {
-      "period": "Period",
-      "symptoms": "Symptoms",
-      "temperature": "Temperature"
+      "log": "Log today"
     },
     "legend": "darker = more likely to be in the fertile window",
     "ring": {
@@ -236,7 +234,7 @@
     "tempInvalid": "Enter a temperature between 30 and 45 °C.",
     "timeInvalid": "Enter a time like 06:40.",
     "save": "Save",
-    "longPressHint": "Dots show how strong it was: mild, moderate or strong. Press and hold a symptom to change it.",
+    "tapHint": "Tap a symptom for mild, again for moderate, again for strong. Press and hold to clear.",
     "condomYes": "Condom used",
     "condomNo": "No condom",
     "conditionNone": "Nothing logged",
@@ -317,16 +315,10 @@
       "moderate": "moderate",
       "high": "high"
     },
-    "backdate": {
-      "title": "Add an earlier period",
-      "body": "Pick the first day of bleeding.",
-      "confirm": "Add period"
-    },
     "summaryDay": "Day {day}",
     "summaryNothing": "Nothing logged",
     "details": "Details",
     "edit": "Log this day",
-    "addEarlier": "Add an earlier period",
     "weekdays": [
       "Mon",
       "Tue",
@@ -816,7 +808,7 @@
     "openLog": "Open log",
     "flowSelected": "{level} flow selected",
     "symptomSelected": "{symptom}, {strength}, {n} of 3",
-    "symptomUnselected": "{symptom}, not selected",
+    "symptomHint": "Double-tap to change the strength. Press and hold to clear.",
     "phaseRing": "Cycle day {day}. {phase}.",
     "tab": "{name} tab"
   },

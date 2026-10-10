@@ -11,10 +11,10 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
     timeout: 90000
 - evalScript: ${output.today = (function(){var d=new Date();var p=function(n){return (n<10?'0':'')+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());})()}
 
-# period start: Period (tap 1), flow level (tap 2); the sheet closes itself and Today updates
+# period start: Log today (tap 1), flow level (tap 2); Done closes the sheet and Today updates (D-097)
 - assertVisible: "Log your period to start"
 - tapOn:
-    id: quick-period
+    id: quick-log
 - extendedWaitUntil:
     visible:
       id: flow-medium
@@ -22,6 +22,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 - takeScreenshot: sheet-period
 - tapOn:
     id: flow-medium
+- runFlow: _close-sheet.yaml
 - extendedWaitUntil:
     visible:
       id: screen-today
@@ -30,13 +31,16 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 - assertVisible: "Logged: medium flow"
 - takeScreenshot: today-after-period
 
-# symptom: Symptoms (tap 1), tile (tap 2)
+# symptom: Log today (tap 1), tile (tap 2) is mild, tile again is moderate (D-097)
 - tapOn:
-    id: quick-symptoms
+    id: quick-log
 - extendedWaitUntil:
     visible:
       id: symptom-cramps
     timeout: 10000
+- tapOn:
+    id: symptom-cramps
+- assertVisible: "Cramps, mild, 1 of 3"
 - tapOn:
     id: symptom-cramps
 - assertVisible: "Cramps, moderate, 2 of 3"
@@ -45,7 +49,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 
 # it persisted
 - tapOn:
-    id: quick-symptoms
+    id: quick-log
 - extendedWaitUntil:
     visible:
       id: symptom-cramps

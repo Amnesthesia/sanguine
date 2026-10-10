@@ -82,8 +82,12 @@ export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel,
   await store.appendMany(events);
 }
 
+/** One entry per symptom and day (D-097): earlier ones are retracted, so the day detail lists the current strength only and
+ * deleting it leaves nothing behind; 0 just clears. */
 export async function setSymptom(store: EventStore, day: ISODate, code: string, intensity: 0 | 1 | 2 | 3): Promise<void> {
-  await store.append({ kind: 'symptom', payload: { day, code, intensity } });
+  const old = (await dayEvents(store, day)).filter((e) => e.kind === 'symptom' && e.data.code === code);
+  for (const e of old) await store.retract(e.id);
+  if (intensity > 0) await store.append({ kind: 'symptom', payload: { day, code, intensity } });
 }
 
 export type DayEvent = EventRow & { data: Record<string, unknown> };

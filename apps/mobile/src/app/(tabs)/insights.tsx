@@ -79,7 +79,7 @@ export default function InsightsScreen() {
               </View>
               {r.offerMissedLog && r.midDay ? (
                 <View style={{ gap: 2 }}>
-                  <Button kind="text" testID="missed-log" label={tr('insights.missedLogPrompt')} onPress={() => router.push({ pathname: '/log', params: { day: r.midDay as string, section: 'period' } })} />
+                  <Button kind="text" testID="missed-log" label={tr('insights.missedLogPrompt')} onPress={() => router.push({ pathname: '/log', params: { day: r.midDay as string } })} />
                   {r.nextStartISO ? <Button kind="text" testID="was-pregnant" label={tr('insights.wasPregnant')} onPress={() => {
                     const mark = (outcome: 'birth' | 'loss') => { if (store && r.nextStartISO) void addPastPregnancy(store, { from: r.startISO, until: r.nextStartISO, outcome }).then(refresh); };
                     Alert.alert(tr('insights.pregnancyOutcome'), undefined, [
