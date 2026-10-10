@@ -42,3 +42,8 @@ google-services.json
 apps/mobile/build/
 .astro
 apps/site/
+
+# Python / Scripts (tools/sample)
+venv/
+.env
+*-logs.xlsx

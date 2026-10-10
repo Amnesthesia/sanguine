@@ -17,3 +17,8 @@ apps/mobile/build/
 
 # Astro build cache (apps/site/)
 .astro
+
+# Python / Scripts
+venv/
+.env
+*-logs.xlsx

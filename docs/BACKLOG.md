@@ -100,3 +100,4 @@ As PLAN.md §10. Phase 5 needs store accounts and signing credentials from the h
 - [ ] P8-9 Apple Watch app (R4-1): spike done (D-086); needs the owner's decision on the experimental expo-apple-targets plugin and a Swift watch target.
 - [ ] P8-10 Android Glance widget and Wear OS tile (R4-2, P3-5b): spike done (D-086); blocked until expo-widgets supports Android (re-check at SDK 58).
 - [x] P8-11 Today look-back symptom note: own logs only, past tense, allow-listed physical codes, switchable (D-087; amends C-10).
+- [x] P8-12 Prediction test suite: how forecasts move with new input (early, late, missed, loss, contraception, tests), synthetic life-event backtest with candidate models, fake Natural Cycles export round trip, and a local-only backtest on a real export (D-091). Tests only; findings left for the owner.
