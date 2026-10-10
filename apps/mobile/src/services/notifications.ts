@@ -1,11 +1,10 @@
-// Local reminders only: no push token is ever requested (PLAN.md §6.1). One reminder, rescheduled whenever the prediction changes.
+// Local reminders only: no push token is ever requested (PLAN.md §6.1). The user's reminder rules, rescheduled whenever the prediction changes (D-090).
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import i18n from '@/i18n';
 import { displayName } from './discreet';
-import type { ReminderPlan } from '@/features/notifications/plan';
+import { type ReminderPlan, reminderText } from '@/features/notifications/plan';
 
-const ID = 'sanguine-period';
 const CHANNEL = 'reminders';
 
 /** Android in Expo Go cannot even import expo-notifications (it throws since SDK 53), so reminders there wait for the dev client (P3-1). */
@@ -32,29 +31,32 @@ export async function ensurePermission(): Promise<boolean> {
   return (await Notifications.requestPermissionsAsync()).granted;
 }
 
-/** Replaces any scheduled reminder with `plan` (or none). Returns the fire date, or undefined. */
-export async function syncReminder(plan: ReminderPlan | undefined, discreet = false): Promise<string | undefined> {
+/** Replaces every scheduled reminder with `plans`. Returns the earliest fire date, or undefined. */
+export async function syncReminders(plans: ReminderPlan[], discreet = false): Promise<string | undefined> {
   if (!remindersSupported) return undefined;
   const Notifications = lib();
-  await Notifications.cancelScheduledNotificationAsync(ID).catch(() => {});
-  if (!plan) return undefined;
+  // only Sanguine's own reminders exist (local, no push), so clearing all is clearing ours, including the one-id reminder before D-090
+  await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
+  if (plans.length === 0) return undefined;
   if (!(await Notifications.getPermissionsAsync()).granted) return undefined;
   if (Platform.OS === 'android') await Notifications.setNotificationChannelAsync(CHANNEL, { name: i18n.t('notifications.channel'), importance: Notifications.AndroidImportance.DEFAULT });
-  const [y, m, d] = plan.fireDate.split('-').map(Number) as [number, number, number];
-  const date = new Date(y, m - 1, d, plan.hour, 0, 0);
-  await Notifications.scheduleNotificationAsync({
-    identifier: ID,
-    content: {
-      title: displayName(discreet),
-      // discreet by default: no health words on the lock screen unless the user turned the details on (§8.8)
-      body: plan.descriptive ? i18n.t('notifications.periodBody', { lo: plan.lo, hi: plan.hi }) : i18n.t('notifications.defaultBody'),
-    },
-    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date, ...(Platform.OS === 'android' ? { channelId: CHANNEL } : {}) },
-  });
-  return plan.fireDate;
+  for (const plan of plans) {
+    const [y, m, d] = plan.fireDate.split('-').map(Number) as [number, number, number];
+    const text = reminderText(plan);
+    await Notifications.scheduleNotificationAsync({
+      identifier: `sanguine-${plan.id}`,
+      content: {
+        title: displayName(discreet),
+        // discreet by default: no health words on the lock screen unless the user turned the details on (§8.8)
+        body: plan.descriptive ? i18n.t(text.key, text.params) : i18n.t('notifications.defaultBody'),
+      },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(y, m - 1, d, plan.hour, 0, 0), ...(Platform.OS === 'android' ? { channelId: CHANNEL } : {}) },
+    });
+  }
+  return plans[0]?.fireDate;
 }
 
-export async function cancelReminder(): Promise<void> {
+export async function cancelReminders(): Promise<void> {
   if (!remindersSupported) return;
-  await lib().cancelScheduledNotificationAsync(ID).catch(() => {});
+  await lib().cancelAllScheduledNotificationsAsync().catch(() => {});
 }

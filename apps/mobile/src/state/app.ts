@@ -6,7 +6,7 @@ import { flagContext, loadFlagState, muteFlag, recordRaised } from '@/data/flagS
 import { wipeAll } from '@/data/wipe';
 import { deleteDeviceSecret, deleteNoteKey } from '@/services/secrets';
 import { removeAllTempFiles } from '@/services/tempFiles';
-import { loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
+import { effectivePrefs, loadPrefs, type Prefs, DEFAULT_PREFS, savePrefs } from '@/data/prefs';
 import { sqliteLinks } from '@/data/healthLinks';
 import { SyncGate } from '@/data/syncGate';
 import { mergeReports } from '@/data/healthSync';
@@ -24,10 +24,10 @@ import { AppState as RNAppState, Platform } from 'react-native';
 import type { Profile } from '@/data/project';
 import { getSetting, setSetting } from '@/data/settings';
 import type { EventStore } from '@/data/store';
-import { planReminder } from '@/features/notifications/plan';
+import { planReminders } from '@/features/notifications/plan';
 import { appData, startFreshDatabase } from '@/services/appData';
 import { KeyMismatchError } from '@/data/cipher';
-import { syncReminder } from '@/services/notifications';
+import { ensurePermission, syncReminders } from '@/services/notifications';
 import { serial } from './serial';
 import { displayName, setDiscreetIcon } from '@/services/discreet';
 import { syncWidget, widgetSnapshot } from '@/services/widgets';
@@ -201,11 +201,13 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   async syncReminders() {
-    const { prediction, prefs, today } = get();
+    const { prediction, prefs, profile, today } = get();
     const hour = new Date().getHours();
     try {
-      const plan = planReminder(prediction, prefs.notifications.period, prefs.notifications.descriptive, today, hour);
-      set({ nextReminder: await syncReminder(plan, prefs.discreetIcon) });
+      const n = prefs.notifications;
+      // ovulation and fertile-window reminders follow the estimate card: off under 18 until unlocked (§8.6)
+      const plans = planReminders(prediction, n.rules, { enabled: n.enabled, late: n.late, descriptive: n.descriptive, fertility: effectivePrefs(prefs, profile, today).showOvulationEstimate, today, nowHour: hour });
+      set({ nextReminder: await syncReminders(plans, prefs.discreetIcon) });
     } catch {
       set({ nextReminder: undefined });
     }
@@ -266,5 +268,7 @@ export const useApp = create<AppState>((set, get) => ({
     if (!db) return;
     await setSetting(db, 'onboarded', true);
     set({ onboarded: true });
+    // reminders are on by default (D-090): ask once, at the end of onboarding, rather than at a random later launch
+    if (get().prefs.notifications.enabled) void ensurePermission().then(() => get().syncReminders()).catch(() => undefined);
   },
 }));

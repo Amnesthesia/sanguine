@@ -4,6 +4,7 @@ import symptomCatalog from '../../../../copy/symptoms.json';
 import type { HealthType } from '@sanguine/health-adapter';
 import type { Database } from './database';
 import type { HealthWindow } from './healthSync';
+import { DEFAULT_RULES, type ReminderRule } from '@/features/notifications/plan';
 import { getSetting, setSetting } from './settings';
 
 export type ThemePref = 'system' | 'light' | 'dark';
@@ -20,7 +21,8 @@ export interface Prefs {
   teenUnlockEstimate: boolean;
   /** Today's look-back symptom note (D-087). */
   symptomNote: boolean;
-  notifications: { period: boolean; descriptive: boolean };
+  /** Local reminders (D-090): on by default with the owner's three rules and the late-period reminder; text discreet unless `descriptive`. */
+  notifications: { enabled: boolean; late: boolean; descriptive: boolean; rules: ReminderRule[] };
   appLock: boolean;
   /** Widgets show the headline text only when on (PLAN.md §8.8): off = the ring and the day count. */
   widgetDetails: boolean;
@@ -46,7 +48,7 @@ export const DEFAULT_PREFS: Prefs = {
   showOvulationEstimate: true,
   teenUnlockEstimate: false,
   symptomNote: true,
-  notifications: { period: false, descriptive: false },
+  notifications: { enabled: true, late: true, descriptive: false, rules: DEFAULT_RULES }, // owner, D-090 (was off, D-037)
   appLock: false, // off until turned on in Settings, Privacy and data (owner, D-073)
   widgetDetails: false,
   discreetIcon: false,
@@ -58,7 +60,10 @@ export const DEFAULT_PREFS: Prefs = {
 
 export async function loadPrefs(db: Database): Promise<Prefs> {
   const saved = await getSetting<Partial<Prefs>>(db, 'prefs', {});
-  return { ...DEFAULT_PREFS, ...saved, notifications: { ...DEFAULT_PREFS.notifications, ...saved.notifications } };
+  // before D-090 the one switch was `period`; a phone that saved it keeps its choice for the new master switch
+  const n = (saved.notifications ?? {}) as Partial<Prefs['notifications']> & { period?: boolean };
+  const { period, ...rest } = n;
+  return { ...DEFAULT_PREFS, ...saved, notifications: { ...DEFAULT_PREFS.notifications, ...rest, ...(rest.enabled === undefined && period !== undefined ? { enabled: period } : {}) } };
 }
 export async function savePrefs(db: Database, p: Prefs): Promise<void> {
   await setSetting(db, 'prefs', p);
