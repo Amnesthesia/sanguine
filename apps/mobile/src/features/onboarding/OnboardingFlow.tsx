@@ -12,6 +12,7 @@ import { deviceRegion } from '@/services/locale';
 import { useApp } from '@/state/app';
 import { useLock } from '@/state/lock';
 import { useTheme } from '@/theme';
+import { BackButton } from '@/ui/BackButton';
 import { Button } from '@/ui/Button';
 import { Chips } from '@/ui/Chips';
 import { DateField } from '@/ui/DateField';
@@ -81,6 +82,8 @@ export function OnboardingFlow() {
       setBusy(false);
     }
   }
+  // skipping "when was your last period" leaves it empty; skipping the life state keeps "none"
+  const skip = () => { if (step === 2) setLastChoice(undefined); else setA({ ...a, lifeState: 'none' }); setStep(step + 1); };
   const next = () => (step === TOTAL_STEPS - 1 ? void finish() : setStep(step + 1));
 
   const title = (key: string) => <Text variant="title" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 34 }}>{tr(key)}</Text>;
@@ -90,8 +93,19 @@ export function OnboardingFlow() {
 
   // padding on both platforms: the dev client is edge-to-edge on Android, where adjustResize no longer lifts the Continue button above the keyboard (P3-1)
   return (
-    <KeyboardAvoidingView testID="screen-onboarding" behavior="padding" style={{ flex: 1, backgroundColor: t.screenBg, paddingTop: insets.top + 12 }}>
-      <ProgressDots step={step} total={TOTAL_STEPS} />
+    <KeyboardAvoidingView testID="screen-onboarding" behavior="padding" style={{ flex: 1, backgroundColor: t.screenBg, paddingTop: insets.top + 4 }}>
+      {/* header like every other screen: Back on the left, progress in the middle, Skip on the right */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 48, paddingLeft: 4, paddingRight: 8 }}>
+        <View style={{ width: 72, alignItems: 'flex-start' }}>{step > 0 ? <BackButton testID="onboarding-back" onPress={() => setStep(step - 1)} /> : null}</View>
+        <View style={{ flex: 1 }}><ProgressDots step={step} total={TOTAL_STEPS} /></View>
+        <View style={{ width: 72, alignItems: 'flex-end' }}>
+          {step === 2 || step === 3 ? (
+            <Pressable testID="onboarding-skip" accessibilityRole="button" accessibilityLabel={tr('common.skip')} onPress={skip} style={{ minHeight: 44, minWidth: 44, paddingHorizontal: 8, justifyContent: 'center' }}>
+              <Text color="accent">{tr('common.skip')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
       <ScrollView contentContainerStyle={{ padding: 24, gap: 16, flexGrow: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {step === 0 && (<>
           {title('onboarding.s1.title')}
@@ -162,10 +176,6 @@ export function OnboardingFlow() {
         {/* say why Finish does not respond (I-20, D-075) */}
         {step === TOTAL_STEPS - 1 && !ok ? <Text variant="bodySmall" color="textSecondary" testID="finish-hint" style={{ textAlign: 'center' }} accessibilityLiveRegion="polite">{tr(explicit ? 'onboarding.s5.finishHintBoth' : 'onboarding.s5.finishHint')}</Text> : null}
         <Button testID="onboarding-continue" label={step === TOTAL_STEPS - 1 ? tr('common.finish') : tr('common.continue')} disabled={!ok || busy} onPress={next} />
-        {step === 2 || step === 3 ? (
-          <Button testID="onboarding-skip" kind={step === 2 ? 'secondary' : 'text'} label={step === 2 ? tr('common.dontKnow') : tr('common.skip')} onPress={() => { if (step === 2) { setLastChoice(undefined); } else { setA({ ...a, lifeState: 'none' }); } setStep(step + 1); }} />
-        ) : null}
-        {step > 0 ? <Button testID="onboarding-back" kind="text" label={tr('common.back')} onPress={() => setStep(step - 1)} /> : null}
       </View>
     </KeyboardAvoidingView>
   );

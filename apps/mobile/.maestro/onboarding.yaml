@@ -23,6 +23,16 @@ name: Onboarding, five steps (adult, with last period and life state)
     id: onboarding-continue
 # step 3: last period
 - assertVisible: "When did your last period start?"
+# Back and Skip sit in the header row (D-095): Back returns a step, Skip shows only on the optional steps
+- assertVisible:
+    id: onboarding-skip
+- tapOn:
+    id: onboarding-back
+- assertNotVisible:
+    id: onboarding-skip
+- tapOn:
+    id: onboarding-continue
+- assertVisible: "When did your last period start?"
 - tapOn:
     id: last-yesterday
 - takeScreenshot: step3-last-period
