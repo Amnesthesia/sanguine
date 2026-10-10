@@ -3,8 +3,8 @@ import { addDays, type ISODate } from '@sanguine/engine';
 import type { NewEvent } from '@/data/events';
 import type { Profile } from '@/data/project';
 
-export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog' | 'pattern' | 'pregnant' | 'lookback';
-export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback'];
+export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog' | 'pattern' | 'pregnant' | 'lookback' | 'lunar';
+export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback', 'lunar'];
 
 const period = (start: ISODate, bleed = 4, level: 'light' | 'medium' | 'heavy' = 'medium'): NewEvent[] =>
   Array.from({ length: bleed }, (_, i) => ({ kind: 'flow', payload: { day: addDays(start, i), level, flow_kind: 'period' } }));
@@ -37,6 +37,11 @@ export function scenario(name: ScenarioName, today: ISODate): { profile: Profile
     return { profile: { birthYear: Number(today.slice(0, 4)) - 47 }, events: [...starts.flatMap((s) => period(s, 5)), lifeState,
       ...days.map((d): NewEvent => ({ kind: 'symptom', payload: { day: addDays(today, d), code: 'hot_flushes', intensity: 2 } })),
       { kind: 'symptom', payload: { day: addDays(today, -2), code: 'night_sweats', intensity: 2 } }] };
+  }
+  if (name === 'lunar') {
+    // D-089: seven very regular cycles of 29 and 30 days, close to a lunar month
+    const starts = startsFrom(addDays(today, -8), [30, 29, 30, 29, 30, 29, 30]);
+    return { profile, events: starts.flatMap((s) => period(s, 5)) };
   }
   if (name === 'pregnant') {
     // P8-5: pregnancy set 3 weeks ago, last period start 7 weeks ago

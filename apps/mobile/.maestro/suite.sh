@@ -5,7 +5,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 platform="${1:?ios or android}"
 flows=(shell onboarding onboarding-agegate today splash logging calendar insights settings backup discretion delete notifications)
-[ "$platform" = ios ] && flows+=(export share-calendar how pattern pregnancy report quick-actions health cloud-backup teen) # health sync needs HealthKit: iOS only until P3-14
+[ "$platform" = ios ] && flows+=(export share-calendar how pattern pregnancy report quick-actions moon health cloud-backup teen) # health sync needs HealthKit: iOS only until P3-14
 failed=()
 if [ "$platform" = ios ]; then # the app lock test enrols Face ID; every other flow runs on a phone without a screen lock
   dev="${IOS_UDID:-1C4C0CE9-4A7A-441F-8FCA-5EDBD373D757}"

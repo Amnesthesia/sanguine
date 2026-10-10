@@ -146,3 +146,15 @@ describe('week start', () => {
     expect(month('2026-11').cells[0]?.date).toBe('2026-10-26');
   });
 });
+
+describe('moon phases on the month (D-089)', () => {
+  it('a day with a principal phase carries it and says it to VoiceOver; other days and no map carry nothing', () => {
+    const base = { month: '2026-10', today: '2026-10-10', periodDays: new Set<string>(), loggedDays: new Set<string>(), prediction: undefined, showEstimate: true };
+    const m = buildMonth({ ...base, moon: new Map([['2026-10-26', 'full' as const]]) });
+    const cell = m.cells.find((c) => c.date === '2026-10-26');
+    expect(cell?.moon).toBe('full');
+    expect(cell?.label).toContain('full moon');
+    expect(m.cells.find((c) => c.date === '2026-10-25')?.moon).toBeUndefined();
+    expect(buildMonth(base).cells.every((c) => c.moon === undefined)).toBe(true);
+  });
+});

@@ -1,4 +1,4 @@
-import { diffDays, type ISODate } from '@sanguine/engine';
+import { addDays, analyzeCycles, diffDays, type ISODate } from '@sanguine/engine';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,9 @@ import { Pressable, View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
 import { buildMonth, calendarLegend, type LegendKind, monthOf, shiftMonth } from '@/features/calendar/calendarModel';
 import { weekdayLabels } from '@/i18n/locale';
-import { deviceWeekStart } from '@/services/locale';
+import { deviceRegion, deviceWeekStart } from '@/services/locale';
+import { lunarAligned, moonPhaseDays, southernRegion } from '@/features/calendar/moon';
+import { MoonGlyph } from '@/features/calendar/MoonGlyph';
 import { DayCellView } from '@/features/calendar/DayCellView';
 import { useCalendarData } from '@/features/calendar/useCalendarData';
 import { dayEvents } from '@/features/logging/actions';
@@ -22,8 +24,9 @@ import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 import { DropGlyph } from '@/features/logging/DropGlyph';
 
-function Swatch({ kind }: { kind: 'period' | 'predicted' | 'fertile' | 'ovulation' | 'logged' }) {
+function Swatch({ kind, southern }: { kind: LegendKind; southern: boolean }) {
   const t = useTheme();
+  if (kind === 'moon') return <MoonGlyph phase="first" southern={southern} size={14} color={t.c.textSecondary} />;
   const base = { width: 14, height: 14, borderRadius: 4 } as const;
   if (kind === 'period') return <View style={{ ...base, backgroundColor: t.c.period, alignItems: 'center', justifyContent: 'center' }}><DropGlyph fill={1} size={9} color="#FFFFFF" /></View>;
   if (kind === 'predicted') return <View style={{ ...base, borderWidth: 1.5, borderColor: t.c.periodPredicted, borderStyle: 'dashed' }} />;
@@ -35,7 +38,7 @@ function Swatch({ kind }: { kind: 'period' | 'predicted' | 'fertile' | 'ovulatio
 export default function CalendarScreen() {
   const { t: tr } = useTranslation();
   const router = useRouter();
-  const { prediction, history, today, prefs, profile, store, version } = useApp();
+  const { prediction, history, settings, today, prefs, profile, store, version } = useApp();
   const muteFlag = useApp((s) => s.muteFlag);
   const { periodDays, loggedDays } = useCalendarData();
   const [month, setMonth] = useState(monthOf(today));
@@ -44,7 +47,16 @@ export default function CalendarScreen() {
 
   const showEstimate = SHOW_OVULATION_ESTIMATE && effectivePrefs(prefs, profile, today).showOvulationEstimate;
   const weekStart = useMemo(deviceWeekStart, []);
-  const model = useMemo(() => buildMonth({ month, today, periodDays, loggedDays, prediction, showEstimate, weekStart }), [month, today, periodDays, loggedDays, prediction, showEstimate, weekStart]);
+  // moon phases (D-089): only when the recent cycles run close to a lunar month; decoration, never an estimate
+  const lunar = useMemo(() => (history && settings ? lunarAligned(analyzeCycles(history, settings).map((c) => c.record)) : false), [history, settings]);
+  const southern = useMemo(() => southernRegion(deviceRegion()), []);
+  const moon = useMemo(() => {
+    if (!lunar) return undefined;
+    const first = `${month}-01` as ISODate;
+    const localDay = (ms: number) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` as ISODate; };
+    return moonPhaseDays(addDays(first, -7), addDays(first, 49), localDay);
+  }, [lunar, month]);
+  const model = useMemo(() => buildMonth({ month, today, periodDays, loggedDays, prediction, showEstimate, weekStart, ...(moon ? { moon } : {}) }), [month, today, periodDays, loggedDays, prediction, showEstimate, weekStart, moon]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the day after every write
   useEffect(() => {
@@ -66,7 +78,7 @@ export default function CalendarScreen() {
       <Text variant="heading" color="accent" style={{ fontSize: 28, lineHeight: 32 }}>{delta < 0 ? '‹' : '›'}</Text>
     </Pressable>
   );
-  const legend: Array<[LegendKind, string]> = calendarLegend(showEstimate).filter((k) => k !== 'ovulation' || !model.ovulationUncertain).map((k) => [k, k]); // no marker is drawn for an uncertain estimate (U-18)
+  const legend: Array<[LegendKind, string]> = [...calendarLegend(showEstimate), ...(moon ? (['moon'] as const) : [])].filter((k) => k !== 'ovulation' || !model.ovulationUncertain).map((k) => [k, k]); // no marker is drawn for an uncertain estimate (U-18)
   return (
     <Screen testID="screen-calendar" title={tr('calendar.title')}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -78,19 +90,20 @@ export default function CalendarScreen() {
         {weekdayLabels(tr('calendar.weekdays', { returnObjects: true }) as unknown as string[], weekStart).map((w) => <Text key={w} variant="caption" color="textSecondary" style={{ width: `${100 / 7}%`, textAlign: 'center' }}>{w}</Text>)}
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap' }} testID="cal-grid">
-        {model.cells.map((c) => <DayCellView key={c.date} cell={c} selected={c.date === selected} onPress={() => { setSelected(c.date); if (!c.inMonth) setMonth(monthOf(c.date)); }} />)}
+        {model.cells.map((c) => <DayCellView key={c.date} cell={c} southern={southern} selected={c.date === selected} onPress={() => { setSelected(c.date); if (!c.inMonth) setMonth(monthOf(c.date)); }} />)}
       </View>
       {flag ? <FlagCard f={flag} onMute={(c) => void muteFlag(c)} /> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         {legend.map(([k, key]) => (
           <View key={key} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Swatch kind={k} />
+            <Swatch kind={k} southern={southern} />
             <Text variant="caption" color="textSecondary">{tr(`calendar.legend.${k === 'logged' ? 'logged' : k}`)}</Text>
           </View>
         ))}
       </View>
       {model.ovulationUncertain ? <Text variant="caption" color="textSecondary" testID="cal-uncertain">{tr('calendar.ovulationUncertainCaption')}</Text> : null}
       {showEstimate ? <Text variant="caption" color="textSecondary">{tr('today.legendFertile')}</Text> : null}
+      {moon ? <Text variant="caption" color="textSecondary" testID="cal-moon-note">{tr('calendar.moonNote')}</Text> : null}
       {/* the card is the way to the day's detail; logging is the one button (U-20, D-076) */}
       <Pressable testID="cal-details" style={{ minHeight: 56 }} accessibilityRole="button" accessibilityLabel={`${formatLong(selected)}. ${tr('calendar.details')}`} onPress={() => router.push({ pathname: '/day/[date]', params: { date: selected } })}>
         <Card testID="cal-summary" style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>

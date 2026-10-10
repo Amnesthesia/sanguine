@@ -19,7 +19,7 @@ async function load(name: Parameters<typeof scenario>[0], today = '2026-10-10') 
 }
 
 describe('dev scenarios', () => {
-  it('all names are covered', () => expect(SCENARIOS).toEqual(['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback']));
+  it('all names are covered', () => expect(SCENARIOS).toEqual(['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback', 'lunar']));
   it('typical: cycle day 11, cycles of 28 and 29 days, a fair-estimate next period', async () => {
     const { prediction: p, history } = await load('typical');
     expect(p.currentPhase?.dayOfCycle).toBe(11);

@@ -284,15 +284,18 @@
     "title": "Calendar",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
+    "moonNote": "Moon phases are shown because your recent cycles have been close to a lunar month (29.5 days). The moon does not change any estimate.",
     "legend": {
       "period": "Period",
       "predicted": "Predicted period",
       "fertile": "Fertile window likelihood",
       "ovulation": "Ovulation estimate",
-      "logged": "Logged"
+      "logged": "Logged",
+      "moon": "Moon phase"
     },
     "selectedSummary": "Day {day} · {items}",
     "a11y": {
+        "moon": { "new": "new moon", "first": "first quarter moon", "full": "full moon", "last": "last quarter moon" },
       "today": "today",
       "period": "period",
       "predicted": "predicted period, 80% range",

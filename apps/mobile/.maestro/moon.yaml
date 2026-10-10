@@ -1,0 +1,25 @@
+appId: ${APP_ID}
+name: Moon phases on the calendar only for cycles close to a lunar month (D-089)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=lunar
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Calendar
+- scrollUntilVisible:
+    element:
+      id: cal-moon-note
+- assertVisible: "Moon phase"
+- takeScreenshot: moon-calendar
+- openLink: ${LINKBASE}dev/seed?scenario=typical&wipeData=1
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 30000
+- tapOn: Calendar
+- assertNotVisible:
+    id: cal-moon-note

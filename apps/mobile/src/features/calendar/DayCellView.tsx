@@ -5,9 +5,10 @@ import { fertileAlpha } from '@/ui/fertileAlpha';
 import { Text } from '@/ui/Text';
 import { DropGlyph } from '@/features/logging/DropGlyph';
 import type { DayCell } from './calendarModel';
+import { MoonGlyph } from './MoonGlyph';
 
 /** One day. Meaning is never colour alone: period is solid with a drop (D-088; two dots read as a count), predicted is hatched, the fertile band is an underline (§8.9). */
-export function DayCellView({ cell, selected, onPress }: { cell: DayCell; selected: boolean; onPress: () => void }) {
+export function DayCellView({ cell, selected, onPress, southern = false }: { cell: DayCell; selected: boolean; onPress: () => void; southern?: boolean }) {
   const t = useTheme();
   const r = t.isIOS ? 10 : 12;
   const on = cell.period;
@@ -35,6 +36,7 @@ export function DayCellView({ cell, selected, onPress }: { cell: DayCell; select
             {cell.ovulation === 'point' ? <View style={{ position: 'absolute', alignSelf: 'center', top: -2, width: 6, height: 6, borderRadius: 3, backgroundColor: t.c.ovulation }} /> : null}
           </View>
         ) : null}
+        {cell.moon ? <View style={{ position: 'absolute', top: 3, right: 3 }}><MoonGlyph phase={cell.moon} southern={southern} size={9} color={on ? '#FFFFFF' : t.c.textSecondary} /></View> : null}
         {cell.fertile !== undefined ? <View style={{ position: 'absolute', bottom: 0, left: 2, right: 2, height: 6, borderRadius: 3, backgroundColor: t.c.fertile, opacity: fertileAlpha(cell.fertile) }} /> : null}
       </View>
     </Pressable>

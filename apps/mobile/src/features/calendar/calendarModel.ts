@@ -1,5 +1,6 @@
 // Month grid view-model (PLAN.md §8.3, §8.5): which marks each day carries. Pure; the screen only draws it.
 import { addDays, diffDays, type ISODate, isoWeekday, type Prediction } from '@sanguine/engine';
+import type { MoonPhase } from './moon';
 import i18n from '@/i18n';
 import type { WeekStart } from '@/i18n/locale';
 import { formatLong, formatMonthYear } from '@/ui/format';
@@ -20,6 +21,8 @@ export interface DayCell {
   fertile: number | undefined;
   ovulation: 'point' | 'range' | undefined;
   logged: boolean;
+  /** Principal moon phase on this day, only for users whose cycles run close to a lunar month (D-089). */
+  moon: MoonPhase | undefined;
   label: string;
 }
 export interface MonthModel { month: string; title: string; cells: DayCell[]; ovulationUncertain: boolean }
@@ -34,7 +37,7 @@ export function shiftMonth(m: string, delta: number): string {
 const t = (k: string, p?: Record<string, string>) => i18n.t(k, p);
 const between = (d: ISODate, lo: ISODate, hi: ISODate) => d >= lo && d <= hi;
 
-export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<ISODate>; loggedDays: Set<ISODate>; prediction: Prediction | undefined; showEstimate: boolean; weekStart?: WeekStart }): MonthModel {
+export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<ISODate>; loggedDays: Set<ISODate>; prediction: Prediction | undefined; showEstimate: boolean; weekStart?: WeekStart; moon?: Map<ISODate, MoonPhase> }): MonthModel {
   const first = `${i.month}-01`;
   const gridStart = addDays(first, -((isoWeekday(first) - 1 + (i.weekStart === 'sun' ? 1 : 0)) % 7));
   const p = i.prediction;
@@ -60,15 +63,17 @@ export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<I
     else if (in95) parts.push(t('calendar.a11y.predicted95'));
     if (f !== undefined) parts.push(t('calendar.a11y.fertile', { word: t(`calendar.fertileWords.${f < 0.25 ? 'low' : f < 0.5 ? 'moderate' : 'high'}`) }));
     if (ovMark === 'point') parts.push(t('calendar.a11y.ovulation'));
+    const moon = i.moon?.get(date);
     if (logged) parts.push(t('calendar.a11y.logged'));
+    if (moon) parts.push(t(`calendar.a11y.moon.${moon}`));
     return {
       date, day: Number(date.slice(8)), inMonth: monthOf(date) === i.month, isToday: date === i.today, period, predicted80: in80, predicted95Edge: in95,
-      fertile: f, ovulation: ovMark, logged, label: parts.join(', '),
+      fertile: f, ovulation: ovMark, logged, moon, label: parts.join(', '),
     };
   });
   return { month: i.month, title: formatMonthYear(first), cells, ovulationUncertain: uncertain };
 }
 
-export type LegendKind = 'period' | 'predicted' | 'fertile' | 'ovulation' | 'logged';
+export type LegendKind = 'period' | 'predicted' | 'fertile' | 'ovulation' | 'logged' | 'moon';
 /** The legend names the fertile window and ovulation only while those estimates are shown (PLAN.md §8.6: hidden under 18 by default). */
 export const calendarLegend = (showEstimate: boolean): LegendKind[] => (showEstimate ? ['period', 'predicted', 'fertile', 'ovulation', 'logged'] : ['period', 'predicted', 'logged']);
