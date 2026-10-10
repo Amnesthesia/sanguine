@@ -209,6 +209,33 @@ describe('generated sample exports (tools/sample)', async () => {
       expect(q.some((c) => c.quality === 'suspect_skip')).toBe(true);
     }
   });
+  // samples from the planned generator carry their true timeline in <name>.truth.json
+  const truthOf = (f: string) => {
+    const t = SAMPLES + f.replace(/\.xlsx$/, '.truth.json');
+    return existsSync(t) ? (JSON.parse(readFileSync(t, 'utf8')) as { periodStarts: ISODate[]; ovulations: Record<ISODate, ISODate>; losses: Array<{ positiveTest: ISODate; bleed: ISODate }>; lengths: number[] }) : undefined;
+  };
+  const planned = sampleFiles.filter((f) => truthOf(f));
+  it('there are planned samples with a true timeline', () => expect(planned.length).toBeGreaterThanOrEqual(4));
+  it.each(planned)('%s: imported cycle starts are exactly the planned period starts', (f) => {
+    const r = runs.find((x) => x.f === f);
+    expect(r?.history.cycles.map((c) => c.start)).toEqual(truthOf(f)?.periodStarts);
+  });
+  it.each(planned)('%s: ovulation is found in most cycles, and wherever found it is within 2 days of the plan', (f) => {
+    const r = runs.find((x) => x.f === f);
+    const truth = truthOf(f)?.ovulations ?? {};
+    const closed = analyzeCycles(r?.history as History, r?.settings as EngineSettings).map((c) => c.record).filter((c) => c.nextStart && truth[c.start]);
+    const found = closed.filter((c) => c.ovulation);
+    expect(closed.length).toBeGreaterThan(0);
+    // a cycle without LH tests whose temperatures do not pass the three-over-six rule is left undated, never guessed
+    expect(found.length / closed.length).toBeGreaterThanOrEqual(0.7);
+    for (const c of found) expect(Math.abs(diffDays(c.ovulation?.point as ISODate, truth[c.start] as ISODate)), c.start).toBeLessThanOrEqual(2);
+  });
+  it.each(planned)('%s: a planned missed period or pregnancy is set aside or paused, never averaged in', (f) => {
+    const r = runs.find((x) => x.f === f);
+    const t = truthOf(f);
+    const q = analyzeCycles(r?.history as History, r?.marked as EngineSettings).map((c) => c.record);
+    q.forEach((c, i) => { if ((t?.lengths[i] ?? 0) >= 55) expect(['suspect_skip', 'life_state']).toContain(c.quality); });
+  });
   it('pooled over the samples, the engine beats "same as last time" on regular cycles', () => {
     const pool = (m: string) => runs.flatMap((r) => { const t = at(r.raw, 0, m).regular; return t.n ? [{ n: t.n, sum: t.mae * t.n }] : []; });
     const mae = (m: string) => { const p = pool(m); return p.reduce((a, x) => a + x.sum, 0) / p.reduce((a, x) => a + x.n, 0); };
