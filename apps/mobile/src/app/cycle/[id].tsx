@@ -7,10 +7,9 @@ import { effectivePrefs } from '@/data/prefs';
 import { activeEvents } from '@/data/project';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
-import { BackButton } from '@/ui/BackButton';
 import { Card } from '@/ui/Card';
 import { formatDayYear } from '@/ui/format';
-import { Screen } from '@/ui/Screen';
+import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
 
 export default function CycleDetail() {
@@ -32,12 +31,11 @@ export default function CycleDetail() {
     } else await store.append({ kind: 'cycle.exclude', payload: { cycle_start: c.start, reason: 'user_excluded' } });
     await refresh();
   }
-  const back = <BackButton testID="cycle-back" />;
-  if (!c) return <Screen testID="screen-cycle" title={tr('insights.cycleDetail.title')} header={back}>{null}</Screen>;
+  if (!c) return <SubScreen testID="screen-cycle" backTestID="cycle-back" title={tr('insights.cycleDetail.title')}>{null}</SubScreen>;
 
   const luteal = c.ovulation && c.ovulation.basis !== 'calendar' && c.nextStart ? diffDays(c.nextStart, c.ovulation.point) - 1 : undefined;
   return (
-    <Screen testID="screen-cycle" title={formatDayYear(c.start)} bottomInset={32} header={back}>
+    <SubScreen testID="screen-cycle" backTestID="cycle-back" title={formatDayYear(c.start)} bottomInset={32}>
       <Card>
         <Text>{c.length ? `${tr('insights.cycleDetail.length')}: ${c.length} days` : `${tr('insights.cycleDetail.length')}: ${tr('insights.dayN', { day: diffDays(today, c.start) + 1 })}`}</Text>
         {c.bleedDays ? <Text>{`${tr('insights.cycleDetail.bleed')}: ${c.bleedDays} days`}</Text> : null}
@@ -55,6 +53,6 @@ export default function CycleDetail() {
       </Card> : null}
       {c.quality === 'user_excluded' ? <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.excluded')}</Text> : null}
       <Button testID="cycle-exclude" kind="secondary" label={c.quality === 'user_excluded' ? tr('insights.cycleDetail.include') : tr('insights.cycleDetail.exclude')} onPress={() => void toggleExclude()} />
-    </Screen>
+    </SubScreen>
   );
 }

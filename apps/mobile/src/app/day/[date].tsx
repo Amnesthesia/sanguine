@@ -9,10 +9,9 @@ import { describeEvent } from '@/features/logging/describe';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
-import { BackButton } from '@/ui/BackButton';
 import { Card } from '@/ui/Card';
 import { formatLong } from '@/ui/format';
-import { Screen } from '@/ui/Screen';
+import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
 
 /** "imported · Natural Cycles" or "from a sensor" as a muted suffix; nothing for a manual entry. */
@@ -46,7 +45,7 @@ export default function DayDetail() {
   ]);
 
   return (
-    <Screen testID="screen-day" title={formatLong(day)} bottomInset={32} header={<BackButton testID="day-back" />}>
+    <SubScreen testID="screen-day" backTestID="day-back" title={formatLong(day)} bottomInset={32}>
       {events.length === 0 ? <Text color="textSecondary">{tr('day.nothingLogged')}</Text> : null}
       {events.length ? (
         // one row per entry (U-16, D-076): the text with its provenance, and Delete at the trailing edge
@@ -66,6 +65,6 @@ export default function DayDetail() {
           <Button testID="day-spotting" kind="secondary" label={tr('day.markSpotting')} onPress={() => void markSpotting(store, day).then(after)} />
         </>) : null}
       </View>
-    </Screen>
+    </SubScreen>
   );
 }
