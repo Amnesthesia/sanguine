@@ -1,6 +1,6 @@
 import { addDays, type CycleRecord, type DailyLog, type ISODate, studentTQuantile } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { accuracyText, cycleLengthSeries, historyRows, phaseBars } from './insightsModel';
+import { accuracyText, cycleLengthSeries, historyRows, lengthAxisLabels, phaseBars } from './insightsModel';
 
 const cyc = (id: string, start: ISODate, length: number | undefined, over: Partial<CycleRecord> = {}): CycleRecord => ({
   id, start, quality: 'valid', end: addDays(start, 3), bleedDays: 4, ...(length ? { length, nextStart: addDays(start, length) } : {}), ...over,
@@ -67,4 +67,11 @@ describe('accuracyText', () => {
     expect(accuracyText({ total: 9, in80: 7, in95: 9, meanAbsError: 2.14 })).toEqual({ summary: { hits: 7, total: 9 }, missDays: '2.1' });
     expect(accuracyText({ total: 0, in80: 0, in95: 0, meanAbsError: 0 })).toBeUndefined();
   });
+});
+
+// D-093: a chart that spans New Year names the year, or "Dec … Jan … Dec" is ambiguous (U-22)
+describe('lengthAxisLabels', () => {
+  it('month only within one year', () => expect(lengthAxisLabels(['2026-03-02', '2026-04-01', '2026-05-01'])).toEqual(['Mar', 'Apr', 'May']));
+  it('month and year when the points span years', () => expect(lengthAxisLabels(['2025-12-01', '2026-01-01'])).toEqual(['Dec 2025', 'Jan 2026']));
+  it('day and month when a month repeats', () => expect(lengthAxisLabels(['2026-07-05', '2026-08-02', '2026-08-30'])).toEqual(['5 Jul', '2 Aug', '30 Aug']));
 });

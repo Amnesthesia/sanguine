@@ -11,6 +11,7 @@ import type { RingModel } from './todayModel';
 
 const SIZE = 220;
 const STROKE = 18;
+const EDGE = 3; // solid outer edge of the fertile band
 const R = SIZE / 2 - STROKE / 2 - 4;
 const C = SIZE / 2;
 
@@ -34,6 +35,10 @@ export function PhaseRing({ ring, dayOfCycle, phase }: { ring: RingModel; dayOfC
             <Circle cx={C} cy={C} r={R} stroke={t.c.border} strokeWidth={STROKE} fill="none" />
             {ring.fertile.map((f) => (
               <Path key={`f${f.from.toFixed(2)}`} d={arcPath(C, C, R, f.from, f.to)} stroke={t.c.fertile} strokeOpacity={fertileAlpha(f.opacity)} strokeWidth={STROKE} fill="none" />
+            ))}
+            {/* a solid edge along the outside of the band keeps it at 3:1 against the track while the fill shows p(d) (§8.9, D-093) */}
+            {ring.fertile.map((f) => (
+              <Path key={`e${f.from.toFixed(2)}`} d={arcPath(C, C, R + STROKE / 2 - EDGE / 2, f.from, f.to)} stroke={t.c.fertile} strokeWidth={EDGE} fill="none" />
             ))}
             {ring.predicted ? <Path d={arcPath(C, C, R, ring.predicted.from, ring.predicted.to)} stroke={t.c.periodPredicted} strokeWidth={STROKE} strokeDasharray="3 4" fill="none" /> : null}
             <Path d={arcPath(C, C, R, ring.period.from, ring.period.to)} stroke={t.c.period} strokeWidth={STROKE} fill="none" />

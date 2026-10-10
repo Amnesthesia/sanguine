@@ -25,12 +25,12 @@ export function SymptomGrid({ codes, values, onSet }: { codes: string[]; values:
             onPress={() => onSet(code, ((n + 1) % 4) as 0 | 1 | 2 | 3)}
             onLongPress={() => onSet(code, 0)}
             style={{ width: wide ? '48%' : '23%', flexGrow: 1, minHeight: 72, borderRadius: t.radius.tile, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: on ? t.c.accentSoft : t.chipBg, borderWidth: 1.5, borderColor: on ? t.c.accent : 'transparent' }}>
-            <Text variant="caption" color={on ? 'accent' : 'textPrimary'} style={{ textAlign: 'center' }}>{name}</Text>
+            <Text variant="caption" color={on ? 'onAccentSoft' : 'textPrimary'} style={{ textAlign: 'center' }}>{name}</Text>
             <View style={{ flexDirection: 'row', gap: 3 }}>
               {[1, 2, 3].map((i) => <View key={i} style={{ width: dot, height: dot, borderRadius: dot / 2, backgroundColor: i <= n ? t.c.accent : t.c.border }} />)}
             </View>
             {/* the dots alone read as a count; the word says what they measure (D-088) */}
-            {on ? <Text variant="caption" color="accent" style={{ textAlign: 'center' }}>{tr(`log.strength.${n}`)}</Text> : null}
+            {on ? <Text variant="caption" color="onAccentSoft" style={{ textAlign: 'center' }}>{tr(`log.strength.${n}`)}</Text> : null}
           </Pressable>
         );
       })}

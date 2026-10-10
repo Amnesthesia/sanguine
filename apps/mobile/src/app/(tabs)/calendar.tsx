@@ -101,7 +101,7 @@ export default function CalendarScreen() {
           </Pressable>
           {month !== monthOf(today) ? (
             <Pressable testID="cal-today" accessibilityRole="button" accessibilityLabel={tr('calendar.goToday')} onPress={goToday} style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: 22, justifyContent: 'center', backgroundColor: t.c.accentSoft }}>
-              <Text variant="caption" color="accent">{tr('calendar.today')}</Text>
+              <Text variant="caption" color="onAccentSoft">{tr('calendar.today')}</Text>
             </Pressable>
           ) : null}
         </View>

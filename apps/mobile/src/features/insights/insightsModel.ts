@@ -1,7 +1,7 @@
 // View-models for Insights (PLAN.md §8.3): history rows, the cycle-length chart, symptom-by-phase bars and accuracy text.
 import { addDays, type CycleRecord, type DailyLog, diffDays, type ISODate, studentTQuantile } from '@sanguine/engine';
 import type { LedgerSummary } from '@/data/ledger';
-import { formatDay } from '@/ui/format';
+import { formatDay, formatMonthShort } from '@/ui/format';
 
 export interface HistoryRow {
   id: string;
@@ -74,4 +74,13 @@ export function phaseBars(cycles: CycleRecord[], logs: DailyLog[], today: ISODat
 
 export function accuracyText(s: LedgerSummary): { summary: { hits: number; total: number }; missDays: string } | undefined {
   return s.total === 0 ? undefined : { summary: { hits: s.in80, total: s.total }, missDays: s.meanAbsError.toFixed(1) };
+}
+
+/** X-axis labels for the cycle-length chart: month names; the day too when two cycles start in the same month; the year once
+ *  the points span more than one year (D-093, U-22). */
+export function lengthAxisLabels(starts: ISODate[]): string[] {
+  const years = new Set(starts.map((d) => d.slice(0, 4)));
+  const months = starts.map((d) => d.slice(0, 7));
+  const repeats = new Set(months).size < months.length;
+  return starts.map((d) => `${repeats ? formatDay(d) : formatMonthShort(d)}${years.size > 1 ? ` ${d.slice(0, 4)}` : ''}`);
 }

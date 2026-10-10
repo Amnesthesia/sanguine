@@ -47,7 +47,7 @@ export async function syncType(d: PlatformDriver, links: LinkStore, sink: EventS
     if (same ?? startNear) { await link((same ?? startNear as SinkEvent).id); report.duplicates++; continue; }
 
     const add = async () => {
-      const { kind, payload } = recordToEvent(r, day);
+      const { kind, payload } = recordToEvent(r, day, o.deviceZone);
       const ev = await sink.append({ kind, payload, provenance: 'imported', source_app: r.source, external_id: `${platform}:${r.externalId}` });
       events = [...events, ev];
       await link(ev.id);

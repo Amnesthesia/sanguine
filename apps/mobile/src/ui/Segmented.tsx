@@ -13,7 +13,7 @@ export function Segmented<T extends string>({ options, value, onChange, testIDPr
           <Pressable
             key={o.value} testID={testIDPrefix ? `${testIDPrefix}-${o.value}` : undefined} accessibilityRole="radio" accessibilityLabel={o.label} aria-checked={on} onPress={() => onChange(o.value)}
             style={{ flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: t.isIOS ? 8 : 999, backgroundColor: on ? (t.isIOS ? t.cardBg : t.c.accentSoft) : 'transparent' }}>
-            <Text variant="bodySmall" color={on ? 'accent' : 'textPrimary'} style={{ fontWeight: on ? '600' : '400' }}>{o.label}</Text>
+            <Text variant="bodySmall" color={on ? 'onAccentSoft' : 'textPrimary'} style={{ fontWeight: on ? '600' : '400' }}>{o.label}</Text>
           </Pressable>
         );
       })}

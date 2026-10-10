@@ -17,15 +17,17 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
 - assertVisible: ".*29 days.*"
 - assertVisible: ".*28 days.*"
 - assertVisible: ".*ovulation: calendar.*"
-- assertVisible: "current"
+# the row is one button whose label reads the whole row (D-093), so match inside it
+- assertVisible: ".*current.*"
 - takeScreenshot: history
 - tapOn:
     id: insights-tab-charts
 - assertVisible: "Cycle length"
+# two typical cycles are one line segment, not a trend: the chart waits for a third (D-093)
 - assertVisible:
-    id: chart-length
-- assertVisible: "Shaded: where the next cycle is likely to fall \\(80%\\)."
-- takeScreenshot: charts
+    id: chart-length-few
+- assertVisible: "The chart appears after three typical cycles."
+- takeScreenshot: charts-few
 - tapOn:
     id: insights-tab-accuracy
 - assertVisible: "Your 80% ranges have contained the actual date .* of 2 times."
@@ -45,8 +47,17 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
     visible:
       id: screen-insights
     timeout: 10000
+# five typical cycles: the length chart is drawn (D-093)
+- tapOn:
+    id: insights-tab-charts
+- assertVisible:
+    id: chart-length
+- assertVisible: "Shaded: where the next cycle is likely to fall \\(80%\\)."
+- takeScreenshot: charts
+- tapOn:
+    id: insights-tab-history
 - scrollUntilVisible:
-    element: "unusually long"
+    element: ".*unusually long.*"
 - scrollUntilVisible:
     element:
       id: was-pregnant
@@ -55,9 +66,14 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
 - takeScreenshot: missed-log
 - assertVisible:
     id: was-pregnant
+# centred: at the bottom edge the button counts as visible but sits under the floating tab bar, and the tap opens Calendar
+- scrollUntilVisible:
+    element:
+      id: confirm-long
+    centerElement: true
 - tapOn:
     id: confirm-long
-- assertNotVisible: "unusually long"
+- assertNotVisible: ".*unusually long.*"
 # cycle detail and excluding a cycle
 - scrollUntilVisible:
     element:
@@ -108,8 +124,8 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
 - takeScreenshot: pregnancy-outcome
 - tapOn: "Pregnancy loss"
 - extendedWaitUntil:
-    notVisible: "unusually long"
+    notVisible: ".*unusually long.*"
     timeout: 10000
 - scrollUntilVisible:
-    element: "paused period"
+    element: ".*paused period.*"
 - takeScreenshot: marked-pregnancy

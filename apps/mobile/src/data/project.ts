@@ -46,6 +46,20 @@ export function activeEvents(events: EventRow[]): EventRow[] {
 
 const parse = (e: EventRow): Record<string, unknown> => JSON.parse(e.payload) as Record<string, unknown>;
 const HHMM = /T(\d{2}:\d{2})/;
+const UTC_INSTANT = /T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?Z$/i;
+const pad2 = (n: number) => String(n).padStart(2, '0');
+/** Wall-clock time of day ("HH:MM") a reading was taken at, for the BBT time exclusion and day detail (D-093; the D-075
+ *  rejection of I-17 was wrong). Plain local times (manual, file imports) and times with an offset (health imports since
+ *  D-093, which keep the sample's own wall clock) are read as written. A bare UTC instant ("…Z", health events from before
+ *  D-093) carries no zone, so it is shown in the phone's current zone: right at home, off by the difference after travel. */
+export function localTimeOfDay(measuredAt: string): string | undefined {
+  if (UTC_INSTANT.test(measuredAt)) {
+    // the ECMAScript format Hermes accepts: upper-case Z, at most three fraction digits
+    const d = new Date(measuredAt.replace(/(\.\d{3})\d+/, '$1').replace(/z$/, 'Z'));
+    return Number.isNaN(d.getTime()) ? undefined : `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  }
+  return HHMM.exec(measuredAt)?.[1];
+}
 
 function lifeStateOf(r: LifeStateRow): LifeState & { until?: ISODate } {
   const d = JSON.parse(r.detail) as Record<string, unknown>;
@@ -151,7 +165,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   for (const b of biomarkers) {
     const v = JSON.parse(b.value) as Record<string, string | number>;
     const prov = b.provenance as TemperatureReading['provenance'];
-    const time = b.measured_at ? HHMM.exec(b.measured_at)?.[1] : undefined;
+    const time = b.measured_at ? localTimeOfDay(b.measured_at) : undefined;
     if (b.type === 'bbt' || b.type === 'skin_temp') {
       temperatures.push({
         date: b.day, valueC: v.valueC as number, source: b.source as TemperatureReading['source'], provenance: prov, ...(time ? { timeOfDay: time } : {}),

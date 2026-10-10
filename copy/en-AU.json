@@ -388,6 +388,8 @@
     },
     "empty": "Insights appear after two complete cycles.",
     "row": "{start} · {length} days · {bleed} bleed days",
+    "lengthDays": "{n} days",
+    "bleedDays": "{n} bleed days",
     "ovulationBasis": {
       "calendar": "ovulation: calendar",
       "bbt": "ovulation: temperature",
@@ -441,8 +443,8 @@
       "yAxis": "days",
       "bandCaption": "Shaded: where the next cycle is likely to fall (80%).",
       "noTemps": "No temperatures logged this cycle.",
-      "fewTemps": "Log {n} more morning temperatures to see them as a chart.",
-      "fewLengths": "Log {n} more cycles to see your lengths as a chart.",
+      "fewTemps": "The chart appears after six morning temperatures in this cycle. To go: {n}.",
+      "fewLengths": "The chart appears after three typical cycles.",
       "coverlineNote": "Dashed line: coverline from your temperatures.",
       "phaseCaption": "Share of logged days with the symptom, by phase. This is a pattern in your own logs; it never changes an estimate.",
       "noSymptoms": "Log a few symptoms to see how they line up with your cycle."

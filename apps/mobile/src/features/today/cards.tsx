@@ -25,7 +25,7 @@ export function ConfidenceBadge({ word }: { word: string }) {
   if (!word) return null;
   return (
     <View style={{ alignSelf: 'flex-start', backgroundColor: t.c.accentSoft, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2, marginTop: 4 }}>
-      <Text variant="caption" color="accent">{word}</Text>
+      <Text variant="caption" color="onAccentSoft">{word}</Text>
     </View>
   );
 }

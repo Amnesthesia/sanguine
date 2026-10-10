@@ -37,6 +37,17 @@ export function addDays(day: ISODate, n: number): ISODate {
   return `${pad(d.getUTCFullYear(), 4)}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 }
 
+/** An instant as wall-clock time in a zone with that zone's offset ("2026-10-09T05:30:00+10:00"): the time the person saw where
+ *  they were, which the BBT time check needs, while the offset keeps the instant exact (D-093). */
+export function wallClockIso(instant: string, zone: string): string {
+  const ms = Date.parse(instant);
+  if (Number.isNaN(ms)) return instant;
+  const off = offsetMinutes(ms, zone);
+  const d = new Date(ms + off * 60000);
+  const sign = off < 0 ? '-' : '+';
+  return `${pad(d.getUTCFullYear(), 4)}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}${sign}${pad(Math.trunc(Math.abs(off) / 60))}:${pad(Math.abs(off) % 60)}`;
+}
+
 /** The ISO instant (with the zone's offset) of local `HH:MM` on `day`. */
 export function localIso(day: ISODate, hhmm: string, zone: string): string {
   const [h, mi] = hhmm.split(':').map(Number);
@@ -60,12 +71,12 @@ const stable = (v: unknown): string => {
 /** Identity of an observation regardless of which app wrote it: the second echo guard and the duplicate check (§7.3). */
 export const contentHash = (day: ISODate, type: HealthType, value: RecordValue): string => `${day}|${type}|${stable(value)}`;
 
-export function recordToEvent(r: HealthRecord, day: ISODate): { kind: string; payload: Record<string, unknown> } {
+export function recordToEvent(r: HealthRecord, day: ISODate, deviceZone: string): { kind: string; payload: Record<string, unknown> } {
   const v = r.value;
   switch (v.kind) {
     case 'flow': return { kind: 'flow', payload: { day, level: v.level, flow_kind: 'period' } };
     case 'bleeding': return { kind: 'flow', payload: { day, level: 'spotting', flow_kind: 'intermenstrual' } };
-    case 'temp': return { kind: 'biomarker', payload: { day, type: r.type === 'skin_temp' ? 'skin_temp' : 'bbt', value: { valueC: v.celsius }, source: r.type === 'skin_temp' ? 'wrist' : 'oral', measured_at: r.start } };
+    case 'temp': return { kind: 'biomarker', payload: { day, type: r.type === 'skin_temp' ? 'skin_temp' : 'bbt', value: { valueC: v.celsius }, source: r.type === 'skin_temp' ? 'wrist' : 'oral', measured_at: wallClockIso(r.start, r.zone ?? deviceZone) } };
     case 'lh': return { kind: 'biomarker', payload: { day, type: 'lh', value: { result: v.result }, source: 'strip' } };
     case 'mucus': return { kind: 'biomarker', payload: { day, type: 'mucus', value: { quality: v.quality }, source: 'manual' } };
     case 'sex': return { kind: 'sex', payload: { day, protected: v.protected } };

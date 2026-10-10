@@ -21,7 +21,7 @@ Every finding in `implementation-review.md` (I-n) and `ui-ux-review.md` (U-n) ha
 | --- | --- |
 | I-10 | `predict.ts:124-127` always passes `upper95` from the gated, age-banded fit; the ungated fallback in `flags.ts:125` only runs when a test calls `evaluateFlags` directly. |
 | I-15 | `EventStore.batch` rebuilds after `fn()`; every reader of the projections is the `refresh()` that follows the batch. Documented in a comment instead of a code change. |
-| I-17 | All `measured_at` values are written as local wall-clock strings (`actions.ts:113`, `importDaily.ts:50`); the health mapping carries `start`/`end`, never `measured_at`. Nothing writes an offset. |
+| ~~I-17~~ | **Rejection was wrong; fixed in D-093.** The health mapping writes `measured_at: r.start`, a UTC instant (`packages/health-adapter/src/mapping.ts:68`), and the projection read its hours as local time. |
 | U-6 | 09:41 with a full battery is Apple's marketing status bar, set through `simctl status_bar`; it is wanted in store shots. |
 | U-12 | The amber edge is the `flag` role in `ui-tokens`, covered by the contrast test. |
 | U-17 | Day detail already shows "Not a period" and "Mark as spotting" only on a period day (`day/[date].tsx:61`). |
@@ -70,3 +70,7 @@ Batch 3, screens:
 15. **Settings** U-30 (row subtitles), U-33 (selectable engine hash).
 
 Verification: affected unit tests and type-check after each batch; iOS Maestro flows for the changed screens on the second simulator (`IOS_UDID=ACAC445C-…`, Metro 8091); screenshots to `docs/screenshots/D-075/`; full unit suite, lint and deny-list once before the commit.
+
+## Re-check of 2026-10-10 (D-093)
+
+Every disposition above was re-checked against the code and the newest screenshots, each verdict challenged by a second, independent pass. Still open after D-075/D-076, now fixed under D-093: I-17 (health reading times), U-11 (text contrast on the soft accent fill, which also covered selected chips, segments and tiles), U-10/U-19 (fertile band 3:1 via a solid edge), U-24 follow-up (history rows hid their correction buttons from VoiceOver), U-22 (three-cycle threshold, year on the axis).

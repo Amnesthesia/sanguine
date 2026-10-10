@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
 import type { DayEvent } from './actions';
 import { describeEvent, shortDescribe } from './describe';
@@ -37,5 +37,16 @@ describe('shortDescribe (calendar summary)', () => {
     expect(shortDescribe(ev('symptom', { code: 'bloating', intensity: 2 }), t, 'C')).toBe('Bloating');
     expect(shortDescribe(ev('biomarker', { type: 'bbt', value: { valueC: 36.42 } }), t, 'C')).toBe('BBT 36.42 °C');
     expect(shortDescribe(ev('flow', { level: 'heavy', flow_kind: 'period' }), t, 'C')).toBe('Heavy flow');
+  });
+});
+
+// D-093: a reading from Apple Health carries a UTC instant; day detail shows the phone's local time, not the UTC hour
+describe('describeEvent time of a health reading', () => {
+  let tz: string | undefined;
+  beforeEach(() => { tz = process.env.TZ; process.env.TZ = 'Australia/Sydney'; });
+  afterEach(() => { if (tz === undefined) delete process.env.TZ; else process.env.TZ = tz; });
+  it('shows 06:40 for 19:40Z the evening before', () => {
+    const e = ev('biomarker', { type: 'bbt', value: { valueC: 36.42 }, source: 'oral', measured_at: '2026-10-09T19:40:00.000Z' });
+    expect(describeEvent(e, t, 'C')).toContain('· 06:40 ·');
   });
 });

@@ -2,6 +2,7 @@
 import type { TFunction } from 'i18next';
 import type { DayEvent } from './actions';
 import { fromC } from './actions';
+import { localTimeOfDay } from '@/data/project';
 
 export function describeEvent(e: DayEvent, t: TFunction, unit: 'C' | 'F'): string {
   const d = e.data as Record<string, any>;
@@ -15,7 +16,7 @@ export function describeEvent(e: DayEvent, t: TFunction, unit: 'C' | 'F'): strin
       const v = d.value as Record<string, any>;
       if (d.type === 'bbt' || d.type === 'skin_temp') {
         const shown = fromC(v.valueC as number, unit).toFixed(2);
-        const time = typeof d.measured_at === 'string' ? /T(\d\d:\d\d)/.exec(d.measured_at)?.[1] : undefined;
+        const time = typeof d.measured_at === 'string' ? localTimeOfDay(d.measured_at) : undefined; // health readings are UTC instants (D-093)
         return `${t('day.entry.temp', { value: shown, unit: `°${unit}` })}${time ? ` · ${time}` : ''} · ${t(`log.temperatureSource.${d.source}`, { defaultValue: d.source })}`;
       }
       if (d.type === 'lh') return t('day.entry.lh', { result: t(`log.lh.${v.result}`) });

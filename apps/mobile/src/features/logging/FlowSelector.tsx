@@ -21,7 +21,7 @@ export function FlowSelector({ value, onChange }: { value: FlowLevel | null; onC
             key={level} testID={`flow-${level}`} accessibilityRole="radio" accessibilityLabel={tr(`log.flowLevels.${level}`)} aria-checked={on} onPress={() => onChange(level)}
             style={{ flex: 1, minHeight: 72, borderRadius: t.radius.tile, alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: on ? t.c.accentSoft : t.chipBg, borderWidth: 1.5, borderColor: on ? t.c.accent : 'transparent' }}>
             <DropGlyph fill={fill} />
-            <Text variant="caption" color={on ? 'accent' : 'textPrimary'}>{tr(`log.flowLevels.${level}`)}</Text>
+            <Text variant="caption" color={on ? 'onAccentSoft' : 'textPrimary'}>{tr(`log.flowLevels.${level}`)}</Text>
           </Pressable>
         );
       })}

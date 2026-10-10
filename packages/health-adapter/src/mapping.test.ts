@@ -33,13 +33,18 @@ describe('recordDay (§5.5)', () => {
 });
 
 describe('recordToEvent', () => {
-  it('period flow', () => expect(recordToEvent(rec({ type: 'period_flow', value: { kind: 'flow', level: 'heavy' } }), '2026-10-09')).toEqual({ kind: 'flow', payload: { day: '2026-10-09', level: 'heavy', flow_kind: 'period' } }));
-  it('intermenstrual bleeding is spotting of kind intermenstrual', () => expect(recordToEvent(rec({ type: 'intermenstrual', value: { kind: 'bleeding' } }), '2026-10-09').payload).toMatchObject({ level: 'spotting', flow_kind: 'intermenstrual' }));
-  it('bbt carries measured_at and source oral', () => expect(recordToEvent(rec({}), '2026-10-09')).toEqual({ kind: 'biomarker', payload: { day: '2026-10-09', type: 'bbt', value: { valueC: 36.5 }, source: 'oral', measured_at: '2026-10-09T05:30:00+10:00' } }));
-  it('skin_temp is source wrist', () => expect(recordToEvent(rec({ type: 'skin_temp' }), '2026-10-09').payload).toMatchObject({ type: 'skin_temp', source: 'wrist' }));
-  it('lh', () => expect(recordToEvent(rec({ type: 'lh', value: { kind: 'lh', result: 'positive' } }), '2026-10-09').payload).toMatchObject({ type: 'lh', value: { result: 'positive' } }));
-  it('mucus', () => expect(recordToEvent(rec({ type: 'mucus', value: { kind: 'mucus', quality: 'eggwhite' } }), '2026-10-09').payload).toMatchObject({ type: 'mucus', value: { quality: 'eggwhite' } }));
-  it('sex', () => expect(recordToEvent(rec({ type: 'sex', value: { kind: 'sex', protected: true } }), '2026-10-09')).toEqual({ kind: 'sex', payload: { day: '2026-10-09', protected: true } }));
+  it('period flow', () => expect(recordToEvent(rec({ type: 'period_flow', value: { kind: 'flow', level: 'heavy' } }), '2026-10-09', BNE)).toEqual({ kind: 'flow', payload: { day: '2026-10-09', level: 'heavy', flow_kind: 'period' } }));
+  it('intermenstrual bleeding is spotting of kind intermenstrual', () => expect(recordToEvent(rec({ type: 'intermenstrual', value: { kind: 'bleeding' } }), '2026-10-09', BNE).payload).toMatchObject({ level: 'spotting', flow_kind: 'intermenstrual' }));
+  it('bbt carries measured_at and source oral', () => expect(recordToEvent(rec({}), '2026-10-09', BNE)).toEqual({ kind: 'biomarker', payload: { day: '2026-10-09', type: 'bbt', value: { valueC: 36.5 }, source: 'oral', measured_at: '2026-10-09T05:30:00+10:00' } }));
+  // D-093: the reading keeps the wall-clock time where it was taken, so the BBT time check does not move when the phone travels
+  it('a UTC sample time is stored as wall-clock time in the sample zone', () =>
+    expect(recordToEvent(rec({ start: '2026-10-08T19:30:00.000Z', end: '2026-10-08T19:30:00.000Z' }), '2026-10-09', BNE).payload.measured_at).toBe('2026-10-09T05:30:00+10:00'));
+  it('an offset zone (Health Connect) works the same', () =>
+    expect(recordToEvent(rec({ start: '2026-10-08T19:30:00Z', end: '2026-10-08T19:30:00Z' }), '2026-10-09', '+10:00').payload.measured_at).toBe('2026-10-09T05:30:00+10:00'));
+  it('skin_temp is source wrist', () => expect(recordToEvent(rec({ type: 'skin_temp' }), '2026-10-09', BNE).payload).toMatchObject({ type: 'skin_temp', source: 'wrist' }));
+  it('lh', () => expect(recordToEvent(rec({ type: 'lh', value: { kind: 'lh', result: 'positive' } }), '2026-10-09', BNE).payload).toMatchObject({ type: 'lh', value: { result: 'positive' } }));
+  it('mucus', () => expect(recordToEvent(rec({ type: 'mucus', value: { kind: 'mucus', quality: 'eggwhite' } }), '2026-10-09', BNE).payload).toMatchObject({ type: 'mucus', value: { quality: 'eggwhite' } }));
+  it('sex', () => expect(recordToEvent(rec({ type: 'sex', value: { kind: 'sex', protected: true } }), '2026-10-09', BNE)).toEqual({ kind: 'sex', payload: { day: '2026-10-09', protected: true } }));
 });
 
 describe('syncedType and eventToRecord', () => {
@@ -65,7 +70,7 @@ describe('syncedType and eventToRecord', () => {
     expect(eventToRecord(ev('biomarker', { day: '2026-10-09', type: 'bbt', value: { valueC: 36.4 }, source: 'oral' }), BNE)?.start).toBe('2026-10-09T06:00:00+10:00'));
   it('round-trips a bbt', () => {
     const r = eventToRecord(ev('biomarker', { day: '2026-10-09', type: 'bbt', value: { valueC: 36.4 }, source: 'oral', measured_at: '2026-10-09T05:30:00+10:00' }), BNE);
-    expect(recordToEvent({ ...(r as NonNullable<typeof r>), externalId: 'x', source: 's', modifiedAt: 'm' }, '2026-10-09').payload).toMatchObject({ type: 'bbt', value: { valueC: 36.4 } });
+    expect(recordToEvent({ ...(r as NonNullable<typeof r>), externalId: 'x', source: 's', modifiedAt: 'm' }, '2026-10-09', BNE).payload).toMatchObject({ type: 'bbt', value: { valueC: 36.4 } });
   });
   it('sex is written at local noon with protection', () => {
     const r = eventToRecord(ev('sex', { day: '2026-10-09', protected: false }), BNE);

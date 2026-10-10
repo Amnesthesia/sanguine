@@ -2,8 +2,7 @@
 import { useWindowDimensions, View } from 'react-native';
 import Svg, { Circle, G, Line, Polyline, Rect, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '@/theme';
-import { formatMonthShort } from '@/ui/format';
-import type { LengthSeries } from './insightsModel';
+import { type LengthSeries, lengthAxisLabels } from './insightsModel';
 
 const H = 180;
 const PAD = { l: 34, r: 12, t: 12, b: 28 };
@@ -16,6 +15,7 @@ export function LengthChart({ series }: { series: LengthSeries }) {
   const x = (i: number) => PAD.l + (series.points.length <= 1 ? (w - PAD.l - PAD.r) / 2 : (i / (series.points.length - 1)) * (w - PAD.l - PAD.r));
   const y = (v: number) => PAD.t + (1 - (Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * (H - PAD.t - PAD.b);
   const pts = series.points.map((p, i) => `${x(i)},${y(p.length)}`).join(' ');
+  const labels = lengthAxisLabels(series.points.map((p) => p.start));
   return (
     <View testID="chart-length" accessible accessibilityRole="image" accessibilityLabel={`Cycle length chart: ${series.points.map((p) => p.length).join(', ')} days`}>
       <Svg width={w} height={H}>
@@ -28,7 +28,7 @@ export function LengthChart({ series }: { series: LengthSeries }) {
         ))}
         <Polyline points={pts} fill="none" stroke={t.c.period} strokeWidth={2} />
         {series.points.map((p, i) => <Circle key={p.start} cx={x(i)} cy={y(p.length)} r={4} fill={t.c.period} />)}
-        {series.points.map((p, i) => (i % Math.ceil(series.points.length / 5) === 0 ? <SvgText key={`l${p.start}`} x={x(i)} y={H - 8} fontSize={11} fill={t.c.textSecondary} textAnchor="middle">{formatMonthShort(p.start)}</SvgText> : null))}
+        {series.points.map((p, i) => (i % Math.ceil(series.points.length / 5) === 0 ? <SvgText key={`l${p.start}`} x={x(i)} y={H - 8} fontSize={11} fill={t.c.textSecondary} textAnchor={i === 0 && series.points.length > 1 ? 'start' : i === series.points.length - 1 && series.points.length > 1 ? 'end' : 'middle'}>{labels[i]}</SvgText> : null))}
       </Svg>
     </View>
   );

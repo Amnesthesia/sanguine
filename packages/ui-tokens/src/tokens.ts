@@ -2,12 +2,12 @@
 export const colors = {
   light: {
     bg: '#FFFFFF', surface: '#FFFFFF', surface2: '#F3F3F4', textPrimary: '#1F1A1C', textSecondary: '#6B6165',
-    border: '#E4E4E6', accent: '#BC4560', accentSoft: '#F4DCE0', period: '#B8324A', periodPredicted: '#D9A0AB',
+    border: '#E4E4E6', accent: '#BC4560', accentSoft: '#F4DCE0', onAccentSoft: '#A3354F', period: '#B8324A', periodPredicted: '#D9A0AB',
     fertile: '#5C8A6E', ovulation: '#3F6F88', flag: '#B9741E', success: '#3E7D5A', focus: '#2E5C8A',
   },
   dark: {
     bg: '#000000', surface: '#1C1C1E', surface2: '#2C2C2E', textPrimary: '#F4EEEF', textSecondary: '#B3A8AC',
-    border: '#3A3A3C', accent: '#D4607A', accentSoft: '#3A1F27', period: '#D9607A', periodPredicted: '#7A4654',
+    border: '#3A3A3C', accent: '#D4607A', accentSoft: '#3A1F27', onAccentSoft: '#E8869A', period: '#D9607A', periodPredicted: '#7A4654',
     fertile: '#7FAF93', ovulation: '#7FA7C2', flag: '#D9A054', success: '#6FB68C', focus: '#8FBDE6',
   },
 } as const;

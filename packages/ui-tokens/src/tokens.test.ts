@@ -14,6 +14,12 @@ for (const mode of ['light', 'dark'] as const) {
       for (const fg of ['accent'] as const)
         it(`${fg} on ${bg} >= 4.5`, () => expect(contrast(c[fg], c[bg])).toBeGreaterThanOrEqual(4.5));
     it('ovulation text on bg >= 4.5', () => expect(contrast(c.ovulation, c.bg)).toBeGreaterThanOrEqual(4.5));
+    // selected chips, tiles and tonal chips put their label on accentSoft (D-093)
+    for (const bg of ['accentSoft', 'bg', 'surface'] as const)
+      it(`onAccentSoft on ${bg} >= 4.5`, () => expect(contrast(c.onAccentSoft, c[bg])).toBeGreaterThanOrEqual(4.5));
+    // the fertile band's solid edge sits on the ring track and the calendar cell (§8.9: 3:1 against the day cell; D-093)
+    it('fertile on border (ring track) >= 3 (non-text)', () => expect(contrast(c.fertile, c.border)).toBeGreaterThanOrEqual(3));
+    it('fertile on accentSoft (selected calendar cell) >= 3 (non-text)', () => expect(contrast(c.fertile, c.accentSoft)).toBeGreaterThanOrEqual(3));
     for (const fg of ['period', 'fertile', 'flag', 'focus'] as const)
       it(`${fg} on bg >= 3 (non-text)`, () => expect(contrast(c[fg], c.bg)).toBeGreaterThanOrEqual(3));
     it('white-ish label on glassAccent composite >= 4.5', () => {

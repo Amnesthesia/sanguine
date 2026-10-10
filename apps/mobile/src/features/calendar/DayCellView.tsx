@@ -37,7 +37,11 @@ export function DayCellView({ cell, selected, onPress, southern = false }: { cel
           </View>
         ) : null}
         {cell.moon ? <View style={{ position: 'absolute', top: 3, right: 3 }}><MoonGlyph phase={cell.moon} southern={southern} size={9} color={on ? '#FFFFFF' : t.c.textSecondary} /></View> : null}
-        {cell.fertile !== undefined ? <View style={{ position: 'absolute', bottom: 0, left: 2, right: 2, height: 6, borderRadius: 3, backgroundColor: t.c.fertile, opacity: fertileAlpha(cell.fertile) }} /> : null}
+        {/* the faded fill carries p(d); the solid 1.5 pt edge keeps every fertile day at 3:1 against the cell (§8.9, D-093) */}
+        {cell.fertile !== undefined ? <View style={{ position: 'absolute', bottom: 0, left: 2, right: 2, height: 6, borderRadius: 3, overflow: 'hidden' }}>
+          <View style={{ flex: 1, backgroundColor: t.c.fertile, opacity: fertileAlpha(cell.fertile) }} />
+          <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1.5, backgroundColor: t.c.fertile }} />
+        </View> : null}
       </View>
     </Pressable>
   );

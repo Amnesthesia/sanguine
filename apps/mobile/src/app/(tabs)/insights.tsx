@@ -2,11 +2,12 @@ import { analyzeCycles, detectBbtShift, diffDays } from '@sanguine/engine';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { type LedgerRow, ledgerRows, ledgerSummary, type LedgerSummary } from '@/data/ledger';
 import { fromC } from '@/features/logging/actions';
 import { effectivePrefs } from '@/data/prefs';
 import { LengthChart, TempChart } from '@/features/insights/charts';
+import { HistoryRow } from '@/features/insights/HistoryRow';
 import { accuracyText, cycleLengthSeries, historyRows, phaseBars } from '@/features/insights/insightsModel';
 import { addPastPregnancy } from '@/features/settings/lifeState';
 import { cyclePattern, inPatternState } from '@/features/insights/patternModel';
@@ -21,7 +22,7 @@ import { Text } from '@/ui/Text';
 
 type Tab = 'history' | 'charts' | 'accuracy';
 // below these a chart is two dots on an empty axis and reads as broken (U-22, D-076)
-const MIN_LENGTH_POINTS = 2; // two closed cycles already show the band (insights.needTwo)
+const MIN_LENGTH_POINTS = 3; // two points are one line segment, not a trend (U-22, D-093); only cycles marked typical count (cycleLengthSeries); copy insights.chart.fewLengths names the 3
 const MIN_TEMP_POINTS = 6;
 
 export default function InsightsScreen() {
@@ -51,12 +52,6 @@ export default function InsightsScreen() {
   const acc = accuracyText(ledger);
   const empty = closed < 2;
 
-  // "typical" and "current" stay muted; anything unusual is outlined in the accent so it is seen (U-23)
-  const chip = (q: string) => (
-    <View style={{ backgroundColor: q === 'valid' ? t.chipBg : t.c.accentSoft, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2, alignSelf: 'flex-start' }}>
-      <Text variant="caption" color={q === 'valid' ? 'textSecondary' : 'accent'}>{tr(`insights.quality.${q}`)}</Text>
-    </View>
-  );
   return (
     <Screen testID="screen-insights" title={tr('insights.title')}>
       <Segmented testIDPrefix="insights-tab" value={tab} onChange={setTab} options={[{ value: 'history', label: tr('insights.segments.history') }, { value: 'charts', label: tr('insights.segments.charts') }, { value: 'accuracy', label: tr('insights.segments.accuracy') }]} />
@@ -66,18 +61,8 @@ export default function InsightsScreen() {
           <Card testID="insights-empty"><Text color="textSecondary">{tr('insights.needTwo')}</Text></Card>
         ) : (
           rows.map((r) => (
-            // the row itself opens the cycle (U-24, D-076); the correction actions stay inside it
-            <Pressable key={r.id} testID="cycle-detail-link" style={{ minHeight: 56 }} accessibilityRole="button" accessibilityLabel={`${r.start}. ${tr('insights.viewCycle')}`} onPress={() => router.push({ pathname: '/cycle/[id]', params: { id: r.id } })}>
-            <Card testID={`history-${r.id}`}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <View style={{ flex: 1, gap: 4 }}>
-                  <Text variant="heading" accessibilityRole="header">{[r.start, r.lengthDays ? `${r.lengthDays} days` : tr('insights.dayN', { day: r.dayOfCycle })].join(' · ')}</Text>
-                  <Text variant="bodySmall" color="textSecondary">{[r.bleedDays ? `${r.bleedDays} bleed days` : null, fertilityTools ? tr(`insights.ovulationBasis.${r.basis}`) : null].filter(Boolean).join(' · ')}</Text>
-                  <View style={{ flexDirection: 'row', gap: 8 }}>{r.current ? <View style={{ backgroundColor: t.chipBg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}><Text variant="caption" color="textSecondary">{tr('insights.current')}</Text></View> : chip(r.quality)}</View>
-                </View>
-                <Text color="textSecondary" accessibilityElementsHidden>›</Text>
-              </View>
-              {r.offerMissedLog && r.midDay ? (
+            <HistoryRow key={r.id} r={r} fertilityTools={fertilityTools} onOpen={() => router.push({ pathname: '/cycle/[id]', params: { id: r.id } })} actions={
+              r.offerMissedLog && r.midDay ? (
                 <View style={{ gap: 2 }}>
                   <Button kind="text" testID="missed-log" label={tr('insights.missedLogPrompt')} onPress={() => router.push({ pathname: '/log', params: { day: r.midDay as string } })} />
                   {r.nextStartISO ? <Button kind="text" testID="was-pregnant" label={tr('insights.wasPregnant')} onPress={() => {
@@ -90,9 +75,7 @@ export default function InsightsScreen() {
                   }} /> : null}
                   <Button kind="text" testID="confirm-long" label={tr('insights.confirmLong')} onPress={() => void store?.append({ kind: 'cycle.confirm_long', payload: { cycle_start: r.startISO, reason: 'user_confirmed' } }).then(refresh)} />
                 </View>
-              ) : null}
-            </Card>
-            </Pressable>
+              ) : null} />
           ))
         )
       ) : null}
@@ -122,7 +105,7 @@ export default function InsightsScreen() {
             {series.points.length >= MIN_LENGTH_POINTS ? (<>
               <LengthChart series={series} />
               <Text variant="caption" color="textSecondary">{tr('insights.chart.bandCaption')}</Text>
-            </>) : <Text testID="chart-length-few" variant="bodySmall" color="textSecondary">{tr('insights.chart.fewLengths', { n: MIN_LENGTH_POINTS - series.points.length })}</Text>}
+            </>) : <Text testID="chart-length-few" variant="bodySmall" color="textSecondary">{tr('insights.chart.fewLengths')}</Text>}
           </Card>
           <Card testID="card-temp">
             <Text variant="heading">{tr('insights.charts.temperature')}</Text>
