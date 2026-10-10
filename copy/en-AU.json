@@ -284,6 +284,8 @@
     "title": "Calendar",
     "prevMonth": "Previous month",
     "nextMonth": "Next month",
+    "today": "Today",
+    "goToday": "Go to today",
     "moonNote": "Moon phases are shown because your recent cycles have been close to a lunar month (29.5 days). The moon does not change any estimate.",
     "legend": {
       "period": "Period",
@@ -302,7 +304,8 @@
       "predicted95": "predicted period, 95% range",
       "fertile": "{word} likelihood of being in the fertile window",
       "ovulation": "ovulation estimate",
-      "logged": "something logged"
+      "logged": "something logged",
+      "titleHint": "Swipe up or down to change the month. Double-tap to go to today."
     },
     "fertileWords": {
       "low": "low",

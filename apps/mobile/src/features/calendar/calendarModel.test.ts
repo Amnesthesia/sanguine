@@ -1,6 +1,6 @@
 import { addDays, type EngineSettings, type History, type ISODate, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { buildMonth, monthOf, shiftMonth } from './calendarModel';
+import { buildMonth, monthOf, shiftMonth, swipeMonthDelta } from './calendarModel';
 
 const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
 const today = '2026-10-10';
@@ -14,6 +14,19 @@ const periodDays = (h: History) => new Set(h.cycles.flatMap((c) => Array.from({ 
 const month = (m: string, over: Partial<Parameters<typeof buildMonth>[0]> = {}) =>
   buildMonth({ month: m, today, periodDays: periodDays(typical), loggedDays: new Set(['2026-10-01', '2026-10-10']), prediction: predict(typical, S, today), showEstimate: true, ...over });
 const cell = (m: ReturnType<typeof buildMonth>, d: ISODate) => m.cells.find((c) => c.date === d) as NonNullable<(typeof m.cells)[number]>;
+
+describe('swipeMonthDelta', () => {
+  it('a drag past 30% of the width or a flick changes the month; a short slow drag springs back', () => {
+    expect(swipeMonthDelta(-120, 0, 360)).toBe(1); // left: next month
+    expect(swipeMonthDelta(120, 0, 360)).toBe(-1); // right: previous month
+    expect(swipeMonthDelta(-60, -100, 360)).toBe(0);
+    expect(swipeMonthDelta(-30, -900, 360)).toBe(1);
+    expect(swipeMonthDelta(30, 900, 360)).toBe(-1);
+    // a flick against the drag direction cancels instead of flipping the other way
+    expect(swipeMonthDelta(-150, 900, 360)).toBe(0);
+    expect(swipeMonthDelta(-200, 0, 0)).toBe(0); // not laid out yet
+  });
+});
 
 describe('month helpers', () => {
   it('monthOf and shiftMonth', () => {

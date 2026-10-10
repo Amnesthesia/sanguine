@@ -35,6 +35,29 @@ name: Calendar - month grid, marks, day summary, back-dating
 - assertVisible: "Fertile window likelihood"
 - assertVisible: "darker = more likely to be in the fertile window"
 - takeScreenshot: month
+# swipe the grid sideways between months (D-092); Today and the title return to this month
+- swipe:
+    from:
+      id: cal-grid
+    direction: LEFT
+- assertVisible:
+    id: cal-today
+- takeScreenshot: swiped-next
+- tapOn:
+    id: cal-today
+- assertNotVisible:
+    id: cal-today
+- assertVisible: ".*Day 11 · BBT 36.42 °C.*"
+- swipe:
+    from:
+      id: cal-grid
+    direction: RIGHT
+- assertVisible:
+    id: cal-today
+- tapOn:
+    id: cal-title-button
+- assertNotVisible:
+    id: cal-today
 # tap yesterday
 - tapOn:
     id: day-${output.yesterday}

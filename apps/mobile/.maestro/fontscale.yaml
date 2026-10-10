@@ -37,6 +37,14 @@ name: Screens at about 150% font scale (PLAN.md §8.9)
       id: cal-grid
     timeout: 10000
 - takeScreenshot: fs150-calendar
+# the Today chip beside the month title at 150% (D-092)
+- swipe:
+    from:
+      id: cal-grid
+    direction: LEFT
+- assertVisible:
+    id: cal-today
+- takeScreenshot: fs150-calendar-next
 - tapOn: Insights
 - extendedWaitUntil:
     visible:

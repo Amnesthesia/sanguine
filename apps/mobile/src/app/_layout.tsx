@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, AppState, Text as RNText, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '@/i18n';
 import { useApp } from '@/state/app';
@@ -109,6 +110,7 @@ export default function RootLayout() {
   if (!ready) return <ScreenProtection />;
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaProvider>
       <ThemeProvider pref={theme}>
         <LockGate>
@@ -118,5 +120,6 @@ export default function RootLayout() {
         {!splashShown && <BrandSplash tagline={taglineFor(launchCount, trSplash('app.taglines', { returnObjects: true }) as string[], isTeen(profile, today))} onDone={splashDone} />}
       </ThemeProvider>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

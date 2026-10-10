@@ -10,6 +10,7 @@ import { deviceRegion, deviceWeekStart } from '@/services/locale';
 import { lunarAligned, moonPhaseDays, southernRegion } from '@/features/calendar/moon';
 import { MoonGlyph } from '@/features/calendar/MoonGlyph';
 import { DayCellView } from '@/features/calendar/DayCellView';
+import { SwipeMonth } from '@/features/calendar/SwipeMonth';
 import { useCalendarData } from '@/features/calendar/useCalendarData';
 import { dayEvents } from '@/features/logging/actions';
 import { shortDescribe } from '@/features/logging/describe';
@@ -40,6 +41,7 @@ export default function CalendarScreen() {
   const router = useRouter();
   const { prediction, history, settings, today, prefs, profile, store, version } = useApp();
   const muteFlag = useApp((s) => s.muteFlag);
+  const t = useTheme();
   const { periodDays, loggedDays } = useCalendarData();
   const [month, setMonth] = useState(monthOf(today));
   const [selected, setSelected] = useState<ISODate>(today);
@@ -72,6 +74,7 @@ export default function CalendarScreen() {
   }, [history, selected]);
   const flag = useMemo(() => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate: false, todayFlow: undefined }).flags.find((f) => !f.insightOnly), [prediction, history, today]);
   const isFuture = selected > today;
+  const goToday = () => { setMonth(monthOf(today)); setSelected(today); };
 
   const nav = (delta: number, id: string, label: string) => (
     <Pressable testID={id} accessibilityRole="button" accessibilityLabel={label} onPress={() => setMonth(shiftMonth(month, delta))} style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
@@ -83,15 +86,35 @@ export default function CalendarScreen() {
     <Screen testID="screen-calendar" title={tr('calendar.title')}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         {nav(-1, 'cal-prev', tr('calendar.prevMonth'))}
-        <Text variant="heading" accessibilityRole="header" testID="cal-title">{model.title}</Text>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 8 }}>
+          {/* tap returns to today; VoiceOver/TalkBack swipe up or down on the title changes the month */}
+          <Pressable
+            testID="cal-title-button"
+            accessibilityRole="adjustable"
+            accessibilityLabel={model.title}
+            accessibilityHint={tr('calendar.a11y.titleHint')}
+            accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }, { name: 'activate' }]}
+            onAccessibilityAction={(e) => (e.nativeEvent.actionName === 'activate' ? goToday() : setMonth(shiftMonth(month, e.nativeEvent.actionName === 'increment' ? 1 : -1)))}
+            onPress={goToday}
+            style={{ minHeight: 48, justifyContent: 'center' }}>
+            <Text variant="heading" testID="cal-title">{model.title}</Text>
+          </Pressable>
+          {month !== monthOf(today) ? (
+            <Pressable testID="cal-today" accessibilityRole="button" accessibilityLabel={tr('calendar.goToday')} onPress={goToday} style={{ minHeight: 44, paddingHorizontal: 12, borderRadius: 22, justifyContent: 'center', backgroundColor: t.c.accentSoft }}>
+              <Text variant="caption" color="accent">{tr('calendar.today')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
         {nav(1, 'cal-next', tr('calendar.nextMonth'))}
       </View>
       <View style={{ flexDirection: 'row' }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
         {weekdayLabels(tr('calendar.weekdays', { returnObjects: true }) as unknown as string[], weekStart).map((w) => <Text key={w} variant="caption" color="textSecondary" style={{ width: `${100 / 7}%`, textAlign: 'center' }}>{w}</Text>)}
       </View>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap' }} testID="cal-grid">
-        {model.cells.map((c) => <DayCellView key={c.date} cell={c} southern={southern} selected={c.date === selected} onPress={() => { setSelected(c.date); if (!c.inMonth) setMonth(monthOf(c.date)); }} />)}
-      </View>
+      <SwipeMonth month={month} onSwipe={(d) => setMonth((m) => shiftMonth(m, d))}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }} testID="cal-grid">
+          {model.cells.map((c) => <DayCellView key={c.date} cell={c} southern={southern} selected={c.date === selected} onPress={() => { setSelected(c.date); if (!c.inMonth) setMonth(monthOf(c.date)); }} />)}
+        </View>
+      </SwipeMonth>
       {flag ? <FlagCard f={flag} onMute={(c) => void muteFlag(c)} /> : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         {legend.map(([k, key]) => (

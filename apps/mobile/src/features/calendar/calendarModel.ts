@@ -28,6 +28,16 @@ export interface DayCell {
 export interface MonthModel { month: string; title: string; cells: DayCell[]; ovulationUncertain: boolean }
 
 export const monthOf = (d: ISODate): string => d.slice(0, 7);
+/** Month change for a horizontal swipe on the grid: -1, 0 (spring back) or 1. Runs on the UI thread. */
+export function swipeMonthDelta(dx: number, vx: number, width: number): -1 | 0 | 1 {
+  'worklet';
+  if (width <= 0) return 0;
+  const far = Math.abs(dx) > width * 0.3;
+  const flick = Math.abs(vx) > 500 && Math.sign(vx) === Math.sign(dx);
+  if (Math.sign(vx) === -Math.sign(dx) && Math.abs(vx) > 500) return 0;
+  return far || flick ? (dx < 0 ? 1 : -1) : 0;
+}
+
 export function shiftMonth(m: string, delta: number): string {
   const [y, mo] = m.split('-').map(Number) as [number, number];
   const idx = y * 12 + (mo - 1) + delta;
