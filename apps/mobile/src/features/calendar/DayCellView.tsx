@@ -3,9 +3,10 @@ import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg';
 import { useTheme } from '@/theme';
 import { fertileAlpha } from '@/ui/fertileAlpha';
 import { Text } from '@/ui/Text';
+import { DropGlyph } from '@/features/logging/DropGlyph';
 import type { DayCell } from './calendarModel';
 
-/** One day. Meaning is never colour alone: period is solid with dots, predicted is hatched, the fertile band is an underline (§8.9). */
+/** One day. Meaning is never colour alone: period is solid with a drop (D-088; two dots read as a count), predicted is hatched, the fertile band is an underline (§8.9). */
 export function DayCellView({ cell, selected, onPress }: { cell: DayCell; selected: boolean; onPress: () => void }) {
   const t = useTheme();
   const r = t.isIOS ? 10 : 12;
@@ -27,9 +28,7 @@ export function DayCellView({ cell, selected, onPress }: { cell: DayCell; select
         ) : null}
         <Text variant="bodySmall" tabular style={{ color: on ? '#FFFFFF' : t.c.textPrimary, fontWeight: cell.isToday ? '700' : '400' }}>{cell.day}</Text>
         {on ? (
-          <View style={{ flexDirection: 'row', gap: 3, marginTop: 1 }}>
-            <View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: '#FFFFFF' }} /><View style={{ width: 3, height: 3, borderRadius: 2, backgroundColor: '#FFFFFF' }} />
-          </View>
+          <DropGlyph fill={1} size={9} color="#FFFFFF" />
         ) : cell.logged ? <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: t.c.textSecondary, marginTop: 1 }} /> : null}
         {cell.ovulation ? (
           <View style={{ position: 'absolute', bottom: 7, left: 0, right: 0, height: 2, backgroundColor: t.c.ovulation, opacity: cell.ovulation === 'point' ? 1 : 0.6 }}>

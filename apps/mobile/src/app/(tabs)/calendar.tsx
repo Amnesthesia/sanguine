@@ -20,11 +20,12 @@ import { Card } from '@/ui/Card';
 import { formatLong } from '@/ui/format';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
+import { DropGlyph } from '@/features/logging/DropGlyph';
 
 function Swatch({ kind }: { kind: 'period' | 'predicted' | 'fertile' | 'ovulation' | 'logged' }) {
   const t = useTheme();
   const base = { width: 14, height: 14, borderRadius: 4 } as const;
-  if (kind === 'period') return <View style={{ ...base, backgroundColor: t.c.period }} />;
+  if (kind === 'period') return <View style={{ ...base, backgroundColor: t.c.period, alignItems: 'center', justifyContent: 'center' }}><DropGlyph fill={1} size={9} color="#FFFFFF" /></View>;
   if (kind === 'predicted') return <View style={{ ...base, borderWidth: 1.5, borderColor: t.c.periodPredicted, borderStyle: 'dashed' }} />;
   if (kind === 'fertile') return <View style={{ width: 14, height: 4, backgroundColor: t.c.fertile, borderRadius: 2 }} />;
   if (kind === 'ovulation') return <View style={{ width: 14, height: 2, backgroundColor: t.c.ovulation }} />;
@@ -80,7 +81,7 @@ export default function CalendarScreen() {
         {model.cells.map((c) => <DayCellView key={c.date} cell={c} selected={c.date === selected} onPress={() => { setSelected(c.date); if (!c.inMonth) setMonth(monthOf(c.date)); }} />)}
       </View>
       {flag ? <FlagCard f={flag} onMute={(c) => void muteFlag(c)} /> : null}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }} accessibilityLabel={tr('calendar.legend.period')}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         {legend.map(([k, key]) => (
           <View key={key} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <Swatch kind={k} />

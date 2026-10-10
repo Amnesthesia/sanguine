@@ -170,7 +170,11 @@
     "otherBleed": "Other",
     "afterPregnancyBleed": "Bleeding after pregnancy",
     "periodBleed": "My period",
-    "intensity": "Intensity {n} of 3",
+    "strength": {
+      "1": "Mild",
+      "2": "Moderate",
+      "3": "Strong"
+    },
     "temperature": "Temperature",
     "ovulationTest": "Ovulation test",
     "mucus": "Cervical mucus",
@@ -227,7 +231,7 @@
     "tempInvalid": "Enter a temperature between 30 and 45 °C.",
     "timeInvalid": "Enter a time like 06:40.",
     "save": "Save",
-    "longPressHint": "Press and hold a symptom to change its intensity.",
+    "longPressHint": "Dots show how strong it was: mild, moderate or strong. Press and hold a symptom to change it.",
     "condomYes": "Condom used",
     "condomNo": "No condom",
     "conditionNone": "Nothing logged",
@@ -775,7 +779,7 @@
     "closeSheet": "Close log sheet",
     "openLog": "Open log",
     "flowSelected": "{level} flow selected",
-    "symptomSelected": "{symptom}, intensity {n} of 3",
+    "symptomSelected": "{symptom}, {strength}, {n} of 3",
     "symptomUnselected": "{symptom}, not selected",
     "phaseRing": "Cycle day {day}. {phase}.",
     "tab": "{name} tab"

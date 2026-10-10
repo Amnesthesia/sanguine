@@ -39,7 +39,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
     timeout: 10000
 - tapOn:
     id: symptom-cramps
-- assertVisible: "Cramps, intensity 2 of 3"
+- assertVisible: "Cramps, moderate, 2 of 3"
 - takeScreenshot: sheet-symptoms
 - runFlow: _close-sheet.yaml
 
@@ -50,7 +50,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
     visible:
       id: symptom-cramps
     timeout: 10000
-- assertVisible: "Cramps, intensity 2 of 3"
+- assertVisible: "Cramps, moderate, 2 of 3"
 
 # temperature
 - tapOn:
