@@ -44,8 +44,7 @@ name: Cloud backup - switch on (recovery code first), encrypted upload, wipe the
     id: settings-privacy
 - tapOn:
     id: privacy-backup
-- tapOn:
-    id: backup-mode-restore
+- tapOn: "Restore"
 - tapOn:
     id: backup-pass
 - inputText: "correct horse battery"

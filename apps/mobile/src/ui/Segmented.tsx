@@ -1,22 +1,17 @@
-import { Pressable, View } from 'react-native';
+// The system segmented control on iOS: a SwiftUI Picker in the segmented style through @expo/ui, so it is the native control
+// (Liquid Glass on iOS 26) rather than a drawn copy. Android: Segmented.android.tsx. The segments announce their own label and
+// selected state; Maestro taps them by text, because the native control has one accessibility id for the whole row.
+import { Host, Picker, Text } from '@expo/ui/swift-ui';
+import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
 import { useTheme } from '@/theme';
-import { Text } from './Text';
 
-/** Segmented control (iOS) / segmented buttons (Android). Radio semantics with an explicit selected state. */
 export function Segmented<T extends string>({ options, value, onChange, testIDPrefix }: { options: Array<{ value: T; label: string }>; value: T; onChange: (v: T) => void; testIDPrefix?: string }) {
   const t = useTheme();
   return (
-    <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', backgroundColor: t.chipBg, borderRadius: t.isIOS ? 10 : 999, padding: 3, gap: 2 }}>
-      {options.map((o) => {
-        const on = o.value === value;
-        return (
-          <Pressable
-            key={o.value} testID={testIDPrefix ? `${testIDPrefix}-${o.value}` : undefined} accessibilityRole="radio" accessibilityLabel={o.label} aria-checked={on} onPress={() => onChange(o.value)}
-            style={{ flex: 1, minHeight: 44, alignItems: 'center', justifyContent: 'center', borderRadius: t.isIOS ? 8 : 999, backgroundColor: on ? (t.isIOS ? t.cardBg : t.c.accentSoft) : 'transparent' }}>
-            <Text variant="bodySmall" color={on ? 'onAccentSoft' : 'textPrimary'} style={{ fontWeight: on ? '600' : '400' }}>{o.label}</Text>
-          </Pressable>
-        );
-      })}
-    </View>
+    <Host matchContents={{ vertical: true }} colorScheme={t.scheme} style={{ alignSelf: 'stretch' }}>
+      <Picker testID={testIDPrefix} selection={value} onSelectionChange={(v) => onChange(v as T)} modifiers={[pickerStyle('segmented')]}>
+        {options.map((o) => <Text key={o.value} modifiers={[tag(o.value)]}>{o.label}</Text>)}
+      </Picker>
+    </Host>
   );
 }

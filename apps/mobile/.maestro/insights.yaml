@@ -20,16 +20,14 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
 # the row is one button whose label reads the whole row (D-093), so match inside it
 - assertVisible: ".*current.*"
 - takeScreenshot: history
-- tapOn:
-    id: insights-tab-charts
+- tapOn: "Charts"
 - assertVisible: "Cycle length"
 # two typical cycles are one line segment, not a trend: the chart waits for a third (D-093)
 - assertVisible:
     id: chart-length-few
 - assertVisible: "The chart appears after three typical cycles."
 - takeScreenshot: charts-few
-- tapOn:
-    id: insights-tab-accuracy
+- tapOn: "Accuracy"
 - assertVisible: "Your 80% ranges have contained the actual date .* of 2 times."
 - assertVisible: "Average miss: .* days"
 - takeScreenshot: accuracy
@@ -48,14 +46,12 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
       id: screen-insights
     timeout: 10000
 # five typical cycles: the length chart is drawn (D-093)
-- tapOn:
-    id: insights-tab-charts
+- tapOn: "Charts"
 - assertVisible:
     id: chart-length
 - assertVisible: "Shaded: where the next cycle is likely to fall \\(80%\\)."
 - takeScreenshot: charts
-- tapOn:
-    id: insights-tab-history
+- tapOn: "History"
 - scrollUntilVisible:
     element: ".*unusually long.*"
 - scrollUntilVisible:
@@ -94,6 +90,11 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
       id: screen-cycle
     timeout: 10000
 - assertVisible: "Status: typical"
+# at the bottom edge the button sits under the floating tab bar and the tap opens Calendar (as D-094); centre it first
+- scrollUntilVisible:
+    element:
+      id: cycle-exclude
+    centerElement: true
 - tapOn:
     id: cycle-exclude
 - assertVisible: "Status: excluded"

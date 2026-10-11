@@ -7,7 +7,6 @@ name: (sub-flow) without the life state, no cycle pattern card
       id: screen-today
     timeout: 30000
 - tapOn: Insights
-- tapOn:
-    id: insights-tab-charts
+- tapOn: "Charts"
 - assertNotVisible:
     id: card-pattern

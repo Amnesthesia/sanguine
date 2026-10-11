@@ -179,7 +179,7 @@ export default function BackupScreen() {
   }
   return (
     <SubScreen testID="screen-backup" title={t('settings.privacy.backup')}>
-      <Segmented testIDPrefix="backup-mode" value={mode} onChange={(m) => { setMode(m); setMsg(undefined); }} options={[{ value: 'create', label: t('settings.privacy.backupCreate') }, { value: 'restore', label: t('settings.privacy.backupRestore') }]} />
+      <Segmented testIDPrefix="backup-mode" value={mode} onChange={(m) => { setMode(m); setMsg(undefined); }} options={[{ value: 'create', label: t('settings.privacy.backupModeCreate') }, { value: 'restore', label: t('settings.privacy.backupRestore') }]} />
       <Text variant="bodySmall" color="textSecondary">{t('settings.privacy.backupNote')}</Text>
       <TextField testID="backup-pass" secure label={t('settings.privacy.passphrase')} value={pass} onChangeText={setPass} keyboardType="default" />
       {mode === 'create' ? <TextField testID="backup-pass2" secure label={t('settings.privacy.passphraseConfirm')} value={pass2} onChangeText={setPass2} keyboardType="default" /> : <TextField testID="restore-code" secure label={t('settings.privacy.restoreCodeLabel')} value={code} onChangeText={setCode} keyboardType="default" />}

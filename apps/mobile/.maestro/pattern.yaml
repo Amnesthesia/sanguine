@@ -10,8 +10,7 @@ name: Cycle pattern card in Insights while the perimenopause life state is set; 
       id: screen-today
     timeout: 90000
 - tapOn: Insights
-- tapOn:
-    id: insights-tab-charts
+- tapOn: "Charts"
 - extendedWaitUntil:
     visible:
       id: card-pattern
