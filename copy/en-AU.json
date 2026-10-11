@@ -251,6 +251,7 @@
       "period95": "Period possible: the wider range is {range}",
       "ovulationPoint": "Ovulation estimate {range}, most likely this day",
       "ovulation": "Ovulation estimate {range}",
+      "ovulationUncertain": "Ovulation estimate uncertain: could fall {range}",
       "fertile": "Fertile window: {word} likelihood",
       "none": "No estimate covers this day.",
       "note": "Estimates are ranges worked out from your own logs, not promises."

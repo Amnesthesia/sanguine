@@ -149,3 +149,31 @@ name: Calendar - month grid, marks, day summary, back-dating
     timeout: 10000
 - assertVisible: ".*Medium flow.*"
 - takeScreenshot: backdated
+# irregular cycles: the ovulation estimate is uncertain, so the grid draws no band and the legend names none (D-098, D-106);
+# a day inside the wide range says so in words (its range runs from 4 days before today to 14 after)
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=irregular
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Calendar
+- extendedWaitUntil:
+    visible:
+      id: screen-calendar
+    timeout: 10000
+- assertVisible:
+    id: cal-uncertain
+- assertNotVisible: "Fertile window likelihood"
+- assertNotVisible:
+    id: cal-fertile-caption
+- assertVisible:
+    id: cal-details
+    text: ".*Ovulation estimate uncertain: could fall .* · rough estimate.*"
+- scrollUntilVisible:
+    element:
+      id: cal-details
+    centerElement: true
+- takeScreenshot: uncertain

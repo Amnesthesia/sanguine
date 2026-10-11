@@ -79,15 +79,18 @@ function estimateMarks(p: Prediction | undefined, showEstimate: boolean) {
 
 const fertileWord = (f: number) => t(`calendar.fertileWords.${f < 0.25 ? 'low' : f < 0.5 ? 'moderate' : 'high'}`);
 
-/** What the calendar marks on `date` mean, in words, each with its range and confidence word (D-104). Empty when the day has none. */
+/** What the calendar marks on `date` mean, in words, each with its range and confidence word (D-104), plus an uncertain ovulation range the grid does not draw (D-106). */
 export function dayEstimates(date: ISODate, p: Prediction | undefined, showEstimate: boolean, period: boolean): string[] {
-  const m = estimateMarks(p, showEstimate).on(date, period);
+  const { uncertain, on } = estimateMarks(p, showEstimate);
+  const m = on(date, period);
   const graded = (line: string, c: string | undefined) => [line, c ? t(`confidence.${c}`) : ''].filter(Boolean).join(' · ');
   const next = p?.nextPeriod;
   const ov = p?.ovulation;
   const out: string[] = [];
   if (next && m.predicted80) out.push(graded(t('day.estimates.period', { range: formatRange(next.i80.lo, next.i80.hi) }), next.confidence));
   if (next && m.predicted95Edge) out.push(graded(t('day.estimates.period95', { range: formatRange(next.i95.lo, next.i95.hi) }), next.confidence));
+  // uncertain (D-098): the grid draws no mark and no band, so only words say where ovulation could fall (owner, D-106)
+  if (ov && showEstimate && uncertain && between(date, ov.i80.lo, ov.i80.hi)) out.push(graded(t('day.estimates.ovulationUncertain', { range: formatRange(ov.i80.lo, ov.i80.hi) }), ov.confidence));
   if (ov && m.ovulation) out.push(graded(t(m.ovulation === 'point' ? 'day.estimates.ovulationPoint' : 'day.estimates.ovulation', { range: formatRange(ov.i80.lo, ov.i80.hi) }), ov.confidence));
   if (m.fertile !== undefined) out.push(t('day.estimates.fertile', { word: fertileWord(m.fertile) }));
   return out;

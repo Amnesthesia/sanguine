@@ -243,3 +243,21 @@ describe('the day estimates spelled out (D-104)', () => {
     expect(dayEstimates('2026-10-25', undefined, true, false)).toEqual([]);
   });
 });
+
+describe('an uncertain ovulation estimate, in words only (D-106)', () => {
+  const irregular = hist([24, 38, 31, 45, 27, 36], '2026-10-01');
+  const p = predict(irregular, S, today);
+  const ov = p.ovulation as NonNullable<typeof p.ovulation>;
+  it('days inside the wide range say the estimate is uncertain and where it could fall; the grid still draws nothing', () => {
+    const m = month('2026-10', { prediction: p, periodDays: periodDays(irregular) });
+    expect(m.ovulationUncertain).toBe(true);
+    const lines = dayEstimates(ov.point, p, true, false);
+    expect(lines.some((l) => /^Ovulation estimate uncertain: could fall .+–.+ · rough estimate$/.test(l))).toBe(true);
+    expect(dayEstimates(ov.i80.lo, p, true, false).some((l) => l.startsWith('Ovulation estimate uncertain'))).toBe(true);
+    expect(dayEstimates(addDays(ov.i80.lo, -1), p, true, false).some((l) => l.startsWith('Ovulation'))).toBe(false);
+    for (const c of m.cells) expect(dayEstimates(c.date, p, true, c.period).some((l) => l.startsWith('Fertile window'))).toBe(false);
+  });
+  it('says nothing about ovulation while the estimate is hidden (teen)', () => {
+    expect(dayEstimates(ov.point, p, false, false).some((l) => l.startsWith('Ovulation'))).toBe(false);
+  });
+});

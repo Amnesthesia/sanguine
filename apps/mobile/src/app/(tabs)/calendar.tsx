@@ -82,7 +82,7 @@ export default function CalendarScreen() {
       <Text variant="heading" color="accent" style={{ fontSize: 28, lineHeight: 32 }}>{delta < 0 ? '‹' : '›'}</Text>
     </Pressable>
   );
-  const legend: Array<[LegendKind, string]> = [...calendarLegend(showEstimate), ...(moon ? (['moon'] as const) : [])].filter((k) => k !== 'ovulation' || !model.ovulationUncertain).map((k) => [k, k]); // no marker is drawn for an uncertain estimate (U-18)
+  const legend: Array<[LegendKind, string]> = [...calendarLegend(showEstimate), ...(moon ? (['moon'] as const) : [])].filter((k) => !(model.ovulationUncertain && (k === 'ovulation' || k === 'fertile'))).map((k) => [k, k]); // an uncertain estimate draws no marker and no band (U-18, D-098), so the legend names neither (D-106)
   return (
     <Screen
       testID="screen-calendar" title={tr('calendar.title')}
@@ -129,7 +129,7 @@ export default function CalendarScreen() {
         ))}
       </View>
       {model.ovulationUncertain ? <Text variant="caption" color="textSecondary" testID="cal-uncertain">{tr('calendar.ovulationUncertainCaption')}</Text> : null}
-      {showEstimate ? <Text variant="caption" color="textSecondary">{tr('today.legendFertile')}</Text> : null}
+      {showEstimate && !model.ovulationUncertain ? <Text variant="caption" color="textSecondary" testID="cal-fertile-caption">{tr('today.legendFertile')}</Text> : null}
       {moon ? <Text variant="caption" color="textSecondary" testID="cal-moon-note">{tr('calendar.moonNote')}</Text> : null}
       {/* the card is the way to the day's detail */}
       <Pressable testID="cal-details" style={{ minHeight: 56 }} accessibilityRole="button" accessibilityLabel={[formatLong(selected), summaryLine, ...estimateLines, tr('calendar.details')].filter(Boolean).join('. ')} onPress={() => router.push({ pathname: '/day/[date]', params: { date: selected } })}>

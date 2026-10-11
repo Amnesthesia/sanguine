@@ -756,7 +756,7 @@ Tabs
 ### 8.5 Visualising prediction and uncertainty
 
 - Next period: a range chip ("27 Oct – 2 Nov") with the point date in smaller text and a confidence word; the Calendar draws the 80% range as hatched days and the 95% range as a faint outline.
-- Ovulation: marker at the point estimate with horizontal arms spanning the 80% interval; arms longer than 6 days (each arm is half the 80% range, so a range over 12 days; owner, D-098) switch the label to "estimate uncertain", remove the marker and hide the fertile band on every surface (ring, calendar, reminders, calendar export).
+- Ovulation: marker at the point estimate with horizontal arms spanning the 80% interval; arms longer than 6 days (each arm is half the 80% range, so a range over 12 days; owner, D-098) switch the label to "estimate uncertain", remove the marker and hide the fertile band on every surface (ring, calendar, reminders, calendar export). The selected-day card and the day screen still say in words where ovulation could fall ("Ovulation estimate uncertain: could fall {range}", owner, D-106), with no mark on the grid.
 - Fertile band: per-day opacity = p(d) from 4.8 (clamped 0.1–1; days under 0.1 are not drawn, D-098); legend reads "darker = more likely to be in the fertile window".
 - Confidence words map to the engine grades: high → "confident", medium → "fair estimate", low → "rough estimate", none → no card.
 - Insights shows the calibration ledger as plain text ("your 80% ranges have contained the actual date 7 of 9 times").
