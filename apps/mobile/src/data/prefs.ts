@@ -28,7 +28,7 @@ export interface Prefs {
   widgetDetails: boolean;
   /** The home-screen icon and name are "Notes" (PLAN.md §8.8). */
   discreetIcon: boolean;
-  /** Screenshots and the recent-apps thumbnail are blocked (PLAN.md §8.8). On by default. */
+  /** Screenshots and the recent-apps thumbnail are blocked (PLAN.md §8.8). Off by default during the beta (D-105); on again at launch. */
   screenProtection: boolean;
   /** Health types the user switched on (PLAN.md §7.5: none until they ask), and how far back the first import reads. */
   healthTypes: HealthType[];
@@ -52,7 +52,7 @@ export const DEFAULT_PREFS: Prefs = {
   appLock: false, // off until turned on in Settings, Privacy and data (owner, D-073)
   widgetDetails: false,
   discreetIcon: false,
-  screenProtection: true,
+  screenProtection: false, // beta only, so testers can send screenshots (owner, D-105); set back to true before the public launch (BACKLOG P5-6)
   healthTypes: [],
   healthWindow: '2y',
   cloudBackup: false,

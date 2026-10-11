@@ -775,7 +775,7 @@ A glossary file (`copy/glossary.en-AU.json`) fixes terms: period, bleeding, spot
 - Widgets default to the ring and day count; health words appear only if the user opts in.
 - App lock: Face ID / fingerprint / device passcode, on by default after onboarding with an explanation; auto-lock after 1 minute in background; notes are double-encrypted (6.1).
 - Discreet icon: alternate app icons (iOS `CFBundleAlternateIcons`, Android activity-alias) with a neutral name and glyph ("Notes", a leaf); switching is one tap and the notification title follows the chosen name.
-- Screenshots and recent-apps thumbnail blurred by default (`FLAG_SECURE` on Android; a privacy overlay on iOS when backgrounded).
+- Screenshots and recent-apps thumbnail blurred by default (`FLAG_SECURE` on Android; a privacy overlay on iOS when backgrounded). During the beta the default is off so testers can send screenshots; it goes back on before the public launch (D-105, BACKLOG P5-6).
 
 ### 8.9 Accessibility (WCAG 2.2 AA)
 
