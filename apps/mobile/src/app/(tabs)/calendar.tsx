@@ -1,10 +1,10 @@
-import { addDays, analyzeCycles, diffDays, type ISODate } from '@sanguine/engine';
+import { addDays, analyzeCycles, type ISODate } from '@sanguine/engine';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
-import { buildMonth, calendarLegend, type LegendKind, monthOf, shiftMonth } from '@/features/calendar/calendarModel';
+import { buildMonth, calendarLegend, cycleDayOf, type LegendKind, monthOf, shiftMonth } from '@/features/calendar/calendarModel';
 import { weekdayLabels } from '@/i18n/locale';
 import { deviceRegion, deviceWeekStart } from '@/services/locale';
 import { lunarAligned, moonPhaseDays, southernRegion } from '@/features/calendar/moon';
@@ -58,7 +58,8 @@ export default function CalendarScreen() {
     const localDay = (ms: number) => { const d = new Date(ms); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` as ISODate; };
     return moonPhaseDays(addDays(first, -7), addDays(first, 49), localDay);
   }, [lunar, month]);
-  const model = useMemo(() => buildMonth({ month, today, periodDays, loggedDays, prediction, showEstimate, weekStart, ...(moon ? { moon } : {}) }), [month, today, periodDays, loggedDays, prediction, showEstimate, weekStart, moon]);
+  const cycleStarts = useMemo(() => history?.cycles.map((c) => c.start) ?? [], [history]);
+  const model = useMemo(() => buildMonth({ month, today, periodDays, loggedDays, prediction, showEstimate, weekStart, cycleStarts, ...(moon ? { moon } : {}) }), [month, today, periodDays, loggedDays, prediction, showEstimate, weekStart, cycleStarts, moon]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the day after every write
   useEffect(() => {
@@ -66,12 +67,7 @@ export default function CalendarScreen() {
     void dayEvents(store, selected).then((evs) => setSummary(evs.filter((e) => e.kind !== 'period.start' && e.kind !== 'period.end').map((e) => shortDescribe(e, tr, prefs.tempUnit))));
   }, [store, selected, version, tr, prefs.tempUnit]);
 
-  const cycleDay = useMemo(() => {
-    const start = [...(history?.cycles ?? [])].reverse().find((c) => c.start <= selected);
-    if (!start) return undefined;
-    const n = diffDays(selected, start.start) + 1;
-    return n >= 1 && n <= 90 ? n : undefined;
-  }, [history, selected]);
+  const cycleDay = cycleDayOf(cycleStarts, selected);
   const flag = useMemo(() => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate: false, todayFlow: undefined }).flags.find((f) => !f.insightOnly), [prediction, history, today]);
   const isFuture = selected > today;
   const goToday = () => { setMonth(monthOf(today)); setSelected(today); };

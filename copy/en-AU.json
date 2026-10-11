@@ -302,6 +302,7 @@
     "a11y": {
         "moon": { "new": "new moon", "first": "first quarter moon", "full": "full moon", "last": "last quarter moon" },
       "today": "today",
+      "cycleDay": "cycle day {day}",
       "period": "period",
       "predicted": "predicted period, 80% range",
       "predicted95": "predicted period, 95% range",

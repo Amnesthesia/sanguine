@@ -1,6 +1,6 @@
-import { addDays, type EngineSettings, type History, type ISODate, predict } from '@sanguine/engine';
+import { addDays, diffDays, type EngineSettings, type History, type ISODate, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { buildMonth, monthOf, shiftMonth, swipeMonthDelta } from './calendarModel';
+import { buildMonth, cycleDayOf, showCycleDay, monthOf, shiftMonth, swipeMonthDelta } from './calendarModel';
 
 const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
 const today = '2026-10-10';
@@ -12,7 +12,7 @@ function hist(lengths: number[], last: ISODate, bleed = 4): History {
 const typical = hist([28, 29], '2026-09-30'); // 4 Aug, 1 Sep, 30 Sep
 const periodDays = (h: History) => new Set(h.cycles.flatMap((c) => Array.from({ length: 4 }, (_, i) => addDays(c.start, i))));
 const month = (m: string, over: Partial<Parameters<typeof buildMonth>[0]> = {}) =>
-  buildMonth({ month: m, today, periodDays: periodDays(typical), loggedDays: new Set(['2026-10-01', '2026-10-10']), prediction: predict(typical, S, today), showEstimate: true, ...over });
+  buildMonth({ month: m, today, periodDays: periodDays(typical), loggedDays: new Set(['2026-10-01', '2026-10-10']), prediction: predict(typical, S, today), showEstimate: true, cycleStarts: typical.cycles.map((c) => c.start), ...over });
 const cell = (m: ReturnType<typeof buildMonth>, d: ISODate) => m.cells.find((c) => c.date === d) as NonNullable<(typeof m.cells)[number]>;
 
 describe('swipeMonthDelta', () => {
@@ -133,6 +133,37 @@ describe('accessibility labels', () => {
     expect(fertileCell.label).not.toMatch(/opacity|0\.\d/);
     const predicted = m.cells.find((c) => c.predicted80) as NonNullable<(typeof m.cells)[number]>;
     expect(predicted.label).toContain('predicted period, 80% range');
+  });
+});
+
+describe('cycle day on each cell (D-100)', () => {
+  const starts = typical.cycles.map((c) => c.start); // 4 Aug, 1 Sep, 30 Sep
+  it('counts from the latest logged start on or before the day', () => {
+    expect(cycleDayOf(starts, '2026-09-30')).toBe(1);
+    expect(cycleDayOf(starts, '2026-10-10')).toBe(11);
+    expect(cycleDayOf(starts, '2026-09-29')).toBe(29);
+    expect(cycleDayOf(starts, '2026-08-03')).toBeUndefined();
+    expect(cycleDayOf([], '2026-10-10')).toBeUndefined();
+  });
+  it('keeps counting past the predicted start (never a predicted day 1) and stops after day 90', () => {
+    const lo = predict(typical, S, today).nextPeriod?.i80.lo as ISODate;
+    expect(cycleDayOf(starts, lo)).toBe(diffDays(lo, '2026-09-30') + 1);
+    expect(cycleDayOf(starts, addDays('2026-09-30', 89))).toBe(90);
+    expect(cycleDayOf(starts, addDays('2026-09-30', 90))).toBeUndefined();
+  });
+  it('the grid carries it and VoiceOver hears it', () => {
+    const m = month('2026-10');
+    expect(cell(m, '2026-09-30').cycleDay).toBe(1);
+    expect(cell(m, today).cycleDay).toBe(11);
+    expect(cell(m, today).label).toContain('cycle day 11');
+    expect(buildMonth({ month: '2026-10', today, periodDays: new Set(), loggedDays: new Set(), prediction: undefined, showEstimate: true }).cells.every((c) => c.cycleDay === undefined)).toBe(true);
+  });
+  it('draws only day 1, each 7th day, today and the selected day, in this month (the rest stay in the label)', () => {
+    const m = month('2026-10');
+    const drawn = (sel: ISODate) => m.cells.filter((c) => showCycleDay(c, c.date === sel)).map((c) => c.cycleDay);
+    expect(drawn('2026-10-10')).toEqual([7, 11, 14, 21, 28]); // 30 Sep (day 1) and 3 Nov (day 35) are outside October
+    expect(drawn('2026-10-03')).toEqual([4, 7, 11, 14, 21, 28]);
+    expect(cell(m, '2026-10-02').label).toContain('cycle day 3');
   });
 });
 

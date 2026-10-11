@@ -1,22 +1,30 @@
-import { Pressable, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg';
 import { useTheme } from '@/theme';
 import { fertileAlpha } from '@/ui/fertileAlpha';
 import { Text } from '@/ui/Text';
 import { DropGlyph } from '@/features/logging/DropGlyph';
-import type { DayCell } from './calendarModel';
+import { type DayCell, showCycleDay } from './calendarModel';
 import { MoonGlyph } from './MoonGlyph';
 
-/** One day. Meaning is never colour alone: period is solid with a drop (D-088; two dots read as a count), predicted is hatched, the fertile band is an underline (§8.9). */
+/** One day: its cycle day above, the date in the box. Meaning is never colour alone: period is solid with a drop (D-088; two dots read as a count), predicted is hatched, the fertile band is an underline (§8.9). */
 export function DayCellView({ cell, selected, onPress, southern = false }: { cell: DayCell; selected: boolean; onPress: () => void; southern?: boolean }) {
   const t = useTheme();
   const r = t.isIOS ? 10 : 12;
   const on = cell.period;
+  const { fontScale } = useWindowDimensions();
+  // the drop or log dot sits under the date; an equal spacer above keeps the date centred, level with unmarked days.
+  // At large text sizes the spacer would push the mark out of the 48 pt box, so the date and mark stack as before.
+  const mark = on ? 9 : cell.logged ? 5 : 0;
+  const markH = 20 * fontScale + 2 * mark <= 44 ? mark : 0;
   return (
     <Pressable
       testID={`day-${cell.date}`} accessibilityRole="button" accessibilityLabel={cell.label} aria-selected={selected} onPress={onPress}
-      style={{ width: `${100 / 7}%`, height: 52, padding: 2, opacity: cell.inMonth ? 1 : 0.4 }}>
-      <View style={{ flex: 1, borderRadius: r, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: on ? t.c.period : selected ? t.c.accentSoft : 'transparent', borderWidth: cell.isToday ? 2 : selected ? 1.5 : cell.predicted95Edge ? 1 : 0, borderColor: cell.isToday ? t.c.accent : selected ? t.c.textSecondary : t.c.periodPredicted, borderStyle: cell.predicted95Edge && !cell.isToday && !selected ? 'dashed' : 'solid' }}>
+      style={{ width: `${100 / 7}%`, minHeight: 52, paddingHorizontal: 2, paddingTop: 8, paddingBottom: 2, opacity: cell.inMonth ? 1 : 0.4 }}>
+      {/* cycle day above the date, only at milestones (D-100); a blank keeps the rows aligned. The gap above it is wider than below, so it
+          reads as part of its own day, not the row above. The Pressable's label always says it. */}
+      <Text variant="caption" color={cell.isToday || selected ? 'accent' : 'textSecondary'} tabular numberOfLines={1} style={{ textAlign: 'center' }}>{showCycleDay(cell, selected) ? cell.cycleDay : ' '}</Text>
+      <View style={{ height: 48, borderRadius: r, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', backgroundColor: on ? t.c.period : selected ? t.c.accentSoft : 'transparent', borderWidth: cell.isToday ? 2 : selected ? 1.5 : cell.predicted95Edge ? 1 : 0, borderColor: cell.isToday ? t.c.accent : selected ? t.c.textSecondary : t.c.periodPredicted, borderStyle: cell.predicted95Edge && !cell.isToday && !selected ? 'dashed' : 'solid' }}>
         {cell.predicted80 ? (
           <Svg style={{ position: 'absolute' }} width="100%" height="100%">
             <Defs>
@@ -27,6 +35,7 @@ export function DayCellView({ cell, selected, onPress, southern = false }: { cel
             <Rect width="100%" height="100%" fill="url(#hatch)" />
           </Svg>
         ) : null}
+        {markH ? <View style={{ height: markH }} /> : null}
         <Text variant="bodySmall" tabular style={{ color: on ? '#FFFFFF' : t.c.textPrimary, fontWeight: cell.isToday ? '700' : '400' }}>{cell.day}</Text>
         {on ? (
           <DropGlyph fill={1} size={9} color="#FFFFFF" />

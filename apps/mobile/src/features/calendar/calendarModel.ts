@@ -1,5 +1,5 @@
 // Month grid view-model (PLAN.md §8.3, §8.5): which marks each day carries. Pure; the screen only draws it.
-import { addDays, type ISODate, isoWeekday, type Prediction } from '@sanguine/engine';
+import { addDays, diffDays, type ISODate, isoWeekday, type Prediction } from '@sanguine/engine';
 import type { MoonPhase } from './moon';
 import { ovulationUncertain, shownFertileDays } from '@/features/today/fertileShown';
 import i18n from '@/i18n';
@@ -12,6 +12,8 @@ export interface DayCell {
   day: number;
   inMonth: boolean;
   isToday: boolean;
+  /** Day of the cycle (D-100): counted from the latest logged start, never from a predicted one; undefined before the first start or past day 90. */
+  cycleDay: number | undefined;
   period: boolean;
   predicted80: boolean;
   /** In the 95% range but not the 80% range: drawn as a faint outline. */
@@ -43,10 +45,24 @@ export function shiftMonth(m: string, delta: number): string {
   return `${Math.floor(idx / 12)}-${String((idx % 12) + 1).padStart(2, '0')}`;
 }
 
+/** Day of the cycle that `date` falls in, counting from the latest logged start on or before it; 1-90, else undefined. */
+export function cycleDayOf(starts: readonly ISODate[], date: ISODate): number | undefined {
+  let start: ISODate | undefined;
+  for (const s of starts) if (s <= date && (!start || s > start)) start = s;
+  if (!start) return undefined;
+  const n = diffDays(date, start) + 1;
+  return n <= 90 ? n : undefined;
+}
+
+/** Which cycle days are drawn on the grid (D-100): day 1, each 7th day, today and the selected day, in this month only; every other cell
+ * keeps it in its VoiceOver label. A number on all 42 cells repeats the date row and reads as clutter (owner). */
+export const showCycleDay = (c: DayCell, selected: boolean): boolean =>
+  c.inMonth && c.cycleDay !== undefined && (c.cycleDay === 1 || c.cycleDay % 7 === 0 || c.isToday || selected);
+
 const t = (k: string, p?: Record<string, string>) => i18n.t(k, p);
 const between = (d: ISODate, lo: ISODate, hi: ISODate) => d >= lo && d <= hi;
 
-export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<ISODate>; loggedDays: Set<ISODate>; prediction: Prediction | undefined; showEstimate: boolean; weekStart?: WeekStart; moon?: Map<ISODate, MoonPhase> }): MonthModel {
+export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<ISODate>; loggedDays: Set<ISODate>; prediction: Prediction | undefined; showEstimate: boolean; weekStart?: WeekStart; moon?: Map<ISODate, MoonPhase>; cycleStarts?: readonly ISODate[] }): MonthModel {
   const first = `${i.month}-01`;
   const gridStart = addDays(first, -((isoWeekday(first) - 1 + (i.weekStart === 'sun' ? 1 : 0)) % 7));
   const p = i.prediction;
@@ -65,7 +81,9 @@ export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<I
     let ovMark: DayCell['ovulation'];
     if (ov && !uncertain) ovMark = date === ov.point ? 'point' : between(date, ov.i80.lo, ov.i80.hi) ? 'range' : undefined;
     const logged = i.loggedDays.has(date);
+    const cycleDay = cycleDayOf(i.cycleStarts ?? [], date);
     const parts = [formatLong(date)];
+    if (cycleDay) parts.push(t('calendar.a11y.cycleDay', { day: String(cycleDay) }));
     if (date === i.today) parts.push(t('calendar.a11y.today'));
     if (period) parts.push(t('calendar.a11y.period'));
     if (in80) parts.push(t('calendar.a11y.predicted'));
@@ -76,7 +94,7 @@ export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<I
     if (logged) parts.push(t('calendar.a11y.logged'));
     if (moon) parts.push(t(`calendar.a11y.moon.${moon}`));
     return {
-      date, day: Number(date.slice(8)), inMonth: monthOf(date) === i.month, isToday: date === i.today, period, predicted80: in80, predicted95Edge: in95,
+      date, day: Number(date.slice(8)), inMonth: monthOf(date) === i.month, isToday: date === i.today, cycleDay, period, predicted80: in80, predicted95Edge: in95,
       fertile: f, ovulation: ovMark, logged, moon, label: parts.join(', '),
     };
   });
