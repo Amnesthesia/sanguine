@@ -1,6 +1,6 @@
 import { addDays, diffDays, type EngineSettings, type History, type ISODate, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { buildMonth, cycleDayOf, showCycleDay, monthOf, shiftMonth, swipeMonthDelta } from './calendarModel';
+import { buildMonth, cycleDayOf, dayEstimates, showCycleDay, monthOf, shiftMonth, swipeMonthDelta } from './calendarModel';
 
 const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
 const today = '2026-10-10';
@@ -205,5 +205,41 @@ describe('moon phases on the month (D-089)', () => {
     expect(cell?.label).toContain('full moon');
     expect(m.cells.find((c) => c.date === '2026-10-25')?.moon).toBeUndefined();
     expect(buildMonth(base).cells.every((c) => c.moon === undefined)).toBe(true);
+  });
+});
+
+describe('the day estimates spelled out (D-104)', () => {
+  const p = predict(typical, S, today);
+  const est = (d: ISODate, showEstimate = true, period = false) => dayEstimates(d, p, showEstimate, period);
+  const m = month('2026-10');
+  it('says what every mark on a day means, and only the marks the grid draws', () => {
+    for (const c of m.cells) {
+      const lines = est(c.date, true, c.period);
+      expect(lines.some((l) => l.startsWith('Period likely'))).toBe(c.predicted80);
+      expect(lines.some((l) => l.startsWith('Period possible'))).toBe(c.predicted95Edge);
+      expect(lines.some((l) => l.startsWith('Fertile window'))).toBe(c.fertile !== undefined);
+      expect(lines.some((l) => l.startsWith('Ovulation estimate'))).toBe(c.ovulation !== undefined);
+    }
+  });
+  it('a predicted period day names the range and the confidence word', () => {
+    const next = p.nextPeriod as NonNullable<typeof p.nextPeriod>;
+    const [line] = est(next.i80.lo);
+    expect(line).toMatch(/^Period likely to start .+–.+ · (confident|fair estimate|rough estimate)$/);
+  });
+  it('the ovulation day says it is the most likely day inside the range; the fertile band is graded, not a fertile day', () => {
+    const point = m.cells.find((c) => c.ovulation === 'point') as (typeof m.cells)[number];
+    const lines = est(point.date);
+    expect(lines.some((l) => /^Ovulation estimate .+–.+, most likely this day/.test(l))).toBe(true);
+    expect(lines.some((l) => /^Fertile window: (low|moderate|high) likelihood/.test(l))).toBe(true);
+  });
+  it('names no fertile window or ovulation while the estimate is hidden (teen)', () => {
+    for (const c of m.cells) expect(est(c.date, false, c.period).every((l) => l.startsWith('Period'))).toBe(true);
+  });
+  it('nothing for a day without marks, a logged period day, or no prediction', () => {
+    const plain = m.cells.find((c) => !c.period && !c.predicted80 && !c.predicted95Edge && c.fertile === undefined && c.ovulation === undefined) as (typeof m.cells)[number];
+    expect(est(plain.date)).toEqual([]);
+    const next = p.nextPeriod as NonNullable<typeof p.nextPeriod>;
+    expect(est(next.i80.lo, true, true).some((l) => l.startsWith('Period'))).toBe(false);
+    expect(dayEstimates('2026-10-25', undefined, true, false)).toEqual([]);
   });
 });

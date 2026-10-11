@@ -1,11 +1,14 @@
 // Day detail (PLAN.md §8.3): everything logged that day with provenance, edit, delete, and the two correction actions.
 import type { ISODate } from '@sanguine/engine';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
+import { effectivePrefs } from '@/data/prefs';
+import { dayEstimates } from '@/features/calendar/calendarModel';
 import { type DayEvent, dayEvents, dayState, markNotAPeriod, markSpotting } from '@/features/logging/actions';
 import { describeEvent } from '@/features/logging/describe';
+import { SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -26,7 +29,7 @@ export default function DayDetail() {
   const router = useRouter();
   const { date } = useLocalSearchParams<{ date: string }>();
   const day = date as ISODate;
-  const { db, store, prefs, refresh } = useApp();
+  const { db, store, prefs, profile, prediction, today, refresh } = useApp();
   const [events, setEvents] = useState<DayEvent[]>([]);
   const [isPeriodDay, setIsPeriodDay] = useState(false);
 
@@ -37,6 +40,10 @@ export default function DayDetail() {
     setIsPeriodDay(s.flowKind === 'period' && s.flow !== null && s.flow !== 'none');
   }, [store, db, day]);
   useEffect(() => { void reload(); }, [reload]);
+  // the calendar marks on this day in words (D-104); a future day cannot be logged, so it offers neither "Nothing logged" nor Edit
+  const isFuture = day > today;
+  const showEstimate = SHOW_OVULATION_ESTIMATE && effectivePrefs(prefs, profile, today).showOvulationEstimate;
+  const estimates = useMemo(() => dayEstimates(day, prediction, showEstimate, isPeriodDay), [day, prediction, showEstimate, isPeriodDay]);
   const after = async () => { await refresh(); await reload(); };
   // a deleted entry cannot be brought back from this screen, so ask first (I-14, D-075); the event log keeps it as a retraction
   const confirmDelete = (e: DayEvent) => Alert.alert(tr('day.deleteConfirmTitle'), describeEvent(e, tr, prefs.tempUnit), [
@@ -46,7 +53,7 @@ export default function DayDetail() {
 
   return (
     <SubScreen testID="screen-day" backTestID="day-back" title={formatLong(day)} bottomInset={32}>
-      {events.length === 0 ? <Text color="textSecondary">{tr('day.nothingLogged')}</Text> : null}
+      {events.length === 0 && !isFuture ? <Text color="textSecondary">{tr('day.nothingLogged')}</Text> : null}
       {events.length ? (
         // one row per entry (U-16, D-076): the text with its provenance, and Delete at the trailing edge
         <Card style={{ padding: 0, gap: 0 }}>
@@ -58,8 +65,15 @@ export default function DayDetail() {
           ))}
         </Card>
       ) : null}
+      {estimates.length || isFuture ? (
+        <Card testID="day-estimates" style={{ gap: 6 }}>
+          <Text variant="heading" accessibilityRole="header">{tr('day.estimates.title')}</Text>
+          {estimates.length ? estimates.map((l) => <Text key={l} testID="day-estimate">{l}</Text>) : <Text color="textSecondary">{tr('day.estimates.none')}</Text>}
+          {estimates.length ? <Text variant="caption" color="textSecondary">{tr('day.estimates.note')}</Text> : null}
+        </Card>
+      ) : null}
       <View style={{ gap: 4 }}>
-        <Button testID="day-edit" label={tr('day.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />
+        {isFuture ? <Text variant="caption" color="textSecondary" testID="day-future-note">{tr('calendar.futureNote')}</Text> : <Button testID="day-edit" label={tr('day.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />}
         {isPeriodDay && db && store ? (<>
           <Button testID="day-not-period" kind="secondary" label={tr('day.notAPeriod')} onPress={() => void markNotAPeriod(store, db, day).then(after)} />
           <Button testID="day-spotting" kind="secondary" label={tr('day.markSpotting')} onPress={() => void markSpotting(store, day).then(after)} />

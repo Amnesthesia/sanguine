@@ -48,6 +48,42 @@ name: Calendar - month grid, marks, day summary, back-dating
     id: cal-edit
 - assertVisible:
     id: cal-future-note
+# a future day says what is estimated for it, never "Nothing logged" (D-104)
+- assertVisible:
+    id: cal-details
+    text: ".*(Fertile window: |Ovulation estimate |Period likely to start |Period possible: |No estimate covers this day).*"
+- assertNotVisible: ".*Nothing logged.*"
+# a predicted period day spells out the range and its confidence on the card and on the day screen
+- tapOn:
+    text: ".*predicted period, 80% range.*"
+    index: 0
+- assertVisible:
+    id: cal-details
+    text: ".*Period likely to start .* · (confident|fair estimate|rough estimate).*"
+- takeScreenshot: future-predicted
+- tapOn:
+    id: cal-details
+- extendedWaitUntil:
+    visible:
+      id: screen-day
+    timeout: 10000
+- assertVisible: "Estimates for this day"
+- assertVisible: "Period likely to start .* · (confident|fair estimate|rough estimate)"
+- assertNotVisible: "Nothing logged for this day."
+- assertNotVisible:
+    id: day-edit
+- assertVisible:
+    id: day-future-note
+- takeScreenshot: day-future-predicted
+- tapOn:
+    id: day-back
+- extendedWaitUntil:
+    visible:
+      id: screen-calendar
+    timeout: 10000
+# the predicted day may sit in next month's grid; the title goes back to this month and today
+- tapOn:
+    id: cal-title-button
 - tapOn:
     id: day-${output.today}
 - assertVisible:

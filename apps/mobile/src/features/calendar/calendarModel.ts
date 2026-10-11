@@ -4,7 +4,7 @@ import type { MoonPhase } from './moon';
 import { ovulationUncertain, shownFertileDays } from '@/features/today/fertileShown';
 import i18n from '@/i18n';
 import type { WeekStart } from '@/i18n/locale';
-import { formatLong, formatMonthYear } from '@/ui/format';
+import { formatLong, formatMonthYear, formatRange } from '@/ui/format';
 
 
 export interface DayCell {
@@ -60,24 +60,48 @@ export const showCycleDay = (c: DayCell): boolean => c.inMonth && c.cycleDay !==
 const t = (k: string, p?: Record<string, string>) => i18n.t(k, p);
 const between = (d: ISODate, lo: ISODate, hi: ISODate) => d >= lo && d <= hi;
 
+type EstimateMarks = Pick<DayCell, 'predicted80' | 'predicted95Edge' | 'fertile' | 'ovulation'>;
+/** The estimate marks of any day: one rule for the grid, the selected-day card and the day screen (D-104). */
+function estimateMarks(p: Prediction | undefined, showEstimate: boolean) {
+  const next = p?.nextPeriod;
+  const ov = showEstimate ? p?.ovulation : undefined;
+  const uncertain = Boolean(ov) && ovulationUncertain(p);
+  const fertile = new Map<ISODate, number>();
+  if (showEstimate) for (const f of shownFertileDays(p)) fertile.set(f.date, Math.min(1, f.pInWindow));
+  const on = (date: ISODate, period: boolean): EstimateMarks => {
+    const predicted80 = !period && Boolean(next && between(date, next.i80.lo, next.i80.hi));
+    const predicted95Edge = !period && !predicted80 && Boolean(next && between(date, next.i95.lo, next.i95.hi));
+    const ovulation = ov && !uncertain ? (date === ov.point ? 'point' : between(date, ov.i80.lo, ov.i80.hi) ? 'range' : undefined) : undefined;
+    return { predicted80, predicted95Edge, fertile: fertile.get(date), ovulation };
+  };
+  return { uncertain, on };
+}
+
+const fertileWord = (f: number) => t(`calendar.fertileWords.${f < 0.25 ? 'low' : f < 0.5 ? 'moderate' : 'high'}`);
+
+/** What the calendar marks on `date` mean, in words, each with its range and confidence word (D-104). Empty when the day has none. */
+export function dayEstimates(date: ISODate, p: Prediction | undefined, showEstimate: boolean, period: boolean): string[] {
+  const m = estimateMarks(p, showEstimate).on(date, period);
+  const graded = (line: string, c: string | undefined) => [line, c ? t(`confidence.${c}`) : ''].filter(Boolean).join(' · ');
+  const next = p?.nextPeriod;
+  const ov = p?.ovulation;
+  const out: string[] = [];
+  if (next && m.predicted80) out.push(graded(t('day.estimates.period', { range: formatRange(next.i80.lo, next.i80.hi) }), next.confidence));
+  if (next && m.predicted95Edge) out.push(graded(t('day.estimates.period95', { range: formatRange(next.i95.lo, next.i95.hi) }), next.confidence));
+  if (ov && m.ovulation) out.push(graded(t(m.ovulation === 'point' ? 'day.estimates.ovulationPoint' : 'day.estimates.ovulation', { range: formatRange(ov.i80.lo, ov.i80.hi) }), ov.confidence));
+  if (m.fertile !== undefined) out.push(t('day.estimates.fertile', { word: fertileWord(m.fertile) }));
+  return out;
+}
+
 export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<ISODate>; loggedDays: Set<ISODate>; prediction: Prediction | undefined; showEstimate: boolean; weekStart?: WeekStart; moon?: Map<ISODate, MoonPhase>; cycleStarts?: readonly ISODate[] }): MonthModel {
   const first = `${i.month}-01`;
   const gridStart = addDays(first, -((isoWeekday(first) - 1 + (i.weekStart === 'sun' ? 1 : 0)) % 7));
-  const p = i.prediction;
-  const next = p?.nextPeriod;
-  const ov = i.showEstimate ? p?.ovulation : undefined;
-  const uncertain = Boolean(ov) && ovulationUncertain(p);
-  const fertile = new Map<ISODate, number>();
-  if (i.showEstimate) for (const f of shownFertileDays(p)) fertile.set(f.date, Math.min(1, f.pInWindow));
+  const { uncertain, on } = estimateMarks(i.prediction, i.showEstimate);
 
   const cells: DayCell[] = Array.from({ length: 42 }, (_, k) => {
     const date = addDays(gridStart, k);
     const period = i.periodDays.has(date);
-    const in80 = !period && Boolean(next && between(date, next.i80.lo, next.i80.hi));
-    const in95 = !period && !in80 && Boolean(next && between(date, next.i95.lo, next.i95.hi));
-    const f = fertile.get(date);
-    let ovMark: DayCell['ovulation'];
-    if (ov && !uncertain) ovMark = date === ov.point ? 'point' : between(date, ov.i80.lo, ov.i80.hi) ? 'range' : undefined;
+    const { predicted80: in80, predicted95Edge: in95, fertile: f, ovulation: ovMark } = on(date, period);
     const logged = i.loggedDays.has(date);
     const cycleDay = cycleDayOf(i.cycleStarts ?? [], date);
     const parts = [formatLong(date)];
@@ -86,7 +110,7 @@ export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<I
     if (period) parts.push(t('calendar.a11y.period'));
     if (in80) parts.push(t('calendar.a11y.predicted'));
     else if (in95) parts.push(t('calendar.a11y.predicted95'));
-    if (f !== undefined) parts.push(t('calendar.a11y.fertile', { word: t(`calendar.fertileWords.${f < 0.25 ? 'low' : f < 0.5 ? 'moderate' : 'high'}`) }));
+    if (f !== undefined) parts.push(t('calendar.a11y.fertile', { word: fertileWord(f) }));
     if (ovMark === 'point') parts.push(t('calendar.a11y.ovulation'));
     const moon = i.moon?.get(date);
     if (logged) parts.push(t('calendar.a11y.logged'));

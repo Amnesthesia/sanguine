@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
-import { buildMonth, calendarLegend, cycleDayOf, type LegendKind, monthOf, shiftMonth } from '@/features/calendar/calendarModel';
+import { buildMonth, calendarLegend, cycleDayOf, dayEstimates, type LegendKind, monthOf, shiftMonth } from '@/features/calendar/calendarModel';
 import { weekdayLabels } from '@/i18n/locale';
 import { deviceRegion, deviceWeekStart } from '@/services/locale';
 import { lunarAligned, moonPhaseDays, southernRegion } from '@/features/calendar/moon';
@@ -71,6 +71,10 @@ export default function CalendarScreen() {
   const cycleDay = cycleDayOf(cycleStarts, selected);
   const flag = useMemo(() => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate: false, todayFlow: undefined }).flags.find((f) => !f.insightOnly), [prediction, history, today]);
   const isFuture = selected > today;
+  // what the marks on the selected day mean, in words (D-104); a future day has nothing to log, so it says no "Nothing logged"
+  const estimates = useMemo(() => dayEstimates(selected, prediction, showEstimate, periodDays.has(selected)), [selected, prediction, showEstimate, periodDays]);
+  const summaryLine = [cycleDay ? tr('calendar.summaryDay', { day: cycleDay }) : null, ...(summary.length ? summary : isFuture ? [] : [tr('calendar.summaryNothing')])].filter(Boolean).join(' · ');
+  const estimateLines = estimates.length || !isFuture ? estimates : [tr('day.estimates.none')];
   const goToday = () => { setMonth(monthOf(today)); setSelected(today); };
 
   const nav = (delta: number, id: string, label: string) => (
@@ -128,13 +132,12 @@ export default function CalendarScreen() {
       {showEstimate ? <Text variant="caption" color="textSecondary">{tr('today.legendFertile')}</Text> : null}
       {moon ? <Text variant="caption" color="textSecondary" testID="cal-moon-note">{tr('calendar.moonNote')}</Text> : null}
       {/* the card is the way to the day's detail */}
-      <Pressable testID="cal-details" style={{ minHeight: 56 }} accessibilityRole="button" accessibilityLabel={`${formatLong(selected)}. ${tr('calendar.details')}`} onPress={() => router.push({ pathname: '/day/[date]', params: { date: selected } })}>
+      <Pressable testID="cal-details" style={{ minHeight: 56 }} accessibilityRole="button" accessibilityLabel={[formatLong(selected), summaryLine, ...estimateLines, tr('calendar.details')].filter(Boolean).join('. ')} onPress={() => router.push({ pathname: '/day/[date]', params: { date: selected } })}>
         <Card testID="cal-summary" style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={{ flex: 1, gap: 4 }}>
             <Text variant="heading" accessibilityRole="header">{formatLong(selected)}</Text>
-            <Text variant="bodySmall" color="textSecondary" testID="cal-summary-text">
-              {[cycleDay ? tr('calendar.summaryDay', { day: cycleDay }) : null, ...(summary.length ? summary : [tr('calendar.summaryNothing')])].filter(Boolean).join(' · ')}
-            </Text>
+            {summaryLine ? <Text variant="bodySmall" color="textSecondary" testID="cal-summary-text">{summaryLine}</Text> : null}
+            {estimateLines.map((l) => <Text key={l} variant="bodySmall" testID="cal-estimate">{l}</Text>)}
           </View>
           <Text color="textSecondary" accessibilityElementsHidden>›</Text>
         </Card>
