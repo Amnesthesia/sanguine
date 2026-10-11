@@ -1,6 +1,8 @@
 import { ENGINE_BUILD_HASH, ENGINE_VERSION } from '@sanguine/engine';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
+import * as Updates from 'expo-updates';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, View } from 'react-native';
 import lockupDark from '../../../assets/brand/splash-lockup-dark.png';
@@ -8,6 +10,8 @@ import lockup from '../../../assets/brand/splash-lockup.png';
 import { isTeen } from '@/data/prefs';
 import { BRAND } from '@/features/splash/BrandSplash';
 import { taglineFor } from '@/features/splash/tagline';
+import { checkAndApply, updatesOn } from '@/features/updates/updates';
+import { todayLocal } from '@/services/clock';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import about from '../../../../../copy/about.en-AU.json';
@@ -17,6 +21,8 @@ import { Card } from '@/ui/Card';
 import { Group, SettingsRow } from '@/ui/SettingsRow';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
+import { formatDayYear } from '@/ui/format';
+import { showToast } from '@/ui/Toast';
 
 
 export default function AboutScreen() {
@@ -29,6 +35,15 @@ export default function AboutScreen() {
   const today = useApp((s) => s.today);
   const tagline = taglineFor(launchCount, t('app.taglines', { returnObjects: true }) as string[], isTeen(profile, today));
   const version = Constants.expoConfig?.version ?? '0';
+  const [checking, setChecking] = useState(false);
+  // the running bundle: the store build's own, or an over-the-air update and the day it was published (D-103)
+  const build = !updatesOn() ? t('settings.about.devBuild') : Updates.isEmbeddedLaunch || !Updates.createdAt ? t('settings.about.builtIn') : t('settings.about.updated', { d: formatDayYear(todayLocal(Updates.createdAt)) });
+  const check = async () => {
+    setChecking(true);
+    const r = await checkAndApply();
+    setChecking(false);
+    if (r !== 'reloading') showToast(t(`settings.about.check.${r}`));
+  };
   return (
     <SubScreen testID="screen-about" title={t('settings.about.title')}>
       <View testID="about-band" accessible accessibilityRole="image" accessibilityLabel={t('app.name')} style={{ borderRadius: theme.radius.card, backgroundColor: brand.field, alignItems: 'center', paddingVertical: 28, gap: 18 }}>
@@ -36,8 +51,10 @@ export default function AboutScreen() {
         <View style={{ width: 200, height: 1, backgroundColor: brand.ink, opacity: 0.6 }} />
         {tagline ? <Text testID="about-tagline" caps variant="caption" style={{ color: brand.text, textAlign: 'center', paddingHorizontal: 24, fontSize: 13, lineHeight: 20 }}>{tagline}</Text> : null}
       </View>
+      <Group>
+        <SettingsRow testID="about-version" title={t('settings.about.version', { v: version })} description={checking ? t('settings.about.checking') : `${build}. ${t('settings.about.checkHint')}`} onPress={() => void check()} disabled={checking} last />
+      </Group>
       <Card>
-        <Text testID="about-version">{t('settings.about.version', { v: version })}</Text>
         <Text testID="about-engine" variant="bodySmall" color="textSecondary">{t('settings.about.engine', { v: ENGINE_VERSION })}</Text>
         <Text testID="about-hash" variant="caption" color="textSecondary" selectable>{t('settings.about.engineHash', { h: ENGINE_BUILD_HASH.slice(0, 12) })}</Text>
       </Card>

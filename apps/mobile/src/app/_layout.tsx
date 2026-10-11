@@ -14,9 +14,11 @@ import { ScreenProtection } from '@/features/lock/ScreenProtection';
 import { BrandSplash } from '@/features/splash/BrandSplash';
 import { taglineFor } from '@/features/splash/tagline';
 import { isTeen } from '@/data/prefs';
+import { noteLaunchedUpdate } from '@/features/updates/updates';
 import '@/services/health/backgroundTask';
 import { ThemeProvider, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
+import { showToast, ToastHost } from '@/ui/Toast';
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -97,6 +99,7 @@ export default function RootLayout() {
   const profile = useApp((s) => s.profile);
   const today = useApp((s) => s.today);
   const { t: trSplash } = useTranslation();
+  const db = useApp((s) => s.db);
 
   useEffect(() => { void init(); }, [init]);
   // a new day, or coming back to the app, recomputes today's prediction
@@ -104,6 +107,10 @@ export default function RootLayout() {
     const sub = AppState.addEventListener('change', (st) => { if (st === 'active') void refresh(); });
     return () => sub.remove();
   }, [refresh]);
+  // the first launch of a new over-the-air update says so once (D-103)
+  useEffect(() => {
+    if (db) void noteLaunchedUpdate(db).then((isNew) => { if (isNew) showToast(trSplash('settings.about.justUpdated')); }, () => undefined);
+  }, [db, trSplash]);
   const ready = fontsLoaded && status !== 'loading';
   useEffect(() => { if (ready) void SplashScreen.hideAsync(); }, [ready]);
   // the capture block must not wait for fonts and data: it is applied from the first frame (D-049, review finding)
@@ -115,6 +122,8 @@ export default function RootLayout() {
       <ThemeProvider pref={theme}>
         <LockGate>
           <Shell />
+          {/* under the lock screen, and only after the splash so the message is not spent behind it */}
+          {splashShown ? <ToastHost /> : null}
         </LockGate>
         <ScreenProtection />
         {!splashShown && <BrandSplash tagline={taglineFor(launchCount, trSplash('app.taglines', { returnObjects: true }) as string[], isTeen(profile, today))} onDone={splashDone} />}

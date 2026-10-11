@@ -91,6 +91,13 @@ name: Settings - appearance, tracking options, life state, backup recovery code,
     id: about-tagline
 - assertVisible: "Estimate engine .*"
 - assertVisible: "Engine hash .*"
+# the version row checks for an over-the-air update; the dev client has updates off, so the toast says so (D-103)
+- assertVisible: "Version .*Tap to check for updates.*"
+- tapOn:
+    id: about-version
+- assertVisible:
+    id: toast
+- takeScreenshot: about-update-toast
 - assertVisible: "Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional."
 - takeScreenshot: about
 # the published privacy policy, bundled (D-072)

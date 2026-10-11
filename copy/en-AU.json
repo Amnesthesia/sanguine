@@ -770,6 +770,17 @@
     "about": {
       "title": "About",
       "version": "Version {v}",
+      "builtIn": "As installed from the store",
+      "devBuild": "Development build",
+      "updated": "Updated {d}",
+      "checkHint": "Tap to check for updates",
+      "checking": "Checking for updates…",
+      "check": {
+        "off": "Updates are off in this build.",
+        "latest": "Sanguine is up to date.",
+        "failed": "Couldn't check for updates. Try again when you're online."
+      },
+      "justUpdated": "Sanguine has been updated.",
       "engine": "Estimate engine {v}",
       "engineHash": "Engine hash {h}",
       "privacyPolicy": "Privacy policy",
