@@ -44,8 +44,8 @@ describe('surfaces', () => {
     expect(ids(eff(adultProfile, { sexLogging: true }))).toContain('sex');
   });
   it('the calendar legend names no fertile window or ovulation when the estimate is hidden', () => {
-    expect(calendarLegend(false)).toEqual(['period', 'predicted', 'logged']);
-    expect(calendarLegend(true)).toEqual(['period', 'predicted', 'fertile', 'ovulation', 'logged']);
+    expect(calendarLegend(false)).toEqual(['cycleDay', 'period', 'predicted', 'logged']);
+    expect(calendarLegend(true)).toEqual(['cycleDay', 'period', 'predicted', 'fertile', 'ovulation', 'logged']);
   });
   it('Health sync does not offer ovulation tests or cervical mucus to a teen, and words wrist temperature without fertility terms', () => {
     const types = (fertilityTools: boolean) => healthRows({ teen: !fertilityTools, sexLogging: false, fertilityTools }).map((r) => r.type);

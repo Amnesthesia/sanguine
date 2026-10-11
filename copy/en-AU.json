@@ -291,6 +291,7 @@
     "goToday": "Go to today",
     "moonNote": "Moon phases are shown because your recent cycles have been close to a lunar month (29.5 days). The moon does not change any estimate.",
     "legend": {
+      "cycleDay": "Day of cycle",
       "period": "Period",
       "predicted": "Predicted period",
       "fertile": "Fertile window likelihood",

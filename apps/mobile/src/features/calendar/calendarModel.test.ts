@@ -158,11 +158,10 @@ describe('cycle day on each cell (D-100)', () => {
     expect(cell(m, today).label).toContain('cycle day 11');
     expect(buildMonth({ month: '2026-10', today, periodDays: new Set(), loggedDays: new Set(), prediction: undefined, showEstimate: true }).cells.every((c) => c.cycleDay === undefined)).toBe(true);
   });
-  it('draws only day 1, each 7th day, today and the selected day, in this month (the rest stay in the label)', () => {
+  it('every day of the shown month carries a badge (D-101); days outside the month do not', () => {
     const m = month('2026-10');
-    const drawn = (sel: ISODate) => m.cells.filter((c) => showCycleDay(c, c.date === sel)).map((c) => c.cycleDay);
-    expect(drawn('2026-10-10')).toEqual([7, 11, 14, 21, 28]); // 30 Sep (day 1) and 3 Nov (day 35) are outside October
-    expect(drawn('2026-10-03')).toEqual([4, 7, 11, 14, 21, 28]);
+    const drawn = m.cells.filter((c) => showCycleDay(c)).map((c) => c.cycleDay);
+    expect(drawn).toEqual(Array.from({ length: 31 }, (_, k) => k + 2)); // 1 Oct is day 2; 30 Sep (day 1) is outside October
     expect(cell(m, '2026-10-02').label).toContain('cycle day 3');
   });
 });

@@ -54,10 +54,8 @@ export function cycleDayOf(starts: readonly ISODate[], date: ISODate): number | 
   return n <= 90 ? n : undefined;
 }
 
-/** Which cycle days are drawn on the grid (D-100): day 1, each 7th day, today and the selected day, in this month only; every other cell
- * keeps it in its VoiceOver label. A number on all 42 cells repeats the date row and reads as clutter (owner). */
-export const showCycleDay = (c: DayCell, selected: boolean): boolean =>
-  c.inMonth && c.cycleDay !== undefined && (c.cycleDay === 1 || c.cycleDay % 7 === 0 || c.isToday || selected);
+/** Every day of the shown month with a cycle day carries it as a badge (D-101); days outside the month do not. */
+export const showCycleDay = (c: DayCell): boolean => c.inMonth && c.cycleDay !== undefined;
 
 const t = (k: string, p?: Record<string, string>) => i18n.t(k, p);
 const between = (d: ISODate, lo: ISODate, hi: ISODate) => d >= lo && d <= hi;
@@ -101,6 +99,6 @@ export function buildMonth(i: { month: string; today: ISODate; periodDays: Set<I
   return { month: i.month, title: formatMonthYear(first), cells, ovulationUncertain: uncertain };
 }
 
-export type LegendKind = 'period' | 'predicted' | 'fertile' | 'ovulation' | 'logged' | 'moon';
+export type LegendKind = 'cycleDay' | 'period' | 'predicted' | 'fertile' | 'ovulation' | 'logged' | 'moon';
 /** The legend names the fertile window and ovulation only while those estimates are shown (PLAN.md §8.6: hidden under 18 by default). */
-export const calendarLegend = (showEstimate: boolean): LegendKind[] => (showEstimate ? ['period', 'predicted', 'fertile', 'ovulation', 'logged'] : ['period', 'predicted', 'logged']);
+export const calendarLegend = (showEstimate: boolean): LegendKind[] => (showEstimate ? ['cycleDay', 'period', 'predicted', 'fertile', 'ovulation', 'logged'] : ['cycleDay', 'period', 'predicted', 'logged']);

@@ -28,7 +28,7 @@ name: Calendar - month grid, marks, day summary, back-dating
     id: cal-grid
 # today is selected: cycle day 11 and the temperature logged today
 - assertVisible: ".*Day 11 · BBT 36.42 °C.*"
-# each cell carries its cycle day above the date (D-100)
+# each cell carries its cycle day as a badge and says it to VoiceOver (D-101)
 - assertVisible:
     id: day-${output.today}
     text: ".*, cycle day 11,.*"
@@ -79,11 +79,7 @@ name: Calendar - month grid, marks, day summary, back-dating
 - tapOn:
     id: day-${output.yesterday}
 - assertVisible: ".*Day 10 · Bloating.*"
-# the sheet is reachable from a day, and day detail from Details (scrolled clear of the floating Log button)
-- scrollUntilVisible:
-    element:
-      id: cal-details
-    centerElement: true
+# the sheet is reachable from a day, and day detail from Details
 - tapOn:
     id: cal-details
 - extendedWaitUntil:
@@ -98,10 +94,6 @@ name: Calendar - month grid, marks, day summary, back-dating
       id: screen-calendar
     timeout: 10000
 # back-date a period in the previous month
-- scrollUntilVisible:
-    element:
-      id: cal-prev
-    direction: UP
 - tapOn:
     id: cal-prev
 - tapOn:

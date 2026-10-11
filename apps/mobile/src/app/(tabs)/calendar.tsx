@@ -9,7 +9,7 @@ import { weekdayLabels } from '@/i18n/locale';
 import { deviceRegion, deviceWeekStart } from '@/services/locale';
 import { lunarAligned, moonPhaseDays, southernRegion } from '@/features/calendar/moon';
 import { MoonGlyph } from '@/features/calendar/MoonGlyph';
-import { DayCellView } from '@/features/calendar/DayCellView';
+import { CycleDayBadge, DayCellView } from '@/features/calendar/DayCellView';
 import { SwipeMonth } from '@/features/calendar/SwipeMonth';
 import { useCalendarData } from '@/features/calendar/useCalendarData';
 import { dayEvents } from '@/features/logging/actions';
@@ -27,6 +27,7 @@ import { DropGlyph } from '@/features/logging/DropGlyph';
 
 function Swatch({ kind, southern }: { kind: LegendKind; southern: boolean }) {
   const t = useTheme();
+  if (kind === 'cycleDay') return <CycleDayBadge day={1} inverted={false} />;
   if (kind === 'moon') return <MoonGlyph phase="first" southern={southern} size={14} color={t.c.textSecondary} />;
   const base = { width: 14, height: 14, borderRadius: 4 } as const;
   if (kind === 'period') return <View style={{ ...base, backgroundColor: t.c.period, alignItems: 'center', justifyContent: 'center' }}><DropGlyph fill={1} size={9} color="#FFFFFF" /></View>;
