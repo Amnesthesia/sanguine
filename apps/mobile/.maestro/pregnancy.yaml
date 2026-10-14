@@ -12,6 +12,8 @@ name: Pregnancy week on Today from the last period, then from an entered due dat
 - assertVisible: "Week 7, day 0"
 - assertVisible: "Due date likely .*"
 - assertVisible: "Counted from your last period start.*"
+- assertNotVisible:
+    id: guidance-card
 - takeScreenshot: pregnancy-today
 - tapOn: Settings
 - tapOn:

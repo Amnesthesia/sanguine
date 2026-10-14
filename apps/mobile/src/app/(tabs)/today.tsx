@@ -1,3 +1,8 @@
+import { energyDays } from '@/features/logging/actions';
+import { energyInsight, lowPhaseOf } from '@/features/insights/energyModel';
+import { useRouter } from 'expo-router';
+import { GuidanceCard } from '@/features/guidance/GuidanceCard';
+import { phaseOn, showSupplements } from '@/features/guidance/guidance';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -20,6 +25,7 @@ import { Text } from '@/ui/Text';
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
   const msg = useMsg();
+  const router = useRouter();
   const { prediction, history, settings, today, prefs, profile, db, store, version, refresh } = useApp();
   const muteFlag = useApp((s) => s.muteFlag);
   const [todayFlow, setTodayFlow] = useState<string | undefined>();
@@ -42,24 +48,38 @@ export default function TodayScreen() {
   const pregnancy = pregnantSince ? pregnancyModel({ since: pregnantSince, cycleStarts: history?.cycles.map((c) => c.start) ?? [], dueDate, today }) : undefined;
 
   const eff = effectivePrefs(prefs, profile, today);
+  const records = useMemo(() => (history && settings ? analyzeCycles(history, settings).map((c) => c.record) : []), [history, settings]);
+  const showEstimate = SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate;
   const lastCycle = history?.cycles.at(-1);
   const bleedDays = lastCycle?.end ? diffDays(lastCycle.end, lastCycle.start) + 1 : undefined;
   const model = useMemo(
-    () => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate: SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate, todayFlow, ...(bleedDays ? { bleedDays } : {}) }),
-    [prediction, history, today, eff.showOvulationEstimate, todayFlow, bleedDays],
+    () => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate, todayFlow, ...(bleedDays ? { bleedDays } : {}) }),
+    [prediction, history, today, showEstimate, todayFlow, bleedDays],
   );
+  const guide = useMemo(
+    () => (prefs.cycleGuidance ? phaseOn({ date: today, today, prediction, cycles: records, showEstimate }) : undefined),
+    [prefs.cycleGuidance, today, prediction, records, showEstimate],
+  );
+  const [energyPoints, setEnergyPoints] = useState<Array<{ day: string; level: number }>>([]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads after every write
+  useEffect(() => { if (db) void energyDays(db).then(setEnergyPoints); }, [db, version]);
+  const energyLow = useMemo(() => {
+    if (!guide) return false;
+    const { suggestions } = energyInsight(energyPoints, today, (d) => phaseOn({ date: d, today, prediction, cycles: records, showEstimate }));
+    return lowPhaseOf(suggestions) === guide.phase;
+  }, [guide, energyPoints, today, prediction, records, showEstimate]);
   const note = useMemo(
     // analyzed records carry nextStart, length and the engine's quality; the raw history does not (same as Insights)
-    () => symptomNote(history && settings ? analyzeCycles(history, settings).map((c) => c.record) : [], history?.logs ?? [], noteDay(prefs.symptomNote, model.state, model.dayOfCycle)),
-    [history, settings, prefs.symptomNote, model.state, model.dayOfCycle],
+    () => symptomNote(records, history?.logs ?? [], noteDay(prefs.symptomNote, model.state, model.dayOfCycle)),
+    [records, history, prefs.symptomNote, model.state, model.dayOfCycle],
   );
   // P8-13 item 5 (D-094): a cycle far shorter than hers is asked about once, never set aside on its own
   const [answered, setAnswered] = useState<string[] | undefined>();
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads after an answer
   useEffect(() => { if (db) void answeredShortCycles(db).then(setAnswered); }, [db, version]);
   const shortQ = useMemo(
-    () => (history && settings && answered ? shortCycleQuestion(analyzeCycles(history, settings).map((c) => c.record), today, answered) : undefined),
-    [history, settings, answered, today],
+    () => (history && settings && answered ? shortCycleQuestion(records, today, answered) : undefined),
+    [history, settings, records, answered, today],
   );
   const answer = (f: () => Promise<unknown>) => void f().then(() => refresh());
   const word = model.confidence && model.state === 'predicted' ? t(`confidence.${model.confidence}`) : undefined;
@@ -95,6 +115,7 @@ export default function TodayScreen() {
       ) : null}
       {model.estimate ? <EstimateCard m={model.estimate} /> : null}
       {shownFlags.slice(0, 1).map((f) => <FlagCard key={f.code} f={f} onMute={(c) => void muteFlag(c)} />)}
+      {guide ? <GuidanceCard energyLow={energyLow} day={guide} supplements={showSupplements(eff.teen)} onMore={() => router.push({ pathname: '/day/[date]', params: { date: today } })} /> : null}
       <View style={{ paddingVertical: 8 }}>
         <Text variant="caption" color="textSecondary" style={{ textAlign: 'center' }} testID="today-footer">{t(model.footerKey)}</Text>
       </View>

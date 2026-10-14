@@ -1,5 +1,7 @@
+import { GuidanceCard } from '@/features/guidance/GuidanceCard';
+import { phaseOn, showSupplements } from '@/features/guidance/guidance';
 // Day detail (PLAN.md §8.3): everything logged that day with provenance, edit, delete, and the two correction actions.
-import type { ISODate } from '@sanguine/engine';
+import { analyzeCycles, type ISODate } from '@sanguine/engine';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +31,7 @@ export default function DayDetail() {
   const router = useRouter();
   const { date } = useLocalSearchParams<{ date: string }>();
   const day = date as ISODate;
-  const { db, store, prefs, profile, prediction, today, refresh } = useApp();
+  const { db, store, prefs, profile, prediction, today, history, settings, refresh, version } = useApp();
   const [events, setEvents] = useState<DayEvent[]>([]);
   const [isPeriodDay, setIsPeriodDay] = useState(false);
 
@@ -39,11 +41,19 @@ export default function DayDetail() {
     const s = await dayState(db, day);
     setIsPeriodDay(s.flowKind === 'period' && s.flow !== null && s.flow !== 'none');
   }, [store, db, day]);
-  useEffect(() => { void reload(); }, [reload]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads entries after writes in the log sheet
+  useEffect(() => { void reload(); }, [reload, version]);
   // the calendar marks on this day in words (D-104); a future day cannot be logged, so it offers neither "Nothing logged" nor Edit
   const isFuture = day > today;
-  const showEstimate = SHOW_OVULATION_ESTIMATE && effectivePrefs(prefs, profile, today).showOvulationEstimate;
+  const eff = effectivePrefs(prefs, profile, today);
+  const showEstimate = SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate;
   const estimates = useMemo(() => dayEstimates(day, prediction, showEstimate, isPeriodDay), [day, prediction, showEstimate, isPeriodDay]);
+  const guide = useMemo(
+    () => (prefs.cycleGuidance && history && settings
+      ? phaseOn({ date: day, today, prediction, cycles: analyzeCycles(history, settings).map((c) => c.record), showEstimate })
+      : undefined),
+    [prefs.cycleGuidance, history, settings, day, today, prediction, showEstimate],
+  );
   const after = async () => { await refresh(); await reload(); };
   // a deleted entry cannot be brought back from this screen, so ask first (I-14, D-075); the event log keeps it as a retraction
   const confirmDelete = (e: DayEvent) => Alert.alert(tr('day.deleteConfirmTitle'), describeEvent(e, tr, prefs.tempUnit), [
@@ -72,6 +82,7 @@ export default function DayDetail() {
           {estimates.length ? <Text variant="caption" color="textSecondary">{tr('day.estimates.note')}</Text> : null}
         </Card>
       ) : null}
+      {guide ? <GuidanceCard day={guide} supplements={showSupplements(eff.teen)} full /> : null}
       <View style={{ gap: 4 }}>
         {isFuture ? <Text variant="caption" color="textSecondary" testID="day-future-note">{tr('calendar.futureNote')}</Text> : <Button testID="day-edit" label={tr('day.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />}
         {isPeriodDay && db && store ? (<>

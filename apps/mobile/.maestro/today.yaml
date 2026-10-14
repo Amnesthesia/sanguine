@@ -15,6 +15,8 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - assertNotVisible:
     id: estimate-card
 - waitForAnimationToEnd
+- assertNotVisible:
+    id: guidance-card
 - takeScreenshot: empty
 # typical user, cycle day 11
 - runFlow:
@@ -39,6 +41,43 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
     id: symptom-note
 - assertVisible: "Estimates are ranges, not promises. Not a contraceptive."
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: guidance-card
+    centerElement: true
+- assertVisible: "Food and movement"
+- assertVisible:
+    id: guidance-phase-follicular
+- assertVisible:
+    id: guidance-food-vitaminC
+- assertVisible: ".*For example: muesli with kiwifruit.*"
+- scrollUntilVisible:
+    element:
+      id: guidance-move
+    centerElement: true
+- assertNotVisible:
+    id: guidance-supps
+- takeScreenshot: guidance-today
+- scrollUntilVisible:
+    element:
+      id: guidance-more
+    centerElement: true
+- tapOn:
+    id: guidance-more
+- extendedWaitUntil:
+    visible:
+      id: screen-day
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: guidance-sources
+    centerElement: true
+- assertVisible:
+    id: guidance-body
+- assertVisible: "Sources: .*"
+- takeScreenshot: guidance-day-full
+- tapOn:
+    id: day-back
 - takeScreenshot: typical
 # period in progress
 - runFlow:
@@ -52,6 +91,25 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - assertVisible: "Day 2 of your period"
 - assertVisible: "Logged: medium flow"
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: guidance-card
+    centerElement: true
+- assertVisible:
+    id: guidance-phase-menstrual
+- assertVisible:
+    id: guidance-food-iron
+- scrollUntilVisible:
+    element:
+      id: guidance-supps
+    centerElement: true
+- assertVisible:
+    id: guidance-supp-ginger
+- assertVisible:
+    id: guidance-supp-omega3
+- assertVisible:
+    id: guidance-supp-zinc
+- takeScreenshot: guidance-period-supps
 - takeScreenshot: period-in-progress
 # irregular user: rough estimate and the quiet flag card
 - runFlow:
@@ -69,6 +127,12 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
       id: flag-variability
 - assertVisible: "Your cycle lengths have varied by more than 7 days.*"
 - waitForAnimationToEnd
+- scrollUntilVisible:
+    element:
+      id: guidance-card
+    centerElement: true
+- assertVisible:
+    id: guidance-phase-general
 - takeScreenshot: irregular-flag
 # centred: at the bottom edge the button counts as visible but sits under the floating tab bar, and the tap opens Calendar
 - scrollUntilVisible:
