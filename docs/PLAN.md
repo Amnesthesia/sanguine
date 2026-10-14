@@ -530,6 +530,7 @@ CREATE TABLE schema_migration (version INTEGER PRIMARY KEY, applied_at TEXT NOT 
 | `period.end` | `{ day }` | — |
 | `flow` | `{ day, level, flow_kind }` | Logging a flow on a day with no open period implies `period.start` for that day unless `flow_kind` is non-period |
 | `symptom` | `{ day, code, intensity }` | One event per symptom; intensity 0 retracts |
+| energy | { day, level } | The user's own 1-5 rating; 0 clears; never read by the engine (D-108) |
 | `biomarker` | `{ day, type, value, source, measured_at, disturbed }` | — |
 | `sex` | `{ day, protected }` | — |
 | `life_state.set` / `life_state.end` | `{ kind, detail, day }` | — |
@@ -997,6 +998,7 @@ No external clinician or regulatory review is assumed. Every decision that would
 | Breastfeeding | Suspended until first period, then low confidence for 3 cycles, fertile band only with a biomarker | Any calendar-based band: no retrieved timing evidence | `engine/lifestate.ts` |
 | Symptom weight | Zero in predictions; per-user patterns in Insights, and one look-back note on Today (D-087) | Low-weight learned adjustment: no population evidence, and it would make predictions harder to explain | by construction |
 | Symptom list | 40 codes (24, plus 16 for imports, D-056), 8 visible by default (cramps, headache, bloating, breast tenderness, mood low, acne, fatigue, mid-cycle spotting) | — | `copy/symptoms.json` |
+| Food, movement and supplement notes | Every note graded with sources; several foods per phase with example meals, popular claims graded on their evidence; movement for mood; supplements named with grade, trial amounts and safety notes, hidden under 18; no calorie or restriction words; general set when the phase is uncertain; none while suspended | Calorie figures, phase-based training plans: disordered-eating harm, no phase effect | features/guidance/guidance.ts, copy guidance.* |
 | Recency weighting | λ = 1 (0.92 failed the §4.15 gate, D-021); λ = 0.8 inside the perimenopause state | Shipping 0.92 on the plan's say-so: a third of the required gain | `engine/params.ts: RECENCY_LAMBDA` |
 
 ### 11.2 Regulatory and legal defaults applied without review
