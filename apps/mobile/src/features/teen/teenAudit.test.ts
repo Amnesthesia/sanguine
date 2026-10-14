@@ -1,9 +1,11 @@
 // PLAN.md §2.4, §8.6, §11.1: under 18 the app hides fertility tools and language by default. One place that checks every surface.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import en from '../../../../../copy/en-AU.json';
 import { addDays, type EngineSettings, type History, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PREFS, effectivePrefs } from '@/data/prefs';
+import { GUIDANCE, GUIDE_PHASES } from '@/features/guidance/guidance';
 import { buildToday } from '@/features/today/todayModel';
 import { calendarLegend } from '@/features/calendar/calendarModel';
 import { healthRows } from '@/features/health/healthModel';
@@ -95,4 +97,19 @@ describe('every surface reads the teen rules', () => {
     ['app/settings/notifications.tsx', 'showOvulationEstimate'],
     ['app/settings/calendar.tsx', 'effectivePrefs(prefs, profile, today).showOvulationEstimate'],
   ])('%s uses %s', (file, word) => expect(read(file)).toContain(word));
+});
+
+describe('food and movement notes (P8-18)', () => {
+  it('nothing a teen can reach uses fertility words; teens see no supplement copy', () => {
+    const g = (en as unknown as { guidance: Record<string, unknown> & { food: Record<string, unknown> } }).guidance;
+    const words = (n: unknown): string => (typeof n === 'string' ? n : n && typeof n === 'object' ? Object.values(n).map(words).join(' ') : '');
+    // teens never reach the ovulatory phase (phaseOn folds it), so its notes and foods may name ovulation
+    for (const ph of GUIDE_PHASES.filter((p) => p !== 'ovulatory')) {
+      expect(words(g[ph]), ph).not.toMatch(/ovulat|fertil|pregnan/i);
+      for (const f of GUIDANCE[ph].foods) expect(words(g.food[f.id]), f.id).not.toMatch(/ovulat|fertil|pregnan/i);
+    }
+    // phase names and "phaseIn" hold the ovulatory label teens never reach; supp* is hidden from teens (SUPPLEMENTS_FOR_TEENS)
+    const skip = new Set<string>([...GUIDE_PHASES, 'phase', 'phaseIn', 'food', 'supp', 'suppLabel', 'suppCaveat']);
+    expect(words(Object.fromEntries(Object.entries(g).filter(([k]) => !skip.has(k))))).not.toMatch(/ovulat|fertil|pregnan/i);
+  });
 });
