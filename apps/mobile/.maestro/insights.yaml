@@ -130,3 +130,29 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
 - scrollUntilVisible:
     element: ".*paused period.*"
 - takeScreenshot: marked-pregnancy
+
+# P8-19: energy chart, averages by phase, suggestions from her own logs
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=energy
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Insights
+- tapOn: "Charts"
+- scrollUntilVisible:
+    element:
+      id: card-energy
+    centerElement: true
+- assertVisible:
+    id: chart-energy
+- scrollUntilVisible:
+    element:
+      id: energy-suggestion-lowPhase
+    centerElement: true
+- assertVisible: "Your energy was lowest in the days before your period.*"
+- assertVisible: "Your energy was highest in the follicular phase.*"
+- assertVisible: "From your own logs. Energy does not change any estimate."
+- takeScreenshot: energy-insights

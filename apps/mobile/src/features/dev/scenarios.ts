@@ -1,10 +1,10 @@
 // Development-only data scenarios (PLAN.md §9.6 sample content), relative to "today" so screens always show the same numbers.
-import { addDays, type ISODate } from '@sanguine/engine';
+import { addDays, diffDays, type ISODate } from '@sanguine/engine';
 import type { NewEvent } from '@/data/events';
 import type { Profile } from '@/data/project';
 
-export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog' | 'pattern' | 'pregnant' | 'lookback' | 'lunar' | 'shortCycle';
-export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback', 'lunar', 'shortCycle'];
+export type ScenarioName = 'empty' | 'typical' | 'inProgress' | 'irregular' | 'skippedLog' | 'pattern' | 'pregnant' | 'lookback' | 'lunar' | 'shortCycle' | 'energy';
+export const SCENARIOS: ScenarioName[] = ['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback', 'lunar', 'shortCycle', 'energy'];
 
 const period = (start: ISODate, bleed = 4, level: 'light' | 'medium' | 'heavy' = 'medium'): NewEvent[] =>
   Array.from({ length: bleed }, (_, i) => ({ kind: 'flow', payload: { day: addDays(start, i), level, flow_kind: 'period' } }));
@@ -67,6 +67,17 @@ export function scenario(name: ScenarioName, today: ISODate): { profile: Profile
   if (name === 'inProgress') {
     const starts = startsFrom(addDays(today, -1), [28, 29]);
     return { profile, events: [...starts.slice(0, -1).flatMap((s) => period(s, 4)), ...period(starts.at(-1) as ISODate, 2)] };
+  }
+  if (name === 'energy') {
+    // P8-19: day 11 today; energy logged daily over three 28-day cycles, lowest in the 5 days before each period, highest mid-follicular
+    const starts = startsFrom(addDays(today, -10), [28, 28, 28]);
+    const level = (cd: number) => (cd <= 4 ? 3 : cd <= 14 ? 4 : cd <= 23 ? 3 : 2);
+    const days: NewEvent[] = [];
+    for (let d = starts[0] as ISODate; d <= today; d = addDays(d, 1)) {
+      const s = [...starts].reverse().find((x) => x <= d) as ISODate;
+      days.push({ kind: 'energy', payload: { day: d, level: level(diffDays(d, s) + 1) } });
+    }
+    return { profile, events: [...starts.flatMap((s) => period(s, 4)), ...days] };
   }
   // typical: day 11 today, cycles of 28 and 29 days (§9.6)
   const starts = startsFrom(addDays(today, -10), [28, 29]);

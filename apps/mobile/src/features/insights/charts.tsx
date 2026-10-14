@@ -1,3 +1,5 @@
+import { diffDays, type ISODate } from '@sanguine/engine';
+import { formatDay } from '@/ui/format';
 // Small SVG charts for Insights. No chart library: the shapes are simple and the colours are theme tokens.
 import { useWindowDimensions, View } from 'react-native';
 import Svg, { Circle, G, Line, Polyline, Rect, Text as SvgText } from 'react-native-svg';
@@ -54,6 +56,33 @@ export function TempChart({ points, coverline, unitLabel }: { points: Array<{ da
         <SvgText x={w - PAD.r} y={H - 8} fontSize={11} fill={t.c.textSecondary} textAnchor="end">{maxDay}</SvgText>
         <SvgText x={PAD.l - 6} y={PAD.t + 10} fontSize={11} fill={t.c.textSecondary} textAnchor="end">{hi.toFixed(1)}</SvgText>
         <SvgText x={PAD.l - 6} y={H - PAD.b} fontSize={11} fill={t.c.textSecondary} textAnchor="end">{lo.toFixed(1)}</SvgText>
+      </Svg>
+    </View>
+  );
+}
+
+export function EnergyChart({ points, starts, from, to, label }: { points: Array<{ day: ISODate; level: number }>; starts: ISODate[]; from: ISODate; to: ISODate; label: string }) {
+  const t = useTheme();
+  const { width } = useWindowDimensions();
+  const w = Math.min(width, 560) - 32 - 32;
+  const span = Math.max(1, diffDays(to, from));
+  const x = (d: ISODate) => PAD.l + (diffDays(d, from) / span) * (w - PAD.l - PAD.r);
+  const y = (v: number) => PAD.t + (1 - (v - 1) / 4) * (H - PAD.t - PAD.b);
+  // ponytail: one polyline joins across unlogged days; split it into runs if gaps read as data
+  return (
+    <View testID="chart-energy" accessible accessibilityRole="image" accessibilityLabel={label}>
+      <Svg width={w} height={H}>
+        {[1, 3, 5].map((v) => (
+          <G key={v}>
+            <Line x1={PAD.l} x2={w - PAD.r} y1={y(v)} y2={y(v)} stroke={t.c.border} strokeWidth={1} />
+            <SvgText x={PAD.l - 6} y={y(v) + 4} fontSize={11} fill={t.c.textSecondary} textAnchor="end">{v}</SvgText>
+          </G>
+        ))}
+        {starts.map((s) => <Line key={s} x1={x(s)} x2={x(s)} y1={PAD.t} y2={H - PAD.b} stroke={t.c.period} strokeWidth={1} strokeDasharray="3 3" />)}
+        <Polyline points={points.map((p) => `${x(p.day)},${y(p.level)}`).join(' ')} fill="none" stroke={t.c.accent} strokeWidth={2} />
+        {points.map((p) => <Circle key={p.day} cx={x(p.day)} cy={y(p.level)} r={3} fill={t.c.accent} />)}
+        <SvgText x={PAD.l} y={H - 8} fontSize={11} fill={t.c.textSecondary}>{formatDay(from)}</SvgText>
+        <SvgText x={w - PAD.r} y={H - 8} fontSize={11} fill={t.c.textSecondary} textAnchor="end">{formatDay(to)}</SvgText>
       </Svg>
     </View>
   );

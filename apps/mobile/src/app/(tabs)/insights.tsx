@@ -1,12 +1,15 @@
-import { analyzeCycles, detectBbtShift, diffDays } from '@sanguine/engine';
+import { energyInsight, MIN_CHART_POINTS } from '@/features/insights/energyModel';
+import { GUIDANCE, phaseOn } from '@/features/guidance/guidance';
+import { SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
+import { addDays, analyzeCycles, detectBbtShift, diffDays } from '@sanguine/engine';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 import { type LedgerRow, ledgerRows, ledgerSummary, type LedgerSummary } from '@/data/ledger';
-import { fromC } from '@/features/logging/actions';
+import { energyDays, fromC } from '@/features/logging/actions';
 import { effectivePrefs } from '@/data/prefs';
-import { LengthChart, TempChart } from '@/features/insights/charts';
+import { EnergyChart, LengthChart, TempChart } from '@/features/insights/charts';
 import { HistoryRow } from '@/features/insights/HistoryRow';
 import { accuracyText, cycleLengthSeries, historyRows, phaseBars } from '@/features/insights/insightsModel';
 import { addPastPregnancy } from '@/features/settings/lifeState';
@@ -30,7 +33,8 @@ export default function InsightsScreen() {
   const { t: tr } = useTranslation();
   const router = useRouter();
   const { history, settings, prediction, today, prefs, profile, db, store, refresh, version } = useApp();
-  const { fertilityTools } = effectivePrefs(prefs, profile, today);
+  const eff = effectivePrefs(prefs, profile, today);
+  const { fertilityTools } = eff;
   const [tab, setTab] = useState<Tab>('history');
   const [ledger, setLedger] = useState<LedgerSummary>({ total: 0, in80: 0, in95: 0, meanAbsError: 0 });
   const [scored, setScored] = useState<LedgerRow[]>([]);
@@ -38,6 +42,16 @@ export default function InsightsScreen() {
   useEffect(() => { if (db) { void ledgerSummary(db).then(setLedger); void ledgerRows(db).then(setScored); } }, [db, version]);
 
   const cycles = useMemo(() => (history && settings ? analyzeCycles(history, settings).map((c) => c.record) : []), [history, settings]);
+  const [energyPoints, setEnergyPoints] = useState<Array<{ day: string; level: number }>>([]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads after every write
+  useEffect(() => { if (db) void energyDays(db).then(setEnergyPoints); }, [db, version]);
+  const showEstimate = SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate;
+  const energy = useMemo(
+    () => energyInsight(energyPoints, today, (d) => phaseOn({ date: d, today, prediction, cycles, showEstimate })),
+    [energyPoints, today, prediction, cycles, showEstimate],
+  );
+  const energyFrom = addDays(today, -83);
+  const energyMean = energy.window.length ? Math.round((energy.window.reduce((a, p) => a + p.level, 0) / energy.window.length) * 10) / 10 : 0;
   const closed = cycles.filter((c) => c.length !== undefined).length;
   const rows = useMemo(() => historyRows(cycles, today), [cycles, today]);
   const series = useMemo(() => cycleLengthSeries(cycles, prediction?.cycleLength), [cycles, prediction]);
@@ -131,6 +145,40 @@ export default function InsightsScreen() {
             {bars.length ? <Text variant="caption" color="textSecondary" style={{ marginTop: 6 }}>{tr('insights.chart.phaseCaption')}</Text> : null}
           </Card>
         </>)
+      ) : null}
+
+      {tab === 'charts' ? (
+        <Card testID="card-energy">
+          <Text variant="heading" accessibilityRole="header">{tr('insights.energy.title')}</Text>
+          {energy.window.length >= MIN_CHART_POINTS ? (<>
+            <EnergyChart points={energy.window} starts={cycles.map((c) => c.start).filter((s) => s >= energyFrom)} from={energyFrom} to={today}
+              label={tr('insights.energy.chartA11y', { n: energy.window.length, mean: energyMean })} />
+            <Text variant="caption" color="textSecondary">{tr('insights.energy.chartCaption')}</Text>
+          </>) : <Text testID="chart-energy-few" variant="bodySmall" color="textSecondary">{energy.window.length ? tr('insights.energy.few', { n: MIN_CHART_POINTS - energy.window.length }) : tr('insights.energy.none')}</Text>}
+          {energy.byPhase.length ? (<>
+            <Text variant="bodySmall" style={{ marginTop: 10, fontWeight: '600' }}>{tr('insights.energy.byPhaseTitle')}</Text>
+            {energy.byPhase.map((b) => (
+              <View key={b.phase} testID={`energy-phase-${b.phase}`} accessible accessibilityLabel={`${tr(`guidance.phase.${b.phase}`)}: ${tr('insights.energy.meanLine', { mean: b.mean, n: b.n })}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text variant="caption" color="textSecondary" style={{ width: 110 }}>{tr(`guidance.phase.${b.phase}`)}</Text>
+                <View style={{ flex: 1, height: 10, backgroundColor: t.c.border, borderRadius: 5, overflow: 'hidden' }}><View style={{ width: `${(b.mean / 5) * 100}%`, height: 10, backgroundColor: t.c.accent }} /></View>
+                <Text variant="caption" tabular style={{ width: 92, textAlign: 'right' }}>{tr('insights.energy.meanLine', { mean: b.mean, n: b.n })}</Text>
+              </View>
+            ))}
+          </>) : null}
+          {!prediction?.suspended && energy.suggestions.length ? (<>
+            <Text variant="bodySmall" style={{ marginTop: 10, fontWeight: '600' }}>{tr('insights.energy.suggestionsTitle')}</Text>
+            {energy.suggestions.map((s) => (
+              <View key={s.kind} testID={`energy-suggestion-${s.kind}`} style={{ gap: 2 }}>
+                <Text variant="bodySmall">{s.kind === 'lowOverall' ? tr('insights.energy.lowOverall', { mean: s.mean, n: s.n }) : tr(`insights.energy.${s.kind}`, { phaseIn: tr(`guidance.phaseIn.${s.phase}`), mean: s.mean, overall: s.overall, n: s.n })}</Text>
+                {s.kind === 'lowPhase' ? (<>
+                  <Text variant="bodySmall" color="textSecondary">{tr('insights.energy.lowPhaseTip')}</Text>
+                  <Text variant="caption" color="textSecondary">{tr(`guidance.evidence.${GUIDANCE[s.phase].move}`)}</Text>
+                </>) : null}
+              </View>
+            ))}
+          </>) : null}
+          <Text variant="caption" color="textSecondary" style={{ marginTop: 6 }}>{tr('insights.energy.caption')}</Text>
+        </Card>
       ) : null}
 
       {tab === 'accuracy' ? (

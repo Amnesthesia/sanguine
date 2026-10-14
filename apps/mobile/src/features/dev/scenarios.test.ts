@@ -1,3 +1,6 @@
+import { energyDays } from '@/features/logging/actions';
+import { phaseOn } from '@/features/guidance/guidance';
+import { energyInsight } from '@/features/insights/energyModel';
 import { addDays, analyzeCycles, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import { migrate } from '@/data/migrate';
@@ -16,11 +19,26 @@ async function load(name: Parameters<typeof scenario>[0], today = '2026-10-10') 
   await store.setProfile(s.profile);
   await store.appendMany(s.events);
   const { history, settings } = await store.engineInputs();
-  return { prediction: predict(history, settings, today), history, settings };
+  return { prediction: predict(history, settings, today), history, settings, db };
 }
 
 describe('dev scenarios', () => {
-  it('all names are covered', () => expect(SCENARIOS).toEqual(['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback', 'lunar', 'shortCycle']));
+  it('energy: chart data and real phase placement find premenstrual low and follicular high (P8-19)', async () => {
+    const today = '2026-10-14';
+    const { prediction, history, settings, db } = await load('energy', today);
+    const cycles = analyzeCycles(history, settings).map((c) => c.record);
+    const points = await energyDays(db);
+    expect(prediction.currentPhase?.dayOfCycle).toBe(11);
+    expect(points).toHaveLength(95);
+    expect(new Set(points.map((p) => p.day)).size).toBe(95);
+    const result = energyInsight(points, today, (date) => phaseOn({ date, today, prediction, cycles, showEstimate: true }));
+    expect(result.window).toHaveLength(84);
+    expect(result.suggestions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'lowPhase', phase: 'premenstrual' }),
+      expect.objectContaining({ kind: 'highPhase', phase: 'follicular' }),
+    ]));
+  });
+  it('all names are covered', () => expect(SCENARIOS).toEqual(['empty', 'typical', 'inProgress', 'irregular', 'skippedLog', 'pattern', 'pregnant', 'lookback', 'lunar', 'shortCycle', 'energy']));
   it('typical: cycle day 11, cycles of 28 and 29 days, a fair-estimate next period', async () => {
     const { prediction: p, history } = await load('typical');
     expect(p.currentPhase?.dayOfCycle).toBe(11);
