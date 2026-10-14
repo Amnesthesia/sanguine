@@ -196,7 +196,7 @@ Status: open = not yet checked, carried by the owning backlog item; applied = co
   On by default, with a switch in Settings > Tracking. Research table: `docs/superpowers/plans/2026-10-14-cycle-food-movement-notes.md`.
 
   Rejected: luteal calorie figures (disordered-eating harm; teens in scope); "cycle syncing" training plans (2023 reviews find no phase effect); showing a phase while the ovulation estimate is uncertain; supplements for teens.
-- D-108 (2026-10-14) Energy log, chart and suggestions (P8-19, owner request).
+- D-108 (2026-10-14) Energy log, chart and suggestions (P8-19, owner request). Verification (2026-10-14, iOS simulator only): logging, insights, today, pregnancy and short-cycle flows pass; the new screens were checked at the default text size. Not verified: the 150% font-scale pass for the new cards (`fontscale.sh`), and Android. `calendar.yaml` passes every new step but fails later in its old back-dating section: with today on 14 Oct the previous month's 15th falls 7 days after the 5 Sep period, so the "Is it the same period?" prompt appears (a date-dependent flow, not changed by this work).
   - **Storage.** A new event kind `energy` `{ day, level 1-5 }` (0 clears; one entry per day, earlier ones retracted as with symptoms, D-097). It projects into `daily_log.energy` (migration 004), is exported as the last `daily.csv` column, and never enters the engine's `History`.
   - **Logging.** The log sheet has an Energy row of five chips (Very low to High); tapping the chosen one again clears it.
   - **Insights.** The Charts tab shows 12 weeks of energy with period starts marked, the average for each part of the cycle (through `phaseOn`; general and unplaced days count in none), and look-back suggestions in her own numbers:
