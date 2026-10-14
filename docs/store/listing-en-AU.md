@@ -65,6 +65,29 @@ period tracker,cycle,menstrual,calendar,private,offline,temperature,ovulation es
 
 Health and Fitness (both stores).
 
+## Tags (Google Play, up to 5)
+
+Play Console > Grow users > Store presence > Store settings > Tags. Tags come from Google's fixed list; there is no "period" or "women's health" tag.
+
+1. Health & fitness
+2. Calendar
+3. Privacy & security
+4. Lifestyle
+
+Not chosen: Medical (Sanguine is not a medical device and says so; the tag would contradict PLAN §2.3), Activity tracker (step and workout trackers), Parenting and Baby care (pregnancy apps; Sanguine has no conception mode). Check the picker when submitting: the list can change.
+
+## Android permission declarations (Play Console)
+
+### `android.permission.READ_MEDIA_IMAGES` (photo and video permissions)
+
+Where it comes from: Sanguine does not read photos. The permission is declared by the `expo-screen-capture` library (its manifest asks for it on Android 13 only, `minSdkVersion` and `maxSdkVersion` 33), which Sanguine uses to block screenshots and the recent-apps thumbnail (Settings > Privacy and data > Screen protection, on by default; `features/lock/ScreenProtection.tsx`). The library needs the permission only for its screenshot listener (`addScreenshotListener`, which watches the photo library for new screenshots), and Sanguine never calls it.
+
+Text for the declaration form (if the permission stays):
+
+> Sanguine does not access, read or upload your photos or videos. The permission is declared by a library Sanguine uses to stop screenshots of your health data and to hide the app in the recent-apps view. On Android 13 that library can also detect when a screenshot is taken by checking for new images; Sanguine does not use that feature and never reads the photo library.
+
+Recommended instead: Google Play allows photo and video permissions only for apps whose core purpose needs broad access to photos, and a description like the one above (not core use, not used at all) is likely to be rejected. Remove the permission from the build with `"blockedPermissions": ["android.permission.READ_MEDIA_IMAGES"]` under `expo.android` in `apps/mobile/app.json`. Screen protection (FLAG_SECURE) does not need it. Then rebuild and answer "no" to photo and video permissions in the Play Console.
+
 ## URLs and contact
 
 The website is an Astro site in `apps/site/`, built by `pnpm site` and published to GitHub Pages by `.github/workflows/pages.yml`. The policy pages render the same generated data the app shows (`policies.generated.ts`, from `docs/privacy-policy.md` and `docs/consumer-health-data-policy.md`), so the published and in-app policies cannot drift.
