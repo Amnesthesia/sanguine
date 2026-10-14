@@ -14,14 +14,15 @@ export interface DayState {
   symptoms: Record<string, number>;
   sex: { protected: boolean } | null;
   hasNote: boolean;
+  energy: number | null;
 }
 
 export async function dayState(db: Database, day: ISODate): Promise<DayState> {
-  const r = await db.get<{ flow: string | null; flow_kind: string | null; clots: number; symptoms: string; sex: string | null; notes_cipher: Uint8Array | null }>('SELECT * FROM daily_log WHERE day = ?', [day]);
+  const r = await db.get<{ flow: string | null; flow_kind: string | null; clots: number; symptoms: string; sex: string | null; notes_cipher: Uint8Array | null; energy: number | null }>('SELECT * FROM daily_log WHERE day = ?', [day]);
   return {
     flow: (r?.flow as FlowLevel | null) ?? null, flowKind: (r?.flow_kind as FlowKind | null) ?? null, clots: Boolean(r?.clots),
     symptoms: Object.fromEntries((JSON.parse(r?.symptoms ?? '[]') as Array<{ code: string; intensity: number }>).map((s) => [s.code, s.intensity])),
-    sex: r?.sex ? (JSON.parse(r.sex) as { protected: boolean }) : null, hasNote: Boolean(r?.notes_cipher),
+    sex: r?.sex ? (JSON.parse(r.sex) as { protected: boolean }) : null, hasNote: Boolean(r?.notes_cipher), energy: r?.energy ?? null,
   };
 }
 
@@ -90,8 +91,16 @@ export async function setSymptom(store: EventStore, day: ISODate, code: string, 
   if (intensity > 0) await store.append({ kind: 'symptom', payload: { day, code, intensity } });
 }
 
+/** The user's own energy rating (P8-19, D-108): one entry per day like a symptom (D-097); 0 clears. */
+export async function setEnergy(store: EventStore, day: ISODate, level: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
+  for (const e of (await dayEvents(store, day)).filter((x) => x.kind === 'energy')) await store.retract(e.id);
+  if (level > 0) await store.append({ kind: 'energy', payload: { day, level } });
+}
+export const energyDays = (db: Database) =>
+  db.all<{ day: ISODate; level: number }>('SELECT day, energy AS level FROM daily_log WHERE energy IS NOT NULL ORDER BY day');
+
 export type DayEvent = EventRow & { data: Record<string, unknown> };
-const SHOWN = new Set(['flow', 'symptom', 'biomarker', 'sex', 'note', 'period.start', 'period.end']);
+const SHOWN = new Set(['flow', 'symptom', 'energy', 'biomarker', 'sex', 'note', 'period.start', 'period.end']);
 
 /** Active (not retracted) events about a day, newest last, for the day detail list. */
 export async function dayEvents(store: EventStore, day: ISODate): Promise<DayEvent[]> {

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FlowLevel } from '@/data/events';
-import { dayEvents, dayState, fromC, periodContext, setFlow, setSymptom, type DayState } from './actions';
+import { dayEvents, dayState, fromC, periodContext, setFlow, setSymptom, setEnergy, type DayState } from './actions';
 import { FlowSelector } from './FlowSelector';
 import { MoreSection } from './MoreSection';
 import { SymptomGrid } from './SymptomGrid';
@@ -20,7 +20,7 @@ import { Text } from '@/ui/Text';
 
 /** Set only by deep links from outside the app (widget, home-screen quick actions); in-app buttons open the sheet plain (D-097). */
 type Section = 'period' | 'temperature';
-const EMPTY: DayState = { flow: null, flowKind: null, clots: false, symptoms: {}, sex: null, hasNote: false };
+const EMPTY: DayState = { flow: null, flowKind: null, clots: false, symptoms: {}, sex: null, hasNote: false, energy: null };
 type BleedKind = 'withdrawal_bleed' | 'on_contraception';
 
 export function LogSheet() {
@@ -91,6 +91,13 @@ export function LogSheet() {
     await saved();
   }
 
+  async function onEnergy(v: '1' | '2' | '3' | '4' | '5') {
+    if (!store) return;
+    const level = Number(v) as 1 | 2 | 3 | 4 | 5;
+    await setEnergy(store, day, state.energy === level ? 0 : level); // tapping the chosen level again clears it
+    await saved();
+  }
+
   const symptomCodes = useMemo(() => prefs.symptoms, [prefs.symptoms]);
   const isToday = day >= today;
   const heading = (key: string) => <Text variant="heading" accessibilityRole="header">{tr(key)}</Text>;
@@ -120,6 +127,9 @@ export function LogSheet() {
         {startsHere && !hormonal && state.flow && state.flow !== 'none' && state.flow !== 'spotting' ? <Text variant="caption" color="textSecondary" testID="new-period-caption">{tr('log.newPeriod', { date: formatDay(day) })}</Text> : null}
         {heading('log.symptoms')}
         <SymptomGrid codes={symptomCodes} values={state.symptoms} onSet={(c, n) => void onSymptom(c, n)} />
+        {heading('log.energy')}
+        <Chips testIDPrefix="energy" value={state.energy ? (String(state.energy) as '1') : undefined} onChange={(v) => void onEnergy(v)}
+          options={(['1', '2', '3', '4', '5'] as const).map((v) => ({ value: v, label: tr(`log.energyLevels.${v}`) }))} />
         {heading('log.more')}
         {db && store ? <MoreSection day={day} db={db} store={store} prefs={prefs} state={state} summaries={summaries} openRow={section === 'temperature' ? 'temperature' : undefined} onSaved={() => void saved()} /> : null}
       </ScrollView>

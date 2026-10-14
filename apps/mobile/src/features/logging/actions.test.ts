@@ -5,7 +5,7 @@ import type { Clock } from '@/data/ids';
 import { migrate } from '@/data/migrate';
 import { EventStore } from '@/data/store';
 import { openTestDb } from '@/data/testDb';
-import { dayEvents, dayState, fromC, markNotAPeriod, markSpotting, periodContext, saveCervix, saveLh, saveMucus, saveNote, saveTemperature, setFlow, setSex, setSymptom, toC } from './actions';
+import { setEnergy, energyDays, dayEvents, dayState, fromC, markNotAPeriod, markSpotting, periodContext, saveCervix, saveLh, saveMucus, saveNote, saveTemperature, setFlow, setSex, setSymptom, toC } from './actions';
 
 let n = 0;
 const clock: Clock = { nowMs: () => 1_700_000_000_000 + n++, iso: () => '2026-10-10T08:00:00+10:00', tz: () => 'Australia/Sydney', randomBytes: (k) => Uint8Array.from({ length: k }, (_, i) => (n + i) % 256) };
@@ -214,5 +214,24 @@ describe('bleeding after a pregnancy (P3-12, D-053)', () => {
     expect(await cycles()).toEqual([]);
     await setFlow(store, '2026-03-05', 'heavy', { kind: 'period' });
     expect((await cycles()).map((c) => c.start_day)).toEqual(['2026-03-05']);
+  });
+});
+
+describe('energy (P8-19)', () => {
+  it('one entry per day: a new level replaces the old, 0 clears, and the day screen lists only the current one', async () => {
+    await setEnergy(store, '2026-10-10', 2);
+    await setEnergy(store, '2026-10-10', 4);
+    expect((await dayState(db, '2026-10-10')).energy).toBe(4);
+    expect((await dayEvents(store, '2026-10-10')).filter((e) => e.kind === 'energy')).toHaveLength(1);
+    await setEnergy(store, '2026-10-10', 0);
+    expect((await dayState(db, '2026-10-10')).energy).toBeNull();
+    expect((await dayEvents(store, '2026-10-10')).filter((e) => e.kind === 'energy')).toHaveLength(0);
+  });
+  it('energyDays lists logged days in order and skips cleared ones', async () => {
+    await setEnergy(store, '2026-10-12', 3);
+    await setEnergy(store, '2026-10-11', 1);
+    await setEnergy(store, '2026-10-13', 5);
+    await setEnergy(store, '2026-10-13', 0);
+    expect(await energyDays(db)).toEqual([{ day: '2026-10-11', level: 1 }, { day: '2026-10-12', level: 3 }]);
   });
 });

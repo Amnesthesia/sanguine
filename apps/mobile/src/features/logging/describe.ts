@@ -29,6 +29,7 @@ export function describeEvent(e: DayEvent, t: TFunction, unit: 'C' | 'F'): strin
         return t('day.entry.cervix', { position: t(`log.cervixValues.position.${v.position}`).toLowerCase(), firmness: t(`log.cervixValues.firmness.${v.firmness}`).toLowerCase(), opening: t(`log.cervixValues.opening.${v.opening}`).toLowerCase() });
       return String(d.type);
     }
+    case 'energy': return t('day.entry.energy', { level: t(`log.energyLevels.${d.level}`), n: d.level });
     case 'sex': return t('day.entry.sex', { condom: d.protected ? t('log.condomYes') : t('log.condomNo') });
     case 'note': return t('day.entry.note');
     case 'period.start': return t('day.entry.periodStart');

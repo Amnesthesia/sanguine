@@ -44,6 +44,23 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 - tapOn:
     id: symptom-cramps
 - assertVisible: "Cramps, moderate, 2 of 3"
+- scrollUntilVisible:
+    element:
+      id: energy-2
+    centerElement: true
+- tapOn:
+    id: energy-2
+- assertVisible:
+    id: energy-2
+    checked: true
+- tapOn:
+    id: energy-2
+- assertVisible:
+    id: energy-2
+    checked: false
+- tapOn:
+    id: energy-4
+- takeScreenshot: energy-logged
 - takeScreenshot: sheet-symptoms
 - runFlow: _close-sheet.yaml
 

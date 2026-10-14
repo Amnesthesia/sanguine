@@ -7,6 +7,9 @@ const ev = (kind: string, data: Record<string, unknown>): DayEvent => ({ id: 'x'
 const t = i18n.t.bind(i18n);
 
 describe('describeEvent', () => {
+  it('energy shows the current level and score', () => {
+    expect(describeEvent(ev('energy', { level: 4 }), t, 'C')).toBe('Energy: Good (4 of 5)');
+  });
   it('flow with its kind', () => {
     expect(describeEvent(ev('flow', { level: 'medium', flow_kind: 'period' }), t, 'C')).toBe('Medium flow');
     expect(describeEvent(ev('flow', { level: 'light', flow_kind: 'withdrawal_bleed' }), t, 'C')).toBe('Light flow · withdrawal bleed');

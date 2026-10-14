@@ -157,6 +157,8 @@
     "dayOfCycleHeader": "Day {day} of your cycle"
   },
   "log": {
+    "energy": "Energy",
+    "energyLevels": { "1": "Very low", "2": "Low", "3": "OK", "4": "Good", "5": "High" },
     "title": "Log",
     "flow": "Flow",
     "bleeding": "Bleeding",
@@ -272,6 +274,7 @@
     "deleteConfirmTitle": "Delete this entry?",
     "deleteConfirmAction": "Delete entry",
     "entry": {
+      "energy": "Energy: {level} ({n} of 5)",
       "flow": "{level} flow",
       "flowKind": {
         "period": "",
@@ -382,6 +385,21 @@
     "failed": "The PDF could not be made."
   },
   "insights": {
+    "energy": {
+      "title": "Energy",
+      "few": "Log your energy on {n} more days to see a chart.",
+      "none": "Log your energy in the log sheet to see it here over time.",
+      "chartCaption": "Last 12 weeks. Dashed lines mark the start of each period.",
+      "chartA11y": "Energy chart: {n} days logged in the last 12 weeks, average {mean} out of 5.",
+      "byPhaseTitle": "Average by part of the cycle",
+      "meanLine": "{mean} of 5 · {n} days",
+      "suggestionsTitle": "What your logs show",
+      "lowPhase": "Your energy was lowest {phaseIn}: {mean} out of 5 on average, against {overall} overall, over {n} days you logged.",
+      "lowPhaseTip": "Exercise lifts mood and energy for most people, and even one session helps on average. On those days, a walk, yoga or a lighter session still counts.",
+      "highPhase": "Your energy was highest {phaseIn}: {mean} out of 5 on average. If you enjoy harder sessions, this is when you have tended to feel up to them.",
+      "lowOverall": "Your energy was low on most days you logged in the last 4 weeks: {mean} out of 5 on average over {n} days. Tiredness that lasts for weeks has many possible causes. A doctor can help you check what is going on.",
+      "caption": "From your own logs. Energy does not change any estimate."
+    },
     "pattern": {
       "title": "Your cycle pattern",
       "intro": "Counts from your own logs, compared with two markers used in published descriptions of cycle changes from the 40s (STRAW+10, Harlow et al. 2012). They describe your logs; they are not an assessment.",
