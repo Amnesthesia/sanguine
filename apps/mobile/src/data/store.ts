@@ -118,8 +118,8 @@ export class EventStore {
       await tx.run('INSERT INTO cycle (id,start_day,end_day,next_start,length_days,bleed_days,quality,ov_day,ov_sd,ov_basis,luteal_days) VALUES (?,?,?,?,?,?,?,?,?,?,?)',
         [c.id, c.start_day, c.end_day, c.next_start, c.length_days, c.bleed_days, c.quality, c.ov_day, c.ov_sd, c.ov_basis, c.luteal_days]);
     for (const d of p.dailyLog)
-      await tx.run('INSERT INTO daily_log (day,flow,flow_kind,clots,symptoms,sex,notes_cipher,updated_event) VALUES (?,?,?,?,?,?,?,?)',
-        [d.day, d.flow, d.flow_kind, d.clots, d.symptoms, d.sex, d.notes_cipher, d.updated_event]);
+      await tx.run('INSERT INTO daily_log (day,flow,flow_kind,clots,symptoms,sex,notes_cipher,updated_event,energy) VALUES (?,?,?,?,?,?,?,?,?)',
+        [d.day, d.flow, d.flow_kind, d.clots, d.symptoms, d.sex, d.notes_cipher, d.updated_event, d.energy]);
     for (const b of p.biomarkers)
       await tx.run('INSERT INTO biomarker (id,day,type,value,measured_at,source,provenance,disturbed,event_id) VALUES (?,?,?,?,?,?,?,?,?)',
         [b.id, b.day, b.type, b.value, b.measured_at, b.source, b.provenance, b.disturbed, b.event_id]);

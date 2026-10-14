@@ -37,8 +37,17 @@ describe('migrations', () => {
     await migrate(db, MIGRATIONS.slice(0, 2));
     await ev('e1');
     await db.run("INSERT INTO health_link (event_id, platform, external_id, direction, content_hash) VALUES ('e1', 'healthkit', 'x', 'read', 'h')");
-    expect(await migrate(db)).toMatchObject({ applied: [3] });
+    expect(await migrate(db)).toMatchObject({ applied: MIGRATIONS.slice(2).map((m) => m.version) });
     expect(await db.all('SELECT external_id, written_at FROM health_link')).toEqual([{ external_id: 'x', written_at: '' }]);
+  });
+  it('004 adds nullable energy and keeps existing daily logs and events (P8-19)', async () => {
+    await migrate(db, MIGRATIONS.slice(0, 3));
+    await ev('e1');
+    await db.run("INSERT INTO daily_log (day, flow, flow_kind, updated_event) VALUES ('2026-10-10', 'medium', 'period', 'e1')");
+    const before = await db.all('SELECT * FROM event');
+    expect(await migrate(db)).toMatchObject({ applied: [4] });
+    expect(await db.all('SELECT day, flow, energy FROM daily_log')).toEqual([{ day: '2026-10-10', flow: 'medium', energy: null }]);
+    expect(await db.all('SELECT * FROM event')).toEqual(before);
   });
   it('applies later migrations in order and only the pending ones', async () => {
     await migrate(db);

@@ -14,6 +14,7 @@ export interface CycleRow {
 }
 export interface DailyLogRow {
   day: ISODate; flow: string | null; flow_kind: string | null; clots: number; symptoms: string; sex: string | null;
+  energy: number | null;
   notes_cipher: Uint8Array | null; updated_event: string;
 }
 export interface BiomarkerRow {
@@ -78,10 +79,10 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   const active = activeEvents(events);
 
   // ---- daily log ----
-  type Day = { flow: string | null; flow_kind: string | null; clots: boolean; symptoms: Map<string, number>; sex: { protected: boolean } | null; note: string | null; last: string };
+  type Day = { flow: string | null; flow_kind: string | null; clots: boolean; symptoms: Map<string, number>; sex: { protected: boolean } | null; note: string | null; energy: number | null; last: string };
   const days = new Map<ISODate, Day>();
   const day = (d: ISODate, id: string): Day => {
-    const x = days.get(d) ?? { flow: null, flow_kind: null, clots: false, symptoms: new Map(), sex: null, note: null, last: id };
+    const x = days.get(d) ?? { flow: null, flow_kind: null, clots: false, symptoms: new Map(), sex: null, note: null, energy: null, last: id };
     x.last = id;
     days.set(d, x);
     return x;
@@ -100,6 +101,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
     switch (e.kind) {
       case 'flow': { const x = day(e.effective_day, e.id); x.flow = p.level as string; x.flow_kind = p.flow_kind as string; x.clots = p.clots === true; break; }
       case 'symptom': { const x = day(e.effective_day, e.id); if (p.intensity === 0) x.symptoms.delete(p.code as string); else x.symptoms.set(p.code as string, p.intensity as number); break; }
+      case 'energy': { const x = day(e.effective_day, e.id); x.energy = p.level === 0 ? null : (p.level as number); break; }
       case 'sex': day(e.effective_day, e.id).sex = { protected: p.protected as boolean }; break;
       case 'note': day(e.effective_day, e.id).note = p.cipher as string; break;
       case 'period.start': periodStarts.add(e.effective_day); if (p.merge === false) { splitStarts.add(e.effective_day); joinStarts.delete(e.effective_day); } else if (p.merge === true) { joinStarts.add(e.effective_day); splitStarts.delete(e.effective_day); } break; // log order: the latest answer for a day wins
@@ -127,7 +129,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   const dailyLog: DailyLogRow[] = [...days.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([d, x]) => ({
     day: d, flow: x.flow, flow_kind: x.flow_kind, clots: x.clots ? 1 : 0,
     symptoms: JSON.stringify([...x.symptoms.entries()].sort(([a], [b]) => (a < b ? -1 : 1)).map(([code, intensity]) => ({ code, intensity }))),
-    sex: x.sex ? JSON.stringify(x.sex) : null, notes_cipher: x.note === null ? null : new TextEncoder().encode(x.note), updated_event: x.last,
+    sex: x.sex ? JSON.stringify(x.sex) : null, energy: x.energy, notes_cipher: x.note === null ? null : new TextEncoder().encode(x.note), updated_event: x.last,
   }));
 
   // ---- period runs -> cycles ----

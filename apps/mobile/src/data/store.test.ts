@@ -333,3 +333,29 @@ describe('merging a start into a later one (§5.4)', () => {
     await expect(store.append({ kind: 'period.start', payload: { day: '2026-09-20', merge: 'yes' } })).rejects.toThrow(/merge/);
   });
 });
+
+describe('energy (P8-19)', () => {
+  const energy = (day: string, level: number) => ({ kind: 'energy', payload: { day, level } });
+  const row = (day: string) => db.get<{ energy: number | null }>('SELECT energy FROM daily_log WHERE day = ?', [day]);
+  it('projects the latest level for the day; 0 clears it', async () => {
+    await store.append(energy('2026-10-10', 2));
+    await store.append(energy('2026-10-10', 4));
+    expect((await row('2026-10-10'))?.energy).toBe(4);
+    await store.append(energy('2026-10-10', 0));
+    expect((await row('2026-10-10'))?.energy).toBeNull();
+  });
+  it('a retract restores the earlier level', async () => {
+    await store.append(energy('2026-10-11', 3));
+    const later = await store.append(energy('2026-10-11', 5));
+    await store.retract(later.id);
+    expect((await row('2026-10-11'))?.energy).toBe(3);
+  });
+  it('rejects levels outside 0-5 and non-integers', async () => {
+    for (const level of [6, -1, 2.5, '3']) await expect(store.append(energy('2026-10-12', level as number))).rejects.toThrow(/invalid energy event/);
+  });
+  it('never reaches the engine history', async () => {
+    await store.append(energy('2026-10-13', 1));
+    const p = project(await db.all<EventRow>('SELECT * FROM event'));
+    expect(JSON.stringify(p.history)).not.toContain('energy');
+  });
+});

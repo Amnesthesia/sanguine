@@ -22,6 +22,7 @@ const dump = async (db: Database) => JSON.stringify(await Promise.all(['cycle', 
 async function populate(store: EventStore) {
   for (const d of ['2026-08-04', '2026-09-01', '2026-09-30']) await store.append({ kind: 'flow', payload: { day: d, level: 'medium', flow_kind: 'period' } });
   await store.append({ kind: 'symptom', payload: { day: '2026-10-01', code: 'cramps', intensity: 2 } });
+  await store.append({ kind: 'energy', payload: { day: '2026-10-01', level: 2 } });
   await store.append({ kind: 'sex', payload: { day: '2026-10-02', protected: true } });
   await store.append({ kind: 'note', payload: { day: '2026-10-02', cipher: 'zz' } });
   await store.append({ kind: 'biomarker', payload: { day: '2026-10-10', type: 'bbt', value: { valueC: 36.42 }, source: 'oral', measured_at: '2026-10-10T06:40:00+10:00' } });
@@ -55,7 +56,9 @@ describe('export', () => {
     const daily = parseCsv(strFromU8(files['daily.csv'] as Uint8Array));
     const row = daily.find((r) => r[0] === '2026-10-01');
     expect(row?.[4]).toBe('cramps:2');
-    expect(daily.find((r) => r[0] === '2026-10-02')?.slice(5)).toEqual(['yes', 'yes']);
+    expect(daily[0]?.at(-1)).toBe('energy');
+    expect(daily.find((r) => r[0] === '2026-10-01')?.at(-1)).toBe('2');
+    expect(daily.find((r) => r[0] === '2026-10-02')?.slice(5, 7)).toEqual(['yes', 'yes']);
     expect(strFromU8(files['README.md'] as Uint8Array)).toContain('events.jsonl');
   });
   it('an empty log exports an empty events.jsonl', async () => {

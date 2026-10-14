@@ -34,12 +34,12 @@ export async function exportBundle(db: Database, store: EventStore, clock: Clock
       cycles.map((c) => [c.id, c.start_day, c.end_day, c.next_start, c.length_days, c.bleed_days, c.quality, c.ov_day, c.ov_sd, c.ov_basis, c.luteal_days]),
     )),
     'daily.csv': strToU8(toCsv(
-      ['day', 'flow', 'flow_kind', 'clots', 'symptoms', 'condom_used', 'has_note'],
+      ['day', 'flow', 'flow_kind', 'clots', 'symptoms', 'condom_used', 'has_note', 'energy'],
       days.map((d) => [
         d.day, d.flow, d.flow_kind, d.clots ? 'yes' : 'no',
         (JSON.parse(String(d.symptoms)) as Array<{ code: string; intensity: number }>).map((s) => `${s.code}:${s.intensity}`).join(';'),
         d.sex ? ((JSON.parse(String(d.sex)) as { protected: boolean }).protected ? 'yes' : 'no') : '',
-        d.notes_cipher ? 'yes' : 'no',
+        d.notes_cipher ? 'yes' : 'no', d.energy ?? '',
       ]),
     )),
     'biomarkers.csv': strToU8(toCsv(

@@ -81,6 +81,9 @@ export function validateEvent(e: NewEvent): ISODate {
     case 'cycle.confirm_long':
       if (!isDay(p.cycle_start)) fail(e.kind, 'cycle_start');
       return p.cycle_start as ISODate;
+    case 'energy':
+      if (!Number.isInteger(p.level) || (p.level as number) < 0 || (p.level as number) > 5) fail(e.kind, 'level must be 0-5');
+      return day();
     case 'note':
       if (typeof p.cipher !== 'string') fail(e.kind, 'cipher');
       return day();
