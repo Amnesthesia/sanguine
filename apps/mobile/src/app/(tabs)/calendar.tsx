@@ -15,6 +15,8 @@ import { useCalendarData } from '@/features/calendar/useCalendarData';
 import { dayEvents } from '@/features/logging/actions';
 import { shortDescribe } from '@/features/logging/describe';
 import { FlagCard } from '@/features/today/cards';
+import { GuidanceSummary } from '@/features/guidance/GuidanceSummary';
+import { phaseOn } from '@/features/guidance/guidance';
 import { QuickLogRow } from '@/features/today/QuickLogRow';
 import { buildToday, SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { useApp } from '@/state/app';
@@ -51,7 +53,8 @@ export default function CalendarScreen() {
   const showEstimate = SHOW_OVULATION_ESTIMATE && effectivePrefs(prefs, profile, today).showOvulationEstimate;
   const weekStart = useMemo(deviceWeekStart, []);
   // moon phases (D-089): only when the recent cycles run close to a lunar month; decoration, never an estimate
-  const lunar = useMemo(() => (history && settings ? lunarAligned(analyzeCycles(history, settings).map((c) => c.record)) : false), [history, settings]);
+  const records = useMemo(() => (history && settings ? analyzeCycles(history, settings).map((c) => c.record) : []), [history, settings]);
+  const lunar = useMemo(() => lunarAligned(records), [records]);
   const southern = useMemo(() => southernRegion(deviceRegion()), []);
   const moon = useMemo(() => {
     if (!lunar) return undefined;
@@ -75,6 +78,11 @@ export default function CalendarScreen() {
   const estimates = useMemo(() => dayEstimates(selected, prediction, showEstimate, periodDays.has(selected)), [selected, prediction, showEstimate, periodDays]);
   const summaryLine = [cycleDay ? tr('calendar.summaryDay', { day: cycleDay }) : null, ...(summary.length ? summary : isFuture ? [] : [tr('calendar.summaryNothing')])].filter(Boolean).join(' · ');
   const estimateLines = estimates.length || !isFuture ? estimates : [tr('day.estimates.none')];
+  // food and movement notes for the selected day (P8-18): same call and inputs as the day screen, so both show the same phase
+  const guide = useMemo(
+    () => (prefs.cycleGuidance ? phaseOn({ date: selected, today, prediction, cycles: records, showEstimate }) : undefined),
+    [prefs.cycleGuidance, selected, today, prediction, records, showEstimate],
+  );
   const goToday = () => { setMonth(monthOf(today)); setSelected(today); };
 
   const nav = (delta: number, id: string, label: string) => (
@@ -143,6 +151,7 @@ export default function CalendarScreen() {
         </Card>
       </Pressable>
       {isFuture ? <Text variant="caption" color="textSecondary" testID="cal-future-note">{tr('calendar.futureNote')}</Text> : null}
+      {guide ? <GuidanceSummary day={guide} onOpen={() => router.push({ pathname: '/day/[date]', params: { date: selected } })} /> : null}
     </Screen>
   );
 }

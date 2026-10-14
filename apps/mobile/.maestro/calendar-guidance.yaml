@@ -1,0 +1,40 @@
+appId: ${APP_ID}
+name: Calendar - food and movement summary card below the day card (P8-18)
+---
+- runFlow:
+    file: _open.yaml
+    env:
+      LINK: ${LINKBASE}dev/seed?scenario=typical
+- extendedWaitUntil:
+    visible:
+      id: screen-today
+    timeout: 90000
+- tapOn: Calendar
+- extendedWaitUntil:
+    visible:
+      id: screen-calendar
+    timeout: 10000
+# today is cycle day 11 (follicular): the card sits below the day card and gives a brief summary
+- scrollUntilVisible:
+    element:
+      id: guidance-summary
+    centerElement: true
+# the card is one accessible button on iOS, so Maestro reads its label: title, phase, food, movement, "Read more"
+- assertVisible: "Food and movement\\. Follicular phase · estimate\\. Food: .*\\. Movement: .*\\. Read more"
+- takeScreenshot: calendar-guidance-summary
+# the summary is brief: the long notes and the sources are on the day screen only
+- assertNotVisible: "Sources: .*"
+# tapping the card opens the day screen with the full notes
+- tapOn:
+    id: guidance-summary
+- extendedWaitUntil:
+    visible:
+      id: screen-day
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      id: guidance-card
+    centerElement: true
+- assertVisible:
+    id: guidance-card
+- takeScreenshot: calendar-guidance-day-screen

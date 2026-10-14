@@ -875,6 +875,33 @@
     "suppCaveat": "Supplements are not tested like medicines and can interact with them. A pharmacist or doctor can check one with you before you start, especially if you take other medicines.",
     "more": "Why these notes",
     "moreA11y": "Open the day screen with the reasons and sources for these notes",
+    "readMore": "Read more",
+    "summary": {
+      "menstrual": {
+        "food": "Iron-rich foods with vitamin C, such as lentil dahl with a squeeze of lemon.",
+        "move": "Any movement that feels good can lift your mood and energy. Rest is fine too."
+      },
+      "follicular": {
+        "food": "Vitamin C, B vitamins and zinc, such as muesli with kiwifruit and yoghurt.",
+        "move": "Exercise lifts mood and energy. Try harder sessions if you feel up to them."
+      },
+      "ovulatory": {
+        "food": "Fibre-rich foods, such as overnight oats with berries.",
+        "move": "Train as usual, and warm up well before jumping and quick turns."
+      },
+      "luteal": {
+        "food": "Protein, magnesium and B12, such as eggs on toast or a handful of almonds.",
+        "move": "Keep moving: exercise lifts mood. Drink regularly in warm weather."
+      },
+      "premenstrual": {
+        "food": "Calcium-rich foods, such as yoghurt with fruit or a cheese and salad sandwich.",
+        "move": "A walk, a swim or yoga can lift low mood or energy."
+      },
+      "general": {
+        "food": "Iron and calcium: a lentil salad, or yoghurt with fruit.",
+        "move": "Regular activity lifts mood and energy. Even a short walk helps."
+      }
+    },
     "energyLow": "In your own logs, your energy was lowest in this part of your cycle. Movement lifts energy for most people, even a short walk.",
     "caveat": "Research on eating and training by cycle phase is young, and how you feel is a better guide than the calendar. This is general information, not medical advice.",
     "phase": {

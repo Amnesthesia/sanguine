@@ -153,3 +153,17 @@ describe('guidance copy', () => {
     expect(get('guidance.supp.b6.tip')).toMatch(/tingling, burning or numbness/);
   });
 });
+
+describe('guidance summaries (calendar card)', () => {
+  it('every phase has a brief food line and a brief movement line, and the card says "Read more"', () => {
+    for (const ph of GUIDE_PHASES) {
+      for (const k of ['food', 'move']) {
+        const s = get(`guidance.summary.${ph}.${k}`) as string;
+        expect(s, `${ph}.${k}`).toMatch(/\S/);
+        expect(s.length, `${ph}.${k}`).toBeLessThanOrEqual(110);
+      }
+    }
+    expect(get('guidance.readMore')).toBe('Read more');
+  });
+});
+
