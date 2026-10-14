@@ -72,25 +72,36 @@ name: Calendar - month grid, marks, day summary, back-dating
 - assertNotVisible: "Nothing logged for this day."
 - assertNotVisible:
     id: day-edit
-- assertVisible:
-    id: day-future-note
 - takeScreenshot: day-future-predicted
 # a predicted period day: the full card, marked expected (P8-18)
 - scrollUntilVisible:
     element:
-      id: guidance-card
+      id: guidance-phase-menstrual
     centerElement: true
-- assertVisible:
-    id: guidance-phase-menstrual
 - assertVisible: "Period · expected"
+- scrollUntilVisible:
+    element:
+      id: guidance-body
+    centerElement: true
 - assertVisible:
     id: guidance-body
 - scrollUntilVisible:
     element:
-      id: guidance-sources
+      id: guidance-supp-ginger
     centerElement: true
 - assertVisible: ".*Trials used 750 to 2,000 mg of ginger powder a day.*"
+- scrollUntilVisible:
+    element:
+      id: guidance-sources
+    centerElement: true
 - takeScreenshot: day-future-guidance
+# the card sits above the future-day note, so the note needs a scroll (P8-18)
+- scrollUntilVisible:
+    element:
+      id: day-future-note
+    centerElement: true
+- assertVisible:
+    id: day-future-note
 - tapOn:
     id: day-back
 - extendedWaitUntil:

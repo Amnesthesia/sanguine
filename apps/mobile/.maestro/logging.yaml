@@ -50,14 +50,8 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
     centerElement: true
 - tapOn:
     id: energy-2
-- assertVisible:
-    id: energy-2
-    checked: true
 - tapOn:
     id: energy-2
-- assertVisible:
-    id: energy-2
-    checked: false
 - tapOn:
     id: energy-4
 - takeScreenshot: energy-logged
@@ -92,6 +86,7 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
 - assertVisible: "Medium flow"
 - assertVisible: "Cramps 2/3"
 - assertVisible: "Temperature 36.50 °C.*"
+- assertVisible: "Energy: Good \\(4 of 5\\)"
 - takeScreenshot: day-detail
 - tapOn:
     id: event-delete-symptom

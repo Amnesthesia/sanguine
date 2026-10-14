@@ -39,11 +39,10 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - assertVisible: ".*This is for understanding your cycle. Do not use it to prevent pregnancy."
 - assertNotVisible:
     id: symptom-note
-- assertVisible: "Estimates are ranges, not promises. Not a contraceptive."
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: guidance-card
+      id: guidance-phase-follicular
     centerElement: true
 - assertVisible: "Food and movement"
 - assertVisible:
@@ -70,14 +69,24 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
     timeout: 10000
 - scrollUntilVisible:
     element:
-      id: guidance-sources
+      id: guidance-body
     centerElement: true
 - assertVisible:
     id: guidance-body
+- scrollUntilVisible:
+    element:
+      id: guidance-sources
+    centerElement: true
 - assertVisible: "Sources: .*"
 - takeScreenshot: guidance-day-full
 - tapOn:
     id: day-back
+# the card sits above the footer, so the footer needs a scroll (P8-18)
+- scrollUntilVisible:
+    element:
+      id: today-footer
+    centerElement: true
+- assertVisible: "Estimates are ranges, not promises. Not a contraceptive."
 - takeScreenshot: typical
 # period in progress
 - runFlow:
@@ -93,8 +102,9 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: guidance-card
+      id: guidance-phase-menstrual
     centerElement: true
+- assertVisible: "Food and movement"
 - assertVisible:
     id: guidance-phase-menstrual
 - assertVisible:
@@ -129,8 +139,9 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
-      id: guidance-card
+      id: guidance-phase-general
     centerElement: true
+- assertVisible: "Food and movement"
 - assertVisible:
     id: guidance-phase-general
 - takeScreenshot: irregular-flag
