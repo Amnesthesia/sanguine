@@ -21,6 +21,8 @@ export interface Prefs {
   teenUnlockEstimate: boolean;
   /** Today's look-back symptom note (D-087). */
   symptomNote: boolean;
+  /** Food, movement and supplement notes on Today and the day screen (P8-18, D-107). */
+  cycleGuidance: boolean;
   /** Local reminders (D-090): on by default with the owner's three rules and the late-period reminder; text discreet unless `descriptive`. */
   notifications: { enabled: boolean; late: boolean; descriptive: boolean; rules: ReminderRule[] };
   appLock: boolean;
@@ -48,6 +50,7 @@ export const DEFAULT_PREFS: Prefs = {
   showOvulationEstimate: true,
   teenUnlockEstimate: false,
   symptomNote: true,
+  cycleGuidance: true,
   notifications: { enabled: true, late: true, descriptive: false, rules: DEFAULT_RULES }, // owner, D-090 (was off, D-037)
   appLock: false, // off until turned on in Settings, Privacy and data (owner, D-073)
   widgetDetails: false,
