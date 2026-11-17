@@ -15,7 +15,7 @@ describe('release configuration', () => {
     expect(Object.keys(eas.build)).toEqual(expect.arrayContaining(['development', 'preview', 'production']));
     expect(eas.build.development.developmentClient).toBe(true);
   });
-  it('no workflow publishes over-the-air updates: engine parameters ship only as builds (§6.6)', () => {
+  it('no workflow publishes over-the-air updates: production publication is manual (§6.6)', () => {
     for (const f of readdirSync(join(root, '.github/workflows'))) expect(read(`.github/workflows/${f}`), f).not.toMatch(/eas[- ]update|expo-updates/);
   });
   it('the build is tagged by version and verifies before it builds', () => {

@@ -1,5 +1,4 @@
-// EAS Update (D-069, D-071): over-the-air updates carry app code only. The runtime version hashes the lockfile, app.json and
-// the prediction engine, so an engine or parameter change needs a store build (PLAN.md §6.6, RK-13).
+// D-110: OTA engine fixes share the installed runtime; native changes still require a store build.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -8,13 +7,15 @@ const mobile = join(__dirname, '..', '..', 'apps', 'mobile');
 const read = (f: string) => readFileSync(join(mobile, f), 'utf8');
 
 describe('EAS Update configuration', () => {
-  it('runtime version changes when the engine changes, and is a pure function of tracked files (D-071)', async () => {
+  it('keeps the installed production runtime for matching native inputs (D-110)', async () => {
     const { runtimeVersionFor } = await import(join(mobile, 'app.config.ts'));
     const a = runtimeVersionFor('1.0.0');
     expect(runtimeVersionFor('1.0.0')).toBe(a);
+    expect(a).toBe('1.0.0-237a565d6697');
     expect(runtimeVersionFor('1.0.1')).not.toBe(a);
     const src = read('app.config.ts');
-    for (const input of ["'pnpm-lock.yaml'", "'app.json'", "'modules'", "'plugins'", "'packages', 'engine', 'src'"]) expect(src).toContain(input);
+    for (const input of ["'pnpm-lock.yaml'", "'app.json'", "'modules'", "'plugins'"]) expect(src).toContain(input);
+    expect(src).not.toContain("'packages', 'engine', 'src'");
     // no app.json plugin may come from a devDependency, which the dependency part leaves out (D-080)
     const pkg = JSON.parse(read('package.json'));
     const plugins = (JSON.parse(read('app.json')).expo.plugins as (string | [string])[]).map((p) => (typeof p === 'string' ? p : p[0])).filter((p) => !p.startsWith('.'));

@@ -2,6 +2,7 @@
 import type { Confidence, CycleRecord, EngineSettings, ISODate, LifeState } from './types';
 
 export interface LifeGate {
+  bleedingOnly?: boolean; // hormonal IUD: bleeding ranges, no ovulation estimates or cycle-pattern flags
   suspended?: { reason: string }; // a code: the UI writes the wording
   lambda: number;
   varianceScale: number; // multiplies the variance prior
@@ -46,7 +47,13 @@ export function evaluateLifeStates(cycles: CycleRecord[], settings: EngineSettin
 
   for (const s of states) {
     switch (s.kind) {
-      case 'hormonal_contraception': gate.suspended ??= { reason: 'hormonal_contraception' }; break;
+      case 'hormonal_contraception':
+        if (s.method === 'hormonal_iud') {
+          gate.bleedingOnly = true;
+          gate.confidenceCap = lowerCap(gate.confidenceCap, 'low');
+          gate.steady = false;
+        } else gate.suspended ??= { reason: 'hormonal_contraception' };
+        break;
       case 'pregnant': gate.suspended ??= { reason: 'pregnant' }; break;
       case 'postpartum': {
         if (!periods.some((c) => c.start >= s.delivered)) { gate.suspended ??= { reason: 'postpartum' }; break; }

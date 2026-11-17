@@ -21,7 +21,7 @@ import { Text } from '@/ui/Text';
 /** Set only by deep links from outside the app (widget, home-screen quick actions); in-app buttons open the sheet plain (D-097). */
 type Section = 'period' | 'temperature';
 const EMPTY: DayState = { flow: null, flowKind: null, clots: false, symptoms: {}, sex: null, hasNote: false, energy: null };
-type BleedKind = 'withdrawal_bleed' | 'on_contraception';
+type BleedKind = 'period' | 'withdrawal_bleed' | 'on_contraception';
 
 export function LogSheet() {
   const t = useTheme();
@@ -40,11 +40,15 @@ export function LogSheet() {
   const section = params.section;
   const quick = section === 'period'; // the widget's one-tap period path: the sheet closes after the flow tap
   const hormonal = (settings?.lifeStates ?? []).some((s) => s.kind === 'hormonal_contraception' && s.since <= day && (!s.until || day <= s.until));
+  const hormonalIud = (settings?.lifeStates ?? []).some((s) => s.kind === 'hormonal_contraception' && s.method === 'hormonal_iud' && s.since <= day && (!s.until || day <= s.until));
 
   const reload = useCallback(async () => {
     if (!db || !store) return;
     const [s, evs, cyc, ctx] = await Promise.all([dayState(db, day), dayEvents(store, day), db.get('SELECT 1 AS x FROM cycle WHERE start_day = ?', [day]), periodContext(db, day)]);
     setState(s);
+    setBleedKind(hormonalIud
+      ? s.flowKind === 'on_contraception' || s.flowKind === 'withdrawal_bleed' ? 'on_contraception' : 'period'
+      : s.flowKind === 'on_contraception' ? 'on_contraception' : 'withdrawal_bleed');
     setAfterPregnancy(Boolean(ctx.afterPregnancy));
     if (s.flowKind === 'period' || s.flowKind === 'post_pregnancy') setPpKind(s.flowKind);
     setStartsHere(Boolean(cyc));
@@ -58,14 +62,14 @@ export function LogSheet() {
       else if (d.type === 'cervix') sum.cervix = tr(`log.cervixValues.position.${d.value.position}`);
     }
     setSummaries(sum);
-  }, [db, store, day, tr, prefs.tempUnit]);
+  }, [db, store, day, tr, prefs.tempUnit, hormonalIud]);
   useEffect(() => { void reload(); }, [reload]);
   const saved = useCallback(async () => { await refresh(); await reload(); }, [refresh, reload]);
 
   async function onFlow(level: Exclude<FlowLevel, 'none'>) {
     if (!db || !store) return;
     const kind = hormonal ? bleedKind : afterPregnancy ? ppKind : 'period';
-    if (state.flow === level) { await setFlow(store, day, 'none', { kind }); await saved(); return; }
+    if (state.flow === level && state.flowKind === kind) { await setFlow(store, day, 'none', { kind }); await saved(); return; }
     const ctx = await periodContext(db, day);
     const write = async (answer: { splitAt?: string; mergeAt?: string; askedOn?: string } = {}) => {
       await setFlow(store, day, level, { kind, ...answer });
@@ -119,7 +123,7 @@ export function LogSheet() {
       <ScrollView style={{ flex: 1 }} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: insets.bottom + 32, gap: 16 }}>
         {heading(hormonal || afterPregnancy ? 'log.bleeding' : 'log.flow')}
         {hormonal ? (
-          <Chips testIDPrefix="bleed-kind" value={bleedKind} onChange={setBleedKind} options={[{ value: 'withdrawal_bleed', label: tr('log.withdrawalBleed') }, { value: 'on_contraception', label: tr('log.otherBleed') }]} />
+          <Chips testIDPrefix="bleed-kind" value={bleedKind} onChange={setBleedKind} options={[hormonalIud ? { value: 'period', label: tr('log.periodBleed') } : { value: 'withdrawal_bleed', label: tr('log.withdrawalBleed') }, { value: 'on_contraception', label: tr('log.otherBleed') }]} />
         ) : afterPregnancy ? (
           <Chips testIDPrefix="pp-kind" value={ppKind} onChange={setPpKind} options={[{ value: 'post_pregnancy', label: tr('log.afterPregnancyBleed') }, { value: 'period', label: tr('log.periodBleed') }]} />
         ) : null}

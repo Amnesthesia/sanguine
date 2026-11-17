@@ -25,8 +25,8 @@ describe('no life state', () => {
 });
 
 describe('suspending states (§4.9, fixture I)', () => {
-  it('hormonal contraception of any method suspends', () => {
-    for (const method of ['combined_pill', 'pop', 'implant', 'injection', 'hormonal_iud', 'ring', 'patch'] as const)
+  it('hormonal methods other than the IUD suspend', () => {
+    for (const method of ['combined_pill', 'pop', 'implant', 'injection', 'ring', 'patch'] as const)
       expect(gate([28, 30, 29], settings({ kind: 'hormonal_contraception', method, since: LAST_START })).g.suspended?.reason).toBe('hormonal_contraception');
   });
   it('pregnant suspends', () => expect(gate([28], settings({ kind: 'pregnant', since: LAST_START })).g.suspended?.reason).toBe('pregnant'));

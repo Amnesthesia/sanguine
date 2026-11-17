@@ -31,7 +31,7 @@ IEC 62304-style traceability: each engine rule has an id, a source and the test 
 | ER-25 | Temporal gate: a temperature shift is discarded unless −1 to +4 d from the LH/mucus estimate; conflict recorded | PLAN §4.6 (C-06) | fixture H | done |
 | ER-26 | If two kept signals differ by > 3 d, use the most precise one, confidence low, flag the conflict | PLAN §4.6 | `combine.test.ts` | done |
 | ER-27 | Provenance multipliers on signal SD (manual/imported/sensor) | PLAN §4.7 | each detector test | done |
-| ER-28 | Hormonal contraception (any method) suspends prediction; withdrawal bleeds are never cycle starts | PLAN §4.9 | fixture I | done |
+| ER-28 | Hormonal methods except hormonal IUD suspend prediction; withdrawal bleeds are never cycle starts. Hormonal IUD permits low-confidence period ranges from period-kind logs, without ovulation, fertile band or cycle-pattern flags | PLAN §4.9; D-110 | fixture I; `predict.test.ts`; `LogSheet.test.tsx` | done |
 | ER-29 | Post-contraception and after a birth: 3 cycles prior-only at weight 0.5, confidence low. After a pregnancy loss the cycles from before it keep weight 0.5 during the warm-up, and the range is never narrower than the post-loss-only range | PLAN §4.9 (C-08); D-094 | `lifestate.test.ts`, `scenarios.test.ts` (pregnancy loss), `tools/backtest/scenarios.test.ts` (marked loss) | done; loss P8-13 |
 | ER-30 | Pregnant: suspended; postpartum: suspended until first period, breastfeeding adds 3 low-confidence cycles and no band without a biomarker | PLAN §4.9 (C-09) | `lifestate.test.ts` | done |
 | ER-31 | Perimenopause: λ = 0.8, variance prior doubled, band only with biomarkers, 60-day gap flag | PLAN §4.9 | `lifestate.test.ts` | done |

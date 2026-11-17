@@ -40,6 +40,7 @@ function overlapsSuspendingState(start: ISODate, lastDay: ISODate | undefined, s
     // the cycle that spans the delivery day is not a normal cycle; cycles after it are handled by the warm-up (lifestate.ts)
     if (s.kind === 'postpartum') return start < s.delivered && (lastDay === undefined || lastDay >= s.delivered);
     if (!SUSPENDING.includes(s.kind)) return false;
+    if (s.kind === 'hormonal_contraception' && s.method === 'hormonal_iud') return false;
     const from = lifeStateStart(s);
     // cycle [start, lastDay] intersects [from, until]; an open cycle has no last day
     return (lastDay === undefined || lastDay >= from) && (s.until === undefined || start <= s.until);

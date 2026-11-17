@@ -72,7 +72,7 @@
     "s4": {
       "title": "Anything that affects your cycle right now?",
       "options": {
-        "none": "None",
+        "none": "None (includes copper IUD)",
         "hormonal": "Hormonal contraception",
         "postHormonal": "Recently stopped contraception",
         "pregnant": "Pregnant",
@@ -516,7 +516,7 @@
       "since": "Since {date}",
       "history": "Earlier states",
       "options": {
-        "none": "None",
+        "none": "None (includes copper IUD)",
         "hormonal": "Hormonal contraception",
         "postHormonal": "Recently stopped contraception",
         "pregnant": "Pregnant",
@@ -541,6 +541,7 @@
       "pregnancyEnded": "If the pregnancy has ended, choose \"Recently gave birth\" or \"After a pregnancy loss\".",
       "effect": {
         "paused": "Estimates are paused while this is set. Your logs are kept.",
+        "iud": "Period estimates continue from periods you log, with low confidence. A hormonal IUD can change or stop bleeding. Ovulation estimates and cycle-pattern notices are paused.",
         "warmup": "Estimates use general starting ranges for your first three cycles.",
         "wider": "Ranges are wider while this is set."
       }

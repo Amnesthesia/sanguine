@@ -8,6 +8,21 @@ import type { EngineSettings } from './types';
 const A = () => historyFromLengths([28, 30, 29]);
 
 describe('predict', () => {
+  it('keeps hormonal-IUD period ranges, with low confidence and no ovulation or cycle flags', () => {
+    const h = A();
+    h.lh = [{ date: addDays(LAST_START, 12), result: 'positive', provenance: 'manual' }];
+    const s: EngineSettings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2020-01-01' }] };
+    const p = predict(h, s, TODAY);
+    expect(p.suspended).toBeUndefined();
+    expect(p.nextPeriod?.confidence).toBe('low');
+    expect(p.cycleLength.nCyclesUsed).toBe(3);
+    expect(p.cycleQuality.every((c) => c.quality === 'valid')).toBe(true);
+    expect(p.ovulation).toBeUndefined();
+    expect(p.fertileDays).toBeUndefined();
+    expect(p.flags).toEqual([]);
+    expect(predict({ ...h, cycles: [] }, s, TODAY).nextPeriod).toBeUndefined();
+    expect(predict(h, { ...s, lifeStates: [...s.lifeStates, { kind: 'pregnant', since: LAST_START }] }, TODAY).suspended?.reason).toBe('pregnant');
+  });
   it('is deterministic and does not mutate its inputs', () => {
     const h = A();
     const before = JSON.stringify([h, FIXTURE_SETTINGS]);

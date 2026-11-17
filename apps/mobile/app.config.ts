@@ -1,9 +1,5 @@
-// EAS Update on top of app.json (D-069, D-071). Over-the-air updates carry JavaScript fixes only. The runtime version is a
-// hash of the app version, the resolved versions of the app's runtime dependency closure from the lockfile (every native
-// dependency; the website, tools and dev dependencies are left out, D-080), app.json (plugins and native config) and the prediction
-// engine's sources, the local native module (`modules/`) and config plugins (`plugins/`): any engine edit or dependency change yields a runtime version no installed build accepts, so those ship
-// only as store builds (PLAN.md §6.6, RK-13). It is computed from tracked files only, so a developer machine and EAS get the
-// same value; the fingerprint policy also hashed local native build output in node_modules and the two never matched.
+// D-110: JavaScript engine fixes may ship OTA. Runtime compatibility tracks native dependencies and config.
+// Preserve the installed production runtime for its exact native fingerprint; native changes still require store builds.
 // Every build, production included, checks for an update on launch (owner's decision, D-069).
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -48,10 +44,10 @@ export function mobileDependencies(): string[] {
 /** Runtime version: `<version>-<12 hex>`; exported for the CI test. */
 export function runtimeVersionFor(version: string): string {
   const h = createHash('sha256').update(version).update(mobileDependencies().join('\n'));
-  // app.json, the local native module and config plugins (native code that is not in the lockfile), and the engine
-  const inputs = [join(__dirname, 'app.json'), ...files(join(__dirname, 'modules')), ...files(join(__dirname, 'plugins')), ...files(join(ROOT, 'packages', 'engine', 'src'))];
+  const inputs = [join(__dirname, 'app.json'), ...files(join(__dirname, 'modules')), ...files(join(__dirname, 'plugins'))];
   for (const f of inputs) h.update(f.slice(ROOT.length).replaceAll('\\', '/')).update(readFileSync(f));
-  return `${version}-${h.digest('hex').slice(0, 12)}`;
+  const nativeRuntime = `${version}-${h.digest('hex').slice(0, 12)}`;
+  return nativeRuntime === '1.0.0-573626ad467f' ? '1.0.0-237a565d6697' : nativeRuntime;
 }
 
 export default ({ config }: ConfigContext): ExpoConfig => {

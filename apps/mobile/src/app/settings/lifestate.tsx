@@ -54,7 +54,7 @@ export default function LifeStateScreen() {
     setSaved(true);
   }
   const needsMethod = choice === 'hormonal' || choice === 'postHormonal';
-  const effect = EFFECT[choice];
+  const effect = choice === 'hormonal' && method === 'hormonal_iud' ? 'iud' : EFFECT[choice];
   return (
     <SubScreen testID="screen-lifestate" title={tr('settings.lifeState.title')}>
       <OptionList testIDPrefix="life" value={choice} onChange={(c) => { setChoice(c); setSaved(false); }} options={LIFE_CHOICES.map((v) => ({ value: v, label: tr(`settings.lifeState.options.${v}`) }))} />

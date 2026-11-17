@@ -329,7 +329,9 @@ For fixture A this peaks at 0.55 on day 14 and stays above 0.2 from day 8 to day
 | State | Effect on prediction | Rule |
 | --- | --- | --- |
 | Hormonal contraception (combined pill, ring, patch) | Suspended. Bleeds are logged as `withdrawal_bleed`, shown on the calendar, never used as cycle starts | Withdrawal bleeds are not menses; no ovulation estimate, no fertile band, no cycle flags |
-| Progestogen-only methods, implant, injection, hormonal IUD | Suspended; bleeding logged as `bleeding_on_contraception` | Patterns are method effects |
+| Progestogen-only pill, implant, injection | Suspended; bleeding logged as `on_contraception` | Patterns are method effects |
+| Hormonal IUD | Period ranges continue from explicitly logged periods, confidence capped low; no ovulation, fertile band or cycle-pattern flags | Bleeding can change or stop; other bleeding stays `on_contraception`. D-110 |
+| Copper IUD | Ordinary period predictions; choose None in life-state settings | Non-hormonal; D-110 |
 | Post-contraception (first 3 cycles after stopping) | Predictions run with the population prior only (κ₀ = 0.5, no history), labelled `low`; cycles are kept but weighted 0.5 until three post-stop cycles exist | Return of ovulation varies by method (Girum 2018; progestin review) |
 | Pregnant | Suspended; cycle history frozen; optional pregnancy week shown | — |
 | Postpartum, not breastfeeding | Suspended until first logged period; then as post-contraception | Most do not ovulate before 6 weeks; first menses often anovulatory (Jackson & Glasier 2011) |
@@ -617,7 +619,7 @@ Australian English is the source locale; strings are ICU messages with plural an
 
 ### 6.6 CI/CD and store release
 
-GitHub Actions: lint, type-check, engine and data tests on every PR; Maestro E2E nightly; EAS Build on tags; EAS Submit to TestFlight and Play internal track; manual promotion to production. OTA updates (EAS Update) are used only for JS-level fixes and never for engine parameter changes, which ship as versioned builds with a changelog entry. The dependency allow-list job fails the build if any package in a deny-list of analytics and ad SDKs appears.
+GitHub Actions: lint, type-check, engine and data tests on every PR; Maestro E2E nightly; EAS Build on tags; EAS Submit to TestFlight and Play internal track; manual promotion to production. OTA updates (EAS Update) carry JS-level fixes, including reviewed and versioned engine changes with a changelog entry (owner override D-110). Runtime compatibility tracks native inputs; native changes require new store builds. The dependency allow-list job fails the build if any package in a deny-list of analytics and ad SDKs appears.
 
 Store requirements: Apple requires a `NSHealthShareUsageDescription` and `NSHealthUpdateUsageDescription` that name each data type, a privacy manifest, App Privacy labels (health data: collected? No, because it never leaves the device; the labels must still be answered accurately), and a HealthKit entitlement; HealthKit data cannot be used for advertising or sold, and apps must have a privacy policy (App Store Review Guideline 5.1.3). Google requires the Health Connect data-type declaration in Play Console and a Health apps policy declaration before the permissions work ([Play declaration](https://developer.android.com/health-and-fitness/guides/health-connect/publish/declare-access)); `READ_HEALTH_DATA_IN_BACKGROUND` and `READ_HEALTH_DATA_HISTORY` are separate declared permissions. Both stores need the privacy policy URL, the Data safety / App Privacy forms, and age rating that reflects sexual-health content.
 
