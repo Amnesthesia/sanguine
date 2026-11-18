@@ -43,6 +43,9 @@ function TodayWidget(props: TodayWidgetProps, env: WidgetEnvironment) {
   const c = env.colorScheme === 'dark'
     ? { surface: '#2C2C2E', text: '#F4EEEF', sub: '#B3A8AC', link: '#E8869A', ring: '#D9607A' }
     : { surface: '#F3F3F4', text: '#1F1A1C', sub: '#6B6165', link: '#A3354F', ring: '#B8324A' };
+  // Known gap against frames/Widgets-Notifications.html (not faked): the frame's ring has a dashed uncertainty arc and a marker tick and
+  // the card a 1 px border. @expo/ui 57 swift-ui has Circle/Capsule and strokeBorder(dash) but no trim (no partial arc), and the card
+  // is the system-clipped containerBackground, so only the system Gauge (value arc, tinted) and the filled card are drawn here.
   const ring = (
     <Gauge value={props.progress} min={0} max={1} modifiers={[gaugeStyle('circular'), tint(c.ring)]} currentValueLabel={<Text modifiers={[font({ size: 22, weight: 'semibold' }), foregroundStyle(c.text), minimumScaleFactor(0.5)]}>{props.day > 0 ? String(props.day) : '–'}</Text>}>
       <Text modifiers={[foregroundStyle(c.sub)]}>{dayText}</Text>

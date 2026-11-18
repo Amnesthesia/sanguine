@@ -38,6 +38,15 @@ describe('widget colours (glass redesign frame)', () => {
   const m = src.match(/colorScheme === 'dark'\s*\?\s*(\{[^}]*\})\s*:\s*(\{[^}]*\})/);
   const parse = (o: string) => Object.fromEntries([...o.matchAll(/(\w+): '(#[0-9A-Fa-f]{6})'/g)].map((x) => [x[1], x[2]])) as Record<string, string>;
   it('has a dark and a light palette', () => expect(m).not.toBeNull());
+  // the palette test above proves the values; these prove each one is applied to the element it was contrast-checked for
+  it('applies each colour to its element: card c.surface, headline c.text, link c.link, ring c.ring, secondary lines c.sub', () => {
+    expect(src.match(/containerBackground\(c\.surface, 'widget'\)/g)).toHaveLength(2);
+    expect(src).toMatch(/foregroundStyle\(c\.text\)\]\}>\{props\.headline \?\? dayText\}/);
+    expect(src).toMatch(/label="Log period"[^>]*foregroundStyle\(c\.link\)/);
+    expect(src).toMatch(/tint\(c\.ring\)/);
+    expect(src).toMatch(/foregroundStyle\(c\.sub\)\]\}>\{props\.appName\}/);
+    expect(src).toMatch(/foregroundStyle\(c\.sub\)\]\}>\{props\.detail\}/);
+  });
   for (const [i, mode] of (['dark', 'light'] as const).entries()) {
     const pal = parse(m?.[i + 1] ?? '');
     const t = colors[mode];
