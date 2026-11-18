@@ -18,6 +18,10 @@ export interface Prefs {
   sexLogging: boolean;
   /** User override of the ovulation estimate card; teen mode forces it off until unlocked. */
   showOvulationEstimate: boolean;
+  /** Cycle-day numbers on the calendar (D-114). */
+  calendarCycleDay: boolean;
+  /** In-app opt-in for wide ovulation and fertile estimates (D-115). */
+  showUncertainEstimates: boolean;
   teenUnlockEstimate: boolean;
   /** Today's look-back symptom note (D-087). */
   symptomNote: boolean;
@@ -48,6 +52,8 @@ export const DEFAULT_PREFS: Prefs = {
   tempSource: 'oral',
   sexLogging: false,
   showOvulationEstimate: true,
+  calendarCycleDay: true,
+  showUncertainEstimates: false,
   teenUnlockEstimate: false,
   symptomNote: true,
   cycleGuidance: true,

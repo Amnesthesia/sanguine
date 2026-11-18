@@ -9,6 +9,10 @@ export const FERTILE_MIN_P = 0.1;
 export const ovulationUncertain = (p: Prediction | undefined): boolean =>
   Boolean(p?.ovulation && diffDays(p.ovulation.i80.hi, p.ovulation.i80.lo) > 2 * UNCERTAIN_ARM_DAYS);
 
-/** The fertile days to show: none while the ovulation estimate is uncertain (§9.8 Today state 4 and Calendar irregular state, D-098). */
-export const shownFertileDays = (p: Prediction | undefined): NonNullable<Prediction['fertileDays']> =>
-  ovulationUncertain(p) ? [] : (p?.fertileDays ?? []).filter((f) => f.pInWindow >= FERTILE_MIN_P);
+/** Callers still apply the effective showOvulationEstimate gate, including teen mode. */
+export const ovulationDrawable = (p: Prediction | undefined, includeUncertain: boolean): boolean =>
+  Boolean(p?.ovulation) && (includeUncertain || !ovulationUncertain(p));
+
+/** Wide estimates require an in-app opt-in; reminders, widgets and exports keep the default (D-115). */
+export const shownFertileDays = (p: Prediction | undefined, opts?: { includeUncertain?: boolean }): NonNullable<Prediction['fertileDays']> =>
+  !opts?.includeUncertain && ovulationUncertain(p) ? [] : (p?.fertileDays ?? []).filter((f) => f.pInWindow >= FERTILE_MIN_P);
