@@ -3,7 +3,7 @@
 // the user turns widget details on. Rendered by WidgetKit from a snapshot the app writes; the widget never reads the
 // database. Inside the 'widget' function only @expo/ui/swift-ui, no hooks, no module-scope references.
 import { Gauge, HStack, Link, Spacer, Text, VStack } from '@expo/ui/swift-ui';
-import { font, foregroundStyle, gaugeStyle, minimumScaleFactor, padding, tint } from '@expo/ui/swift-ui/modifiers';
+import { containerBackground, font, foregroundStyle, frame, gaugeStyle, minimumScaleFactor, padding, tint } from '@expo/ui/swift-ui/modifiers';
 import { createWidget, type WidgetEnvironment } from 'expo-widgets';
 
 /** What the app shares with the widget. `headline`/`detail` are present only when widget details are on. */
@@ -38,29 +38,34 @@ function TodayWidget(props: TodayWidgetProps, env: WidgetEnvironment) {
   if (env.widgetFamily === 'accessoryRectangular' || env.widgetFamily === 'accessoryInline') {
     return <Text modifiers={[font({ size: 14, weight: 'semibold' })]}>{props.headline ? `${dayText} · ${props.headline}` : dayText}</Text>;
   }
+  // Card colours from the glass redesign frame (Widgets-Notifications): surface2 card, ink text, rose link, period-red ring. Literals, not
+  // imports: WidgetKit serialises this function. widgets.test.ts keeps them equal to packages/ui-tokens and checks their contrast.
+  const c = env.colorScheme === 'dark'
+    ? { surface: '#2C2C2E', text: '#F4EEEF', sub: '#B3A8AC', link: '#E8869A', ring: '#D9607A' }
+    : { surface: '#F3F3F4', text: '#1F1A1C', sub: '#6B6165', link: '#A3354F', ring: '#B8324A' };
   const ring = (
-    <Gauge value={props.progress} min={0} max={1} modifiers={[gaugeStyle('circular'), tint(env.colorScheme === 'dark' ? '#D4607A' : '#BC4560')]} currentValueLabel={<Text modifiers={[font({ size: 22, weight: 'semibold' }), minimumScaleFactor(0.5)]}>{props.day > 0 ? String(props.day) : '–'}</Text>}>
-      <Text>{dayText}</Text>
+    <Gauge value={props.progress} min={0} max={1} modifiers={[gaugeStyle('circular'), tint(c.ring)]} currentValueLabel={<Text modifiers={[font({ size: 22, weight: 'semibold' }), foregroundStyle(c.text), minimumScaleFactor(0.5)]}>{props.day > 0 ? String(props.day) : '–'}</Text>}>
+      <Text modifiers={[foregroundStyle(c.sub)]}>{dayText}</Text>
     </Gauge>
   );
   if (env.widgetFamily === 'systemSmall') {
     return (
-      <VStack spacing={6} modifiers={[padding({ horizontal: 12, vertical: 12 })]}>
+      <VStack spacing={4} modifiers={[padding({ horizontal: 14, vertical: 14 }), containerBackground(c.surface, 'widget')]}>
         {ring}
-        <Text modifiers={[font({ size: 15, weight: 'semibold' })]}>{dayText}</Text>
+        <Text modifiers={[font({ size: 14 }), foregroundStyle(c.text)]}>{dayText}</Text>
       </VStack>
     );
   }
-  // systemMedium and larger: ring, day, optional headline, and a Period button that opens the flow picker
+  // systemMedium and larger: ring, app name, day or headline, optional detail, and a Period link (44 pt tall) that opens the flow picker
   return (
-    <HStack spacing={14} modifiers={[padding({ horizontal: 14, vertical: 14 })]}>
+    <HStack spacing={14} modifiers={[padding({ horizontal: 14, vertical: 14 }), containerBackground(c.surface, 'widget')]}>
       {ring}
-      <VStack alignment="leading" spacing={4}>
-        <Text modifiers={[font({ size: 13, weight: 'semibold' }), foregroundStyle('secondary')]}>{props.appName}</Text>
-        <Text modifiers={[font({ size: 17, weight: 'semibold' })]}>{props.headline ?? dayText}</Text>
-        {props.detail ? <Text modifiers={[font({ size: 13 }), foregroundStyle('secondary')]}>{props.detail}</Text> : null}
+      <VStack alignment="leading" spacing={6}>
+        <Text modifiers={[font({ size: 13 }), foregroundStyle(c.sub)]}>{props.appName}</Text>
+        <Text modifiers={[font({ size: 17, weight: 'semibold' }), foregroundStyle(c.text)]}>{props.headline ?? dayText}</Text>
+        {props.detail ? <Text modifiers={[font({ size: 13 }), foregroundStyle(c.sub)]}>{props.detail}</Text> : null}
         <Spacer />
-        <Link destination="sanguine://log?section=period" label="Log period" />
+        <Link destination="sanguine://log?section=period" label="Log period" modifiers={[font({ size: 14 }), foregroundStyle(c.link), frame({ minHeight: 44, alignment: 'leading' })]} />
       </VStack>
       <Spacer />
     </HStack>
