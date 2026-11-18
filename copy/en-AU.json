@@ -426,6 +426,8 @@
     "includeTemperatures": "Temperature counts",
     "includeFlags": "Patterns the app pointed out",
     "includeOvulation": "Ovulation estimates per cycle",
+    "alsoInclude": "Also include",
+    "alwaysIncluded": "Always in the PDF: the cycle table and chart, your age, the life state you set, and the estimate engine version.",
     "share": "Make and share the PDF",
     "failed": "The PDF could not be made."
   },
