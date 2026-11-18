@@ -294,10 +294,21 @@ describe('rest of a period in progress (currentBleed)', () => {
     expect(novCell({}, '2026-11-01').periodEstimate).toBeUndefined();
   });
   it('a past month keeps no estimated period days once today passes the range', () => {
-    const later = novCell({ today: '2026-11-06' }, '2026-11-03');
-    expect(later.periodEstimate).toBeUndefined();
-    const stale = dayEstimates('2026-11-03', { prediction: { ...novPrediction, asOf: '2026-11-06' }, pastOv: [], showEstimate: true, includeUncertain: false, period: false });
-    expect(stale.some((l) => l.startsWith('Period likely to end'))).toBe(false);
+    // without the stale guard the range would be counted back from today (6 Nov, cycle day 3) and still mark 4 and 5 Nov
+    const stale = { ...novPrediction, asOf: '2026-11-06' as ISODate };
+    for (const d of ['2026-11-03', '2026-11-04', '2026-11-05'] as ISODate[]) {
+      expect(novCell({ today: '2026-11-06', prediction: stale }, d).periodEstimate).toBeUndefined();
+      const lines = dayEstimates(d, { prediction: stale, pastOv: [], showEstimate: true, includeUncertain: false, period: false });
+      expect(lines.some((l) => l.startsWith('Period likely to end'))).toBe(false);
+    }
+    const m = buildMonth({ ...novArgs, today: '2026-11-06', prediction: stale, loggedDays: new Set() });
+    expect(m.cells.filter((c) => c.date < '2026-11-23' && c.periodEstimate !== undefined)).toEqual([]);
+  });
+  it('dayEstimates counts the period end against the `today` it is given, and against asOf when it is not given one', () => {
+    const at = (today?: ISODate) => dayEstimates('2026-11-04', { prediction: { ...novPrediction, asOf: '2026-11-02' }, pastOv: [], showEstimate: true, includeUncertain: false, period: false, ...(today ? { today } : {}) });
+    expect(at().some((l) => l.startsWith('Period likely to end'))).toBe(true);
+    expect(at('2026-11-02' as ISODate).some((l) => l.startsWith('Period likely to end'))).toBe(true);
+    expect(at('2026-11-06' as ISODate).some((l) => l.startsWith('Period likely to end'))).toBe(false);
   });
   it('nothing while suspended', () => {
     expect(novCell({ prediction: { ...novPrediction, suspended: { reason: 'pregnant' } } }, '2026-11-03').periodEstimate).toBeUndefined();
@@ -306,6 +317,36 @@ describe('rest of a period in progress (currentBleed)', () => {
     const lines = dayEstimates('2026-11-03', { prediction: novPrediction, pastOv: [], showEstimate: true, includeUncertain: false, period: false });
     expect(lines).toContain('Period likely to end 3–5 Nov · fair estimate');
     expect(novCell({}, '2026-11-03').label).toContain('estimated period day');
+  });
+});
+
+describe('the spoken label follows the drawn mark', () => {
+  // the next period's 80% range starts on 5 Nov, inside the unlikely tail of the period in progress: the mark is core, so the words say estimated, not possible
+  const overlap = { ...novPrediction, nextPeriod: { ...(novPrediction.nextPeriod as NonNullable<Prediction['nextPeriod']>), i80: { lo: '2026-11-05', hi: '2026-11-09' }, i95: { lo: '2026-11-03', hi: '2026-11-11' } } } as Prediction;
+  it('a day that is both an edge bleed day and in the next 80% range is core and labelled estimated', () => {
+    const c = novCell({ prediction: overlap }, '2026-11-05');
+    expect(c.periodEstimate).toBe('core');
+    expect(c.label).toContain('estimated period day');
+    expect(c.label).not.toContain('possible period day');
+  });
+  it('a plain edge day still says possible, a plain next-period day says predicted', () => {
+    expect(novCell({}, '2026-11-05').label).toContain('possible period day, estimate');
+    expect(novCell({}, '2026-11-27').label).toContain('predicted period, 80% range');
+  });
+});
+
+describe('a single fertile day is never drawn or worded (§8.5)', () => {
+  const oneDay = { ...novPrediction, fertileDays: [{ date: '2026-11-10' as ISODate, pInWindow: 0.9 }, { date: '2026-11-11' as ISODate, pInWindow: 0.05 }] };
+  it('one shown day leaves no band, no estimate line and no row', () => {
+    const m = buildMonth({ ...novArgs, prediction: oneDay, loggedDays: new Set() });
+    expect(m.cells.some((c) => c.fertile !== undefined)).toBe(false);
+    expect(dayEstimates('2026-11-10', { prediction: oneDay, pastOv: [], showEstimate: true, includeUncertain: false, period: false }).some((l) => l.startsWith('Fertile window'))).toBe(false);
+    expect(monthRows({ ...novArgs, prediction: oneDay, loggedText: new Map() }).some((r) => r.kind === 'fertile')).toBe(false);
+  });
+  it('a range of two days is still drawn', () => {
+    const two = { ...novPrediction, fertileDays: [{ date: '2026-11-10' as ISODate, pInWindow: 0.9 }, { date: '2026-11-11' as ISODate, pInWindow: 0.6 }] };
+    expect(buildMonth({ ...novArgs, prediction: two, loggedDays: new Set() }).cells.filter((c) => c.fertile !== undefined)).toHaveLength(2);
+    expect(monthRows({ ...novArgs, prediction: two, loggedText: new Map() }).filter((r) => r.kind === 'fertile')).toHaveLength(1);
   });
 });
 

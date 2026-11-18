@@ -18,26 +18,42 @@ export interface CalendarData {
   /** Retrospective ovulation estimates of closed cycles (engine; never written into the cycle records). */
   pastOv: PastOvulation[];
 }
-const EMPTY: Omit<CalendarData, 'pastOv'> = { periodDays: new Set(), loggedDays: new Set(), symptomDays: new Set(), loggedText: new Map() };
+const EMPTY: Omit<CalendarData, 'pastOv' | 'periodDays'> = { loggedDays: new Set(), symptomDays: new Set(), loggedText: new Map() };
 const LISTED = new Set(['flow', 'symptom', 'energy', 'biomarker', 'sex', 'note']);
 
-export function useCalendarData(): CalendarData {
-  const { db, store, version, history, settings, prefs } = useApp();
-  const { t: tr } = useTranslation();
-  const [data, setData] = useState(EMPTY);
+/** The logged period days alone (the cycle projection plus period-kind flow days): two small queries, no event scan. Today's dial uses this. */
+export function usePeriodDays(): Set<ISODate> {
+  const { db, version } = useApp();
+  const [days, setDays] = useState<Set<ISODate>>(() => new Set());
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the projections after every write
   useEffect(() => {
     if (!db) return;
     void (async () => {
       const cycles = await db.all<{ start_day: string; end_day: string | null }>('SELECT start_day, end_day FROM cycle');
       const flows = await db.all<{ day: string }>("SELECT day FROM daily_log WHERE flow_kind = 'period' AND flow IN ('light','medium','heavy')");
-      const logs = await db.all<{ day: string }>('SELECT day FROM daily_log');
-      const bio = await db.all<{ day: string }>('SELECT DISTINCT day FROM biomarker');
-      const period = new Set<ISODate>(flows.map((f) => f.day));
+      const period = new Set<ISODate>(flows.map((f) => f.day as ISODate));
       for (const c of cycles) {
         const end = c.end_day ?? c.start_day;
         for (let d = c.start_day as ISODate; d <= end; d = addDays(d, 1)) period.add(d);
       }
+      setDays(period);
+    })();
+  }, [db, version]);
+  return days;
+}
+
+/** Everything the calendar screen draws from the data layer; Today only needs `usePeriodDays`. */
+export function useCalendarData(): CalendarData {
+  const { db, store, version, history, settings, prefs } = useApp();
+  const { t: tr } = useTranslation();
+  const periodDays = usePeriodDays();
+  const [data, setData] = useState(EMPTY);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the projections after every write
+  useEffect(() => {
+    if (!db) return;
+    void (async () => {
+      const logs = await db.all<{ day: string }>('SELECT day FROM daily_log');
+      const bio = await db.all<{ day: string }>('SELECT DISTINCT day FROM biomarker');
       // one pass over the active events gives the symptom days and the month list's phrases
       const symptomDays = new Set<ISODate>();
       const loggedText = new Map<ISODate, string[]>();
@@ -48,9 +64,9 @@ export function useCalendarData(): CalendarData {
         const ev: DayEvent = { ...e, data: JSON.parse(e.payload) as Record<string, unknown> };
         loggedText.set(day, [...(loggedText.get(day) ?? []), shortDescribe(ev, tr, prefs.tempUnit)]);
       }
-      setData({ periodDays: period, loggedDays: new Set<ISODate>([...logs.map((l) => l.day), ...bio.map((b) => b.day)]), symptomDays, loggedText });
+      setData({ loggedDays: new Set<ISODate>([...logs.map((l) => l.day as ISODate), ...bio.map((b) => b.day as ISODate)]), symptomDays, loggedText });
     })();
   }, [db, store, version, tr, prefs.tempUnit]);
   const pastOv = useMemo(() => (history && settings ? pastOvulations(history, settings) : []), [history, settings]);
-  return { ...data, pastOv };
+  return { periodDays, ...data, pastOv };
 }

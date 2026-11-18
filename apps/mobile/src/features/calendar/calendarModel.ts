@@ -88,7 +88,9 @@ function estimateMarks(i: EstimateInput, today: ISODate) {
   const uncertain = Boolean(ov) && ovulationUncertain(p);
   const past = i.showEstimate && !i.prediction?.suspended ? i.pastOv.filter((r) => i.includeUncertain || !wide(r)) : [];
   const fertile = new Map<ISODate, number>();
-  if (i.showEstimate) for (const f of shownFertileDays(p, { includeUncertain: i.includeUncertain })) fertile.set(f.date, Math.min(1, f.pInWindow));
+  // a band is a range: one shown day (the rest under the opacity floor, or clipped by the engine) is never drawn or worded as a fertile day
+  const shownFertile = i.showEstimate ? shownFertileDays(p, { includeUncertain: i.includeUncertain }) : [];
+  if (shownFertile.length > 1) for (const f of shownFertile) fertile.set(f.date, Math.min(1, f.pInWindow));
   const ovMarks = new Map<ISODate, 'point' | 'range'>();
   const put = (d: ISODate, v: 'point' | 'range') => { if (ovMarks.get(d) !== 'point') ovMarks.set(d, v); };
   for (const r of past) for (let d = r.i80.lo; d <= r.i80.hi; d = addDays(d, 1)) put(d, d === r.point ? 'point' : 'range');
@@ -108,8 +110,8 @@ const basisWord = (b: PastOvulation['basis']) => t(`day.estimates.basis.${b}`);
 const graded = (line: string, c: string | undefined) => [line, c ? t(`confidence.${c}`) : ''].filter(Boolean).join(' · ');
 
 /** What the calendar marks on `date` mean, in words, each with its range and confidence word (D-104), plus an uncertain ovulation range the grid does not draw (D-106) and a past cycle's range with its basis. */
-export function dayEstimates(date: ISODate, i: EstimateInput & { period: boolean }): string[] {
-  const { cb, next, ov, uncertain, past, on } = estimateMarks(i, i.prediction?.asOf ?? ('' as ISODate));
+export function dayEstimates(date: ISODate, i: EstimateInput & { period: boolean; /** The day the grid counts from; give the grid's own so the words and the marks agree. Defaults to the prediction's asOf. */ today?: ISODate }): string[] {
+  const { cb, next, ov, uncertain, past, on } = estimateMarks(i, i.today ?? i.prediction?.asOf ?? ('' as ISODate));
   const m = on(date, i.period);
   const out: string[] = [];
   if (next && m.core80) out.push(graded(t('day.estimates.period', { range: formatRange(next.i80.lo, next.i80.hi) }), next.confidence));
@@ -135,7 +137,7 @@ export function buildMonth(i: EstimateInput & { month: string; today: ISODate; p
   const cells: DayCell[] = Array.from({ length: 42 }, (_, k) => {
     const date = addDays(gridStart, k);
     const period = i.periodDays.has(date);
-    const { periodEstimate, bleed, core80, fertile: f, ovulation: ovMark } = on(date, period);
+    const { periodEstimate, bleed, fertile: f, ovulation: ovMark } = on(date, period);
     const logged = i.loggedDays.has(date);
     const symptoms = i.symptomDays.has(date);
     const cycleDay = cycleDayOf(i.cycleStarts ?? [], date);
@@ -143,9 +145,9 @@ export function buildMonth(i: EstimateInput & { month: string; today: ISODate; p
     if (cycleDay) parts.push(t('calendar.a11y.cycleDay', { day: String(cycleDay) }));
     if (date === i.today) parts.push(t('calendar.a11y.today'));
     if (period) parts.push(t('calendar.a11y.period'));
-    if (bleed) parts.push(t(bleed === 'core' ? 'calendar.a11y.periodEstimate' : 'calendar.a11y.periodEstimateEdge'));
-    else if (periodEstimate === 'core' && core80) parts.push(t('calendar.a11y.predicted'));
-    else if (periodEstimate) parts.push(t('calendar.a11y.predicted95'));
+    // the words follow the drawn mark; `bleed` only picks between the period-in-progress wording and the next-period wording
+    if (periodEstimate === 'core') parts.push(t(bleed ? 'calendar.a11y.periodEstimate' : 'calendar.a11y.predicted'));
+    else if (periodEstimate === 'edge') parts.push(t(bleed ? 'calendar.a11y.periodEstimateEdge' : 'calendar.a11y.predicted95'));
     if (f !== undefined) parts.push(t('calendar.a11y.fertile', { word: fertileWord(f) }));
     if (ovMark === 'point') parts.push(t('calendar.a11y.ovulation'));
     const moon = i.moon?.get(date);
