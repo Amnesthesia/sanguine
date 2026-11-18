@@ -105,6 +105,7 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
             {days > 0 ? Array.from({ length: days }, (_, d) => {
               const major = d % 7 === 0;
               const a = pt(deg(d), TICK_OUTER), b = pt(deg(d), TICK_OUTER - (major ? 6 : 3));
+              // biome-ignore lint/suspicious/noArrayIndexKey: a tick's day number is its identity
               return <Line key={d} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={t.c.textOnGlass} strokeOpacity={major ? 0.55 : 0.25} strokeWidth={major ? 1.6 : 1.2} strokeLinecap="round" />;
             }) : null}
             {runs.map((run) => {
