@@ -57,7 +57,7 @@ it('re-reads the day after energy changes or clears in the sheet', async () => {
   await setEnergy(store, today, 0);
   app.state = { ...app.state, version: 2 };
   view.rerender(<DayDetail />);
-  await waitFor(() => expect(screen.queryByTestId('event-energy')).toBeNull());
+  await waitFor(() => expect(screen.queryByText(/^Energy:/)).toBeNull());
 });
 
 it('lists entries as chips; remove has no confirm alert and the toast Undo brings it back', async () => {
@@ -70,12 +70,12 @@ it('lists entries as chips; remove has no confirm alert and the toast Undo bring
   render(<><DayDetail /><ToastHost /></>);
   const remove = await screen.findByRole('button', { name: /^Remove: Cramps/ });
   fireEvent.click(remove);
-  await waitFor(() => expect(screen.queryByTestId('event-symptom')).toBeNull());
+  await waitFor(() => expect(screen.queryByRole('button', { name: /^Remove: Cramps/ })).toBeNull());
   expect(alert).not.toHaveBeenCalled();
   expect(refresh).toHaveBeenCalled();
   await screen.findByText(/^Removed: Cramps/);
   fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
-  await waitFor(() => expect(screen.getByTestId('event-symptom')).toBeTruthy());
+  await waitFor(() => expect(screen.getByRole('button', { name: /^Remove: Cramps/ })).toBeTruthy());
 });
 
 it('keeps Not a period and Mark as spotting on a period day, and the log button on a past day', async () => {
@@ -111,7 +111,7 @@ it('shows only estimates on a future day: no chips, no nothing-logged line, no l
   await screen.findByTestId('estimate-sections');
   expect(sections.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ day: '2026-10-20' });
   expect(screen.queryByText('Nothing logged for this day.')).toBeNull();
-  expect(screen.queryByTestId('event-symptom')).toBeNull();
+  expect(screen.queryByRole('button', { name: /^Remove: Cramps/ })).toBeNull();
   expect(screen.queryByTestId('day-edit')).toBeNull();
   expect(screen.queryByText('Logged on this day')).toBeNull();
   expect(screen.queryByTestId('day-not-period')).toBeNull();
@@ -176,4 +176,15 @@ it('marks the cycle day of a future day as an estimate', async () => {
   app.state = { db, store, today, prefs: DEFAULT_PREFS, profile: {}, version: 0, refresh: vi.fn(), prediction, history, settings: { lifeStates: [] } };
   render(<DayDetail />);
   await screen.findByText('Day 9 of your cycle · estimate');
+});
+
+it('adds where an imported entry came from to its chip, and not to a manual one', async () => {
+  const today = '2026-10-14';
+  const { db, store } = await setup(today);
+  await store.append({ kind: 'symptom', payload: { day: today, code: 'cramps', intensity: 2 }, provenance: 'imported', source_app: 'Natural Cycles' });
+  await setSymptom(store, today, 'headache', 1);
+  app.state = { db, store, today, prefs: DEFAULT_PREFS, profile: {}, version: 0, refresh: vi.fn() };
+  render(<DayDetail />);
+  await screen.findByRole('button', { name: /^Remove: Cramps.* · Natural Cycles/ });
+  expect(screen.getByRole('button', { name: /^Remove: Headache/ }).getAttribute('aria-label')).not.toMatch(/·/);
 });

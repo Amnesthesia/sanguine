@@ -11,15 +11,14 @@ import { cycleDayOf } from '@/features/calendar/calendarModel';
 import { phaseOn, showSupplements } from '@/features/guidance/guidance';
 import { type DayEvent, dayEvents, dayState, markNotAPeriod, markSpotting } from '@/features/logging/actions';
 import { describeEvent } from '@/features/logging/describe';
-import { removeEntry, undoRemoval, visibleEntries } from '@/features/logging/removeEntry';
+import { LoggedEntries } from '@/features/logging/LoggedEntries';
+import { visibleEntries } from '@/features/logging/removeEntry';
 import { SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
 import { formatLong } from '@/ui/format';
-import { LoggedChip } from '@/ui/LoggedChip';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
-import { showToast } from '@/ui/Toast';
 
 /** "imported · Natural Cycles" or "from a sensor" as a muted suffix; nothing for a manual entry. */
 function provenance(e: DayEvent, tr: (k: string) => string): string {
@@ -57,14 +56,6 @@ export default function DayDetail() {
     [prefs.cycleGuidance, history, settings, day, today, prediction, cycles, showEstimate],
   );
   const after = async () => { await refresh(); await reload(); };
-  // removal is a retraction (append-only, I-14); Undo retracts what the removal wrote, so no confirm step is needed (D-113, D-123)
-  const onRemove = async (e: DayEvent) => {
-    if (!store || !db) return;
-    const label = describeEvent(e, tr, prefs.tempUnit);
-    const written = await removeEntry(store, db, e);
-    await after();
-    showToast(tr('log.removed', { label }), { label: tr('common.undo'), onPress: () => void undoRemoval(store, written).then(after) });
-  };
   const entries = visibleEntries(events);
   // "Day 2 of your cycle · Period": the same count as the calendar's day sheet; a future day's is an estimate
   const cycleDay = cycleDayOf(history?.cycles.map((c) => c.start) ?? [], day);
@@ -76,15 +67,7 @@ export default function DayDetail() {
       {isFuture ? null : (
         <View style={{ gap: 6 }}>
           <Text variant="caption" accessibilityRole="header" style={{ fontWeight: '600' }} color="textSecondary">{tr('log.loggedOnDay')}</Text>
-          {entries.length === 0 ? <Text variant="bodySmall" color="textSecondary">{tr('day.nothingLogged')}</Text> : (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {entries.map((e) => (
-                <View key={e.id} testID={`event-${e.kind}`}>
-                  <LoggedChip label={`${describeEvent(e, tr, prefs.tempUnit)}${provenance(e, tr)}`} mark={e.kind === 'flow' ? 'flow' : e.kind === 'symptom' ? 'symptom' : 'other'} onRemove={() => void onRemove(e)} />
-                </View>
-              ))}
-            </View>
-          )}
+          <LoggedEntries entries={entries} onChanged={after} labelFor={(e) => `${describeEvent(e, tr, prefs.tempUnit)}${provenance(e, tr)}`} />
         </View>
       )}
       {isPeriodDay && !isFuture && db && store ? (
