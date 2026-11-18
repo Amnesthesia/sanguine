@@ -1,5 +1,5 @@
-// Five-step energy slider (D-123): tap a step to log it, "Clear" removes the value. Unset shows no thumb.
-// ponytail: tap only; dragging across steps is not implemented, add a pan responder if testers ask.
+// Five-step energy slider (D-123): tap a step or slide across them to log it, "Clear" removes the value. Unset shows no thumb.
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { useTheme } from '@/theme';
@@ -14,9 +14,44 @@ export function stepEnergy(value: EnergyLevel, dir: 'increment' | 'decrement'): 
   return Math.min(5, Math.max(1, value + (dir === 'increment' ? 1 : -1))) as EnergyLevel;
 }
 
-export function EnergySlider({ value, onChange }: { value: EnergyLevel; onChange: (v: EnergyLevel) => void }) {
+/** The step under a horizontal position on a track that starts at `left` and is `width` wide; clamped to 1 to 5. */
+export function energyAt(x: number, left: number, width: number): 1 | 2 | 3 | 4 | 5 {
+  if (width <= 0) return 1;
+  return Math.min(5, Math.max(1, Math.floor(((x - left) / width) * 5) + 1)) as 1 | 2 | 3 | 4 | 5;
+}
+
+const DRAG_SLOP = 8; // below this a touch is a tap, which the step buttons handle
+
+export function EnergySlider({ value: committed, onChange }: { value: EnergyLevel; onChange: (v: EnergyLevel) => void }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
+  // while a finger slides, the thumb follows it and one write happens on release (every step crossed would append an event)
+  const [preview, setPreview] = useState<EnergyLevel | null>(null);
+  const value = preview ?? committed;
+  const track = useRef<View>(null);
+  const box = useRef({ left: 0, width: 0 });
+  const startX = useRef(0);
+  const previewRef = useRef<EnergyLevel | null>(null);
+  const show = (v: EnergyLevel | null) => { previewRef.current = v; setPreview(v); };
+  // a committed release keeps the thumb where the finger left it until the saved value arrives, so it does not jump back for a moment
+  useEffect(() => show(null), [committed]);
+  const finish = (commit: boolean) => {
+    const v = previewRef.current;
+    if (commit && v !== null && v !== committed) onChange(v);
+    else show(null);
+  };
+  const drag = {
+    onStartShouldSetResponderCapture: (e: { nativeEvent: { pageX: number } }) => { startX.current = e.nativeEvent.pageX; return false; },
+    onMoveShouldSetResponderCapture: (e: { nativeEvent: { pageX: number } }) => Math.abs(e.nativeEvent.pageX - startX.current) > DRAG_SLOP,
+    onResponderTerminationRequest: () => false,
+    onResponderGrant: (e: { nativeEvent: { pageX: number } }) => {
+      const x = e.nativeEvent.pageX;
+      track.current?.measureInWindow((left, _y, width) => { box.current = { left, width }; show(energyAt(x, left, width)); });
+    },
+    onResponderMove: (e: { nativeEvent: { pageX: number } }) => show(energyAt(e.nativeEvent.pageX, box.current.left, box.current.width)),
+    onResponderRelease: () => finish(true),
+    onResponderTerminate: () => finish(false),
+  };
   const word = value ? tr(`log.energyLevels.${value}`) : tr('log.energyNotLogged');
   return (
     <View style={{ gap: 6 }}>
@@ -34,11 +69,11 @@ export function EnergySlider({ value, onChange }: { value: EnergyLevel; onChange
         aria-valuemin={1} aria-valuemax={5} aria-valuetext={word} {...(value ? { 'aria-valuenow': value } : {})}
         accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
         onAccessibilityAction={(e) => { const next = stepEnergy(value, e.nativeEvent.actionName as 'increment' | 'decrement'); if (next !== value) onChange(next); }}>
-        <View style={{ flexDirection: 'row' }}>
+        <View ref={track} testID="energy-track" {...drag} style={{ flexDirection: 'row' }}>
           <View pointerEvents="none" style={{ position: 'absolute', top: 16, left: 0, right: 0, height: 12, borderRadius: 6, backgroundColor: t.chipBg, borderWidth: 1, borderColor: t.hairline }} />
           {value ? <View pointerEvents="none" style={{ position: 'absolute', top: 16, left: 0, width: `${((value - 0.5) / 5) * 100}%`, height: 12, borderRadius: 6, backgroundColor: `${t.c.accent}8C` }} /> : null}
           {LEVELS.map((n) => (
-            <Pressable key={n} testID={`energy-${n}`} accessible={false} importantForAccessibility="no-hide-descendants" onPress={() => onChange(n)} style={{ flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' }}>
+            <Pressable key={n} testID={`energy-${n}`} accessibilityLabel={tr(`log.energyLevels.${n}`)} accessible={false} importantForAccessibility="no-hide-descendants" onPress={() => onChange(n)} style={{ flex: 1, height: 44, alignItems: 'center', justifyContent: 'center' }}>
               {n === value
                 ? <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: t.c.surface, borderWidth: 2, borderColor: t.c.accent, boxShadow: '0 3px 8px rgba(31,26,28,0.22)' }} />
                 : <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: n < value ? t.c.surface : t.c.border }} />}

@@ -6,11 +6,12 @@ import { DEFAULT_PREFS } from '@/data/prefs';
 import { migrate } from '@/data/migrate';
 import { EventStore } from '@/data/store';
 import { openTestDb } from '@/data/testDb';
-import { dayEvents, dayState, setEnergy, setFlow, setSymptom } from './actions';
+import { dayEvents, dayState, setFlow, setSymptom } from './actions';
 
 const app = vi.hoisted(() => ({ state: {} as Record<string, unknown> }));
 vi.mock('@/state/app', () => ({ useApp: () => app.state }));
-vi.mock('expo-router', () => ({ useRouter: () => ({ back: vi.fn() }), useLocalSearchParams: () => ({}) }));
+const nav = vi.hoisted(() => ({ back: vi.fn() }));
+vi.mock('expo-router', () => ({ useRouter: () => nav, useLocalSearchParams: () => ({}) }));
 vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 vi.mock('./MoreSection', () => ({ MoreSection: () => null }));
 vi.mock('./SymptomGrid', () => ({ SymptomGrid: () => null }));
@@ -57,8 +58,32 @@ it('shows Done as the one filled accent capsule', async () => {
   expect(done.style.backgroundColor).toBe('rgb(188, 69, 96)');
   expect(done.style.borderTopLeftRadius).toBe('999px');
   expect(done.getAttribute('aria-label')).toBe('Done, close the log sheet');
-  fireEvent.click(screen.getByTestId('log-prev')); // the day arrows stay quiet, not filled
-  expect(screen.getByTestId('log-next').style.backgroundColor).not.toBe('rgb(188, 69, 96)');
+  // the day arrows stay quiet, not filled, and their glyphs are text-on-glass ink (rose text on glass is about 2.4:1)
+  for (const id of ['log-prev', 'log-next']) {
+    expect(screen.getByTestId(id).style.backgroundColor).not.toBe('rgb(188, 69, 96)');
+    expect((screen.getByTestId(id).querySelector('[dir]') as HTMLElement).style.color).toBe('rgb(74, 66, 70)');
+  }
+});
+
+it('shows today, the cycle day and Saved under the date, and the grabber closes the sheet', async () => {
+  const { store, today } = await setup();
+  Object.assign(app.state, { history: { cycles: [{ id: 'c1', start: '2026-10-15' }], logs: [] } });
+  render(<LogSheet />);
+  expect(await screen.findByText('Today · Day 3 of your cycle')).toBeTruthy();
+  fireEvent.click(screen.getByLabelText('Close log sheet'));
+  expect(nav.back).toHaveBeenCalledTimes(1);
+  cleanup();
+  await setSymptom(store, today, 'cramps', 1);
+  render(<LogSheet />);
+  expect(await screen.findByText('Today · Day 3 · Saved')).toBeTruthy();
+  fireEvent.click(screen.getByTestId('log-prev'));
+  expect(await screen.findByText('Day 2 of your cycle')).toBeTruthy(); // not today: no "Today", nothing logged that day
+});
+
+it('leaves the subline to Today alone when there is no cycle data', async () => {
+  await setup();
+  render(<LogSheet />);
+  expect(await screen.findByText('Today')).toBeTruthy();
 });
 
 it('says nothing is logged on an empty day', async () => {
@@ -87,5 +112,4 @@ it('sets energy from the slider and clears it with Clear', async () => {
   await waitFor(async () => expect((await dayState(db, today)).energy).toBe(2));
   fireEvent.click(await screen.findByTestId('energy-clear'));
   await waitFor(async () => expect((await dayEvents(store, today)).filter((e) => e.kind === 'energy')).toHaveLength(0));
-  await setEnergy(store, today, 3);
 });
