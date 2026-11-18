@@ -279,6 +279,17 @@
       "ovulationPoint": "Ovulation estimate {range}, most likely this day",
       "ovulation": "Ovulation estimate {range}",
       "ovulationUncertain": "Ovulation estimate uncertain: could fall {range}",
+      "periodEnd": "Period likely to end {range}",
+      "ovulationPastPoint": "Ovulation estimate {range}, most likely this day · {basis}",
+      "ovulationPast": "Ovulation estimate {range} · {basis}",
+      "ovulationPastUncertain": "Ovulation estimate uncertain: could have fallen {range} · {basis}",
+      "basis": {
+        "calendar": "from your next period date",
+        "lh": "from your LH tests",
+        "bbt": "from your temperature readings",
+        "mucus": "from your cervical mucus notes",
+        "combined": "from your tests and readings"
+      },
       "fertile": "Fertile window: {word} likelihood",
       "none": "No estimate covers this day.",
       "note": "Estimates are ranges worked out from your own logs, not promises."
@@ -349,6 +360,9 @@
       "fertile": "{word} likelihood of being in the fertile window",
       "ovulation": "ovulation estimate",
       "logged": "something logged",
+      "symptoms": "symptoms logged",
+      "periodEstimate": "estimated period day",
+      "periodEstimateEdge": "possible period day, estimate",
       "titleHint": "Swipe up or down to change the month. Double-tap to go to today."
     },
     "fertileWords": {
@@ -371,7 +385,20 @@
       "Sun"
     ],
     "ovulationUncertainCaption": "Ovulation estimate uncertain",
-    "legendLogged": "Logged"
+    "legendLogged": "Logged",
+    "list": {
+      "periodDay": "Period day {day}",
+      "period": "Period",
+      "periodEnds": "Period likely ends · estimate from your usual length",
+      "fertile": "Fertile window, estimate",
+      "fertileMost": "most likely {range}",
+      "ovulation": "Ovulation estimate, range {range}",
+      "ovulationUncertain": "Ovulation estimate uncertain, range {range}",
+      "nextPeriod": "Next period likely",
+      "atMost": "at most {range}",
+      "confidence": { "high": "high confidence", "medium": "medium confidence", "low": "low confidence" },
+      "empty": "Nothing logged or estimated this month."
+    }
   },
   "report": {
     "title": "Cycle summary for a health professional",
