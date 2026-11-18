@@ -443,7 +443,9 @@
       "lowPhaseTip": "Exercise lifts mood and energy for most people, and even one session helps on average. On those days, a walk, yoga or a lighter session still counts.",
       "highPhase": "Your energy was highest {phaseIn}: {mean} out of 5 on average. If you enjoy harder sessions, this is when you have tended to feel up to them.",
       "lowOverall": "Your energy was low on most days you logged in the last 4 weeks: {mean} out of 5 on average over {n} days. Tiredness that lasts for weeks has many possible causes. A doctor can help you check what is going on.",
-      "caption": "From your own logs. Energy does not change any estimate."
+      "caption": "From your own logs. Energy does not change any estimate.",
+      "reading": "Energy averaged {mean} out of 5 across {n} logged days.",
+      "axis": "Energy \u00b7 1\u20135"
     },
     "pattern": {
       "title": "Your cycle pattern",
@@ -516,8 +518,24 @@
     "confirmLong": "No, this cycle was this long",
     "viewCycle": "Cycle details",
     "needTwo": "Insights appear after two complete cycles.",
+    "excludedByYou": "excluded by you",
+    "includeLabel": "Include the cycle starting {date} in your estimates",
+    "lengthSummary": {
+      "range": "{min}\u2013{max} days",
+      "lengths": "{list} days \u00b7 {spread}-day spread."
+    },
     "chart": {
       "yAxis": "days",
+      "dayLabel": "Day {n}",
+      "lengthA11y": "Cycle length chart: {list} days.",
+      "tempA11y": "Temperature chart, {n} readings.",
+      "tempA11yCoverline": "Temperature chart, {n} readings, coverline {value} {unit}.",
+      "readLengthSame": "Your last {n} typical cycles were {len} days long.",
+      "readLengthRange": "Your last {n} typical cycles were {min} to {max} days long.",
+      "readTempAbove": "The last three readings sit above the coverline.",
+      "readTempBelow": "The last three readings sit below the coverline.",
+      "readPhase": "{name}: logged most often {phaseIn}.",
+      "readPhaseIn": { "menstrual": "during bleeding", "follicular": "in the follicular phase", "luteal": "in the luteal phase" },
       "bandCaption": "Shaded: where the next cycle is likely to fall (80%).",
       "noTemps": "No temperatures logged this cycle.",
       "fewTemps": "The chart appears after six morning temperatures in this cycle. To go: {n}.",
@@ -540,7 +558,13 @@
       "exclude": "Leave out of estimates",
       "include": "Include in estimates",
       "excluded": "This cycle is left out of your estimates.",
-      "conflict": "The signals you logged did not agree, so the most precise one was used."
+      "conflict": "The signals you logged did not agree, so the most precise one was used.",
+      "timeline": "Timeline",
+      "timelineBleeding": "{range} \u00b7 Bleeding",
+      "timelineLh": "{date} \u00b7 LH test positive",
+      "timelineRise": "{date} \u00b7 Temperature rise",
+      "timelineNext": "{date} \u00b7 Next period",
+      "missing": "This cycle is no longer in your history."
     }
   },
   "settings": {

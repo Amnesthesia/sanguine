@@ -10,7 +10,9 @@ import { type LedgerRow, ledgerRows, ledgerSummary, type LedgerSummary } from '@
 import { energyDays, fromC } from '@/features/logging/actions';
 import { effectivePrefs } from '@/data/prefs';
 import { EnergyChart, LengthChart, TempChart } from '@/features/insights/charts';
-import { HistoryRow } from '@/features/insights/HistoryRow';
+import { HistoryRow, LengthSummaryCard } from '@/features/insights/HistoryRow';
+import { setCycleExcluded } from '@/features/insights/cycleExclude';
+import { lengthReading, lengthSummary, phaseReading, tempReading } from '@/features/insights/readings';
 import { accuracyText, cycleLengthSeries, historyRows, phaseBars } from '@/features/insights/insightsModel';
 import { addPastPregnancy } from '@/features/settings/lifeState';
 import { cyclePattern, inPatternState } from '@/features/insights/patternModel';
@@ -18,6 +20,7 @@ import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
+import { GlassBar } from '@/ui/GlassBar';
 import { Screen } from '@/ui/Screen';
 import { Segmented } from '@/ui/Segmented';
 import { formatDay, formatRange } from '@/ui/format';
@@ -63,19 +66,26 @@ export default function InsightsScreen() {
     const mine = history.temperatures.filter((r) => r.date >= open.start && !r.disturbed && (r.source === 'oral' || r.source === 'vaginal' || r.source === 'other'));
     return { points: mine.map((r) => ({ day: diffDays(r.date, open.start) + 1, value: fromC(r.valueC, prefs.tempUnit) })), coverline: fertilityTools ? detectBbtShift(history.temperatures, open.start)?.coverlineC : undefined };
   }, [open, history, prefs.tempUnit, fertilityTools]);
+  const summary = useMemo(() => lengthSummary(cycles, prediction?.nextPeriod?.confidence), [cycles, prediction]);
   const acc = accuracyText(ledger);
   const empty = closed < 2;
 
   return (
-    <Screen testID="screen-insights" title={tr('insights.title')}>
-      <Segmented testIDPrefix="insights-tab" value={tab} onChange={setTab} options={[{ value: 'history', label: tr('insights.segments.history') }, { value: 'charts', label: tr('insights.segments.charts') }, { value: 'accuracy', label: tr('insights.segments.accuracy') }]} />
+    <Screen testID="screen-insights" chrome={
+      // the segmented control rides in the glass toolbar under the title (frames Insights-*)
+      <View style={{ gap: 8 }}>
+        <GlassBar title={tr('insights.title')} />
+        <Segmented testIDPrefix="insights-tab" value={tab} onChange={setTab} options={[{ value: 'history', label: tr('insights.segments.history') }, { value: 'charts', label: tr('insights.segments.charts') }, { value: 'accuracy', label: tr('insights.segments.accuracy') }]} />
+      </View>
+    }>
 
       {tab === 'history' ? (
         rows.length === 0 || empty ? (
           <Card testID="insights-empty"><Text color="textSecondary">{tr('insights.needTwo')}</Text></Card>
-        ) : (
-          rows.map((r) => (
-            <HistoryRow key={r.id} r={r} fertilityTools={fertilityTools} onOpen={() => router.push({ pathname: '/cycle/[id]', params: { id: r.id } })} actions={
+        ) : (<>
+          {summary ? <LengthSummaryCard s={summary} /> : null}
+          {rows.map((r) => (
+            <HistoryRow key={r.id} r={r} fertilityTools={fertilityTools} onOpen={() => router.push({ pathname: '/cycle/[id]', params: { id: r.id } })} onInclude={() => { if (store) void setCycleExcluded(store, r.startISO, false).then(refresh); }} actions={
               r.offerMissedLog && r.midDay ? (
                 <View style={{ gap: 2 }}>
                   <Button kind="text" testID="missed-log" label={tr('insights.missedLogPrompt')} onPress={() => router.push({ pathname: '/log', params: { day: r.midDay as string } })} />
@@ -90,8 +100,8 @@ export default function InsightsScreen() {
                   <Button kind="text" testID="confirm-long" label={tr('insights.confirmLong')} onPress={() => void store?.append({ kind: 'cycle.confirm_long', payload: { cycle_start: r.startISO, reason: 'user_confirmed' } }).then(refresh)} />
                 </View>
               ) : null} />
-          ))
-        )
+          ))}
+        </>)
       ) : null}
 
       {tab === 'charts' && pattern ? (
@@ -114,22 +124,30 @@ export default function InsightsScreen() {
         empty ? (
           <Card testID="insights-empty"><Text color="textSecondary">{tr('insights.needTwo')}</Text></Card>
         ) : (<>
-          <Card testID="card-length">
-            <Text variant="heading">{tr('insights.charts.cycleLength')}</Text>
+          <Card testID="card-length" style={{ gap: 12 }}>
+            <Text variant="heading" accessibilityRole="header">{tr('insights.charts.cycleLength')}</Text>
             {series.points.length >= MIN_LENGTH_POINTS ? (<>
-              <LengthChart series={series} />
+              <LengthChart series={series} unit={tr('insights.chart.yAxis')} bandLabel={tr('insights.charts.band')} label={tr('insights.chart.lengthA11y', { list: series.points.map((p) => p.length).join(', ') })} />
               <Text variant="caption" color="textSecondary">{tr('insights.chart.bandCaption')}</Text>
+              {(() => { const { key, ...p } = lengthReading(series.points.map((x) => x.length)); return <Text testID="reading-length">{tr(key === 'same' ? 'insights.chart.readLengthSame' : 'insights.chart.readLengthRange', p)}</Text>; })()}
             </>) : <Text testID="chart-length-few" variant="bodySmall" color="textSecondary">{tr('insights.chart.fewLengths')}</Text>}
           </Card>
-          <Card testID="card-temp">
-            <Text variant="heading">{tr('insights.charts.temperature')}</Text>
-            {temps.points.length >= MIN_TEMP_POINTS ? (<>
-              <TempChart points={temps.points} coverline={temps.coverline === undefined ? undefined : fromC(temps.coverline, prefs.tempUnit)} unitLabel={`°${prefs.tempUnit}`} />
-              {temps.coverline !== undefined ? <Text variant="caption" color="textSecondary">{tr('insights.chart.coverlineNote')}</Text> : null}
-            </>) : <Text testID="chart-temp-few" variant="bodySmall" color="textSecondary">{temps.points.length ? tr('insights.chart.fewTemps', { n: MIN_TEMP_POINTS - temps.points.length }) : tr('insights.chart.noTemps')}</Text>}
+          <Card testID="card-temp" style={{ gap: 12 }}>
+            <Text variant="heading" accessibilityRole="header">{tr('insights.charts.temperature')}</Text>
+            {temps.points.length >= MIN_TEMP_POINTS ? (() => {
+              const cover = temps.coverline === undefined ? undefined : fromC(temps.coverline, prefs.tempUnit);
+              const unit = `°${prefs.tempUnit}`;
+              const read = tempReading(temps.points.map((p) => p.value), cover);
+              return (<>
+                <TempChart points={temps.points} coverline={cover} unitLabel={unit} coverlineLabel={tr('insights.charts.coverline')} dayLabel={(n) => tr('insights.chart.dayLabel', { n })}
+                  label={cover === undefined ? tr('insights.chart.tempA11y', { n: temps.points.length }) : tr('insights.chart.tempA11yCoverline', { n: temps.points.length, value: cover.toFixed(2), unit })} />
+                {cover !== undefined ? <Text variant="caption" color="textSecondary">{tr('insights.chart.coverlineNote')}</Text> : null}
+                {read ? <Text testID="reading-temp">{tr(read === 'above' ? 'insights.chart.readTempAbove' : 'insights.chart.readTempBelow')}</Text> : null}
+              </>);
+            })() : <Text testID="chart-temp-few" variant="bodySmall" color="textSecondary">{temps.points.length ? tr('insights.chart.fewTemps', { n: MIN_TEMP_POINTS - temps.points.length }) : tr('insights.chart.noTemps')}</Text>}
           </Card>
-          <Card testID="card-phases">
-            <Text variant="heading">{tr('insights.charts.symptomsByPhase')}</Text>
+          <Card testID="card-phases" style={{ gap: 12 }}>
+            <Text variant="heading" accessibilityRole="header">{tr('insights.charts.symptomsByPhase')}</Text>
             {bars.length ? bars.map((b) => (
               <View key={b.code} style={{ gap: 6, marginTop: 6 }} accessible accessibilityLabel={`${tr(`symptom.${b.code}`, { defaultValue: b.code })}: ${(['menstrual', 'follicular', 'luteal'] as const).map((p) => `${tr(`insights.phases.${p}`)} ${Math.round(b.share[p] * 100)}%`).join(', ')}`}>
                 <Text variant="bodySmall">{tr(`symptom.${b.code}`, { defaultValue: b.code })}</Text>
@@ -142,18 +160,20 @@ export default function InsightsScreen() {
                 ))}
               </View>
             )) : <Text variant="bodySmall" color="textSecondary">{tr('insights.chart.noSymptoms')}</Text>}
-            {bars.length ? <Text variant="caption" color="textSecondary" style={{ marginTop: 6 }}>{tr('insights.chart.phaseCaption')}</Text> : null}
+            {(() => { const top = bars[0]; const ph = top ? phaseReading(top.share) : undefined; return top && ph ? <Text testID="reading-phase">{tr('insights.chart.readPhase', { name: tr(`symptom.${top.code}`, { defaultValue: top.code }), phaseIn: tr(`insights.chart.readPhaseIn.${ph}`) })}</Text> : null; })()}
+            {bars.length ? <Text variant="caption" color="textSecondary">{tr('insights.chart.phaseCaption')}</Text> : null}
           </Card>
         </>)
       ) : null}
 
       {tab === 'charts' ? (
-        <Card testID="card-energy">
+        <Card testID="card-energy" style={{ gap: 12 }}>
           <Text variant="heading" accessibilityRole="header">{tr('insights.energy.title')}</Text>
           {energy.window.length >= MIN_CHART_POINTS ? (<>
             <EnergyChart points={energy.window} starts={cycles.map((c) => c.start).filter((s) => s >= energyFrom)} from={energyFrom} to={today}
-              label={tr('insights.energy.chartA11y', { n: energy.window.length, mean: energyMean })} />
+              unit={tr('insights.energy.axis')} label={tr('insights.energy.chartA11y', { n: energy.window.length, mean: energyMean })} />
             <Text variant="caption" color="textSecondary">{tr('insights.energy.chartCaption')}</Text>
+            <Text testID="reading-energy">{tr('insights.energy.reading', { mean: energyMean, n: energy.window.length })}</Text>
           </>) : <Text testID="chart-energy-few" variant="bodySmall" color="textSecondary">{energy.window.length ? tr('insights.energy.few', { n: MIN_CHART_POINTS - energy.window.length }) : tr('insights.energy.none')}</Text>}
           {energy.byPhase.length ? (<>
             <Text variant="bodySmall" style={{ marginTop: 10, fontWeight: '600' }}>{tr('insights.energy.byPhaseTitle')}</Text>
@@ -196,10 +216,13 @@ export default function InsightsScreen() {
           {scored.map((r, i) => (
             <View key={r.cycleId} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, paddingHorizontal: 16, borderBottomWidth: i === scored.length - 1 ? 0 : 1, borderBottomColor: t.hairline }}>
               <View style={{ flex: 1, gap: 2 }}>
+                <Text variant="caption" color="textSecondary">{tr('insights.charts.band')}</Text>
                 <Text variant="bodySmall">{formatRange(r.lo80, r.hi80)}</Text>
                 <Text variant="caption" color="textSecondary">{tr('insights.accuracy.rowActual', { date: formatDay(r.actual) })}</Text>
               </View>
-              <Text variant="caption" color={r.in80 ? 'textSecondary' : 'accent'}>{r.in80 ? tr('insights.accuracy.rowIn') : tr('insights.accuracy.rowOff', { n: r.absError })}</Text>
+              <View style={{ backgroundColor: r.in80 ? t.chipBg : t.c.accentSoft, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}>
+                <Text variant="caption" color={r.in80 ? 'textSecondary' : 'onAccentSoft'}>{r.in80 ? tr('insights.accuracy.rowIn') : tr('insights.accuracy.rowOff', { n: r.absError })}</Text>
+              </View>
             </View>
           ))}
         </Card>
