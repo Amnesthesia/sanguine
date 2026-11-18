@@ -93,6 +93,7 @@ describe('every surface reads the teen rules', () => {
     ['app/_layout.tsx', 'isTeen'],
     ['app/settings/about.tsx', 'isTeen'],
     ['app/settings/how.tsx', 'fertilityTools'],
+    ['app/settings/tracking.tsx', 'eff.teen'],
     ['app/settings/report.tsx', 'fertilityTools'],
     ['app/settings/notifications.tsx', 'showOvulationEstimate'],
     ['app/settings/calendar.tsx', 'effectivePrefs(prefs, profile, today).showOvulationEstimate'],

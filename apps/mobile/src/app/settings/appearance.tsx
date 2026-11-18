@@ -37,7 +37,7 @@ function ThemePicker({ value, onChange }: { value: ThemePref; onChange: (v: Them
       {opts.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable key={o.value} testID={`theme-${o.value}`} accessibilityRole="radio" accessibilityLabel={o.label} aria-checked={on} accessibilityState={{ selected: on, checked: on }} onPress={() => onChange(o.value)} style={{ flex: 1, alignItems: 'center', gap: 8 }}>
+          <Pressable key={o.value} testID={`theme-${o.value}`} accessibilityRole="radio" accessibilityLabel={o.label} aria-checked={on} accessibilityState={{ selected: on, checked: on }} onPress={() => onChange(o.value)} style={{ flex: 1, minHeight: 112, alignItems: 'center', gap: 8 }}>
             <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: 74, height: 112, borderRadius: 18, overflow: 'hidden', flexDirection: 'row', borderWidth: on ? 2 : 1, borderColor: on ? t.c.accent : t.hairline }}>
               {o.pic.map((p) => <Mini key={p.scheme} th={p} half={o.pic.length > 1} />)}
             </View>

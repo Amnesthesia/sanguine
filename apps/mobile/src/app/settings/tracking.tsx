@@ -62,7 +62,7 @@ export default function TrackingScreen() {
           testID="track-estimate" title={t('settings.tracking.ovulationEstimate')} description={eff.teen ? t('settings.tracking.teenLocked') : t('settings.tracking.ovulationEstimateDesc')}
           value={eff.teen ? prefs.teenUnlockEstimate && prefs.showOvulationEstimate : prefs.showOvulationEstimate}
           onChange={(v) => void updatePrefs(eff.teen ? { teenUnlockEstimate: v, showOvulationEstimate: v } : { showOvulationEstimate: v })} last={!showUncertain} />
-        {showUncertain ? <SwitchRow testID="track-uncertain" title={t('settings.tracking.uncertainEstimates')} description={t('settings.tracking.uncertainEstimatesDesc')} value={prefs.showUncertainEstimates} onChange={(v) => void updatePrefs({ showUncertainEstimates: v })} last /> : null}
+        {showUncertain ? <SwitchRow testID="track-uncertain" title={t('settings.tracking.uncertainEstimates')} description={t('settings.tracking.uncertainEstimatesDesc')} value={eff.showUncertainEstimates} onChange={(v) => void updatePrefs({ showUncertainEstimates: v })} last /> : null}
       </Group>
     </SubScreen>
   );

@@ -5,11 +5,11 @@ import * as Updates from 'expo-updates';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
 import lockupDark from '../../../assets/brand/splash-lockup-dark.png';
 import lockup from '../../../assets/brand/splash-lockup.png';
 import { isTeen } from '@/data/prefs';
 import { BRAND } from '@/features/splash/BrandSplash';
+import { SettingsIcon } from '@/features/settings/SettingsIcon';
 import { taglineFor } from '@/features/splash/tagline';
 import { checkAndApply, updatesOn } from '@/features/updates/updates';
 import { todayLocal } from '@/services/clock';
@@ -60,7 +60,7 @@ export default function AboutScreen() {
         {tagline ? <Text testID="about-tagline" caps variant="caption" style={{ color: brand.text, textAlign: 'center', paddingHorizontal: 24, fontSize: 13, lineHeight: 20 }}>{tagline}</Text> : null}
       </View>
       <Card style={{ padding: 0, gap: 0 }}>
-        <Pressable testID="about-version" accessibilityRole="button" accessibilityLabel={`${t('settings.about.version', { v: version })}. ${checking ? t('settings.about.checking') : `${build}. ${t('settings.about.checkHint')}`}`} aria-disabled={checking} disabled={checking} onPress={() => void check()}
+        <Pressable testID="about-version" accessibilityRole="button" accessibilityLabel={`${t('settings.about.version', { v: version })}. ${checking ? t('settings.about.checking') : `${build}. ${t('settings.about.checkHint')}`}`} aria-disabled={checking} accessibilityState={{ disabled: checking, busy: checking }} disabled={checking} onPress={() => void check()}
           style={{ minHeight: 56, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: 1, borderBottomColor: theme.hairline }}>
           <View style={{ flex: 1 }}>
             <Text>{t('settings.about.version', { v: version })}</Text>
@@ -78,7 +78,7 @@ export default function AboutScreen() {
       <Card testID="about-disclaimer"><Text>{t('legal.aboutDisclaimer')}</Text><Text variant="bodySmall" color="textSecondary">{t('legal.notMedicalDevice')}</Text></Card>
       <Text variant="title" accessibilityRole="header">{t('settings.about.wording')}</Text>
       <Card><Text variant="bodySmall">{about.howToRead}</Text></Card>
-      <Group><SettingsRow testID="about-how" leadingIcon={<Svg width={18} height={18} viewBox="0 0 24 24" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Circle cx={12} cy={12} r={8.5} fill="none" stroke={theme.c.onAccentSoft} strokeWidth={1.8} /><Path d="M12 11V16.5M12 7.6V7.8" stroke={theme.c.onAccentSoft} strokeWidth={2} strokeLinecap="round" /></Svg>} title={t('settings.how.title')} description={t('settings.how.rowDesc')} onPress={() => router.push('/settings/how' as never)} last /></Group>
+      <Group><SettingsRow testID="about-how" leadingIcon={<SettingsIcon name="about" />} title={t('settings.how.title')} description={t('settings.how.rowDesc')} onPress={() => router.push('/settings/how' as never)} last /></Group>
       <Card style={{ gap: 0 }}>
         {terms.map(([term, def], i) => (
           <View key={term}>
@@ -92,7 +92,7 @@ export default function AboutScreen() {
       <Card testID="about-sources" style={{ gap: 8 }}>
         {about.sources.map((s, i) => (
           <View key={s.cite} style={{ flexDirection: 'row', gap: 8 }}>
-            <Text variant="bodySmall" color="textSecondary" accessibilityElementsHidden>{i + 1}.</Text>
+            <Text variant="bodySmall" color="textSecondary" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">{i + 1}.</Text>
             <View style={{ flex: 1 }}><Text variant="bodySmall" style={{ fontWeight: '600' }}>{s.cite}</Text><Text variant="bodySmall" color="textSecondary">{s.use}</Text></View>
           </View>
         ))}
