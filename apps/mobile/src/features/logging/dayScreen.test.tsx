@@ -18,7 +18,7 @@ vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn() }), useLocalSe
 const sections = vi.hoisted(() => ({ estimate: vi.fn(), guidance: vi.fn() }));
 vi.mock('@/features/guidance/sections/EstimateSections', () => ({ EstimateSections: (p: unknown) => { sections.estimate(p); return <div data-testid="estimate-sections" />; } }));
 vi.mock('@/features/guidance/sections/GuidanceSections', () => ({ GuidanceSections: (p: unknown) => { sections.guidance(p); return <div data-testid="guidance-sections" />; } }));
-vi.mock('@/ui/SubScreen', () => ({ SubScreen: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
+vi.mock('@/ui/SubScreen', () => ({ SubScreen: ({ children, floating }: { children: ReactNode; floating?: ReactNode }) => <div>{children}{floating}</div> }));
 import { ToastHost } from '@/ui/Toast';
 import DayDetail from '@/app/day/[date]';
 
@@ -154,7 +154,7 @@ it('an adult who hides the ovulation estimate gets neither it nor the uncertain 
   expect(await withPrefs({ showOvulationEstimate: false, showUncertainEstimates: true }, {})).toMatchObject({ showEstimate: false, includeUncertain: false });
 });
 
-it('names the cycle day and says Period on a logged period day, with the log button above the estimates', async () => {
+it('names the cycle day and says Period on a logged period day, with the log button pinned after the content', async () => {
   const today = '2026-10-14';
   const { db, store } = await setup(today);
   await setFlow(store, today, 'medium', { kind: 'period' });
@@ -165,7 +165,7 @@ it('names the cycle day and says Period on a logged period day, with the log but
   const log = screen.getByRole('button', { name: 'Log this day' });
   expect(log.getAttribute('data-testid') ?? log.closest('[data-testid]')?.getAttribute('data-testid')).toBe('day-edit');
   const estimates = await screen.findByTestId('estimate-sections');
-  expect(log.compareDocumentPosition(estimates) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(estimates.compareDocumentPosition(log) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 
 it('marks the cycle day of a future day as an estimate', async () => {

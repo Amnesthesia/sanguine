@@ -1,4 +1,4 @@
-// Day detail (PLAN.md §8.3): the cycle day, what was logged as removable chips with provenance, the correction actions and the Log this day button, then the full estimate and food-and-movement sections.
+// Day detail (PLAN.md §8.3): the Log this day button pinned at the bottom, the cycle day, what was logged as removable chips with provenance, the correction actions, then the full estimate and food-and-movement sections.
 import { analyzeCycles, type ISODate, pastOvulations } from '@sanguine/engine';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -62,7 +62,7 @@ export default function DayDetail() {
   const subline = [cycleDay ? tr('day.subline.cycleDay', { day: cycleDay }) : null, isFuture ? tr('day.subline.estimate') : isPeriodDay ? tr('day.subline.period') : null].filter(Boolean).join(' · ');
 
   return (
-    <SubScreen testID="screen-day" backTestID="day-back" title={formatLong(day)} bottomInset={32}>
+    <SubScreen testID="screen-day" backTestID="day-back" title={formatLong(day)} bottomInset={32} floating={isFuture ? undefined : <Button testID="day-edit" label={tr('calendar.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />}>
       {subline ? <Text testID="day-subline" color="textSecondary" style={{ marginHorizontal: 4 }}>{subline}</Text> : null}
       {isFuture ? null : (
         <View style={{ gap: 6 }}>
@@ -76,7 +76,6 @@ export default function DayDetail() {
           <Button testID="day-spotting" kind="secondary" label={tr('day.markSpotting')} onPress={() => void markSpotting(store, day).then(after)} />
         </View>
       ) : null}
-      {isFuture ? null : <Button testID="day-edit" label={tr('calendar.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />}
       {prediction && !prediction.suspended ? <EstimateSections prediction={prediction} day={day} pastOv={pastOv} showEstimate={showEstimate} includeUncertain={eff.showUncertainEstimates} periodLengths={periodLengths} /> : isFuture ? <Text testID="day-no-estimate">{tr('day.estimates.none')}</Text> : null}
       {guide ? <GuidanceSections day={guide} supplements={showSupplements(eff.teen)} compact={false} /> : null}
       {isFuture ? <Text variant="caption" color="textSecondary" testID="day-future-note">{tr('calendar.futureNote')}</Text> : null}
