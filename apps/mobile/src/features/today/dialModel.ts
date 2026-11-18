@@ -40,10 +40,9 @@ export function dialModel(i: DialInput): DialModel {
 
   const model: DialModel = { days, arcs, todayDay };
   if (!i.showEstimate) return model;
-  for (const f of shownFertileDays(p, { includeUncertain: i.includeUncertain })) {
-    const d = dayOf(f.date);
-    if (d >= 1 && d <= days) arcs.push({ from: d, to: d, kind: 'fertile', p: f.pInWindow });
-  }
+  // the days on the dial; one left after clipping to the dial is never drawn as a fertile day (the calendar's rule)
+  const fertile = shownFertileDays(p, { includeUncertain: i.includeUncertain }).map((f) => ({ d: dayOf(f.date), p: f.pInWindow })).filter((f) => f.d >= 1 && f.d <= days);
+  if (fertile.length > 1) for (const f of fertile) arcs.push({ from: f.d, to: f.d, kind: 'fertile', p: f.p });
   if (p.ovulation && ovulationDrawable(p, i.includeUncertain)) {
     const d = dayOf(p.ovulation.point);
     if (d >= 1 && d <= days) model.ovulationDay = d;

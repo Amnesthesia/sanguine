@@ -25,6 +25,10 @@ describe('estimate drawing gates', () => {
     expect(ovulationDrawable(p, false)).toBe(true);
     expect(shownFertileDays(p)).toEqual(p.fertileDays!.slice(1));
   });
+  it('one day above the floor is never a fertile window on its own (CLAUDE.md: never a single fertile day)', () => {
+    const p = { ...prediction('2026-11-13'), fertileDays: [{ date: '2026-11-03', pInWindow: 0.05 }, { date: '2026-11-04', pInWindow: 0.4 }] };
+    for (const includeUncertain of [false, true]) expect(shownFertileDays(p, { includeUncertain })).toEqual([]);
+  });
   it('missing predictions or ovulation cannot draw an ovulation mark', () => {
     const p = prediction();
     delete p.ovulation;

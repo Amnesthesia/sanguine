@@ -68,8 +68,8 @@ function LengthsPicture({ lengths, label }: { lengths: number[]; label: string }
   );
 }
 
-/** The days of the current period: logged so far (solid) and the estimated rest (dashed). */
-function BleedStrip({ start, asOf, bleed, day, label }: { start: ISODate; asOf: ISODate; bleed: NonNullable<Prediction['currentBleed']>; day: ISODate; label: string }) {
+/** The days of the current period: the days she logged (solid) and the estimated rest (dashed), as on the calendar and the dial. */
+function BleedStrip({ start, periodDays, bleed, day, label }: { start: ISODate; periodDays: ReadonlySet<ISODate>; bleed: NonNullable<Prediction['currentBleed']>; day: ISODate; label: string }) {
   const t = useTheme();
   const end = addDays(bleed.i80.hi, 1);
   const n = Math.min(10, diffDays(end, start) + 1);
@@ -82,7 +82,7 @@ function BleedStrip({ start, asOf, bleed, day, label }: { start: ISODate; asOf: 
     <Picture w={W} h={cy + r + 21} label={label}>
       {Array.from({ length: n }, (_, i) => {
         const d = addDays(start, i);
-        const logged = d <= asOf;
+        const logged = periodDays.has(d);
         const estimated = !logged && d <= bleed.i80.hi;
         const cx = i * cw + cw / 2;
         return (
@@ -97,7 +97,7 @@ function BleedStrip({ start, asOf, bleed, day, label }: { start: ISODate; asOf: 
   );
 }
 
-function PeriodEndCard({ p, day, periodLengths }: { p: Prediction; day: ISODate; periodLengths: number[] }) {
+function PeriodEndCard({ p, day, periodLengths, periodDays }: { p: Prediction; day: ISODate; periodLengths: number[]; periodDays: ReadonlySet<ISODate> }) {
   const { t } = useTranslation();
   const bleed = p.currentBleed;
   if (!bleed) return null;
@@ -109,7 +109,7 @@ function PeriodEndCard({ p, day, periodLengths }: { p: Prediction; day: ISODate;
   return (
     <Card testID="estimate-period-end" style={{ gap: 12 }}>
       <CardHead title={t('estimates.periodEnd.title')} confidence={bleed.confidence} />
-      {start ? <BleedStrip start={start} asOf={p.asOf} bleed={bleed} day={day} label={line} /> : null}
+      {start ? <BleedStrip start={start} periodDays={periodDays} bleed={bleed} day={day} label={line} /> : null}
       <Text>{line}</Text>
       <How>
         <Text variant="bodySmall">{recent}{periodLengths.length > 0 && periodLengths.length < 4 ? ` ${t('estimates.how.periodEndFew')}` : ''}</Text>
@@ -192,7 +192,7 @@ function NextPeriodCard({ p }: { p: Prediction }) {
 type Ov = { point: ISODate; i80: { lo: ISODate; hi: ISODate }; confidence: Confidence; basis: NonNullable<Prediction['ovulation']>['basis'] };
 
 /** This cycle as a row of days: the period, the graded fertile band, the ovulation range and the next period's range. */
-function CycleStrip({ p, start, ov, day, includeUncertain }: { p: Prediction; start: ISODate; ov: Ov; day: ISODate; includeUncertain: boolean }) {
+function CycleStrip({ p, start, ov, day, includeUncertain, periodDays }: { p: Prediction; start: ISODate; ov: Ov; day: ISODate; includeUncertain: boolean; periodDays: ReadonlySet<ISODate> }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const next = p.nextPeriod;
@@ -219,7 +219,7 @@ function CycleStrip({ p, start, ov, day, includeUncertain }: { p: Prediction; st
       {Array.from({ length: n }, (_, i) => <Rect key={`c${addDays(start, i)}`} x={i * cw + 0.5} y={8} width={cw - 1} height={18} rx={2} fill={t.c.border} />)}
       {bleed ? Array.from({ length: Math.max(0, diffDays(bleed.i80.hi, start) + 1) }, (_, i) => {
         const d = addDays(start, i);
-        const logged = d <= p.asOf;
+        const logged = periodDays.has(d);
         return <Rect key={`p${d}`} x={x(d) + 0.5} y={8} width={cw - 1} height={18} rx={2} fill={logged ? t.c.period : 'none'} stroke={t.c.period} strokeWidth={logged ? 0 : 1} strokeDasharray="2 2" />;
       }) : null}
       {fertile.filter((f) => within(f.date)).map((f) => <Rect key={`f${f.date}`} x={x(f.date) + 0.5} y={8} width={cw - 1} height={18} rx={2} fill={t.c.fertile} fillOpacity={fertileAlpha(f.pInWindow)} />)}
@@ -240,7 +240,7 @@ const wideRow = (r: { i80: { lo: ISODate; hi: ISODate } }) => diffDays(r.i80.hi,
  * One rule with the calendar grid (D-098, D-106, D-115): a wide range is drawn (strip, fertile band, point) only when she turned on uncertain
  * estimates; otherwise the card says so in words and nothing else, with no point date and no fertile wording.
  */
-function OvulationCard({ p, day, past, includeUncertain }: { p: Prediction; day: ISODate; past: PastOvulation | undefined; includeUncertain: boolean }) {
+function OvulationCard({ p, day, past, includeUncertain, periodDays }: { p: Prediction; day: ISODate; past: PastOvulation | undefined; includeUncertain: boolean; periodDays: ReadonlySet<ISODate> }) {
   const { t } = useTranslation();
   const live = p.ovulation;
   const ov: Ov | undefined = past ? { ...past, basis: past.basis === 'wearable' ? 'bbt' : past.basis === 'cervix' ? 'combined' : past.basis } : live;
@@ -258,7 +258,7 @@ function OvulationCard({ p, day, past, includeUncertain }: { p: Prediction; day:
       <CardHead title={t(wordsOnly ? 'estimates.ovulation.titleWords' : 'estimates.ovulation.title')} confidence={ov.confidence} />
       {ov.basis === 'calendar' && !past ? <CautionPanel>{t('estimates.how.calendarOnly')}</CautionPanel> : null}
       <Text>{line}</Text>
-      {start && !past && !wordsOnly ? <CycleStrip p={p} start={start} ov={ov} day={day} includeUncertain={includeUncertain} /> : null}
+      {start && !past && !wordsOnly ? <CycleStrip p={p} start={start} ov={ov} day={day} includeUncertain={includeUncertain} periodDays={periodDays} /> : null}
       <How>
         {ov.basis === 'calendar' ? (
           <Text variant="bodySmall">{past ? t('estimates.how.ovulationPast') : `${t('estimates.how.ovulationCalendar')} `}{past ? null : <Cite n={2} />}{past ? null : ` ${t('estimates.how.ovulationCalendarWide')}`}</Text>
@@ -272,15 +272,22 @@ function OvulationCard({ p, day, past, includeUncertain }: { p: Prediction; day:
   );
 }
 
-/** The closed cycle a day before the open cycle belongs to (D-112 estimates), if it has an estimate row. */
-const pastFor = (day: ISODate, pastOv: PastOvulation[]): PastOvulation | undefined =>
-  pastOv.filter((o) => o.cycleStart <= day).sort((a, b) => (a.cycleStart < b.cycleStart ? 1 : -1))[0];
+/** The estimate row of the closed cycle a day before the open cycle belongs to (D-112), only that cycle's own: the engine gives none for an
+ *  IUD, excluded or invalid cycle, and an earlier cycle's row must not stand in for it. */
+const pastFor = (day: ISODate, cycleStarts: readonly ISODate[], pastOv: readonly PastOvulation[]): PastOvulation | undefined => {
+  const start = cycleStarts.filter((s) => s <= day).sort().at(-1);
+  return start ? pastOv.find((o) => o.cycleStart === start) : undefined;
+};
 
-export function EstimateSections({ prediction, day, pastOv, showEstimate, includeUncertain, periodLengths = [] }: {
+export function EstimateSections({ prediction, day, pastOv, cycleStarts, periodDays, showEstimate, includeUncertain, periodLengths = [] }: {
   prediction: Prediction;
   /** The day the sheet or screen is about. */
   day: ISODate;
   pastOv: PastOvulation[];
+  /** Every logged cycle start (history), to find the cycle a past day belongs to. */
+  cycleStarts: readonly ISODate[];
+  /** Her logged period days (usePeriodDays): only these are drawn solid, every other day of the period is a dashed estimate. */
+  periodDays: ReadonlySet<ISODate>;
   /** Effective ovulation-estimate preference (teen mode folded in). Off: no ovulation or fertile card, picture or wording. */
   showEstimate: boolean;
   /** The effective show-uncertain-estimates preference (effectivePrefs): off, a wide ovulation range is words only and a wide past one is not shown. */
@@ -294,7 +301,7 @@ export function EstimateSections({ prediction, day, pastOv, showEstimate, includ
   // a day before the open cycle belongs to an earlier cycle: its own ovulation estimate if it has one, never the open cycle's live cards
   const openStart = prediction.currentPhase ? addDays(prediction.asOf, -(prediction.currentPhase.dayOfCycle - 1)) : undefined;
   const before = openStart !== undefined && day < openStart;
-  const past = before ? pastFor(day, pastOv) : undefined;
+  const past = before ? pastFor(day, cycleStarts, pastOv) : undefined;
   const periodEnd = !before && Boolean(prediction.currentBleed);
   const nextPeriod = !before && Boolean(prediction.nextPeriod);
   const ovulation = showEstimate && (before ? past !== undefined && (includeUncertain || !wideRow(past)) : Boolean(prediction.ovulation));
@@ -315,9 +322,9 @@ export function EstimateSections({ prediction, day, pastOv, showEstimate, includ
           </View>
         </View>
       </View>
-      {periodEnd ? <PeriodEndCard p={prediction} day={day} periodLengths={periodLengths} /> : null}
+      {periodEnd ? <PeriodEndCard p={prediction} day={day} periodLengths={periodLengths} periodDays={periodDays} /> : null}
       {nextPeriod ? <NextPeriodCard p={prediction} /> : null}
-      {ovulation ? <OvulationCard p={prediction} day={day} past={past} includeUncertain={includeUncertain} /> : null}
+      {ovulation ? <OvulationCard p={prediction} day={day} past={past} includeUncertain={includeUncertain} periodDays={periodDays} /> : null}
       <View style={{ gap: 8 }}>
         <Text variant="heading" accessibilityRole="header">{t('estimates.how.sources')}</Text>
         <Sources items={[t('estimates.how.src1'), t('estimates.how.src2'), ...(fertileCited ? [t('estimates.how.src3')] : [])]} />

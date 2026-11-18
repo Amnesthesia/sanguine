@@ -88,8 +88,9 @@ export function effectivePrefs(p: Prefs, profile: { birthDate?: string | undefin
     /** Ovulation tests, cervical mucus and position, ovulation inferences: off under 18 until unlocked (PLAN.md §8.6); an adult who hides the estimate card still keeps them. */
     fertilityTools: !teen || p.teenUnlockEstimate,
     showOvulationEstimate,
-    /** Drawing uncertain ranges needs the estimate itself to be showable: a stored true never survives the teen gate or an adult hiding the estimate. */
-    showUncertainEstimates: p.showUncertainEstimates && showOvulationEstimate,
+    /** Drawing uncertain ranges needs the estimate itself to be showable, and never in teen mode, even unlocked (ER-58, D-124: the switch is
+     *  hidden for every teen): a stored true never survives the teen gate or an adult hiding the estimate. */
+    showUncertainEstimates: p.showUncertainEstimates && showOvulationEstimate && !teen,
     sexLogging: p.sexLogging,
   };
 }

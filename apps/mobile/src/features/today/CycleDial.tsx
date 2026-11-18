@@ -65,7 +65,7 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
       model.todayDay ? tr('today.dial.day', { day: model.todayDay }) : '',
       ...logged.map((a) => span('today.dial.periodLogged', a.from, a.to)),
       ...estimates.filter((a) => a !== nextArc).map((a) => span('today.dial.periodEnding', a.from, a.to)),
-      ...runs.map((r) => span('today.dial.fertile', r[0]!.from, r[r.length - 1]!.to)),
+      ...runs.map((r) => tr('today.dial.fertile', { from: r[0]!.from, to: r[r.length - 1]!.to })), // never one day: dialModel draws two or more
       model.ovulationDay ? tr('today.dial.ovulation', { day: model.ovulationDay }) : '',
       nextArc ? span('today.dial.next', nextArc.from, nextArc.to) : '',
       centre.pill ? `${centre.pill}.` : '',

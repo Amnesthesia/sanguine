@@ -102,7 +102,7 @@ export default function CalendarScreen() {
       onDetails={() => router.push({ pathname: '/day/[date]', params: { date: selected } })}
       detail={detent === 'large' ? (
         <>
-          {prediction ? <EstimateSections prediction={prediction} day={selected} pastOv={pastOv} showEstimate={showEstimate} includeUncertain={includeUncertain} periodLengths={periodLengths} /> : null}
+          {prediction ? <EstimateSections prediction={prediction} day={selected} pastOv={pastOv} cycleStarts={cycleStarts} periodDays={periodDays} showEstimate={showEstimate} includeUncertain={includeUncertain} periodLengths={periodLengths} /> : null}
           {guide ? <GuidanceSections day={guide} supplements={showSupplements(eff.teen)} compact={false} /> : null}
         </>
       ) : undefined}

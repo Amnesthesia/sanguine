@@ -66,6 +66,7 @@ describe('prefs', () => {
   it('uncertain estimates need the ovulation estimate to be showable', () => {
     const on = { ...DEFAULT_PREFS, showUncertainEstimates: true };
     expect(effectivePrefs(on, { birthYear: 2012 }, '2026-10-09').showUncertainEstimates).toBe(false); // teen, stored true
+    expect(effectivePrefs({ ...on, teenUnlockEstimate: true }, { birthYear: 2012 }, '2026-10-09').showUncertainEstimates).toBe(false); // unlocked teen: never in teen mode (ER-58, D-124)
     expect(effectivePrefs({ ...on, showOvulationEstimate: false }, { birthYear: 1990 }, '2026-10-09').showUncertainEstimates).toBe(false);
     expect(effectivePrefs(on, { birthYear: 1990 }, '2026-10-09').showUncertainEstimates).toBe(true);
   });

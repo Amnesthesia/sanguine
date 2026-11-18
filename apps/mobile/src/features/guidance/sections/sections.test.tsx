@@ -12,7 +12,7 @@ import { GuidanceSections, splitSources } from './GuidanceSections';
 // the drawing is rendered, not swallowed: shapes become <i data-svg-shape>, SVG text becomes <span data-svg-text>
 vi.mock('react-native-svg', () => {
   const group = ({ children }: { children?: ReactNode }) => <>{children}</>;
-  const shape = () => <i data-svg-shape="" />;
+  const shape = (p: { fill?: string; strokeDasharray?: string }) => <i data-svg-shape="" data-fill={p.fill} data-dash={p.strokeDasharray} />;
   const label = ({ children }: { children?: ReactNode }) => <span data-svg-text="">{children}</span>;
   return { default: group, G: group, Rect: shape, Path: shape, Line: shape, Circle: shape, Text: label };
 });
@@ -31,10 +31,16 @@ const prediction = {
 const wide = { ...prediction, ovulation: { ...(prediction.ovulation as NonNullable<Prediction['ovulation']>), i80: { lo: '2026-11-05', hi: '2026-11-20' } } } as Prediction;
 const pastOv: PastOvulation[] = [{ cycleId: 'c1', cycleStart: '2026-10-05', point: '2026-10-19', i80: { lo: '2026-10-16', hi: '2026-10-22' }, basis: 'calendar', confidence: 'low' }];
 const text = () => document.body.textContent ?? '';
+// the open cycle starts 31 Oct (day 3 on 2 Nov); she logged its first three days
+const cycleStarts = ['2026-10-05', '2026-10-31'];
+const periodDays = new Set(['2026-10-31', '2026-11-01', '2026-11-02']);
+/** Solid (filled) period marks in a picture: the bleed strip's circles, or the cycle strip's period cells (dashed 2 2). */
+const solid = (label: string, dash?: string) =>
+  [...(document.querySelector(`[aria-label^="${label}"]`)?.querySelectorAll('[data-svg-shape]') ?? [])].filter((n) => (dash === undefined || n.getAttribute('data-dash') === dash) && n.getAttribute('data-fill') && n.getAttribute('data-fill') !== 'none');
 
 describe('EstimateSections', () => {
   const render0 = (over: Partial<Parameters<typeof EstimateSections>[0]> = {}) =>
-    render(<EstimateSections prediction={prediction} day="2026-11-02" pastOv={pastOv} showEstimate includeUncertain={false} periodLengths={[5, 4]} {...over} />);
+    render(<EstimateSections prediction={prediction} day="2026-11-02" pastOv={pastOv} cycleStarts={cycleStarts} periodDays={periodDays} showEstimate includeUncertain={false} periodLengths={[5, 4]} {...over} />);
 
   it('period end card shows her own period lengths', () => {
     render0();
@@ -121,6 +127,24 @@ describe('EstimateSections', () => {
   it('a day before the open cycle with no past ovulation row shows no estimate cards at all', () => {
     const { container } = render0({ day: '2026-10-20', pastOv: [] });
     expect(container.textContent).toBe('');
+  });
+  it('a day in a cycle without its own row never borrows an earlier cycle\'s ovulation estimate', () => {
+    // 7 Sep has a row; 5 Oct (an IUD cycle, say) has none; 20 Oct belongs to the 5 Oct cycle
+    const sep: PastOvulation = { cycleId: 'c0', cycleStart: '2026-09-07', point: '2026-09-21', i80: { lo: '2026-09-18', hi: '2026-09-24' }, basis: 'calendar', confidence: 'low' };
+    const { container } = render0({ day: '2026-10-20', pastOv: [sep], cycleStarts: ['2026-09-07', '2026-10-05', '2026-10-31'] });
+    expect(container.textContent).toBe('');
+    cleanup();
+    render0({ day: '2026-09-25', pastOv: [sep], cycleStarts: ['2026-09-07', '2026-10-05', '2026-10-31'] });
+    expect(text()).toContain('Ovulation was most likely 18–24 Sep');
+  });
+  it('fills only the period days she logged: day 1 logged, today day 3, days 2 and 3 are estimates', () => {
+    render0({ periodDays: new Set(['2026-10-31']), includeUncertain: true });
+    expect(solid('Most likely ends')).toHaveLength(1);
+    expect(solid('This cycle from day 1', '2 2')).toHaveLength(1);
+    cleanup();
+    render0({ includeUncertain: true });
+    expect(solid('Most likely ends')).toHaveLength(3);
+    expect(solid('This cycle from day 1', '2 2')).toHaveLength(3);
   });
   it('a day inside the open cycle keeps the live cards even with past rows present', () => {
     render0({ day: '2026-11-01' });

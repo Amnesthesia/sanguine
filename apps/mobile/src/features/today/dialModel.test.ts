@@ -57,6 +57,12 @@ describe('dialModel', () => {
     expect(on.ovulationDay).toBe(15);
     expect(on.arcs.some((a) => a.kind === 'fertile')).toBe(true);
   });
+  it('never draws a single fertile day: one shown day, or one left on the dial after clipping, draws no band', () => {
+    const one = dialModel({ ...base, prediction: prediction({ fertileDays: [{ date: dateOfDay(13), pInWindow: 0.05 }, { date: dateOfDay(14), pInWindow: 0.5 }] }) });
+    expect(one.arcs.some((a) => a.kind === 'fertile')).toBe(false);
+    const clipped = dialModel({ ...base, prediction: prediction({ fertileDays: [{ date: dateOfDay(31), pInWindow: 0.5 }, { date: dateOfDay(32), pInWindow: 0.5 }] }) });
+    expect(clipped.arcs.some((a) => a.kind === 'fertile')).toBe(false);
+  });
   it('keeps today on the dial when the period is late', () => {
     const m = dialModel({ ...base, prediction: prediction({ currentPhase: { phase: 'late', dayOfCycle: 35 } }), today: dateOfDay(35), periodDays: [day(1)] });
     expect(m.days).toBe(35);

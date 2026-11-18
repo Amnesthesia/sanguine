@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { activeEvents } from '@/data/project';
 import type { DayEvent } from '@/features/logging/actions';
 import { shortDescribe } from '@/features/logging/describe';
+import { visibleEntries } from '@/features/logging/removeEntry';
 import { useApp } from '@/state/app';
 
 export interface CalendarData {
@@ -52,19 +53,23 @@ export function useCalendarData(): CalendarData {
   useEffect(() => {
     if (!db) return;
     void (async () => {
-      const logs = await db.all<{ day: string }>('SELECT day FROM daily_log');
-      const bio = await db.all<{ day: string }>('SELECT DISTINCT day FROM biomarker');
-      // one pass over the active events gives the symptom days and the month list's phrases
-      const symptomDays = new Set<ISODate>();
-      const loggedText = new Map<ISODate, string[]>();
+      // one pass over the active events, grouped by day and collapsed by the day detail's own rule (visibleEntries: a flow is never
+      // retracted, so only the latest counts and a removed one is a 'none' flow); a day is "logged" only while something stays visible
+      const byDay = new Map<ISODate, DayEvent[]>();
       for (const e of store ? activeEvents(await store.events()) : []) {
         if (!LISTED.has(e.kind) || !e.effective_day) continue;
         const day = e.effective_day as ISODate;
-        if (e.kind === 'symptom') symptomDays.add(day);
-        const ev: DayEvent = { ...e, data: JSON.parse(e.payload) as Record<string, unknown> };
-        loggedText.set(day, [...(loggedText.get(day) ?? []), shortDescribe(ev, tr, prefs.tempUnit)]);
+        byDay.set(day, [...(byDay.get(day) ?? []), { ...e, data: JSON.parse(e.payload) as Record<string, unknown> }]);
       }
-      setData({ loggedDays: new Set<ISODate>([...logs.map((l) => l.day as ISODate), ...bio.map((b) => b.day as ISODate)]), symptomDays, loggedText });
+      const symptomDays = new Set<ISODate>();
+      const loggedText = new Map<ISODate, string[]>();
+      for (const [day, evs] of byDay) {
+        const shown = visibleEntries(evs);
+        if (!shown.length) continue;
+        if (shown.some((e) => e.kind === 'symptom')) symptomDays.add(day);
+        loggedText.set(day, shown.map((e) => shortDescribe(e, tr, prefs.tempUnit)));
+      }
+      setData({ loggedDays: new Set(loggedText.keys()), symptomDays, loggedText });
     })();
   }, [db, store, version, tr, prefs.tempUnit]);
   const pastOv = useMemo(() => (history && settings ? pastOvulations(history, settings) : []), [history, settings]);

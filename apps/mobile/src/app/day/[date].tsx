@@ -8,6 +8,7 @@ import { effectivePrefs } from '@/data/prefs';
 import { EstimateSections } from '@/features/guidance/sections/EstimateSections';
 import { GuidanceSections } from '@/features/guidance/sections/GuidanceSections';
 import { cycleDayOf } from '@/features/calendar/calendarModel';
+import { usePeriodDays } from '@/features/calendar/useCalendarData';
 import { phaseOn, showSupplements } from '@/features/guidance/guidance';
 import { type DayEvent, dayEvents, dayState, markNotAPeriod, markSpotting } from '@/features/logging/actions';
 import { describeEvent } from '@/features/logging/describe';
@@ -49,6 +50,8 @@ export default function DayDetail() {
   const showEstimate = SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate;
   const cycles = useMemo(() => (history && settings ? analyzeCycles(history, settings).map((c) => c.record) : []), [history, settings]);
   const pastOv = useMemo(() => (history && settings ? pastOvulations(history, settings) : []), [history, settings]);
+  const cycleStarts = useMemo(() => history?.cycles.map((c) => c.start) ?? [], [history]);
+  const periodDays = usePeriodDays(); // the same logged period days the calendar and the dial draw solid
   // lengths of her recent closed periods, oldest first, for the period-end card
   const periodLengths = useMemo(() => cycles.filter((c) => c.nextStart && c.bleedDays).map((c) => c.bleedDays as number).slice(-6), [cycles]);
   const guide = useMemo(
@@ -58,7 +61,7 @@ export default function DayDetail() {
   const after = async () => { await refresh(); await reload(); };
   const entries = visibleEntries(events);
   // "Day 2 of your cycle · Period": the same count as the calendar's day sheet; a future day's is an estimate
-  const cycleDay = cycleDayOf(history?.cycles.map((c) => c.start) ?? [], day);
+  const cycleDay = cycleDayOf(cycleStarts, day);
   const subline = [cycleDay ? tr('day.subline.cycleDay', { day: cycleDay }) : null, isFuture ? tr('day.subline.estimate') : isPeriodDay ? tr('day.subline.period') : null].filter(Boolean).join(' · ');
 
   return (
@@ -76,7 +79,7 @@ export default function DayDetail() {
           <Button testID="day-spotting" kind="secondary" label={tr('day.markSpotting')} onPress={() => void markSpotting(store, day).then(after)} />
         </View>
       ) : null}
-      {prediction && !prediction.suspended ? <EstimateSections prediction={prediction} day={day} pastOv={pastOv} showEstimate={showEstimate} includeUncertain={eff.showUncertainEstimates} periodLengths={periodLengths} /> : isFuture ? <Text testID="day-no-estimate">{tr('day.estimates.none')}</Text> : null}
+      {prediction && !prediction.suspended ? <EstimateSections prediction={prediction} day={day} pastOv={pastOv} cycleStarts={cycleStarts} periodDays={periodDays} showEstimate={showEstimate} includeUncertain={eff.showUncertainEstimates} periodLengths={periodLengths} /> : isFuture ? <Text testID="day-no-estimate">{tr('day.estimates.none')}</Text> : null}
       {guide ? <GuidanceSections day={guide} supplements={showSupplements(eff.teen)} compact={false} /> : null}
       {isFuture ? <Text variant="caption" color="textSecondary" testID="day-future-note">{tr('calendar.futureNote')}</Text> : null}
     </SubScreen>

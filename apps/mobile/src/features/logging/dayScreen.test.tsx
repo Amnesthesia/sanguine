@@ -96,7 +96,7 @@ it('mounts the full estimate and guidance sections with the engine inputs', asyn
   app.state = { db, store, today, prefs: DEFAULT_PREFS, profile: {}, version: 0, refresh: vi.fn(), prediction, history, settings: { lifeStates: [] } };
   render(<DayDetail />);
   await screen.findByTestId('estimate-sections');
-  expect(sections.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ prediction, day: '2026-10-14', showEstimate: true, includeUncertain: false, pastOv: expect.any(Array), periodLengths: [5] });
+  expect(sections.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ prediction, day: '2026-10-14', showEstimate: true, includeUncertain: false, pastOv: expect.any(Array), periodLengths: [5], cycleStarts: ['2026-09-01', '2026-09-29'], periodDays: expect.any(Set) });
   await screen.findByTestId('guidance-sections');
   expect(sections.guidance.mock.calls.at(-1)?.[0]).toMatchObject({ compact: false });
 });

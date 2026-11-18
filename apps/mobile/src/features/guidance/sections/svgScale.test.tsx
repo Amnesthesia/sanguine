@@ -32,7 +32,7 @@ const pastOv: PastOvulation[] = [];
 const texts = (c: HTMLElement) => [...c.querySelectorAll('svg text')];
 const heights = (c: HTMLElement) => [...c.querySelectorAll('svg')].map((s) => Number(s.getAttribute('viewBox')?.split(' ')[3]));
 const sizes = (c: HTMLElement) => texts(c).map((x) => Number(x.getAttribute('font-size')));
-const estimates = () => render(<EstimateSections prediction={prediction} day="2026-11-02" pastOv={pastOv} showEstimate includeUncertain periodLengths={[5, 4]} />).container;
+const estimates = () => render(<EstimateSections prediction={prediction} day="2026-11-02" pastOv={pastOv} cycleStarts={['2026-10-31']} periodDays={new Set(['2026-10-31'])} showEstimate includeUncertain periodLengths={[5, 4]} />).container;
 const curve = (phase: 'ovulatory' | 'luteal' = 'ovulatory') => render(<HormoneCurve day={{ phase, expected: false }} />).container;
 
 describe.each([['estimate pictures', estimates], ['hormone curve', curve]] as const)('%s', (_n, draw) => {

@@ -13,6 +13,9 @@ export const ovulationUncertain = (p: Prediction | undefined): boolean =>
 export const ovulationDrawable = (p: Prediction | undefined, includeUncertain: boolean): boolean =>
   Boolean(p?.ovulation) && (includeUncertain || !ovulationUncertain(p));
 
-/** Wide estimates require an in-app opt-in; reminders, widgets and exports keep the default (D-115). */
-export const shownFertileDays = (p: Prediction | undefined, opts?: { includeUncertain?: boolean }): NonNullable<Prediction['fertileDays']> =>
-  !opts?.includeUncertain && ovulationUncertain(p) ? [] : (p?.fertileDays ?? []).filter((f) => f.pInWindow >= FERTILE_MIN_P);
+/** Wide estimates require an in-app opt-in; reminders, widgets and exports keep the default (D-115). A window is a range: one day above the
+ *  floor is not shown at all, so no surface draws or words a single fertile day (CLAUDE.md). */
+export function shownFertileDays(p: Prediction | undefined, opts?: { includeUncertain?: boolean }): NonNullable<Prediction['fertileDays']> {
+  const days = !opts?.includeUncertain && ovulationUncertain(p) ? [] : (p?.fertileDays ?? []).filter((f) => f.pInWindow >= FERTILE_MIN_P);
+  return days.length > 1 ? days : [];
+}

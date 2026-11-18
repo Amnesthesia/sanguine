@@ -43,6 +43,30 @@ it('gives one phrase per entry, marks symptom days, and leaves a retracted sympt
   expect(result.current.loggedText.get(DAY)).toBeUndefined();
 });
 
+it('a removed flow leaves the month list and the logged dot; a symptom on the same day stays', async () => {
+  const { db, store } = await setup();
+  await setFlow(store, DAY, 'medium');
+  await setSymptom(store, DAY, 'cramps', 2);
+  await setFlow(store, '2026-11-11', 'light');
+  const flows = (await Promise.all([DAY, '2026-11-11'].map((d) => dayEvents(store, d)))).map((evs) => visibleEntries(evs).find((e) => e.kind === 'flow') as NonNullable<ReturnType<typeof visibleEntries>[number]>);
+  for (const f of flows) await removeEntry(store, db, f);
+  const { result } = renderHook(() => useCalendarData());
+  await waitFor(() => expect(result.current.loggedText.get(DAY)).toEqual(['Cramps']));
+  expect(result.current.loggedDays.has(DAY)).toBe(true);
+  expect(result.current.loggedText.has('2026-11-11')).toBe(false);
+  expect(result.current.loggedDays.has('2026-11-11')).toBe(false);
+});
+
+it('a changed flow lists only the latest level', async () => {
+  const { store } = await setup();
+  await setFlow(store, DAY, 'medium');
+  await setFlow(store, DAY, 'heavy');
+  const { result } = renderHook(() => useCalendarData());
+  await waitFor(() => expect(result.current.loggedText.get(DAY)).toHaveLength(1));
+  expect(result.current.loggedText.get(DAY)?.[0]).toMatch(/heavy/i);
+  expect(result.current.loggedText.get(DAY)?.[0]).not.toMatch(/medium/i);
+});
+
 it('usePeriodDays reads the period days without scanning events', async () => {
   const { store } = await setup();
   const events = vi.spyOn(store, 'events');

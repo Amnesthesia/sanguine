@@ -87,7 +87,7 @@ it('the large detent shows the estimate and guidance sections, with her period l
   fireEvent.click(screen.getByTestId('sheet-expand'));
   expect(screen.getByTestId('estimate-sections')).toBeTruthy();
   expect(screen.getByTestId('guidance-sections')).toBeTruthy();
-  expect(spies.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ day: TODAY, showEstimate: true, periodLengths: [5, 5, 5] });
+  expect(spies.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ day: TODAY, showEstimate: true, periodLengths: [5, 5, 5], cycleStarts: history.cycles.map((c) => c.start), periodDays: expect.any(Set) });
   fireEvent.click(screen.getByTestId('sheet-scrim'));
   expect(screen.queryByTestId('estimate-sections')).toBeNull();
   expect(screen.getByTestId('day-sheet')).toBeTruthy();
