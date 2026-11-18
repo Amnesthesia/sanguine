@@ -133,15 +133,19 @@ export function predict(history: History, settings: EngineSettings, today: ISODa
   const bleedLengths = cycles.filter((c) => c.quality === 'valid' && c.nextStart !== undefined)
     .slice(-6).map((c) => c.bleedDays).filter((d): d is number => d !== undefined).sort((a, b) => a - b);
   const bleedCount = bleedLengths.length;
-  const mid = bleedCount >> 1;
-  const medianBleed = bleedCount % 2 ? bleedLengths[mid] as number
-    : ((bleedLengths[mid - 1] as number) + (bleedLengths[mid] as number)) / 2;
-  const bleedLo = bleedCount >= 2 ? bleedLengths[0] as number : 4;
-  const bleedHi = bleedCount >= 2 ? bleedLengths[bleedCount - 1] as number : 7;
+  let bleedOffsets: { point: number; lo: number; hi: number };
+  if (bleedCount >= 2) {
+    const mid = bleedCount >> 1;
+    const medianBleed = bleedCount % 2 ? bleedLengths[mid]!
+      : (bleedLengths[mid - 1]! + bleedLengths[mid]!) / 2;
+    bleedOffsets = { point: Math.round(medianBleed) - 1, lo: bleedLengths[0]! - 1, hi: bleedLengths[bleedCount - 1]! - 1 };
+  } else {
+    bleedOffsets = { point: 4, lo: 3, hi: 6 };
+  }
   const bleedEstimate: NonNullable<Prediction['currentBleed']> = {
-    point: on((bleedCount >= 2 ? Math.round(medianBleed) : DEFAULT_BLEED_DAYS) - 1),
-    i80: { lo: on(bleedLo - 1), hi: on(bleedHi - 1) },
-    confidence: cap(bleedCount >= 4 && bleedHi - bleedLo <= 2 ? 'medium' : 'low', gate.confidenceCap),
+    point: on(bleedOffsets.point),
+    i80: { lo: on(bleedOffsets.lo), hi: on(bleedOffsets.hi) },
+    confidence: cap(bleedCount >= 4 && bleedOffsets.hi - bleedOffsets.lo <= 2 ? 'medium' : 'low', gate.confidenceCap),
   };
   const loggedEnd = open.end ?? start;
   const currentBleed = bleedEstimate.point > loggedEnd && today <= bleedEstimate.i80.hi

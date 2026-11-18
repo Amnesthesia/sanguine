@@ -34,6 +34,20 @@ describe('currentBleed', () => {
     expect(predict(history([5, 4], '2026-11-04'), FIXTURE_SETTINGS, '2026-11-04').currentBleed).toBeUndefined();
   });
 
+  it.each([{ bleeds: [] }, { bleeds: [4] }])('keeps the default estimate through i80.hi with %j closed periods and no logged end', ({ bleeds }) => {
+    const h = history(bleeds);
+    delete h.cycles[h.cycles.length - 1]?.end;
+    expect(predict(h, FIXTURE_SETTINGS, '2026-11-06').currentBleed).toBeDefined();
+  });
+
+  it.each([{ bleeds: [] }, { bleeds: [4] }])('ends the default estimate after i80.hi with %j closed periods and no logged end', ({ bleeds }) => {
+    const h = history(bleeds);
+    delete h.cycles[h.cycles.length - 1]?.end;
+    const p = predict(h, FIXTURE_SETTINGS, '2026-11-07');
+    expect(p.currentBleed).toBeUndefined();
+    expect(p.currentPhase?.phase).not.toBe('menstrual');
+  });
+
   it('drops currentBleed once today passes i80.hi', () => {
     expect(predict(history(), FIXTURE_SETTINGS, '2026-11-09').currentBleed).toBeUndefined();
   });
