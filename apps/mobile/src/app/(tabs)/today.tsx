@@ -105,15 +105,15 @@ export default function TodayScreen() {
     const big = String(model.dayOfCycle);
     const next = p.nextPeriod;
     const nextSub = next ? t('today.dial.nextPeriod', { range: formatRange(next.i80.lo, next.i80.hi) }) : undefined;
-    if (model.state === 'inProgress' && p.currentBleed) return { kicker, big, pill: t('today.dial.legend.period'), sub: t('today.dial.likelyEnds', { range: formatRange(p.currentBleed.i80.lo, p.currentBleed.i80.hi) }) };
+    if (model.state === 'inProgress' && p.currentBleed) return { kicker, big, pill: t('today.dial.legend.period'), pillTone: 'period' as const, sub: t('today.dial.likelyEnds', { range: formatRange(p.currentBleed.i80.lo, p.currentBleed.i80.hi) }) };
     if (showEstimate && shownFertileDays(p, { includeUncertain }).some((f) => f.date === today)) {
       const o = p.ovulation;
       const sub = o && ovulationDrawable(p, includeUncertain) ? t('today.dial.ovulationLikely', { range: formatRange(o.i80.lo, o.i80.hi) }) : nextSub;
-      return { kicker, big, pill: t('today.dial.pillFertile'), ...(sub ? { sub } : {}) };
+      return { kicker, big, pill: t('today.dial.pillFertile'), pillTone: 'fertile' as const, ...(sub ? { sub } : {}) };
     }
     const w = model.confidence ? t(`confidence.${model.confidence}`) : '';
     const pill = w ? `${w.charAt(0).toLocaleUpperCase(i18n.language)}${w.slice(1)}` : undefined;
-    return { kicker, big, ...(pill ? { pill } : {}), ...(nextSub ? { sub: nextSub } : {}) };
+    return { kicker, big, ...(pill ? { pill, pillTone: 'neutral' as const } : {}), ...(nextSub ? { sub: nextSub } : {}) };
   }, [prediction, model.dayOfCycle, model.state, model.confidence, showEstimate, includeUncertain, today, t, i18n.language]);
 
   const [sheet, setSheet] = useState(false);

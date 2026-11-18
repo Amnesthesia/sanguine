@@ -6,9 +6,12 @@ import { type DayCell, showCycleDay } from './calendarModel';
 import { MoonGlyph } from './MoonGlyph';
 
 const DISC = 36;
+/** Opacity of the fertile band's fill for p(d): 0.21 at the 0.1 floor to 0.50 at 1. */
+export const bandOpacity = (p: number): number => 0.1 + 0.4 * fertileAlpha(p);
 
 /** The day as a circle (P8-22, D-118). One rule: solid means logged, dashed or soft means estimate. Used by the grid cell and the day card's disc.
- *  Period: filled period red. Period estimate: dashed ring (fainter at the 95% edge). Ovulation point: a disc in the page colour with a soft blue glow.
+ *  Period: filled period red. Period estimate: dashed period-red ring, 1.5 pt; its 95% edge a thinner 1 pt one (P8-23: the old `periodPredicted`
+ *  edge ring reached about 2:1 on the page and read as no circle; period red keeps every ring above 3:1). Ovulation point: a disc in the page colour with a soft blue glow.
  *  Today: a 2 pt accent ring outside the disc. Selected: accentSoft fill (a ring on a filled disc). */
 export function DayDisc({ cell, selected, size = DISC, text }: { cell: DayCell; selected: boolean; size?: number; text?: string }) {
   const t = useTheme();
@@ -27,7 +30,7 @@ export function DayDisc({ cell, selected, size = DISC, text }: { cell: DayCell; 
       style={{
         width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center',
         backgroundColor: filled ? t.c.period : point ? t.c.bg : selected ? t.c.accentSoft : estimate ? t.c.bg : 'transparent',
-        ...(estimate ? { borderWidth: 1.5, borderStyle: 'dashed', borderColor: cell.periodEstimate === 'core' ? t.c.period : t.c.periodPredicted } : null),
+        ...(estimate ? { borderWidth: cell.periodEstimate === 'core' ? 1.5 : 1, borderStyle: 'dashed', borderColor: t.c.period } : null),
         ...(rings.length ? { boxShadow: rings.join(', ') } : null),
       }}>
       <Text variant="bodySmall" tabular maxFontSizeMultiplier={1.3} style={{ color, fontSize: size > DISC ? 17 : 15, lineHeight: size > DISC ? 22 : 20, fontWeight: cell.isToday ? '700' : point ? '600' : '400' }}>{text ?? cell.day}</Text>
@@ -54,9 +57,10 @@ export function DayCellView({ cell, selected, onPress, southern = false, cycleDa
       </View>
       <View style={{ alignSelf: 'stretch', height: DISC + 2, alignItems: 'center', justifyContent: 'center' }}>
         {cell.fertile !== undefined ? (
-          // the faded fill carries p(d); the solid 1.5 pt lower edge keeps every fertile day at 3:1 against the page (§8.9, D-093)
+          // the faded fill carries p(d), 0.21-0.50 as the frame's 0.16-0.40 band at the probabilities the engine gives (P8-23: 0.11-0.40 was too
+          // faint on a device); the solid 1.5 pt lower edge keeps every fertile day at 3:1 against the page (§8.9, D-093)
           <View testID={`fertile-${cell.date}`} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, overflow: 'hidden', borderTopLeftRadius: bandStart ? r : 0, borderBottomLeftRadius: bandStart ? r : 0, borderTopRightRadius: bandEnd ? r : 0, borderBottomRightRadius: bandEnd ? r : 0 }}>
-            <View style={{ flex: 1, backgroundColor: t.c.fertile, opacity: fertileAlpha(cell.fertile) * 0.4 }} />
+            <View style={{ flex: 1, backgroundColor: t.c.fertile, opacity: bandOpacity(cell.fertile) }} />
             <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1.5, backgroundColor: t.c.fertile }} />
           </View>
         ) : null}

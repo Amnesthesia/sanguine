@@ -1,7 +1,8 @@
 // View-models for Insights (PLAN.md §8.3): history rows, the cycle-length chart, symptom-by-phase bars and accuracy text.
-import { addDays, type CycleRecord, type DailyLog, diffDays, type ISODate, studentTQuantile } from '@sanguine/engine';
+import { addDays, type CycleRecord, type DailyLog, diffDays, type Interval, type ISODate, type OvulationEstimate, type PastOvulation, type Prediction, studentTQuantile } from '@sanguine/engine';
 import type { LedgerSummary } from '@/data/ledger';
-import { formatDay, formatMonthShort } from '@/ui/format';
+import { UNCERTAIN_ARM_DAYS } from '@/features/today/fertileShown';
+import { formatDay, formatMonthShort, formatRange } from '@/ui/format';
 
 export interface HistoryRow {
   id: string;
@@ -10,7 +11,8 @@ export interface HistoryRow {
   lengthDays: number | undefined;
   dayOfCycle: number | undefined;
   bleedDays: number | undefined;
-  basis: string;
+  /** The engine's ovulation estimate for this cycle, if it gives one; words and gates in ovulationWords. */
+  ovulation: CycleOvulation | undefined;
   quality: CycleRecord['quality'];
   current: boolean;
   /** An unusually long cycle: offer "Was there a period in between?", "I was pregnant" and "this was this long" (D-053). */
@@ -19,11 +21,35 @@ export interface HistoryRow {
   midDay: ISODate | undefined;
 }
 
-export function historyRows(cycles: CycleRecord[], today: ISODate): HistoryRow[] {
+export interface CycleOvulation { i80: Interval; basis: OvulationEstimate['basis']; past: boolean }
+
+/** A cycle's ovulation estimate as the engine gives it: its pastOvulations() row for a closed cycle, the prediction for the open one. None when the
+ *  engine gives none (a left-out cycle, a hormonal IUD) or the prediction is suspended, past cycles included (as the calendar, D-104). */
+export function cycleOvulation(c: { id: string; nextStart?: ISODate | undefined }, pastOv: readonly PastOvulation[], prediction: Prediction | undefined): CycleOvulation | undefined {
+  if (prediction?.suspended) return undefined;
+  const o = c.nextStart === undefined ? prediction?.ovulation : pastOv.find((r) => r.cycleId === c.id);
+  return o ? { i80: o.i80, basis: o.basis, past: c.nextStart !== undefined } : undefined;
+}
+
+type Tr = (key: string, params?: Record<string, string>) => string;
+/** The words for a cycle's ovulation estimate (owner on a device: "calendar" meant nothing): the 80% range as the calendar words it; a range wider than
+ *  two 6-day arms (D-098) only when she opted in (D-115), otherwise just "uncertain", never a date; the basis only when a signal dated it.
+ *  `show`: fertility tools and the estimate both on (effectivePrefs; off in teen mode). */
+export function ovulationWords(o: CycleOvulation | undefined, gate: { show: boolean; includeUncertain: boolean }, tr: Tr): { line: string; basis: string | undefined } | undefined {
+  if (!o || !gate.show) return undefined;
+  const range = formatRange(o.i80.lo, o.i80.hi);
+  const wide = diffDays(o.i80.hi, o.i80.lo) > 2 * UNCERTAIN_ARM_DAYS;
+  const line = !wide ? tr('day.estimates.ovulation', { range })
+    : !gate.includeUncertain ? tr('insights.ovulation.uncertain')
+    : tr(o.past ? 'insights.ovulation.pastUncertain' : 'day.estimates.ovulationUncertain', { range });
+  return { line, basis: o.basis === 'calendar' ? undefined : tr(`day.estimates.basis.${o.basis}`) };
+}
+
+export function historyRows(cycles: CycleRecord[], today: ISODate, est: { pastOv: readonly PastOvulation[]; prediction: Prediction | undefined } = { pastOv: [], prediction: undefined }): HistoryRow[] {
   return [...cycles].sort((a, b) => (a.start < b.start ? 1 : -1)).map((c) => ({
     id: c.id, start: formatDay(c.start), startISO: c.start, lengthDays: c.length,
     dayOfCycle: c.length === undefined ? diffDays(today, c.start) + 1 : undefined, bleedDays: c.bleedDays,
-    basis: c.ovulation && c.ovulation.basis !== 'calendar' ? c.ovulation.basis : 'calendar', quality: c.quality,
+    ovulation: cycleOvulation(c, est.pastOv, est.prediction), quality: c.quality,
     current: c.nextStart === undefined, nextStartISO: c.nextStart,
     offerMissedLog: c.quality === 'suspect_skip' && c.length !== undefined,
     midDay: c.quality === 'suspect_skip' && c.length !== undefined ? addDays(c.start, Math.round(c.length / 2)) : undefined,

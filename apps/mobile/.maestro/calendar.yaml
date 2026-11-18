@@ -68,16 +68,20 @@ name: Calendar - month grid, marks, glass day card and day sheet, month list, ba
     id: day-card-open
     text: ".*Period likely to start .* · (confident|fair estimate|rough estimate).*"
 - takeScreenshot: future-predicted
-# tapping the selected day opens the day sheet at its small detent; Details opens the day screen
+# tapping the compact bar opens the day sheet at its small detent; Show details opens the large one, whose Open day opens the day screen
 - tapOn:
     id: day-card-open
 - assertVisible:
     id: day-sheet
 - assertVisible:
     id: sheet-expand
+- assertNotVisible:
+    id: day-details
 - takeScreenshot: sheet-small
 - tapOn:
-    id: day-details
+    id: sheet-expand
+- tapOn:
+    id: day-open
 - extendedWaitUntil:
     visible:
       id: screen-day
@@ -181,7 +185,9 @@ name: Calendar - month grid, marks, glass day card and day sheet, month list, ba
 - assertVisible:
     id: day-sheet
 - tapOn:
-    id: day-details
+    id: sheet-expand
+- tapOn:
+    id: day-open
 - extendedWaitUntil:
     visible:
       id: screen-day

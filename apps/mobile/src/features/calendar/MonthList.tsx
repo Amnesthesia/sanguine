@@ -16,6 +16,9 @@ function RowMark({ row, period }: { row: MonthRow; period: boolean }) {
   return <View style={{ ...base, borderWidth: 1, borderStyle: 'dashed', borderColor: t.c.period }} />;
 }
 
+/** Text inside the screen gutter sits this far in from the rows' hairlines and the selected row's tint, so it never runs flush to an edge (P8-23). */
+export const ROW_INSET = 8;
+
 /** The month as a list of what was logged and what is estimated, day by day (P8-22, D-119). The heading names the month, so dates carry none.
  *  Each row is one button that selects its first day. */
 export function MonthList({ title, rows, periodDays, selected, today, onSelect }: { title: string; rows: MonthRow[]; periodDays: Set<ISODate>; selected: ISODate; today: ISODate; onSelect: (d: ISODate) => void }) {
@@ -23,8 +26,8 @@ export function MonthList({ title, rows, periodDays, selected, today, onSelect }
   const { t: tr } = useTranslation();
   return (
     <View testID="month-list" style={{ gap: 0 }}>
-      <Text variant="heading" accessibilityRole="header" style={{ marginBottom: 8 }}>{title}</Text>
-      {rows.length === 0 ? <Text variant="bodySmall" color="textSecondary" testID="month-list-empty">{tr('calendar.list.empty')}</Text> : null}
+      <Text variant="heading" accessibilityRole="header" style={{ marginBottom: 8, paddingHorizontal: ROW_INSET }}>{title}</Text>
+      {rows.length === 0 ? <Text variant="bodySmall" color="textSecondary" testID="month-list-empty" style={{ paddingHorizontal: ROW_INSET }}>{tr('calendar.list.empty')}</Text> : null}
       {rows.map((row, i) => {
         const isToday = row.kind === 'logged' && row.from === today;
         const on = selected >= row.from && selected <= row.to;
@@ -34,9 +37,10 @@ export function MonthList({ title, rows, periodDays, selected, today, onSelect }
             key={`${row.kind}-${row.from}-${row.to}`} testID={`month-row-${row.kind}-${row.from}`} accessibilityRole="button"
             accessibilityLabel={`${isToday ? `${words}, ${tr('calendar.a11y.today')}` : words}: ${row.text}`} aria-selected={on}
             onPress={() => onSelect(row.from)}
-            style={{ flexDirection: 'row', gap: 12, paddingVertical: 10, minHeight: 44, borderTopWidth: 1, borderBottomWidth: i === rows.length - 1 ? 1 : 0, borderColor: t.hairline, backgroundColor: on ? t.chipBg : 'transparent' }}>
-            <View style={{ width: 56 }}>
-              <Text variant="body" tabular style={{ fontWeight: isToday ? '700' : '600', color: isToday ? t.c.onAccentSoft : t.c.textPrimary }}>{row.label}</Text>
+            style={{ flexDirection: 'row', gap: 12, paddingVertical: 10, paddingHorizontal: ROW_INSET, minHeight: 44, borderTopWidth: 1, borderBottomWidth: i === rows.length - 1 ? 1 : 0, borderColor: t.hairline, backgroundColor: on ? t.chipBg : 'transparent' }}>
+            {/* a range that crosses months ("27 Oct – 7 Nov") needs two short lines in a wider column, not four in a narrow one */}
+            <View style={{ width: row.label.length > 7 ? 92 : 56 }}>
+              <Text variant={row.label.length > 7 ? 'bodySmall' : 'body'} tabular style={{ fontWeight: isToday ? '700' : '600', color: isToday ? t.c.onAccentSoft : t.c.textPrimary }}>{row.label.length > 7 ? row.label.replace(' – ', ' –\n') : row.label}</Text>
               {isToday ? <Text variant="caption" style={{ fontWeight: '600', color: t.c.onAccentSoft }}>{tr('calendar.today')}</Text> : null}
             </View>
             <View style={{ flex: 1, flexDirection: 'row', gap: 6 }}>

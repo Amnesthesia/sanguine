@@ -288,11 +288,13 @@
       "ovulationPast": "Ovulation estimate {range} · {basis}",
       "ovulationPastUncertain": "Ovulation estimate uncertain: could have fallen {range} · {basis}",
       "basis": {
-        "calendar": "from your next period date",
+        "calendar": "worked out from your cycle lengths",
         "lh": "from your LH tests",
         "bbt": "from your temperature readings",
         "mucus": "from your cervical mucus notes",
-        "combined": "from your tests and readings"
+        "combined": "from your tests and readings",
+        "wearable": "from your wearable's temperature readings",
+        "cervix": "from your cervix notes"
       },
       "fertile": "Fertile window: {word} likelihood",
       "none": "No estimate covers this day.",
@@ -362,7 +364,9 @@
       "showDetailsA11y": "Show details: how these were worked out, food and movement, sources",
       "hideDetailsA11y": "Hide the details",
       "closeA11y": "Close the day sheet",
-      "logRound": "Log"
+      "logRound": "Log",
+      "openDay": "Open day",
+      "openDayA11y": "Open the full day screen"
     },
     "selectedSummary": "Day {day} · {items}",
     "a11y": {
@@ -387,7 +391,6 @@
     },
     "summaryDay": "Day {day}",
     "summaryNothing": "Nothing logged",
-    "details": "Details",
     "edit": "Log this day",
     "futureNote": "You can log this day once it arrives.",
     "weekdays": [
@@ -435,6 +438,15 @@
     "colOvulation": "Ovulation estimate",
     "colNote": "Note",
     "ovulationAround": "around {date} ({basis})",
+    "basis": {
+      "calendar": "from cycle lengths",
+      "bbt": "temperature shift",
+      "wearable": "wearable temperature",
+      "lh": "LH test",
+      "mucus": "cervical mucus",
+      "cervix": "cervix position",
+      "combined": "several signals"
+    },
     "symptomsTitle": "Symptoms logged in these cycles",
     "colSymptom": "Symptom",
     "colDays": "Days",
@@ -495,12 +507,9 @@
     "row": "{start} · {length} days · {bleed} bleed days",
     "lengthDays": "{n} days",
     "bleedDays": "{n} bleed days",
-    "ovulationBasis": {
-      "calendar": "ovulation: calendar",
-      "bbt": "ovulation: temperature",
-      "lh": "ovulation: test",
-      "mucus": "ovulation: mucus",
-      "combined": "ovulation: combined"
+    "ovulation": {
+      "uncertain": "Ovulation estimate uncertain",
+      "pastUncertain": "Ovulation estimate uncertain: could have fallen {range}"
     },
     "quality": {
       "valid": "typical",
@@ -580,7 +589,7 @@
       "quality": "Status",
       "ovulation": "Ovulation",
       "ovulationNone": "Estimated from cycle lengths only.",
-      "ovulationBasis": "Dated by {basis}.",
+      "ovulationBasis": "Worked out {basis}.",
       "luteal": "Second half: {days} days",
       "exclude": "Leave out of estimates",
       "include": "Include in estimates",

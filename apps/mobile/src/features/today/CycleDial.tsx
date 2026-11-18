@@ -26,7 +26,9 @@ export const TRACK = { light: '#ECE7E9', dark: '#2A2628' } as const;
 // The knob's drop shadow is dark in both themes; textPrimary is near-white in dark and would make a halo. Same ink as the card shadows in tokens.elevation.
 const SHADOW = colors.light.textPrimary;
 
-export interface DialCentre { kicker: string; big: string; pill?: string; sub?: string }
+/** The pill takes the colour of what it names: period rose, fertile window green, anything else neutral (a rose pill must never name the green window). */
+export type PillTone = 'period' | 'fertile' | 'neutral';
+export interface DialCentre { kicker: string; big: string; pill?: string; pillTone?: PillTone; sub?: string }
 const pt = (deg: number, r: number) => ({ x: C + r * Math.sin((deg * Math.PI) / 180), y: C - r * Math.cos((deg * Math.PI) / 180) });
 
 /** Fertile days grouped into runs of consecutive days; a gap starts a new band. */
@@ -83,7 +85,7 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
   const bigNumber = <Text tabular maxFontSizeMultiplier={1} style={{ fontSize: 64, lineHeight: 66, fontWeight: '700', letterSpacing: -1.5 }}>{centre.big}</Text>;
   const pillAndSub = (
     <>
-      {centre.pill ? <View style={{ marginTop: 4, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 12, backgroundColor: t.c.accentSoft }}><Text variant="bodySmall" style={{ color: t.c.onAccentSoft, fontWeight: '600', fontSize: 13, lineHeight: 17 }}>{centre.pill}</Text></View> : null}
+      {centre.pill ? <View testID="dial-pill" style={{ marginTop: 4, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 12, backgroundColor: centre.pillTone === 'period' ? t.c.accentSoft : centre.pillTone === 'fertile' ? `${t.c.fertile}33` : t.chipBg }}><Text variant="bodySmall" style={{ color: centre.pillTone === 'period' ? t.c.onAccentSoft : t.c.textPrimary, fontWeight: '600', fontSize: 13, lineHeight: 17 }}>{centre.pill}</Text></View> : null}
       {centre.sub ? <Text variant="caption" color="textOnGlass" style={{ marginTop: 6, maxWidth: 176, textAlign: 'center' }}>{centre.sub}</Text> : null}
     </>
   );

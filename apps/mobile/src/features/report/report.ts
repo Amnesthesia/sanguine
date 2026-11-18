@@ -36,7 +36,7 @@ export function buildReport(i: ReportInput, o: ReportOptions, t: T): string {
     const heaviest = days.reduce<number>((m, l) => Math.max(m, l.flow && l.flow !== 'none' ? FLOW_ORDER.indexOf(l.flow) : -1), -1);
     const cells = [formatDayYear(c.start), String(c.length), c.bleedDays === undefined ? '' : String(c.bleedDays), heaviest < 0 ? '' : t(`log.flowLevels.${FLOW_ORDER[heaviest]}`)];
     if (temps) cells.push(String(i.temperatures.filter((r) => inCycle(c, r.date)).length));
-    if (ovulation) cells.push(c.ovulation ? t('report.ovulationAround', { date: formatDayYear(c.ovulation.point), basis: t(`insights.ovulationBasis.${c.ovulation.basis}`) }) : '');
+    if (ovulation) cells.push(c.ovulation ? t('report.ovulationAround', { date: formatDayYear(c.ovulation.point), basis: t(`report.basis.${c.ovulation.basis}`) }) : '');
     cells.push(c.quality === 'valid' ? '' : t(`insights.quality.${c.quality}`));
     return `<tr>${cells.map((x) => `<td>${esc(x)}</td>`).join('')}</tr>`;
   });

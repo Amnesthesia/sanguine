@@ -12,6 +12,7 @@ function files(dir: string): string[] {
 const SRC = files(__dirname);
 const SPLASH = join(__dirname, 'features/splash/BrandSplash.tsx');
 const SWIPE = join(__dirname, 'features/calendar/SwipeMonth.tsx');
+const SHEET = join(__dirname, 'features/calendar/SheetMotion.tsx');
 
 /** The text of a JSX opening tag starting at `from` (just after the tag name), up to its closing `>` or `/>`. */
 function tagBody(src: string, from: number): string {
@@ -60,7 +61,14 @@ describe('interactive elements are labelled', () => {
 describe('motion (§8.9: reduced motion degrades to cross-fades; the ring never animates)', () => {
   it('the app has no custom animation: no Animated, reanimated or LayoutAnimation in screens or components', () => {
     const hits = SRC.filter((f) => /react-native-reanimated|LayoutAnimation|Animated\.|from 'react-native'.*\bAnimated\b/.test(readFileSync(f, 'utf8')));
-    expect(hits.map((f) => f.replace(__dirname, '')).sort()).toEqual([SWIPE, SPLASH].map((f) => f.replace(__dirname, '')).sort());
+    expect(hits.map((f) => f.replace(__dirname, '')).sort()).toEqual([SWIPE, SPLASH, SHEET].map((f) => f.replace(__dirname, '')).sort());
+  });
+  it('the third exception, the calendar day sheet (P8-23), follows the finger and under Reduce Motion settles with a short timing, never without animation', () => {
+    const src = readFileSync(SHEET, 'utf8');
+    expect(src).toContain('useReducedMotion');
+    expect(src).toContain('settle(reduce, velocityY)'); // the one place a release picks spring or timing (sheetSnap.test.ts covers both branches)
+    expect(src).toMatch(/m\.kind === 'timing' \? withTiming\(to, \{ duration: m\.duration \}\)/);
+    expect(src).not.toMatch(/scale|rotate|LayoutAnimation|withRepeat/);
   });
   it('the second exception, the calendar month swipe (D-092), follows the finger and cross-fades under Reduce Motion', () => {
     const src = readFileSync(SWIPE, 'utf8');

@@ -16,7 +16,8 @@ name: Insights - history, charts, accuracy, long-cycle prompt, cycle detail
     timeout: 10000
 - assertVisible: ".*29 days.*"
 - assertVisible: ".*28 days.*"
-- assertVisible: ".*ovulation: calendar.*"
+# each cycle row gives its ovulation date range, never the bare basis "calendar" (owner, device feedback)
+- assertVisible: ".*Ovulation estimate.*"
 # the row is one button whose label reads the whole row (D-093), so match inside it
 - assertVisible: ".*current.*"
 - takeScreenshot: history

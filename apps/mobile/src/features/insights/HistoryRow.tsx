@@ -9,7 +9,7 @@ import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { confidenceLevel, Meter } from '@/ui/Meter';
 import { Text } from '@/ui/Text';
-import type { HistoryRow as Row } from './insightsModel';
+import { type HistoryRow as Row, ovulationWords } from './insightsModel';
 import type { LengthSummary } from './readings';
 
 /** Shown above the history when the cycles vary: their range, the lengths, and how sure the next-period estimate is. */
@@ -26,11 +26,13 @@ export function LengthSummaryCard({ s }: { s: LengthSummary }) {
   );
 }
 
-export function HistoryRow({ r, fertilityTools, onOpen, onInclude, actions }: { r: Row; fertilityTools: boolean; onOpen: () => void; onInclude?: () => void; actions?: ReactNode }) {
+/** `estimates.show`: fertility tools and the ovulation estimate both on (effectivePrefs); `includeUncertain`: her uncertain-estimates setting. */
+export function HistoryRow({ r, estimates, onOpen, onInclude, actions }: { r: Row; estimates: { show: boolean; includeUncertain: boolean }; onOpen: () => void; onInclude?: () => void; actions?: ReactNode }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const title = [r.start, r.lengthDays ? tr('insights.lengthDays', { n: r.lengthDays }) : tr('insights.dayN', { day: r.dayOfCycle })].join(' · ');
-  const detail = [r.bleedDays ? tr('insights.bleedDays', { n: r.bleedDays }) : null, fertilityTools ? tr(`insights.ovulationBasis.${r.basis}`) : null].filter(Boolean).join(' · ');
+  const ov = ovulationWords(r.ovulation, estimates, tr);
+  const detail = [r.bleedDays ? tr('insights.bleedDays', { n: r.bleedDays }) : null, ov?.line, ov?.basis].filter(Boolean).join(' · ');
   const status = r.current ? tr('insights.current') : tr(`insights.quality.${r.quality}`);
   const muted = r.current || r.quality === 'valid';
   return (

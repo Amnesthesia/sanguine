@@ -1,6 +1,6 @@
 import { addDays, diffDays, type EngineSettings, type History, type ISODate, type PastOvulation, pastOvulations, type Prediction, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { buildMonth, cycleDayOf, dayEstimates, monthOf, monthRows, shiftMonth, showCycleDay, swipeMonthDelta } from './calendarModel';
+import { buildMonth, cycleDayOf, dayEstimates, monthOf, monthRows, pastFertileDays, shiftMonth, showCycleDay, swipeMonthDelta } from './calendarModel';
 
 const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
 const today = '2026-10-10';
@@ -356,7 +356,25 @@ describe('past ovulation on the grid', () => {
     const m = octMonth();
     expect(m.cells.filter((c) => c.inMonth && c.ovulation === 'point')).toHaveLength(1);
     expect(m.cells.filter((c) => c.inMonth && c.ovulation === 'range').length).toBeGreaterThan(0);
-    expect(m.cells.filter((c) => c.inMonth && c.fertile !== undefined)).toEqual([]); // no fertile band in past months
+  });
+  it('draws the past cycle\'s fertile window as a graded band of at least two days ending around its ovulation estimate (owner, P8-23)', () => {
+    const r = octPast.find((x) => monthOf(x.point) === '2026-10') as PastOvulation;
+    const band = octMonth().cells.filter((c) => c.inMonth && c.fertile !== undefined);
+    expect(band.length).toBeGreaterThanOrEqual(2);
+    expect(band.map((c) => c.date)).toContain(r.point);
+    for (const c of band) {
+      expect(c.fertile).toBeGreaterThanOrEqual(0.1);
+      expect(c.fertile).toBeLessThanOrEqual(1);
+      expect(c.date <= r.i80.hi).toBe(true);
+      expect(c.label).toMatch(/likelihood of being in the fertile window/);
+    }
+    expect(Math.max(...band.map((c) => c.fertile as number))).toBeGreaterThan(Math.min(...band.map((c) => c.fertile as number)));
+    expect(dayEstimates(r.point, { pastOv: octPast, showEstimate: true, includeUncertain: false, period: false }).some((l) => /^Fertile window: (low|moderate|high) likelihood$/.test(l))).toBe(true);
+  });
+  it('a past row with no width still gives a window of several days, never one day and never NaN', () => {
+    const days = pastFertileDays({ cycleId: 'x', cycleStart: '2026-10-01', point: '2026-10-15', i80: { lo: '2026-10-15', hi: '2026-10-15' }, basis: 'lh', confidence: 'high' });
+    expect(days.length).toBeGreaterThan(1);
+    for (const d of days) expect(Number.isFinite(d.pInWindow)).toBe(true);
   });
   it('draws none when the estimate gate is off, even with the uncertain setting on', () => {
     const wide = octPast.map((r) => ({ ...r, i80: { lo: addDays(r.point, -9), hi: addDays(r.point, 9) } }));
@@ -367,6 +385,9 @@ describe('past ovulation on the grid', () => {
     const wide = octPast.map((r) => ({ ...r, i80: { lo: addDays(r.point, -9), hi: addDays(r.point, 9) } }));
     expect(marked(octMonth({ pastOv: wide }))).toEqual([]);
     expect(marked(octMonth({ pastOv: wide, includeUncertain: true })).length).toBeGreaterThan(0);
+    expect(octMonth({ pastOv: wide, includeUncertain: true }).cells.some((c) => c.inMonth && c.fertile !== undefined)).toBe(true);
+    // teen mode (the gate off) with the uncertain setting on: no past band either
+    expect(octMonth({ pastOv: wide, includeUncertain: true, showEstimate: false }).cells.some((c) => c.fertile !== undefined)).toBe(false);
   });
   it('nothing past while suspended', () => {
     const p = { ...predict(oct, S, '2026-11-10'), suspended: { reason: 'pregnant' } };
@@ -407,8 +428,9 @@ describe('dayEstimates words a past ovulation with its basis', () => {
   const row = (basis: PastOvulation['basis']): PastOvulation => ({ cycleId: 'x', cycleStart: '2026-10-01', point: '2026-10-15', i80: { lo: '2026-10-13', hi: '2026-10-17' }, basis, confidence: 'medium' });
   const words = (basis: PastOvulation['basis'], d: ISODate) => dayEstimates(d, { pastOv: [row(basis)], showEstimate: true, includeUncertain: false, period: false });
   it('names the range and where it came from', () => {
-    expect(words('calendar', '2026-10-15')).toEqual(['Ovulation estimate 13–17 Oct, most likely this day · from your next period date']);
-    expect(words('lh', '2026-10-13')).toEqual(['Ovulation estimate 13–17 Oct · from your LH tests']);
+    // the past window is drawn too, so its days also say the band in words (owner, P8-23)
+    expect(words('calendar', '2026-10-15')).toEqual(['Fertile window: high likelihood', 'Ovulation estimate 13–17 Oct, most likely this day · worked out from your cycle lengths']);
+    expect(words('lh', '2026-10-13')).toEqual(['Fertile window: high likelihood', 'Ovulation estimate 13–17 Oct · from your LH tests']);
     expect(words('lh', '2026-10-18')).toEqual([]);
   });
 });
@@ -454,7 +476,10 @@ describe('monthRows', () => {
   });
   it('a past cycle row says where its estimate came from; an empty month says nothing is there', () => {
     const past = monthRows({ ...novArgs, month: '2026-10', today: '2026-11-10', prediction: undefined, periodDays: new Set(), pastOv: [{ cycleId: 'x', cycleStart: '2026-10-01', point: '2026-10-15', i80: { lo: '2026-10-13', hi: '2026-10-17' }, basis: 'lh', confidence: 'medium' }], loggedText: new Map() });
-    expect(past.map((r) => r.text)).toEqual(['Ovulation estimate, range 13–17 · from your LH tests']);
+    expect(past.map((r) => [r.label, r.kind, r.text])).toEqual([
+      ['8–17', 'fertile', 'Fertile window, estimate · most likely 10–15'],
+      ['15', 'ovulation', 'Ovulation estimate, range 13–17 · from your LH tests'],
+    ]);
     expect(monthRows({ ...novArgs, month: '2027-03', today: '2026-11-10', prediction: undefined, periodDays: new Set(), loggedText: new Map() })).toEqual([]);
   });
   it('a range that runs into another month carries the month names', () => {
