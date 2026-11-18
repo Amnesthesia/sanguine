@@ -1,5 +1,5 @@
 import '@/i18n';
-import { contrast, hexToRgb, over } from '@sanguine/ui-tokens';
+import { contrast, glass, hexToRgb, over } from '@sanguine/ui-tokens';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Appearance } from 'react-native';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -64,6 +64,25 @@ describe('content kit', () => {
     const [r, g, b] = hexToRgb(over(t.c.ovulation, 0.45, t.cardBg));
     expect(box.style.borderTopColor).toBe(`rgb(${r}, ${g}, ${b})`);
   });
+  it('estimate tag reads at 4.5:1 on a white card and on glass over the worst rows, in light and dark', () => {
+    const tagColour = (scheme: 'light' | 'dark', onGlass: boolean) => {
+      (Appearance as unknown as { setColorScheme: () => void }).setColorScheme = () => {};
+      render(<ThemeProvider pref={scheme}><EstimateTag onGlass={onGlass} /></ThemeProvider>);
+      const text = screen.getByText('ESTIMATE') as HTMLElement;
+      const [r, g, b] = (getComputedStyle(text).color.match(/\d+/g) as string[]).map(Number);
+      cleanup();
+      return `#${[r, g, b].map((n) => (n as number).toString(16).padStart(2, '0')).join('')}`;
+    };
+    expect(tagColour('light', true).toLowerCase()).toBe('#2f5568');
+    for (const scheme of ['light', 'dark'] as const) {
+      const d = buildTheme(scheme, 'ios'); const g = glass[scheme];
+      expect(contrast(tagColour(scheme, false), d.cardBg), `${scheme} card`).toBeGreaterThanOrEqual(4.5);
+      // the tag sits on the Today hero glass: the strongest overlap of the rose, blue and green wash (the material only lightens it) in light, the opaque card in dark
+      const wash = scheme === 'light' ? over(d.c.accent, 0.18, over(d.c.ovulation, 0.12, over(d.c.fertile, 0.13, d.c.bg))) : d.c.surface;
+      for (const [name, bg] of [['wash', wash], ['plain glass', over(g.tintBase, g.tintAlpha, d.c.bg)]] as const)
+        expect(contrast(tagColour(scheme, true), bg), `${scheme} glass over ${name}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
   it('renders estimate, caution and numbered sources', () => {
     render(<><EstimateTag /><CautionPanel>Check dates</CautionPanel><Sources items={['Reference one', 'Reference two']} /><Cite n={2} /></>);
     expect(screen.getByText('ESTIMATE')).toBeTruthy();
@@ -85,7 +104,11 @@ describe('switch row icon', () => {
     const change = vi.fn();
     render(<SwitchRow testID="sw" title="Discreet icon" leadingIcon={<Text>leaf</Text>} value={false} onChange={change} />);
     expect(screen.getByText('leaf').parentElement?.style.backgroundColor).toBe('rgb(244, 220, 224)');
-    expect(screen.getAllByRole('switch', { name: 'Discreet icon' }).length).toBeGreaterThan(0);
+    // the testID is the Maestro hook that moved from Switch to SwitchRow: it must reach the control, and the control must act
+    const sw = screen.getByTestId('sw').querySelector('input') as HTMLInputElement;
+    expect(sw.getAttribute('role')).toBe('switch');
+    fireEvent.click(sw);
+    expect(change).toHaveBeenCalledWith(true);
   });
 });
 
