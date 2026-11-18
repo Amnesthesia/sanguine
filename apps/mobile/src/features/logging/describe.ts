@@ -11,7 +11,7 @@ export function describeEvent(e: DayEvent, t: TFunction, unit: 'C' | 'F'): strin
       if (d.level === 'none') return t('log.conditionNone');
       return `${t('day.entry.flow', { level: t(`log.flowLevels.${d.level}`) })}${t(`day.entry.flowKind.${d.flow_kind}`)}`;
     case 'symptom':
-      return t('day.entry.symptom', { name: t(`symptom.${d.code}`, { defaultValue: d.code }), n: d.intensity });
+      return t('day.entry.symptom', { name: t(`symptom.${d.code}`, { defaultValue: d.code }), level: t(`log.strength.${d.intensity}`).toLocaleLowerCase() });
     case 'biomarker': {
       const v = d.value as Record<string, any>;
       if (d.type === 'bbt' || d.type === 'skin_temp') {

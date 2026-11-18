@@ -5,12 +5,16 @@ export const colors = {
     textOnGlass: '#4A4246', caution: '#8A5512', cautionBg: 'rgba(185,116,30,0.10)', cautionText: '#5E3A0C',
     border: '#E4E4E6', accent: '#BC4560', accentSoft: '#F4DCE0', onAccentSoft: '#A3354F', period: '#B8324A', periodPredicted: '#D9A0AB',
     fertile: '#5C8A6E', ovulation: '#3F6F88', flag: '#B9741E', success: '#3E7D5A', focus: '#2E5C8A',
+    // filled primary + its ink (D-131); dial track (D-128); estimate swatch = period red at the dial's estimate alpha over bg
+    accentFill: '#BC4560', onAccent: '#FFFFFF', dialTrack: '#ECE7E9', estimateSwatch: '#EAC2C9',
   },
   dark: {
     bg: '#000000', surface: '#1C1C1E', surface2: '#2C2C2E', textPrimary: '#F4EEEF', textSecondary: '#B3A8AC',
     textOnGlass: '#CFC6CA', caution: '#D9A054', cautionBg: 'rgba(217,160,84,0.10)', cautionText: '#D9A054',
     border: '#3A3A3C', accent: '#D4607A', accentSoft: '#3A1F27', onAccentSoft: '#E8869A', period: '#D9607A', periodPredicted: '#7A4654',
     fertile: '#7FAF93', ovulation: '#7FA7C2', flag: '#D9A054', success: '#6FB68C', focus: '#8FBDE6',
+    // accentFill: the accent darkened by 12%, the least that gives white ink 4.5:1 (4.57); estimateSwatch: period red at 75% over black (3.6:1, was 30% = 1.4:1)
+    accentFill: '#BB546B', onAccent: '#FFFFFF', dialTrack: '#2A2628', estimateSwatch: '#A3485C',
   },
 } as const;
 

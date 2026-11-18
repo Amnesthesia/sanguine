@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
-vi.mock('react-native-svg', () => ({ default: () => null, Path: () => null, Rect: () => null }));
+vi.mock('react-native-svg', () => ({ default: ({ testID }: { testID?: string }) => <svg data-testid={testID} />, Path: () => null, Rect: () => null }));
 vi.mock('@/services/lockAuth', () => ({ deviceHasLock: () => Promise.resolve(true), authenticate: vi.fn().mockResolvedValue(false) }));
 const app = vi.hoisted(() => ({ state: { status: 'ready', onboarded: true, prefs: { appLock: true } } }));
 vi.mock('@/state/app', () => ({ useApp: (sel: (s: unknown) => unknown) => sel(app.state) }));
@@ -38,6 +38,14 @@ describe('LockGate', () => {
     gate();
     expect(screen.getByTestId('lock-pending')).toBeTruthy();
     expect(screen.queryByTestId('lock-screen')).toBeNull();
+  });
+  it('Unlock carries the Face ID glyph (Button hides its icon from screen readers); the button is still named "Unlock"', async () => {
+    gate();
+    await act(async () => {});
+    const button = screen.getByTestId('unlock-button');
+    const glyph = screen.getByTestId('unlock-glyph');
+    expect(button.contains(glyph)).toBe(true);
+    expect(screen.getByRole('button', { name: 'Unlock' })).toBe(button);
   });
   it('the lock glyph is decorative: hidden from screen readers', async () => {
     gate();

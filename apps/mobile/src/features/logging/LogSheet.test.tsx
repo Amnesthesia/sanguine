@@ -96,10 +96,10 @@ it('removes a logged entry with its chip and puts it back with Undo, append-only
   const { store, db, today } = await setup();
   await setSymptom(store, today, 'cramps', 1);
   render(<LogSheet />);
-  const remove = await screen.findByLabelText('Remove: Cramps 1/3');
+  const remove = await screen.findByLabelText('Remove: Cramps (mild)');
   fireEvent.click(remove);
   await waitFor(async () => expect((await dayState(db, today)).symptoms.cramps).toBeUndefined());
-  expect(await screen.findByText('Removed: Cramps 1/3')).toBeTruthy();
+  expect(await screen.findByText('Removed: Cramps (mild)')).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
   await waitFor(async () => expect((await dayState(db, today)).symptoms.cramps).toBe(1));
   expect((await store.events()).length).toBeGreaterThan(1); // nothing was deleted
@@ -112,4 +112,11 @@ it('sets energy from the slider and clears it with Clear', async () => {
   await waitFor(async () => expect((await dayState(db, today)).energy).toBe(2));
   fireEvent.click(await screen.findByTestId('energy-clear'));
   await waitFor(async () => expect((await dayEvents(store, today)).filter((e) => e.kind === 'energy')).toHaveLength(0));
+});
+
+it('keeps the date on one line and lets it shrink (frame: "Monday 2 November")', async () => {
+  await setup();
+  render(<LogSheet />);
+  const title = screen.getByTestId('log-title');
+  expect(title.className).toMatch(/r-textOverflow-.*r-whiteSpace-/); // react-native-web's classes for numberOfLines={1}; adjustsFontSizeToFit (the shrink) is native only
 });

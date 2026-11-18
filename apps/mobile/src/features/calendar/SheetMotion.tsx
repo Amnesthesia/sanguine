@@ -6,13 +6,14 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets';
 import { useTheme } from '@/theme';
 import { GlassSurface } from '@/ui/GlassBar';
-import { GUTTER } from '@/ui/Screen';
 import { type Detent, dragHeight, SPRING, type Snaps, settle, shownAt, snapDetent } from './sheetSnap';
 
 /** Gap above the tab bar (as Screen's floating action) and the room the large detent leaves under the status bar. */
 const FLOAT_GAP = 12;
 const LARGE_TOP = 40;
-const RADIUS = 34;
+/** Frames Calendar-1-Closed and Calendar-2-SheetOpen: the bar and the small sheet sit 10 pt in from the screen edges; the bar's corners are 28 pt, the sheet's 34. */
+const SIDE = 10;
+const RADIUS = { bar: 28, sheet: 34 } as const;
 
 export interface SheetMotionProps {
   detent: Detent;
@@ -95,11 +96,13 @@ export function SheetMotion({ detent, onDetent, maxSmall, scrim, onInset, childr
   const grip = (node: ReactNode) => <GestureDetector gesture={pan}><View collapsable={false}>{node}</View></GestureDetector>;
 
   // full width and opaque at the large detent, inset glass below it; the scrim darkens in step
-  const sheetStyle = useAnimatedStyle(() => ({ height: h.value, marginHorizontal: interpolate(h.value, [snaps.value.small, snaps.value.large], [GUTTER, 0], Extrapolation.CLAMP) }));
+  const sheetStyle = useAnimatedStyle(() => ({ height: h.value, marginHorizontal: interpolate(h.value, [snaps.value.small, snaps.value.large], [SIDE, 0], Extrapolation.CLAMP) }));
   const fillStyle = useAnimatedStyle(() => ({ minHeight: h.value }));
   const opaqueStyle = useAnimatedStyle(() => ({ opacity: interpolate(h.value, [snaps.value.small, snaps.value.large], [0, 1], Extrapolation.CLAMP) }));
   const scrimStyle = useAnimatedStyle(() => ({ opacity: interpolate(h.value, [snaps.value.small, snaps.value.large], [0, 0.6], Extrapolation.CLAMP) }));
 
+  // switches with the content (a quarter of the way into a drag), so the corner change hides in the content change
+  const radius = shown === 'closed' ? RADIUS.bar : RADIUS.sheet;
   const measure = (height: number) => {
     if (shown === 'large') return;
     const v = shown === 'small' ? Math.min(height, maxSmall) : height;
@@ -114,9 +117,10 @@ export function SheetMotion({ detent, onDetent, maxSmall, scrim, onInset, childr
           onLayout={(e) => { const large = e.nativeEvent.layout.height - FLOAT_GAP - insets.top - LARGE_TOP; if (Math.abs(large - measured.large) >= 1) setMeasured((m) => ({ ...m, large })); }}
           style={{ flex: 1, justifyContent: 'flex-end', paddingBottom: FLOAT_GAP }}>
           {/* until the bar has been measured the sheet takes its content's own height (so there is something to measure), then the animated height takes over at the same size */}
-          <Animated.View style={[{ borderRadius: RADIUS, boxShadow: '0 1px 2px rgba(31,26,28,0.06), 0 14px 36px rgba(31,26,28,0.16)' }, measured.closed > 0 ? sheetStyle : null]}>
-            <View style={{ borderRadius: RADIUS, overflow: 'hidden', ...(measured.closed > 0 ? { flex: 1 } : null) }}>
-              <GlassSurface flat style={{ borderRadius: RADIUS }}>
+          <Animated.View style={[{ borderRadius: radius, boxShadow: '0 1px 2px rgba(31,26,28,0.06), 0 14px 36px rgba(31,26,28,0.16)' }, measured.closed > 0 ? sheetStyle : null]}>
+            <View style={{ borderRadius: radius, overflow: 'hidden', ...(measured.closed > 0 ? { flex: 1 } : null) }}>
+              {/* legible glass: the month list scrolling beneath must not read through the bar or the sheet (D-130, fix plan X1/C1) */}
+              <GlassSurface flat legible style={{ borderRadius: radius }}>
                 <Animated.View style={fillStyle}>
                   <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: t.screenBg }, opaqueStyle]} />
                   <View onLayout={(e) => measure(e.nativeEvent.layout.height)}>{children(shown, grip, snapsNow.large)}</View>

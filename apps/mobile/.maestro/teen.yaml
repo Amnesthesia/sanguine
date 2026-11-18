@@ -18,7 +18,7 @@ name: Under 18 - no ovulation card, no fertile wording, no fertility rows in the
     visible:
       id: screen-calendar
     timeout: 20000
-- assertVisible: "Predicted period"
+- assertVisible: "Period, estimate"
 - assertNotVisible: ".*[Ff]ertile.*"
 - assertNotVisible: ".*[Oo]vulation.*"
 - takeScreenshot: calendar

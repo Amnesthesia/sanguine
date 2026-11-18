@@ -15,7 +15,8 @@ import { contrast, over } from '../../../../../packages/ui-tokens/src/contrast';
 const app = vi.hoisted(() => ({ state: {} as Record<string, unknown> }));
 const env = vi.hoisted(() => ({ platform: 'ios' as 'ios' | 'android', scheme: 'light' as 'light' | 'dark' }));
 vi.mock('@/state/app', () => ({ useApp: (sel?: (s: unknown) => unknown) => (sel ? sel(app.state) : app.state) }));
-vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn(), back: vi.fn() }) }));
+const push = vi.hoisted(() => vi.fn());
+vi.mock('expo-router', () => ({ useRouter: () => ({ push, back: vi.fn() }) }));
 vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }), SafeAreaView: ({ children }: { children: ReactNode }) => children }));
 // react-native-svg ships Flow sources vitest cannot load; drawing is checked on the simulator, these tests cover words, structure and accessibility
 vi.mock('react-native-svg', () => { const n = () => null; return { default: n, Circle: n, Defs: n, Ellipse: n, G: n, Line: n, Path: n, RadialGradient: n, Stop: n, Rect: n, Text: n }; });
@@ -75,18 +76,15 @@ describe('Today, typical day', () => {
     expect(screen.getByTestId('today-footer').textContent).toBe('Estimates are ranges, not promises. Not a contraceptive.');
   });
 
-  it('shows food and movement as two tiles with Read more, which opens the full sections in a sheet', async () => {
+  it('shows food and movement as two tiles with Read more, which opens Insights > This cycle (D-134)', async () => {
     await setup({ today: '2026-10-13' });
     view();
     expect(screen.getAllByTestId('guidance-tile')).toHaveLength(2);
     expect(screen.queryByTestId('guidance-body')).toBeNull();
-    expect(screen.queryByTestId('guidance-sheet')).toBeNull();
+    push.mockClear();
     fireEvent.click(screen.getByTestId('guidance-more'));
-    expect(await screen.findByTestId('guidance-sheet')).toBeTruthy();
-    expect(screen.getByTestId('guidance-body')).toBeTruthy();
-    expect(screen.getByTestId('guidance-sources')).toBeTruthy();
-    // closing hides it on a device; react-native-web waits for a CSS animation event jsdom never fires, so only the control is checked
-    expect(screen.getByTestId('guidance-sheet-close').getAttribute('aria-label')).toBe('Close the food and movement notes');
+    expect(push).toHaveBeenCalledWith({ pathname: '/insights', params: { tab: 'this-cycle', at: expect.any(String) } });
+    expect(screen.queryByTestId('guidance-sheet')).toBeNull(); // the sheet of D-122 is gone
   });
 
   it('hides the ovulation estimate card details until asked, keeping the fixed sentence', async () => {
@@ -125,13 +123,13 @@ describe('Today, period in progress', () => {
     expect(screen.getByTestId('headline-card').textContent).toContain('Day 2 of your period');
     expect(screen.getByTestId('period-end-card').textContent).toContain('Period likely ends');
     expect(screen.getByTestId('next-period-card').textContent).toContain('Next period likely');
-    fireEvent.click(await screen.findByLabelText('Remove: Cramps 1/3'));
+    fireEvent.click(await screen.findByLabelText('Remove: Cramps (mild)'));
     await waitFor(async () => expect((await dayState(db, '2026-10-02')).symptoms.cramps).toBeUndefined());
-    await waitFor(() => expect(screen.queryByLabelText('Remove: Cramps 1/3')).toBeNull());
-    expect(await screen.findByText('Removed: Cramps 1/3')).toBeTruthy();
+    await waitFor(() => expect(screen.queryByLabelText('Remove: Cramps (mild)')).toBeNull());
+    expect(await screen.findByText('Removed: Cramps (mild)')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await waitFor(async () => expect((await dayState(db, '2026-10-02')).symptoms.cramps).toBe(1));
-    expect(await screen.findByLabelText('Remove: Cramps 1/3')).toBeTruthy();
+    expect(await screen.findByLabelText('Remove: Cramps (mild)')).toBeTruthy();
     expect((await store.events()).length).toBeGreaterThan(1); // append-only: nothing was deleted
   });
 });
@@ -214,5 +212,19 @@ describe('contrast on the hero', () => {
     }
     // the date and legend captions sit at the top, over the rose blob; they are textOnGlass, which is asserted over every blob above
     expect(contrast(c.textOnGlass, stack(['rose']))).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('Today, estimates paused (frames Today-Pregnant, Today-Suspended)', () => {
+  it('pregnant: the Log bar names the state on its second line and the due range carries the year', async () => {
+    await setup({ today: '2026-11-02', history: hist([28, 30, 29], '2026-09-15'), settings: { ...S, lifeStates: [{ kind: 'pregnant', since: '2026-09-20' }] } });
+    view();
+    expect(screen.getByTestId('quick-log-text').textContent).toBe('Mon 2 Nov' + 'Pregnant');
+    expect(screen.getByTestId('pregnancy-due').textContent).toMatch(/\d{4}$/);
+  });
+  it('hormonal contraception: the second line names it', async () => {
+    await setup({ today: '2026-11-02', settings: { ...S, lifeStates: [{ kind: 'hormonal_contraception', method: 'combined_pill', since: '2026-09-20' }] } });
+    view();
+    expect(screen.getByTestId('quick-log-text').textContent).toBe('Mon 2 Nov' + 'Hormonal contraception');
   });
 });

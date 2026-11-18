@@ -1,6 +1,6 @@
 import { addDays, diffDays, type EngineSettings, type History, type ISODate, type PastOvulation, pastOvulations, type Prediction, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { buildMonth, cycleDayOf, dayEstimates, monthOf, monthRows, pastFertileDays, shiftMonth, showCycleDay, swipeMonthDelta } from './calendarModel';
+import { buildMonth, cycleDayOf, cycleHeadlines, dayEstimates, legendKinds, monthOf, monthRows, pastFertileDays, shiftMonth, showCycleDay, swipeMonthDelta } from './calendarModel';
 
 const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
 const today = '2026-10-10';
@@ -470,8 +470,8 @@ describe('monthRows', () => {
       'Period day 3 · Cramps · Energy: low (2 of 5)',
       'Period likely ends · estimate from your usual length',
       'Fertile window, estimate · most likely 10–15',
-      'Ovulation estimate, range 10–18 · medium confidence',
-      'Next period likely · at most 24 Nov – 2 Dec · medium confidence',
+      'Ovulation estimate, range 10–18 · fair estimate',
+      'Next period likely · at most 24 Nov – 2 Dec · fair estimate',
     ]);
   });
   it('a past cycle row says where its estimate came from; an empty month says nothing is there', () => {
@@ -485,5 +485,59 @@ describe('monthRows', () => {
   it('a range that runs into another month carries the month names', () => {
     const r = monthRows({ ...novArgs, prediction: base({ nextPeriod: { point: '2026-11-30', i80: { lo: '2026-11-28', hi: '2026-12-02' }, i95: { lo: '2026-11-26', hi: '2026-12-04' }, confidence: 'low', daysOfDataUsed: 30 } }), periodDays: new Set(), loggedText: new Map() });
     expect(r[0]).toMatchObject({ label: '28 Nov – 2 Dec', from: '2026-11-28', to: '2026-11-30' });
+  });
+});
+
+// ---- P8-29: paused estimates, a legend that follows the drawn marks, the month name ----
+describe('paused estimates (pregnancy, suspended): no cycle days (fix plan C5)', () => {
+  const paused = { ...novPrediction, suspended: { reason: 'pregnant' } };
+  it('no cell carries a cycle day, drawn or spoken', () => {
+    const m = buildMonth({ ...novArgs, loggedDays: new Set(), prediction: paused });
+    expect(m.cells.filter(showCycleDay)).toEqual([]);
+    expect(m.cells.some((c) => /cycle day/.test(c.label))).toBe(false);
+  });
+  it('the month list says Period, not a period day number', () => {
+    const rows = monthRows({ ...novArgs, prediction: paused, loggedText: new Map() });
+    expect(rows.map((r) => r.text)).toEqual(['Period', 'Period']); // 1 and 2 Nov (31 Oct is outside November)
+  });
+});
+
+describe('legendKinds: the legend names only the marks drawn in the shown grid (D-118, fix plan C3, C5)', () => {
+  const kinds = (over: Partial<Parameters<typeof buildMonth>[0]> = {}, cycleDays = true) => legendKinds(buildMonth({ ...novArgs, loggedDays: new Set(), ...over }).cells, { showEstimate: over.showEstimate ?? true, cycleDays });
+  it('every drawn mark, in legend order, with the wider range as its own entry', () => {
+    expect(kinds()).toEqual(['period', 'predicted', 'predicted95', 'fertile', 'ovulation', 'cycleDay']);
+  });
+  it('paused: the logged period only; no cycle days, no estimate or fertility entries', () => {
+    expect(kinds({ prediction: { ...novPrediction, suspended: { reason: 'pregnant' } } })).toEqual(['period']);
+  });
+  it('the cycle-day setting off drops its entry; logged marks name symptoms and other logs', () => {
+    expect(kinds({ symptomDays: new Set(['2026-11-10']), loggedDays: new Set(['2026-11-10', '2026-11-11']) }, false)).toEqual(['period', 'predicted', 'predicted95', 'fertile', 'ovulation', 'symptoms', 'other']);
+  });
+  it('the estimate gate (teen) outranks what the cells say', () => {
+    expect(kinds({ showEstimate: false })).toEqual(['period', 'predicted', 'predicted95', 'cycleDay']);
+  });
+  it('no 95% entry when no wider-range day is drawn', () => {
+    const tight = base({ nextPeriod: { point: '2026-11-28', i80: { lo: '2026-11-26', hi: '2026-11-30' }, i95: { lo: '2026-11-26', hi: '2026-11-30' }, confidence: 'high', daysOfDataUsed: 90 } });
+    expect(kinds({ prediction: tight })).toEqual(['period', 'predicted', 'cycleDay']);
+  });
+});
+
+it('the month model names the month alone for the month list heading', () => {
+  expect(buildMonth({ ...novArgs, loggedDays: new Set() })).toMatchObject({ title: 'November 2026', monthName: 'November' });
+});
+
+describe('the open cycle headline estimates (frames: every day of the cycle lists them)', () => {
+  const p = predict(typical, S, today);
+  const base = { prediction: p, pastOv: [], showEstimate: true, includeUncertain: false, today };
+  it('lists when the period ends and when the next one is likely on a logged day of the open cycle, period end first', () => {
+    const lines = cycleHeadlines(today, base);
+    expect(lines.at(-1)).toMatch(/^Period likely to start .+–.+ · (confident|fair estimate|rough estimate)$/);
+    expect(cycleHeadlines(today, base).length).toBeGreaterThanOrEqual(1);
+  });
+  it('names nothing for a day before the open cycle, a future day, while paused, or without a prediction', () => {
+    expect(cycleHeadlines('2020-01-01' as ISODate, base)).toEqual([]);
+    expect(cycleHeadlines(addDays(today, 3), base)).toEqual([]);
+    expect(cycleHeadlines(today, { ...base, prediction: undefined })).toEqual([]);
+    expect(cycleHeadlines(today, { ...base, prediction: { ...p, suspended: { reason: 'pregnant' } } as typeof p })).toEqual([]);
   });
 });

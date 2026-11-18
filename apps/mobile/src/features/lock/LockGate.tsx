@@ -10,6 +10,12 @@ import { createTracker } from './appStateTracker';
 import { Button } from '@/ui/Button';
 import { Text } from '@/ui/Text';
 
+/** The Face ID glyph beside "Unlock" (frame Lock-Screen): a face in four corner brackets, in the primary button's ink. It is a drawing; the button's label names the action. */
+function FaceIdGlyph() {
+  const c = useTheme().c.onAccent;
+  return <Svg testID="unlock-glyph" width={20} height={20} viewBox="0 0 24 24"><Path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4H8.5M15.5 4H17.5A2.5 2.5 0 0 1 20 6.5V8.5M20 15.5V17.5A2.5 2.5 0 0 1 17.5 20H15.5M8.5 20H6.5A2.5 2.5 0 0 1 4 17.5V15.5M9 9.2V10.6M15 9.2V10.6M12.2 9.2V13.2H11.2M9.4 15.4C10.8 16.6 13.2 16.6 14.6 15.4" fill="none" stroke={c} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" /></Svg>;
+}
+
 export function LockGate({ children }: { children: ReactNode }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
@@ -48,7 +54,7 @@ export function LockGate({ children }: { children: ReactNode }) {
             <Text variant="title" accessibilityRole="header" style={{ textAlign: 'center', fontWeight: '700' }}>{tr('lock.title')}</Text>
             <Text color="textSecondary" style={{ textAlign: 'center', fontSize: 15, lineHeight: 21 }}>{tr('lock.explain')}</Text>
             {failed ? <Text variant="bodySmall" style={{ color: t.c.period, textAlign: 'center' }} accessibilityLiveRegion="polite">{tr('lock.failed')}</Text> : null}
-            <Button testID="unlock-button" label={tr('lock.unlock')} onPress={() => void tryUnlock(tr('lock.reason'))} style={{ marginTop: 8, minWidth: 200 }} />
+            <Button testID="unlock-button" icon={<FaceIdGlyph />} label={tr('lock.unlock')} onPress={() => void tryUnlock(tr('lock.reason'))} style={{ marginTop: 8, minWidth: 200 }} />
           </View>
         </View>
       ) : null}

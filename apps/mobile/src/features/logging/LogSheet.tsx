@@ -131,7 +131,7 @@ export function LogSheet() {
               <Text variant="heading" color="textOnGlass" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ fontSize: 22, lineHeight: 26 }}>‹</Text>
             </Pressable>
             <View style={{ flex: 1, minWidth: 0 }}>
-              <Text variant="heading" accessibilityRole="header" testID="log-title" style={{ textAlign: 'center' }}>{formatLong(day)}</Text>
+              <Text variant="heading" accessibilityRole="header" testID="log-title" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ textAlign: 'center' }}>{formatLong(day)}</Text>
               {subline ? <Text variant="caption" color="textOnGlass" testID="log-subline" style={{ textAlign: 'center' }}>{subline}</Text> : null}
             </View>
             <Pressable testID="log-next" accessibilityRole="button" accessibilityLabel={tr('log.nextDay')} aria-disabled={isToday} disabled={isToday} onPress={() => setDay(addDays(day, 1))} style={[navButton, { minWidth: 44, minHeight: 44, opacity: isToday ? 0.3 : 1 }]}>

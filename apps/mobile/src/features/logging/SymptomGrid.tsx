@@ -1,15 +1,14 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { useTheme } from '@/theme';
-import { LARGE, useFontScale } from '@/ui/useFontScale';
+import { useFontScale } from '@/ui/useFontScale';
 import { Text } from '@/ui/Text';
 
-/** Each tap steps the strength: off, mild, moderate, strong, off; press and hold clears (D-097). A selected tile names it (D-088). */
+/** Each tap steps the strength: off, mild, moderate, strong, off; press and hold clears (D-097). A selected pill names it (D-088). Frames: two columns of pills, name left, dots right. */
 export function SymptomGrid({ codes, values, onSet }: { codes: string[]; values: Record<string, number>; onSet: (code: string, intensity: 0 | 1 | 2 | 3) => void }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const scale = useFontScale();
-  const wide = scale > LARGE; // two columns so words are never split
   const dot = Math.round(6 * Math.min(scale, 2)); // the intensity dots grow with the text (U-15)
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -24,13 +23,15 @@ export function SymptomGrid({ codes, values, onSet }: { codes: string[]; values:
             accessibilityHint={tr('a11y.symptomHint')}
             onPress={() => onSet(code, ((n + 1) % 4) as 0 | 1 | 2 | 3)}
             onLongPress={() => onSet(code, 0)}
-            style={{ width: wide ? '48%' : '23%', flexGrow: 1, minHeight: 72, borderRadius: t.radius.tile, paddingHorizontal: 4, alignItems: 'center', justifyContent: 'center', gap: 4, backgroundColor: on ? t.c.accentSoft : t.chipBg, borderWidth: 1.5, borderColor: on ? t.c.accent : 'transparent' }}>
-            <Text variant="caption" color={on ? 'onAccentSoft' : 'textPrimary'} style={{ textAlign: 'center' }}>{name}</Text>
-            <View style={{ flexDirection: 'row', gap: 3 }}>
-              {[1, 2, 3].map((i) => <View key={i} style={{ width: dot, height: dot, borderRadius: dot / 2, backgroundColor: i <= n ? t.c.accent : t.c.border }} />)}
+            style={{ width: '48%', flexGrow: 1, minHeight: 56, borderRadius: 999, paddingVertical: 6, paddingLeft: 16, paddingRight: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, backgroundColor: on ? t.c.accentSoft : t.chipBg, borderWidth: 1.5, borderColor: on ? t.c.accent : 'transparent' }}>
+            <View style={{ flexShrink: 1 }}>
+              <Text variant="bodySmall" color={on ? 'onAccentSoft' : 'textPrimary'} style={on ? { fontWeight: '600' } : undefined}>{name}</Text>
+              {/* the dots alone read as a count; the word says what they measure (D-088) */}
+              {on ? <Text variant="caption" color="onAccentSoft">{tr(`log.strength.${n}`)}</Text> : null}
             </View>
-            {/* the dots alone read as a count; the word says what they measure (D-088) */}
-            {on ? <Text variant="caption" color="onAccentSoft" style={{ textAlign: 'center' }}>{tr(`log.strength.${n}`)}</Text> : null}
+            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ flexDirection: 'row', gap: 3 }}>
+              {[1, 2, 3].map((i) => <View key={i} testID="intensity-dot" style={i <= n ? { width: dot, height: dot, borderRadius: dot / 2, backgroundColor: t.c.accent } : { width: dot, height: dot, borderRadius: dot / 2, backgroundColor: t.c[on ? 'onAccentSoft' : 'textPrimary'], opacity: on ? 0.25 : 0.16 }} />)}
+            </View>
           </Pressable>
         );
       })}

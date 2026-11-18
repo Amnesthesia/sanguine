@@ -2,7 +2,8 @@
 import { BackupError, openBackup, recoveryWordsToSecret, secretToRecoveryWords as recoveryCodeFor } from '@sanguine/crypto';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { TextInput, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { createBackup } from '@/data/backup';
 import { importBundle } from '@/data/exportImport';
 import { deviceClock, todayLocal } from '@/services/clock';
@@ -16,16 +17,40 @@ import { SwitchRow, Group } from '@/ui/SettingsRow';
 import { shareFile } from '@/services/shareFile';
 import { NoCapture } from '@/features/lock/ScreenProtection';
 import { useApp } from '@/state/app';
+import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { CautionPanel } from '@/ui/CautionPanel';
 import { Segmented } from '@/ui/Segmented';
 import { SubScreen } from '@/ui/SubScreen';
-import { TextField } from '@/ui/TextField';
 import { Text } from '@/ui/Text';
 import { showToast } from '@/ui/Toast';
 
 const MIN_PASSPHRASE = 8;
+
+/** A masked field as the backup frames draw it: white with a hairline ring, 18 pt corners, the label small and secondary above it (the shared TextField is the grey pill of the onboarding frames).
+ *  ponytail: local until ui/TextField gets a surface tone; then delete this and pass the tone. */
+function TextField({ label, value, onChangeText, testID, helper }: { label: string; value: string; onChangeText: (s: string) => void; testID: string; helper?: string }) {
+  const t = useTheme();
+  return (
+    <View style={{ gap: 6 }}>
+      <Text variant="caption" color="textSecondary" style={{ marginHorizontal: 4, fontSize: 13, lineHeight: 18, fontWeight: '400', letterSpacing: 0 }}>{label}</Text>
+      <TextInput
+        testID={testID} accessibilityLabel={label} accessibilityHint={helper} value={value} onChangeText={onChangeText}
+        secureTextEntry autoCorrect={false} autoCapitalize="none" spellCheck={false} textContentType="none" importantForAutofill="no"
+        placeholderTextColor={t.c.textSecondary}
+        style={{ minHeight: 52, borderRadius: 18, paddingHorizontal: 16, fontSize: 17, color: t.c.textPrimary, backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}
+      />
+      {helper ? <Text variant="bodySmall" color="textSecondary">{helper}</Text> : null}
+    </View>
+  );
+}
+
+/** The shield on the primary button (frame Settings-Backup). */
+function Shield() {
+  const t = useTheme();
+  return <Svg width={18} height={18} viewBox="0 0 18 18"><Path d="M9 1.8L15 4.2V8.6C15 12.2 12.5 15 9 16.2C5.5 15 3 12.2 3 8.6V4.2Z" fill="none" stroke={t.c.onAccent} strokeWidth={1.7} strokeLinejoin="round" /></Svg>;
+}
 
 export default function BackupScreen() {
   const { t } = useTranslation();
@@ -188,15 +213,18 @@ export default function BackupScreen() {
       <Text variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('settings.privacy.backupNote')}</Text>
       {msg ? <View testID="backup-message" accessibilityLiveRegion="polite"><CautionPanel>{msg}</CautionPanel></View> : null}
       {pct !== undefined ? <View testID="backup-progress" accessibilityLiveRegion="polite"><CautionPanel>{t('settings.privacy.backupWorking', { pct })}</CautionPanel></View> : null}
-      <TextField testID="backup-pass" secure label={t('settings.privacy.passphrase')} value={pass} onChangeText={setPass} keyboardType="default" />
-      {mode === 'create' ? <TextField testID="backup-pass2" secure label={t('settings.privacy.passphraseConfirm')} value={pass2} onChangeText={setPass2} keyboardType="default" /> : <TextField testID="restore-code" secure label={t('settings.privacy.restoreCodeLabel')} value={code} onChangeText={setCode} keyboardType="default" />}
-      <Button testID={mode === 'create' ? 'backup-create' : 'backup-restore'} label={mode === 'create' ? t('settings.privacy.backupCreate') : t('settings.privacy.restorePick')} disabled={pct !== undefined || pass.length === 0} onPress={() => void (mode === 'create' ? create() : restore())} />
+      <TextField testID="backup-pass" label={t('settings.privacy.passphrase')} value={pass} onChangeText={setPass} />
+      {mode === 'create' ? <TextField testID="backup-pass2" label={t('settings.privacy.passphraseConfirm')} value={pass2} onChangeText={setPass2} /> : <TextField testID="restore-code" label={t('settings.privacy.restoreCodeLabel')} value={code} onChangeText={setCode} />}
+      <Button testID={mode === 'create' ? 'backup-create' : 'backup-restore'} icon={mode === 'create' ? <Shield /> : undefined} label={mode === 'create' ? t('settings.privacy.backupCreate') : t('settings.privacy.restorePick')} disabled={pct !== undefined || pass.length === 0} onPress={() => void (mode === 'create' ? create() : restore())} />
       {cloud && mode === 'create' ? (
-        <Group title={t('settings.privacy.cloud.title')}>
+        <View style={{ gap: 6 }}>
+          <Text variant="caption" color="textSecondary" accessibilityRole="header" style={{ marginHorizontal: 4, fontSize: 13, lineHeight: 18, fontWeight: '600', letterSpacing: 0 }}>{t('settings.privacy.cloud.title')}</Text>
+          <Group>
           <SwitchRow testID="cloud-switch" title={t('settings.privacy.cloud.switch', { service })} description={t('settings.privacy.cloud.switchDesc')} value={prefs.cloudBackup} onChange={(v) => void toggleCloud(v)} disabled={pct !== undefined} last />
-        </Group>
+          </Group>
+        </View>
       ) : null}
-      {cloud && mode === 'create' && link ? <TextField testID="link-code" secure label={t('settings.privacy.cloud.linkCode')} helper={t('settings.privacy.cloud.linkHelp')} value={code} onChangeText={setCode} keyboardType="default" /> : null}
+      {cloud && mode === 'create' && link ? <TextField testID="link-code" label={t('settings.privacy.cloud.linkCode')} helper={t('settings.privacy.cloud.linkHelp')} value={code} onChangeText={setCode} /> : null}
       {cloud && mode === 'create' ? <Button testID="cloud-upload-now" kind="secondary" label={t('settings.privacy.cloud.uploadNow')} disabled={pct !== undefined || pass.length === 0} onPress={() => void uploadNow()} /> : null}
       {cloud && mode === 'restore' ? <Button testID="cloud-restore" kind="secondary" label={t('settings.privacy.cloud.restore', { service })} disabled={pct !== undefined || pass.length === 0} onPress={() => void restoreFromCloud()} /> : null}
       {cloud && lastUpload ? <Text testID="cloud-last" variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('settings.privacy.cloud.lastUpload', { when: new Date(lastUpload).toLocaleString() })}</Text> : null}

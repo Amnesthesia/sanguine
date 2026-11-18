@@ -7,6 +7,7 @@ import { Alert } from 'react-native';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
 import { DEFAULT_PREFS, type Prefs } from '@/data/prefs';
+import { project } from '@/data/project';
 
 const app = vi.hoisted(() => ({ state: {} as Record<string, unknown> }));
 const toast = vi.hoisted(() => vi.fn());
@@ -22,7 +23,7 @@ vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn(), back: vi.fn()
 vi.mock('@/ui/SubScreen', () => ({ SubScreen: ({ children, testID, below }: { children: ReactNode; testID: string; below?: ReactNode }) => <div data-testid={testID}>{below}{children}</div> }));
 vi.mock('@/ui/Toast', () => ({ showToast: toast }));
 vi.mock('@/ui/Segmented', () => ({ Segmented: ({ options, onChange }: { options: Array<{ value: string; label: string }>; onChange: (v: string) => void }) => <div>{options.map((o) => <button key={o.value} type="button" onClick={() => onChange(o.value)}>{o.label}</button>)}</div> }));
-vi.mock('react-native-svg', () => ({ default: ({ children }: { children?: ReactNode }) => <svg role="presentation"><title>icon</title>{children}</svg>, Path: () => null, Circle: () => null, Rect: () => null }));
+vi.mock('react-native-svg', () => ({ default: ({ children }: { children?: ReactNode }) => <svg role="presentation"><title>icon</title>{children}</svg>, Path: ({ d }: { d?: string }) => <path d={d} />, Circle: () => null, Rect: () => null }));
 vi.mock('@/services/health', () => ({ getHealthDriver: async () => svc.health.driver, healthPlatformName: () => 'Apple Health', requestHealthAccess: (...a: unknown[]) => svc.health.request(...a) }));
 vi.mock('@/data/consent', () => ({ getConsent: async () => (svc.consent.at ? { at: svc.consent.at } : null) }));
 vi.mock('@/services/exportImport', () => ({ shareExport: (...a: unknown[]) => svc.io.share(...a), pickAndImport: (...a: unknown[]) => svc.io.pick(...a) }));
@@ -143,6 +144,13 @@ describe('privacy and data', () => {
     expect(screen.getByText('Discreet app icon').parentElement?.parentElement?.querySelector('svg')).toBeTruthy();
     await waitFor(() => expect(screen.getByText('Given on 2026-09-05. To withdraw it, delete your data.')).toBeTruthy());
   });
+  it('draws the arrow out of the tray on Export and the arrow into the tray on Import', () => {
+    render(<PrivacyScreen />);
+    const d = (id: string) => screen.getByTestId(id).querySelector('path')?.getAttribute('d') ?? '';
+    // export: arrow up (tip at the top, 2.5) leaving an open tray; import: arrow down (tip at the bottom, 12.5) into a tray
+    expect(d('privacy-export')).toMatch(/^M10 12\.5V2\.5/);
+    expect(d('privacy-import')).toMatch(/^M10 2\.5V12\.5/);
+  });
   it('keeps "Export ready." and an export failure in a panel that stays', async () => {
     svc.io.share.mockResolvedValueOnce(undefined);
     render(<PrivacyScreen />);
@@ -214,6 +222,17 @@ describe('encrypted backup', () => {
     fireEvent.click(screen.getByText('Restore'));
     expect(screen.getByTestId('backup-restore')).toBeTruthy();
     expect(screen.getByTestId('restore-code')).toBeTruthy();
+  });
+  it('draws the fields white with a hairline, "Cloud copy" as a plain label and a shield on the primary', async () => {
+    svc.cloud.store = {};
+    render(<BackupScreen />);
+    const field = screen.getByTestId('backup-pass');
+    expect(field.style.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(field.style.borderTopLeftRadius).toBe('18px');
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Cloud copy' })).toBeTruthy());
+    expect(screen.getByRole('heading', { name: 'Cloud copy' }).style.textTransform).not.toBe('uppercase');
+    expect(screen.getByTestId('backup-create').querySelector('svg')).toBeTruthy();
+    svc.cloud.store = null;
   });
   it('explains a too-short passphrase in a caution panel', () => {
     render(<BackupScreen />);
@@ -320,8 +339,15 @@ describe('encrypted backup', () => {
 });
 
 describe('report for a doctor', () => {
-  const cycles = [{ start: '2026-09-05', length: 28 }, { start: '2026-10-03', length: 28 }];
-  const withHistory = (profile: Record<string, unknown> = adult) => setup({}, { history: { cycles, logs: [], temperatures: [] }, prediction: undefined, settings: { lifeStates: [] } }, profile);
+  // history and settings come from project() over events, as the app builds them; hand-made records carry a `length` the app never supplies (S7)
+  const fromStarts = (starts: string[]) => {
+    const { history, settings } = project(starts.map((day, i) => ({
+      id: `e${i}`, lamport: i + 1, device_id: 'd', recorded_at: 'x', effective_day: day, tz: 'UTC', kind: 'flow', payload: JSON.stringify({ day, level: 'medium', flow_kind: 'period' }),
+      provenance: 'manual' as const, source_app: null, external_id: null, retracts: null, schema_v: 1,
+    })));
+    return { history, prediction: undefined, settings };
+  };
+  const withHistory = (profile: Record<string, unknown> = adult) => setup({}, fromStarts(['2026-09-05', '2026-10-03', '2026-10-31']), profile);
   it('headlines "Also include", says how many cycles the PDF covers and what is always in it', () => {
     withHistory();
     render(<ReportScreen />);
@@ -331,7 +357,7 @@ describe('report for a doctor', () => {
     expect(screen.getByTestId('report-ovulation')).toBeTruthy();
   });
   it('says "1 cycle", not "1 cycles", when one cycle is covered', () => {
-    setup({}, { history: { cycles: [{ start: '2026-09-05', length: 28 }], logs: [], temperatures: [] }, prediction: undefined, settings: { lifeStates: [] } });
+    setup({}, fromStarts(['2026-09-05', '2026-10-03']));
     render(<ReportScreen />);
     expect(screen.getByTestId('report-covered').textContent).toBe('1 cycle from 5 Sep 2026 to 2 Oct 2026');
   });
@@ -350,7 +376,7 @@ describe('report for a doctor', () => {
     expect(screen.queryByTestId('report-ovulation')).toBeNull();
   });
   it('says there are no complete cycles when there are none, and keeps the share button', () => {
-    setup({}, { history: { cycles: [], logs: [], temperatures: [] }, settings: { lifeStates: [] } });
+    setup({}, fromStarts([]));
     render(<ReportScreen />);
     expect(screen.getByTestId('report-covered').textContent).toBe('No complete cycles are logged yet.');
     expect(screen.getByTestId('report-share')).toBeTruthy();

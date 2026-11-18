@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, type Ref, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
@@ -13,8 +13,9 @@ const FLOAT_GAP = 12;
 /** Scrollable screen on the theme's background with an optional large title (tab roots: the title is drawn once, large, with no bar).
  *  `chrome`: a floating glass toolbar (GlassBar) the content scrolls beneath; a pushed page puts its title in the bar, not in `title`.
  *  `floating`: the screen's one primary action, pinned above the tab bar within thumb reach (D-099); the content is padded by its
- *  measured height, so nothing (the §2.3 footer included) ever sits under it, at any font scale. */
-export function Screen({ title, children, testID, bottomInset = 96, header, noTopInset, floating, chrome }: { title?: string; children: ReactNode; testID?: string; bottomInset?: number; header?: ReactNode; noTopInset?: boolean; floating?: ReactNode; chrome?: ReactNode }) {
+ *  measured height, so nothing (the §2.3 footer included) ever sits under it, at any font scale.
+ *  `scrollRef`: the scroll view, for the dev-only `?scroll=` link (features/dev/devParams.ts). */
+export function Screen({ title, children, testID, bottomInset = 96, header, noTopInset, floating, chrome, scrollRef }: { title?: string; children: ReactNode; testID?: string; bottomInset?: number; header?: ReactNode; noTopInset?: boolean; floating?: ReactNode; chrome?: ReactNode; scrollRef?: Ref<ScrollView> }) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const [floatH, setFloatH] = useState(0);
@@ -31,6 +32,7 @@ export function Screen({ title, children, testID, bottomInset = 96, header, noTo
   return (
     <View style={[styles.fill, { backgroundColor: t.screenBg }]} testID={testID}>
       <ScrollView
+        ref={scrollRef}
         contentInsetAdjustmentBehavior={toolbar ? 'never' : 'automatic'}
         // iOS: contentInsetAdjustmentBehavior already adds the top safe area, so padding it again stacked the inset twice (U-1, D-076)
         contentContainerStyle={{ paddingTop: (toolbar ? chromeBottom : noTopInset || t.isIOS ? 0 : insets.top) + 8, paddingBottom: bottomInset + insets.bottom + (floating ? floatH : 0), paddingHorizontal: GUTTER, gap: 20 }}>

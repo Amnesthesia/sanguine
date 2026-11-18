@@ -3,11 +3,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { FERTILE_WINDOW_DAYS, LUTEAL_PRIOR, POPULATION_MEAN } from '@sanguine/engine';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import '@/i18n';
+import i18n from '@/i18n';
 import en from '../../../../../../copy/en-AU.json';
 import { GUIDANCE, type GuidePhase } from '../guidance';
-import { EstimateSections } from './EstimateSections';
-import { GuidanceSections, splitSources } from './GuidanceSections';
+import { DayEstimateRows, EstimateSections, estimateRow, estimateSources } from './EstimateSections';
+import { BodyCard, GuidanceSections, splitSources } from './GuidanceSections';
 
 // the drawing is rendered, not swallowed: shapes become <i data-svg-shape>, SVG text becomes <span data-svg-text>
 vi.mock('react-native-svg', () => {
@@ -38,6 +38,9 @@ const periodDays = new Set(['2026-10-31', '2026-11-01', '2026-11-02']);
 const solid = (label: string, dash?: string) =>
   [...(document.querySelector(`[aria-label^="${label}"]`)?.querySelectorAll('[data-svg-shape]') ?? [])].filter((n) => (dash === undefined || n.getAttribute('data-dash') === dash) && n.getAttribute('data-fill') && n.getAttribute('data-fill') !== 'none');
 
+const props = (over: Partial<Parameters<typeof EstimateSections>[0]> = {}): Parameters<typeof EstimateSections>[0] =>
+  ({ prediction, day: '2026-11-02', pastOv, cycleStarts, periodDays, showEstimate: true, includeUncertain: false, periodLengths: [5, 4], ...over });
+
 describe('EstimateSections', () => {
   const render0 = (over: Partial<Parameters<typeof EstimateSections>[0]> = {}) =>
     render(<EstimateSections prediction={prediction} day="2026-11-02" pastOv={pastOv} cycleStarts={cycleStarts} periodDays={periodDays} showEstimate includeUncertain={false} periodLengths={[5, 4]} {...over} />);
@@ -65,14 +68,14 @@ describe('EstimateSections', () => {
   });
   it('ovulation card warns when the basis is the calendar only, with the fixed wording', () => {
     render0();
-    expect(text()).toContain('Calendar only: no LH tests or temperatures this cycle');
+    expect(text()).toContain('Worked out from your period dates only: no ovulation tests or temperatures this cycle');
     expect(text()).toContain('Ovulation most likely 10–18 Nov, around 14 Nov.');
     expect(text()).toContain('Do not use it to prevent pregnancy.');
-    expect(screen.getAllByText(/Medium confidence/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Fair estimate/).length).toBeGreaterThan(0);
   });
   it('drops the calendar warning when a test or temperature is the basis', () => {
     render0({ prediction: { ...prediction, ovulation: { ...(prediction.ovulation as NonNullable<Prediction['ovulation']>), basis: 'lh' } } });
-    expect(text()).not.toContain('Calendar only');
+    expect(text()).not.toContain('Worked out from your period dates only');
     expect(text()).toContain('Based on your ovulation test.');
   });
   it('shows a past cycle with the estimate worked out after it ended', () => {
@@ -92,7 +95,7 @@ describe('EstimateSections', () => {
     expect(text()).not.toMatch(/ovulation|fertile/i);
     expect([...document.querySelectorAll('[data-svg-text]')].map((n) => n.textContent).join(' ')).not.toMatch(/ovulation|fertile/i);
     expect(screen.queryByTestId('estimate-ovulation')).toBeNull();
-    expect(text()).not.toContain('3. Wilcox');
+    expect(estimateSources(props({ showEstimate: false, includeUncertain: true, prediction: wide }), i18n.t).join(' ')).not.toContain('Wilcox');
   });
   it('a wide ovulation range with the setting off is words only: no strip, no fertile wording, no point date', () => {
     render0({ prediction: wide });
@@ -104,7 +107,7 @@ describe('EstimateSections', () => {
     expect(text()).not.toContain('around 14 Nov');
     expect(screen.queryByTestId('estimate-legal')).toBeNull();
     expect(text()).toContain('Not a contraceptive.');
-    expect(text()).not.toContain('3. Wilcox');
+    expect(estimateSources(props({ prediction: wide }), i18n.t).join(' ')).not.toContain('Wilcox');
   });
   it('the same wide range with the setting on draws the strip and the fertile wording', () => {
     render0({ prediction: wide, includeUncertain: true });
@@ -112,13 +115,13 @@ describe('EstimateSections', () => {
     expect(document.querySelector('[aria-label*="fertile window estimate"]')).not.toBeNull();
     expect(text()).toMatch(/fertile window/i);
     expect(screen.getByTestId('estimate-legal').textContent).toContain('around 14 Nov');
-    expect(text()).toContain('3. Wilcox');
+    expect(estimateSources(props({ prediction: wide, includeUncertain: true }), i18n.t)[2]).toMatch(/^Wilcox/);
   });
   it('a wide past ovulation range is hidden unless uncertain estimates are on, then it is worded uncertain', () => {
     const widePast: PastOvulation[] = [{ ...(pastOv[0] as PastOvulation), i80: { lo: '2026-10-12', hi: '2026-10-26' } }];
     const { unmount } = render0({ day: '2026-10-20', pastOv: widePast });
     expect(screen.queryByTestId('estimate-ovulation')).toBeNull();
-    expect(text()).not.toContain('Wilcox');
+    expect(estimateSources(props({ day: '2026-10-20', pastOv: widePast }), i18n.t).join(' ')).not.toContain('Wilcox');
     unmount();
     render0({ day: '2026-10-20', pastOv: widePast, includeUncertain: true });
     expect(text()).toContain('Ovulation estimate uncertain: could have fallen 12–26 Oct · worked out from your cycle lengths');
@@ -159,17 +162,30 @@ describe('EstimateSections', () => {
     expect(how.nextPeriod).toContain(String(POPULATION_MEAN));
     expect(how.fertile).toContain(`${FERTILE_WINDOW_DAYS + 1} days`);
   });
-  it('cites its sources as a numbered list', () => {
+  it('lists the sources its cards cite, in their superscript order; none while nothing shows', () => {
+    expect(estimateSources(props(), i18n.t).map((s) => s.split(' ')[0])).toEqual(['Munro', 'Bull', 'Wilcox']);
+    expect(estimateSources(props({ prediction: { ...prediction, suspended: { reason: 'pregnant' } } as Prediction }), i18n.t)).toEqual([]);
     render0();
-    expect(text()).toContain('1. Munro and others 2018');
-    expect(text()).toContain('2. Bull and others 2019');
-    expect(text()).toContain('3. Wilcox and others 1995');
+    expect(text()).not.toContain('1. Munro'); // the page (Insights > This cycle) lists them once, after food and movement
   });
   it('renders nothing while estimates are paused', () => {
     const { container } = render0({ prediction: { ...prediction, suspended: { reason: 'pregnant' } } });
     expect(container.textContent).toBe('');
   });
+  it('a one-day range says the day once', () => {
+    const one = { ...prediction, currentBleed: { point: '2026-11-04', i80: { lo: '2026-11-04', hi: '2026-11-04' }, confidence: 'low' } } as Prediction;
+    render0({ prediction: one });
+    expect(text()).toContain('Most likely ends 4 Nov.');
+    expect(text()).not.toContain('4 Nov, around 4 Nov');
+  });
+  it('the period-end strip names the weekdays, today as Today', () => {
+    render0();
+    const strip = [...(document.querySelector('[aria-label^="Most likely ends"]')?.querySelectorAll('[data-svg-text]') ?? [])].map((n) => n.textContent);
+    expect(strip).toEqual(expect.arrayContaining(['Sat', 'Sun', 'Today', 'Tue']));
+  });
 });
+
+const drawn = () => [...document.querySelectorAll('[data-svg-text]')].map((n) => n.textContent).join(' ');
 
 describe('GuidanceSections', () => {
   const day = { phase: 'premenstrual', expected: false } as const;
@@ -196,7 +212,8 @@ describe('GuidanceSections', () => {
     for (const f of GUIDANCE.menstrual.foods) expect(screen.getByTestId(`guidance-food-${f.id}`)).toBeTruthy();
     expect(screen.getByTestId('guidance-move-note')).toBeTruthy();
     expect(screen.getByTestId('guidance-phase-menstrual').textContent).toBe('Period · expected');
-    expect(screen.getByTestId('guidance-sources').textContent).toContain('1. NHMRC Nutrient Reference Values: iron.');
+    expect(screen.queryByTestId('guidance-sources')).toBeNull(); // listed once by Insights > This cycle
+    expect(splitSources(en.guidance.menstrual.sources)[0]).toBe('NHMRC Nutrient Reference Values: iron.');
   });
   it('compact mode is two tiles and a Read more button', () => {
     const more = vi.fn();
@@ -207,7 +224,20 @@ describe('GuidanceSections', () => {
     expect(more).toHaveBeenCalledOnce();
     expect(screen.getByText('Read more')).toBeTruthy();
   });
-  const drawn = () => [...document.querySelectorAll('[data-svg-text]')].map((n) => n.textContent).join(' ');
+  it('compact without onMore has no Read more (the day screen places its own link)', () => {
+    render(<GuidanceSections day={day} supplements compact />);
+    expect(screen.getAllByTestId('guidance-tile')).toHaveLength(2);
+    expect(screen.queryByTestId('guidance-more')).toBeNull();
+  });
+  it('the compact body card has the short curve, the phase and one sentence', () => {
+    render(<BodyCard day={{ phase: 'menstrual', expected: false }} compact />);
+    expect(screen.getByTestId('hormone-curve-compact')).toBeTruthy();
+    expect(screen.getByText('Period · estimate')).toBeTruthy();
+    expect(text()).toContain('Estrogen and progesterone are at their lowest, and bleeding carries iron out of the body.');
+    expect(text()).not.toContain('397 substances');
+    expect(text()).toContain('A typical cycle, drawn to explain. Not your own hormone levels.');
+    expect(drawn()).not.toContain('period'); // the compact drawing has no period label
+  });
   it.each(['menstrual', 'follicular', 'luteal', 'premenstrual', 'general'] as GuidePhase[])('the %s picture never mentions ovulation', (phase) => {
     render(<GuidanceSections day={{ phase, expected: false }} supplements compact={false} />);
     expect(document.querySelector('[aria-label*="ovulat" i]')).toBeNull();
@@ -227,5 +257,46 @@ describe('GuidanceSections', () => {
     expect(items).toHaveLength(n);
     for (const item of items) expect(item).toMatch(/^[A-Z0-9].*\.$/);
     expect(items.join(' ')).toBe(en.guidance[phase].sources);
+  });
+});
+
+describe('DayEstimateRows', () => {
+  const lines = ['Period likely to end 3–5 Nov · rough estimate', 'Period likely to start 26–30 Nov · fair estimate', 'Ovulation estimate 10–18 Nov · fair estimate', 'Fertile window: moderate likelihood', 'Period possible: the wider range is 24 Nov – 2 Dec · confident'];
+  it('reads each line back into its mark, words and confidence', () => {
+    expect(lines.map((l) => estimateRow(l, i18n.t))).toEqual([
+      { kind: 'period', text: 'Period likely to end 3–5 Nov', confidence: 'low' },
+      { kind: 'period', text: 'Period likely to start 26–30 Nov', confidence: 'medium' },
+      { kind: 'ovulation', text: 'Ovulation estimate 10–18 Nov', confidence: 'medium' },
+      { kind: 'fertile', text: 'Fertile window: moderate likelihood' },
+      { kind: 'period95', text: 'Period possible: the wider range is 24 Nov – 2 Dec', confidence: 'high' },
+    ]);
+    expect(estimateRow('Ovulation estimate 16–22 Oct · worked out from your cycle lengths', i18n.t)).toEqual({ kind: 'ovulation', text: 'Ovulation estimate 16–22 Oct · worked out from your cycle lengths' });
+  });
+  it('one row per line with its ESTIMATE tag and the meter word in the How vocabulary', () => {
+    render(<DayEstimateRows lines={lines.slice(0, 2)} future={false} />);
+    expect(screen.getByText('Estimates for this day')).toBeTruthy();
+    expect(screen.getAllByTestId('day-estimate-row')).toHaveLength(2);
+    expect(screen.getAllByText('ESTIMATE')).toHaveLength(2);
+    expect(screen.getByLabelText('Rough estimate')).toBeTruthy();
+    expect(screen.getByLabelText('Fair estimate')).toBeTruthy();
+    expect(text()).not.toContain('· rough estimate');
+  });
+  it('nothing for a past day without estimates; a future day says none covers it', () => {
+    const { container } = render(<DayEstimateRows lines={[]} future={false} />);
+    expect(container.textContent).toBe('');
+    cleanup();
+    render(<DayEstimateRows lines={[]} future />);
+    expect(screen.getByTestId('day-no-estimate').textContent).toBe('No estimate covers this day.');
+  });
+  it('a future day inside the wider range gets the range bar marked this day, with the two shades in words', () => {
+    const next = prediction.nextPeriod as NonNullable<Prediction['nextPeriod']>;
+    render(<DayEstimateRows lines={[lines[4] as string]} future bar={{ next, day: '2026-11-24' }} note />);
+    expect(screen.getByLabelText(/This day, 24 Nov, is marked on the bar\.$/)).toBeTruthy();
+    expect(drawn()).toContain('this day');
+    expect(text()).toContain('About 19 in 20 within the whole bar');
+    expect(text()).toContain('Estimates are ranges worked out from your own logs, not promises.');
+    cleanup();
+    render(<DayEstimateRows lines={[lines[4] as string]} future bar={{ next, day: '2026-12-05' }} />);
+    expect(drawn()).not.toContain('this day');
   });
 });

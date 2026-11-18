@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, Pressable, ScrollView, View, type ViewProps } from 'react-native';
+import { Pressable, View, type ViewProps } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, G, RadialGradient, Stop } from 'react-native-svg';
 import type { Confidence, FlagCode } from '@sanguine/engine';
 import { useTheme } from '@/theme';
@@ -129,22 +129,6 @@ export function PausedRing() {
     <View testID="paused-ring" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ alignSelf: 'center' }}>
       <Svg width={220} height={220}><Circle cx={110} cy={110} r={97} stroke={t.c.border} strokeWidth={18} strokeDasharray="4 8" fill="none" /></Svg>
     </View>
-  );
-}
-
-/** The full food and movement sections in a native page sheet (iOS) or full-screen modal, opened by Read more on Today. */
-export function SectionsSheet({ visible, onClose, children }: { visible: boolean; onClose: () => void; children: ReactNode }) {
-  const t = useTheme();
-  const { t: tr } = useTranslation();
-  return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <ScrollView testID="guidance-sheet" style={{ flex: 1, backgroundColor: t.screenBg }} contentContainerStyle={{ padding: GUTTER, paddingBottom: 48, gap: 16 }}>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Button testID="guidance-sheet-close" kind="secondary" label={tr('common.close')} accessibilityLabel={tr('today.closeSheet')} onPress={onClose} />
-        </View>
-        {children}
-      </ScrollView>
-    </Modal>
   );
 }
 

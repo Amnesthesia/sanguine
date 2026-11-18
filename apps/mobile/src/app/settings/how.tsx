@@ -12,6 +12,7 @@ import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { Meter } from '@/ui/Meter';
+import { Cite } from '@/ui/Sources';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
 
@@ -53,7 +54,7 @@ function Section({ n, title, children }: { n: number; title: string; children: R
         <View {...HIDDEN} style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: t.c.accentSoft, alignItems: 'center', justifyContent: 'center' }}>
           <Text variant="bodySmall" color="onAccentSoft" style={{ fontWeight: '700' }}>{n}</Text>
         </View>
-        <Text variant="title" accessibilityRole="header" style={{ flex: 1 }}>{title}</Text>
+        <Text variant="heading" accessibilityRole="header" style={{ flex: 1, fontSize: 17, lineHeight: 22 }}>{title}</Text>
       </View>
       {children}
     </Card>
@@ -188,6 +189,15 @@ function NotChangeDrawing() {
   );
 }
 
+/** A paragraph with the number of the source it rests on: after `anchor` where the sentence names it, else at the end. The number is the source's place in the list below. */
+function CitedBody({ text, anchor, n }: { text: string; anchor?: string; n: number }) {
+  const at = anchor ? text.indexOf(anchor) : -1;
+  if (n < 1) return <Text variant="bodySmall">{text}</Text>;
+  if (at < 0) return <Text variant="bodySmall">{text}<Cite n={n} /></Text>;
+  const cut = at + (anchor?.length ?? 0);
+  return <Text variant="bodySmall">{text.slice(0, cut)}<Cite n={n} />{text.slice(cut)}</Text>;
+}
+
 const LEVELS = [{ key: 'high', level: 3, bar: 30 }, { key: 'medium', level: 2, bar: 48 }, { key: 'low', level: 1, bar: 80 }, { key: 'none', level: 0, bar: 0 }] as const;
 
 export default function HowScreen() {
@@ -198,11 +208,12 @@ export default function HowScreen() {
   const signals: string[] = fertilityTools ? ['period', 'temperature', 'ovulationTest', 'mucus', 'position'] : ['period'];
   // the sources this page cites are flagged in copy/about.en-AU.json; the one about ovulation tests only when the fertility tools show
   const sources = about.sources.filter((s) => ('how' in s && s.how === 'always') || ('how' in s && s.how === 'fertility' && fertilityTools));
+  const numberOf = (cite: string) => sources.findIndex((x) => x.cite.startsWith(cite)) + 1;
   return (
     <SubScreen testID="screen-how" title={t('settings.how.title')}>
       <Section n={1} title={t('settings.how.rangeTitle')}>
         <BlendBar />
-        <Text variant="bodySmall">{t('settings.how.rangeBody')}</Text>
+        <CitedBody text={t('settings.how.rangeBody')} anchor="(Bull et al. 2019)" n={numberOf('Bull et al. 2019')} />
         <RangeBar />
       </Section>
       <Section n={2} title={t('settings.how.confidenceTitle')}>
@@ -221,7 +232,7 @@ export default function HowScreen() {
       </Section>
       <Section n={3} title={t('settings.how.narrowTitle')}>
         <NarrowDrawing signals={signals} label={t(fertilityTools ? 'settings.how.draw.narrowLabel' : 'settings.how.draw.narrowLabelTeen')} />
-        <Text variant="bodySmall">{t(fertilityTools ? 'settings.how.narrowBody' : 'settings.how.narrowBodyTeen')}</Text>
+        {fertilityTools ? <CitedBody text={t('settings.how.narrowBody')} n={numberOf('Ecochard et al. 2001')} /> : <Text variant="bodySmall">{t('settings.how.narrowBodyTeen')}</Text>}
       </Section>
       <Section n={4} title={t('settings.how.symptomsTitle')}>
         <NotChangeDrawing />
@@ -232,7 +243,7 @@ export default function HowScreen() {
         <Text variant="bodySmall">{t('settings.how.accuracyBody')}</Text>
       </Section>
       <Card style={{ gap: 8 }}>
-        <Text variant="title" accessibilityRole="header">{t('settings.about.sources')}</Text>
+        <Text variant="heading" accessibilityRole="header" style={{ fontSize: 17, lineHeight: 22 }}>{t('settings.about.sources')}</Text>
         {sources.map((s, i) => (
           <View key={s.cite} style={{ flexDirection: 'row', gap: 8 }}>
             <Text variant="bodySmall" color="textSecondary" {...HIDDEN}>{i + 1}.</Text>

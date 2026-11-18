@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pregnancyModel } from './pregnancyModel';
+import { dueRangeText, pregnancyModel } from './pregnancyModel';
 
 describe('pregnancyModel (P8-5)', () => {
   it('counts from the last period start before the pregnancy, due range 37 to 42 weeks', () => {
@@ -20,4 +20,10 @@ describe('pregnancyModel (P8-5)', () => {
     expect(pregnancyModel({ since: '2025-01-01', cycleStarts: ['2024-12-01'], today: '2026-10-10' })).toBeUndefined();
     expect(pregnancyModel({ since: '2026-09-01', cycleStarts: [], dueDate: '2027-09-01', today: '2026-10-10' })).toBeUndefined();
   });
+});
+
+describe('dueRangeText (the due date range carries the year when it is not this year)', () => {
+  it('this year: no year', () => expect(dueRangeText({ lo: '2026-12-02', hi: '2026-12-20' }, '2026-11-02')).toBe('2–20 Dec'));
+  it('next year: the year once, after the range', () => expect(dueRangeText({ lo: '2027-05-31', hi: '2027-07-05' }, '2026-11-02')).toBe('31 May – 5 Jul 2027'));
+  it('across new year: a year on each end', () => expect(dueRangeText({ lo: '2026-12-20', hi: '2027-01-14' }, '2026-11-02')).toBe('20 Dec 2026 – 14 Jan 2027'));
 });

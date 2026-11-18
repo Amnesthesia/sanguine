@@ -20,7 +20,7 @@ export function OptionList<T extends string>({ options, value, onChange, testIDP
             accessibilityLabel={o.label}
             aria-checked={on}
             onPress={() => onChange(o.value)}
-            style={{ minHeight: 52, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: t.hairline }}>
+            style={{ minHeight: 52, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 12, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: t.hairline, backgroundColor: on ? t.c.accentSoft : undefined }}>
             <View style={{ flex: 1 }}>
               <Text variant="body" style={{ fontSize: 17, lineHeight: 22, fontWeight: on ? '600' : '400' }}>{o.label}</Text>
               {o.hint ? <Text variant="bodySmall" color="textSecondary">{o.hint}</Text> : null}

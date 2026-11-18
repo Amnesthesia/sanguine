@@ -55,6 +55,16 @@ describe('OptionList', () => {
   });
 });
 
+describe('OptionList selected row', () => {
+  it('is filled accentSoft; the other rows are not', () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('radio', { name: 'Beta' }));
+    const [r, g, b] = hexToRgb(buildTheme('light', 'ios').c.accentSoft);
+    expect(screen.getByRole('radio', { name: 'Beta' }).style.backgroundColor).toBe(`rgb(${r}, ${g}, ${b})`);
+    expect(screen.getByRole('radio', { name: 'Alpha' }).style.backgroundColor).not.toBe(`rgb(${r}, ${g}, ${b})`);
+  });
+});
+
 describe('Chips', () => {
   it('selects one at a time', () => {
     function C() {

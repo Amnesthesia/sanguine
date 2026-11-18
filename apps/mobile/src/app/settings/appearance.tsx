@@ -52,19 +52,19 @@ function ThemePicker({ value, onChange }: { value: ThemePref; onChange: (v: Them
   );
 }
 
-/** Three days as the calendar draws them with the cycle-day number above each date: two logged period days and one predicted. */
+/** Three days as the calendar draws them with the cycle-day number above each date: two logged period days (the second is today, with the calendar's two-point ring) and one predicted. */
 function CycleDayPreview() {
   const { t: tr } = useTranslation();
   const t = useTheme();
   const onPeriod = t.scheme === 'dark' ? t.c.bg : t.c.surface;
-  const days = [{ d: 1, n: 2, logged: true }, { d: 2, n: 3, logged: true }, { d: 3, n: 4, logged: false }];
+  const days = [{ d: 1, n: 2, logged: true, today: false }, { d: 2, n: 3, logged: true, today: true }, { d: 3, n: 4, logged: false, today: false }];
   return (
     <View accessible accessibilityRole="image" accessibilityLabel={tr('settings.appearance.cycleDayPreview')} style={{ margin: 16, marginTop: 0, borderRadius: 16, backgroundColor: t.c.bg, paddingVertical: 10, paddingHorizontal: 12, flexDirection: 'row', justifyContent: 'space-around' }}>
       {days.map((x) => (
         <View key={x.d} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ alignItems: 'center', gap: 2 }}>
           <Text variant="caption" color="textSecondary" style={{ fontSize: 10, lineHeight: 13, fontWeight: x.logged ? '600' : '400' }}>{x.n}</Text>
-          <View style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: x.logged ? t.c.period : 'transparent', borderWidth: x.logged ? 0 : 1.5, borderStyle: 'dashed', borderColor: t.c.period }}>
-            <Text style={{ color: x.logged ? onPeriod : t.c.textPrimary }}>{x.d}</Text>
+          <View testID={`preview-day-${x.d}`} style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: x.logged ? t.c.period : 'transparent', borderWidth: x.logged ? 0 : 1.5, borderStyle: 'dashed', borderColor: t.c.period, ...(x.today ? { boxShadow: `0 0 0 2px ${t.c.bg}, 0 0 0 4px ${t.c.accent}` } : null) }}>
+            <Text style={{ color: x.logged ? onPeriod : t.c.textPrimary, fontWeight: x.today ? '700' : '400' }}>{x.d}</Text>
           </View>
         </View>
       ))}

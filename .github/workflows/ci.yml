@@ -5,6 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: { fetch-depth: 2 }   # the screenshot check reads the last commit
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with: { node-version-file: .tool-versions, cache: pnpm }
@@ -12,3 +13,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test   # includes the Expo Go allow-list and the analytics deny-list
+      # a commit that names a backlog id and changes a screen carries its frame-versus-build screenshots (tools/verify-screens; P8-24)
+      - run: bash tools/verify-screens/check-screenshots.sh
+        if: github.event_name == 'push'

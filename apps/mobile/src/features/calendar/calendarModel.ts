@@ -32,6 +32,8 @@ export interface DayCell {
 }
 export interface MonthModel {
   month: string; title: string; cells: DayCell[];
+  /** The month alone ("November"), for the month list's heading (calendar spec part 4). */
+  monthName: string;
   /** The current ovulation estimate is too wide to be confident (D-098), whether or not it is drawn. */
   ovulationUncertain: boolean;
   /** Uncertain and not drawn: the legend should not name ovulation or the fertile window. */
@@ -64,10 +66,15 @@ export function cycleDayOf(starts: readonly ISODate[], date: ISODate): number | 
   return n <= 90 ? n : undefined;
 }
 
-/** Every day of the shown month with a cycle day carries it as a small number above the date (D-101, P8-20); days outside the month do not. */
+/** Every day of the shown month with a cycle day carries it as a small number above the date (D-101, P8-20); days outside the month do not.
+ *  While estimates are paused (pregnancy, suspended) no day has one: buildMonth leaves `cycleDay` unset (fix plan C5). */
 export const showCycleDay = (c: DayCell): boolean => c.inMonth && c.cycleDay !== undefined;
+/** The starts the cycle day counts from: none while estimates are paused, so "Day 50 of your cycle" never shows during a pregnancy. */
+export const countedStarts = (i: { prediction?: Prediction | undefined; cycleStarts?: readonly ISODate[] | undefined }): readonly ISODate[] => (i.prediction?.suspended ? [] : (i.cycleStarts ?? []));
 
 const t = (k: string, p?: Record<string, string>) => i18n.t(k, p);
+// ponytail: a month-only formatter belongs in ui/format.ts (UI kit lane); every English variant writes the month the same
+const MONTH_NAME = new Intl.DateTimeFormat('en', { month: 'long', timeZone: 'UTC' });
 const between = (d: ISODate, lo: ISODate, hi: ISODate) => d >= lo && d <= hi;
 const wide = (r: PastOvulation) => diffDays(r.i80.hi, r.i80.lo) > 2 * UNCERTAIN_ARM_DAYS;
 
@@ -141,10 +148,26 @@ export function dayEstimates(date: ISODate, i: EstimateInput & { period: boolean
   return out;
 }
 
+/** The open cycle's two headline estimates for a day of that cycle up to today (the frames list them on every such day, logged or not):
+ *  when the period in progress ends and when the next one is likely. Empty for any other day and while paused. */
+export function cycleHeadlines(date: ISODate, i: EstimateInput & { today: ISODate }): string[] {
+  const p = i.prediction && !i.prediction.suspended ? i.prediction : undefined;
+  if (!p?.currentPhase || !i.today) return [];
+  const openStart = addDays(i.today, -(p.currentPhase.dayOfCycle - 1));
+  if (date < openStart || date > i.today) return [];
+  const out: string[] = [];
+  const cb = p.currentBleed && i.today <= p.currentBleed.i80.hi ? p.currentBleed : undefined;
+  if (cb) out.push(graded(t('day.estimates.periodEnd', { range: formatRange(cb.i80.lo, cb.i80.hi) }), cb.confidence));
+  const next = p.nextPeriod;
+  if (next) out.push(graded(t('day.estimates.period', { range: formatRange(next.i80.lo, next.i80.hi) }), next.confidence));
+  return out;
+}
+
 export function buildMonth(i: EstimateInput & { month: string; today: ISODate; periodDays: Set<ISODate>; loggedDays: Set<ISODate>; symptomDays: Set<ISODate>; weekStart?: WeekStart; moon?: Map<ISODate, MoonPhase>; cycleStarts?: readonly ISODate[] }): MonthModel {
   const first = `${i.month}-01`;
   const gridStart = addDays(first, -((isoWeekday(first) - 1 + (i.weekStart === 'sun' ? 1 : 0)) % 7));
   const { uncertain, on } = estimateMarks(i, i.today);
+  const starts = countedStarts(i);
 
   const cells: DayCell[] = Array.from({ length: 42 }, (_, k) => {
     const date = addDays(gridStart, k);
@@ -152,7 +175,7 @@ export function buildMonth(i: EstimateInput & { month: string; today: ISODate; p
     const { periodEstimate, bleed, fertile: f, ovulation: ovMark } = on(date, period);
     const logged = i.loggedDays.has(date);
     const symptoms = i.symptomDays.has(date);
-    const cycleDay = cycleDayOf(i.cycleStarts ?? [], date);
+    const cycleDay = cycleDayOf(starts, date);
     const parts = [formatLong(date)];
     if (cycleDay) parts.push(t('calendar.a11y.cycleDay', { day: String(cycleDay) }));
     if (date === i.today) parts.push(t('calendar.a11y.today'));
@@ -171,7 +194,7 @@ export function buildMonth(i: EstimateInput & { month: string; today: ISODate; p
       fertile: f, ovulation: ovMark, logged, symptoms, moon, label: parts.join(', '),
     };
   });
-  return { month: i.month, title: formatMonthYear(first), cells, ovulationUncertain: uncertain, ovulationHidden: uncertain && !i.includeUncertain };
+  return { month: i.month, title: formatMonthYear(first), monthName: MONTH_NAME.format(new Date(`${first}T00:00:00Z`)), cells, ovulationUncertain: uncertain, ovulationHidden: uncertain && !i.includeUncertain };
 }
 
 // ---- month list ----
@@ -212,8 +235,9 @@ export function monthRows(i: EstimateInput & { month: string; today: ISODate; pe
   const confidence = (c: string | undefined) => (c && c !== 'none' ? t(`calendar.list.confidence.${c}`) : '');
 
   const days = new Set<ISODate>([...i.periodDays, ...i.loggedText.keys()]);
+  const starts = countedStarts(i);
   for (const d of [...days].filter(inMonth).sort()) {
-    const cd = cycleDayOf(i.cycleStarts ?? [], d);
+    const cd = cycleDayOf(starts, d);
     const period = i.periodDays.has(d) ? [cd ? t('calendar.list.periodDay', { day: String(cd) }) : t('calendar.list.period')] : [];
     const text = [...period, ...(i.loggedText.get(d) ?? [])].join(' · ');
     if (text) add('logged', d, d, text, false);
@@ -249,6 +273,26 @@ export function monthRows(i: EstimateInput & { month: string; today: ISODate; pe
 }
 const shiftToFirst = (m: string, delta: number): ISODate => `${shiftMonth(m, delta)}-01` as ISODate;
 
-export type LegendKind = 'cycleDay' | 'period' | 'predicted' | 'fertile' | 'ovulation' | 'symptoms' | 'other' | 'moon';
+export type LegendKind = 'cycleDay' | 'period' | 'predicted' | 'predicted95' | 'fertile' | 'ovulation' | 'symptoms' | 'other' | 'moon';
 /** The legend names the fertile window and ovulation only while those estimates are shown (PLAN.md §8.6: hidden under 18 by default). */
 export const calendarLegend = (showEstimate: boolean): LegendKind[] => (showEstimate ? ['cycleDay', 'period', 'predicted', 'fertile', 'ovulation', 'symptoms', 'other'] : ['cycleDay', 'period', 'predicted', 'symptoms', 'other']);
+
+const LEGEND_DRAWN: Record<LegendKind, (c: DayCell) => boolean> = {
+  cycleDay: showCycleDay,
+  period: (c) => c.period,
+  predicted: (c) => c.periodEstimate === 'core',
+  predicted95: (c) => c.periodEstimate === 'edge',
+  fertile: (c) => c.fertile !== undefined,
+  ovulation: (c) => c.ovulation !== undefined,
+  symptoms: (c) => c.symptoms,
+  other: (c) => c.logged && !c.symptoms,
+  moon: (c) => c.inMonth && c.moon !== undefined,
+};
+/** The frame's legend order (Calendar-1-Closed, Calendar-Past-Bands): the circles and the band, then the small marks. */
+const LEGEND_ORDER: LegendKind[] = ['period', 'predicted', 'predicted95', 'fertile', 'ovulation', 'cycleDay', 'symptoms', 'other', 'moon'];
+/** The legend of the shown grid: only the marks it draws (D-118; fix plan C3, C5), inside the estimate gate (calendarLegend). The wider 95% range
+ *  has its own entry whenever a day of it is drawn; a paused month (no estimates, no cycle days) names only what she logged. */
+export function legendKinds(cells: readonly DayCell[], o: { showEstimate: boolean; cycleDays: boolean }): LegendKind[] {
+  const allowed = new Set<LegendKind>([...calendarLegend(o.showEstimate), 'predicted95', 'moon']);
+  return LEGEND_ORDER.filter((k) => allowed.has(k) && (k !== 'cycleDay' || o.cycleDays) && cells.some(LEGEND_DRAWN[k]));
+}

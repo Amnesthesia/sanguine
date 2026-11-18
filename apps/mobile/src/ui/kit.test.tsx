@@ -46,6 +46,24 @@ describe('content kit', () => {
     expect(screen.getAllByRole('button').filter(b => b.style.backgroundColor === 'rgb(188, 69, 96)')).toEqual([screen.getByRole('button', { name: 'primary' })]);
     expect(screen.getByRole('button', { name: 'primary' }).textContent).toContain('+');
   });
+  it.each(['light', 'dark'] as const)('primary button in %s: the accentFill background with onAccent ink, 4.5:1', (scheme) => {
+    const { c } = buildTheme(scheme, 'ios');
+    (Appearance as unknown as { setColorScheme: () => void }).setColorScheme = () => {};
+    render(<ThemeProvider pref={scheme}><Button label="Go" /></ThemeProvider>);
+    const button = screen.getByRole('button', { name: 'Go' });
+    const [r, g, b] = hexToRgb(c.accentFill);
+    expect(button.style.backgroundColor).toBe(`rgb(${r}, ${g}, ${b})`);
+    const [ir, ig, ib] = hexToRgb(c.onAccent);
+    expect(getComputedStyle(screen.getByText('Go')).color).toBe(`rgb(${ir}, ${ig}, ${ib})`);
+    expect(contrast(c.onAccent, c.accentFill)).toBeGreaterThanOrEqual(4.5);
+  });
+  it('a long logged chip stays inside its row: the chip is capped at the row width and the label shrinks and wraps', () => {
+    render(<LoggedChip label="Temperature 36.42 °C · 06:40 · Oral" mark="other" onRemove={() => {}} />);
+    const label = screen.getByText('Temperature 36.42 °C · 06:40 · Oral');
+    expect(label.style.flexShrink).toBe('1');
+    expect((label.parentElement as HTMLElement).style.maxWidth).toBe('100%');
+    expect(screen.getByRole('button', { name: /^Remove/ })).toBeTruthy();
+  });
   it('draws a card with the soft shadow, no border and the 26 pt radius', () => {
     render(<Card testID="card">x</Card>);
     const el = screen.getByTestId('card');
@@ -57,6 +75,10 @@ describe('content kit', () => {
     render(<><Sources items={['Same', 'Same']} /><Cite n={2} /></>);
     expect(screen.getAllByText(/Same/)).toHaveLength(2);
     expect(screen.getByLabelText('Source 2')).toBeTruthy();
+  });
+  it('draws the source number as a superscript character, because iOS ignores a transform on nested text', () => {
+    render(<Cite n={12} />);
+    expect(screen.getByLabelText('Source 12').textContent).toBe('¹²');
   });
   it('estimate tag border matches the frame (ovulation at 45% over the card)', () => {
     render(<EstimateTag />);

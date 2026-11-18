@@ -15,14 +15,14 @@ import { Group, SettingsRow, SwitchRow } from '@/ui/SettingsRow';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
 
-/** The small drawings of the frame: the lock beside the intro, an arrow into or out of a tray on the export and import rows, the leaf on the discreet icon row. */
-function Glyph({ name }: { name: 'lock' | 'download' | 'upload' | 'leaf' }) {
+/** The small drawings of the frame: the lock beside the intro, an arrow out of a tray (share) on the export row and into a tray on the import row, the leaf on the discreet icon row. */
+function Glyph({ name }: { name: 'lock' | 'import' | 'export' | 'leaf' }) {
   const t = useTheme();
   const line = { fill: 'none', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
   const hidden = { accessibilityElementsHidden: true, importantForAccessibility: 'no-hide-descendants' } as const;
   if (name === 'lock') return <Svg width={22} height={22} viewBox="0 0 22 22" {...hidden}><Rect x={4} y={9.5} width={14} height={10} rx={3} stroke={t.c.accent} {...line} /><Path d="M7.5 9.5V7A3.5 3.5 0 0 1 14.5 7V9.5" stroke={t.c.accent} {...line} /></Svg>;
   if (name === 'leaf') return <Svg width={18} height={18} viewBox="0 0 18 18" {...hidden}><Path d="M3 15C3 8 7.5 3.5 15 3C15 10 11 14.5 4.5 14.5M3 15L9.5 8.5" stroke={t.c.fertile} {...line} /></Svg>;
-  return <Svg width={20} height={20} viewBox="0 0 20 20" {...hidden}><Path d={name === 'download' ? 'M10 2.5V12.5M6.5 9L10 12.5L13.5 9M3 13V16A1.5 1.5 0 0 0 4.5 17.5H15.5A1.5 1.5 0 0 0 17 16V13' : 'M10 12.5V2.5M6.5 6L10 2.5L13.5 6M3 13V16A1.5 1.5 0 0 0 4.5 17.5H15.5A1.5 1.5 0 0 0 17 16V13'} stroke={t.c.textSecondary} {...line} /></Svg>;
+  return <Svg width={20} height={20} viewBox="0 0 20 20" {...hidden}><Path d={name === 'import' ? 'M10 2.5V12.5M6.5 9L10 12.5L13.5 9M3 13V16A1.5 1.5 0 0 0 4.5 17.5H15.5A1.5 1.5 0 0 0 17 16V13' : 'M10 12.5V2.5M6.5 6L10 2.5L13.5 6M5 9H4.5A1.5 1.5 0 0 0 3 10.5V16A1.5 1.5 0 0 0 4.5 17.5H15.5A1.5 1.5 0 0 0 17 16V10.5A1.5 1.5 0 0 0 15.5 9H15'} stroke={t.c.textSecondary} {...line} /></Svg>;
 }
 
 export default function PrivacyScreen() {
@@ -72,8 +72,8 @@ export default function PrivacyScreen() {
       </Card>
       {msg ? <View testID="privacy-message" accessibilityLiveRegion="polite"><CautionPanel>{msg}</CautionPanel></View> : null}
       <Group>
-        <SettingsRow testID="privacy-export" title={t('settings.privacy.export')} description={busy === 'export' ? t('settings.privacy.exportBusy') : t('settings.privacy.exportDesc')} disabled={busy !== undefined} right={<Glyph name="download" />} onPress={() => db && store && void run('export', async () => { await shareExport(db, store); return t('settings.privacy.exportDone'); })} />
-        <SettingsRow testID="privacy-import" title={t('settings.privacy.import')} description={t('settings.privacy.importDesc')} disabled={busy !== undefined} right={<Glyph name="upload" />} onPress={() => db && store && void importFile(db, store)} last />
+        <SettingsRow testID="privacy-export" title={t('settings.privacy.export')} description={busy === 'export' ? t('settings.privacy.exportBusy') : t('settings.privacy.exportDesc')} disabled={busy !== undefined} right={<Glyph name="export" />} onPress={() => db && store && void run('export', async () => { await shareExport(db, store); return t('settings.privacy.exportDone'); })} />
+        <SettingsRow testID="privacy-import" title={t('settings.privacy.import')} description={t('settings.privacy.importDesc')} disabled={busy !== undefined} right={<Glyph name="import" />} onPress={() => db && store && void importFile(db, store)} last />
       </Group>
       <Group>
         <SettingsRow testID="privacy-report" title={t('report.screenTitle')} description={t('report.rowDesc')} onPress={() => router.push('/settings/report' as never)} />

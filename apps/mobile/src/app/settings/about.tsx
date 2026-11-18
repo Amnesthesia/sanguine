@@ -5,6 +5,7 @@ import * as Updates from 'expo-updates';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import lockupDark from '../../../assets/brand/splash-lockup-dark.png';
 import lockup from '../../../assets/brand/splash-lockup.png';
 import { isTeen } from '@/data/prefs';
@@ -66,8 +67,10 @@ export default function AboutScreen() {
             <Text>{t('settings.about.version', { v: version })}</Text>
             <Text variant="bodySmall" color="textSecondary">{build}</Text>
           </View>
-          <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ minHeight: 44, paddingHorizontal: 16, borderRadius: 22, justifyContent: 'center', backgroundColor: theme.chipBg, opacity: checking ? 0.5 : 1 }}>
-            <Text variant="bodySmall" color="onAccentSoft" style={{ fontWeight: '600' }}>{checking ? t('settings.about.checking') : t('settings.about.checkAction')}</Text>
+          {/* a white secondary pill with the refresh arrow (frame Settings-About); the whole row is the button, so this is a drawing */}
+          <View testID="about-check-pill" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ minHeight: 44, paddingHorizontal: 16, borderRadius: 22, flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0, backgroundColor: theme.cardBg, borderWidth: 1, borderColor: theme.hairline, opacity: checking ? 0.5 : 1 }}>
+            <Svg width={16} height={16} viewBox="0 0 24 24"><Path d="M19.5 12A7.5 7.5 0 1 1 17 6.4M19.5 3.5V8H15" fill="none" stroke={theme.c.accent} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></Svg>
+            <Text variant="bodySmall" style={{ fontWeight: '600', fontSize: 15, lineHeight: 20 }}>{checking ? t('settings.about.checking') : t('settings.about.checkAction')}</Text>
           </View>
         </Pressable>
         <View style={{ paddingHorizontal: 16, paddingVertical: 12, gap: 2 }}>
