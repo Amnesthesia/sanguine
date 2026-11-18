@@ -1,4 +1,5 @@
 {
+  "chrome": { "actionAvailable": "{message}, {label} available" },
   "app": {
     "name": "Sanguine",
     "discreetName": "Notes",
@@ -1051,5 +1052,9 @@
         "why": "The trials had 28 to 38 women each, and another study found no benefit. Studies comparing blood magnesium in women with and without premenstrual symptoms are inconclusive."
       }
     }
+  },
+  "contentKit": {
+    "estimate": "ESTIMATE",
+    "remove": "Remove: {label}"
   }
 }
