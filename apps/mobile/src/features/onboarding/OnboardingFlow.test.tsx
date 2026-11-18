@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, Keyboard } from 'react-native';
+import { colors } from '@sanguine/ui-tokens';
 import '@/i18n';
 const mocks = vi.hoisted(() => ({ replace: vi.fn(), push: vi.fn(), region: 'AU' as string | null, state: {} as Record<string, unknown> }));
 vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 20, bottom: 10 }), SafeAreaView: ({ children }: { children: ReactNode }) => children }));
@@ -95,5 +96,45 @@ describe('OnboardingFlow on the glass chrome', () => {
     expect(screen.getByTestId('health-note')).toBeTruthy();
     tap('backup-offer');
     expect(screen.getByTestId('backup-note')).toBeTruthy();
+  });
+  it('Skip and the finish hint are drawn in the glass text colour, not the accent', async () => {
+    render(<OnboardingFlow />);
+    await act(async () => {});
+    next(); next(); // step 3: Skip shows
+    const ink = (el: HTMLElement) => getComputedStyle(el).color;
+    const probe = document.createElement('i');
+    probe.style.color = colors.light.textOnGlass;
+    const want = probe.style.color;
+    expect(ink(screen.getByText('Skip'))).toBe(want);
+    next(); next(); // step 5: the hint shows
+    expect(ink(screen.getByTestId('finish-hint'))).toBe(want);
+  });
+  it('"Another date" swaps the date note for the date row (the frame draws no note); the other choices keep the note', async () => {
+    render(<OnboardingFlow />);
+    await act(async () => {});
+    next(); next(); // step 3
+    const empty = screen.getByText('No problem. Log your next period to start.'); // nothing chosen yet
+    expect(empty.getAttribute('aria-live')).toBe('polite');
+    tap('last-today');
+    expect(screen.queryByText('No problem. Log your next period to start.')).toBeNull();
+    expect(screen.getByText('Last period started 2 November 2026')).toBeTruthy();
+    expect(screen.queryByTestId('last-date')).toBeNull();
+    tap('last-other');
+    expect(screen.getByTestId('last-date')).toBeTruthy();
+    expect(screen.queryByText(/Last period started \d/)).toBeNull(); // no note line; the row label is the only "Last period started"
+    expect(screen.getAllByText('Last period started')).toHaveLength(1);
+  });
+  it('the footer rides above the keyboard and drops back to the safe-area edge when it goes', async () => {
+    const handlers = new Map<string, (e: { endCoordinates: { height: number } }) => void>();
+    vi.spyOn(Keyboard, 'addListener').mockImplementation(((name: string, fn: never) => { handlers.set(name, fn); return { remove: () => handlers.delete(name) }; }) as never);
+    render(<OnboardingFlow />);
+    await act(async () => {});
+    const bottom = () => screen.getByTestId('onboarding-footer').style.bottom;
+    expect(bottom()).toBe('18px'); // safe-area bottom 10 + 8
+    const show = handlers.get('keyboardWillShow') ?? handlers.get('keyboardDidShow');
+    act(() => show?.({ endCoordinates: { height: 300 } }));
+    expect(bottom()).toBe('308px'); // keyboard 300 + 8: the safe-area term is inside the keyboard height
+    act(() => (handlers.get('keyboardWillHide') ?? handlers.get('keyboardDidHide'))?.({ endCoordinates: { height: 0 } }));
+    expect(bottom()).toBe('18px');
   });
 });

@@ -27,6 +27,7 @@ import { defaultBirthDate, isTeenOn, validateBirthDate } from '@/data/age';
 import {
   type Answers, buildOnboardingWrites, canContinue, LIFE_CHOICES, METHODS, TOTAL_STEPS, validateMenarcheYear, validateUsualLength,
 } from './model';
+import { useKeyboardHeight } from './useKeyboardHeight';
 
 type LastChoice = 'today' | 'yesterday' | 'weekAgo' | 'other';
 const digits = (s: string) => s.replace(/\D/g, '');
@@ -68,6 +69,7 @@ export function OnboardingFlow() {
   const { t: tr } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const keyboard = useKeyboardHeight();
   const store = useApp((s) => s.store);
   const db = useApp((s) => s.db);
   const refresh = useApp((s) => s.refresh);
@@ -134,7 +136,8 @@ export function OnboardingFlow() {
   const group = { borderRadius: 24, backgroundColor: t.chipBg, overflow: 'hidden' as const };
   const offer = { backgroundColor: t.chipBg, borderWidth: 0, minHeight: 52 };
 
-  // padding on both platforms: the dev client is edge-to-edge on Android, where adjustResize no longer lifts the footer above the keyboard (P3-1)
+  // padding on both platforms shrinks the scroll view above the keyboard (the dev client is edge-to-edge on Android, where adjustResize no longer does, P3-1);
+  // it does not move the absolute footer, so the footer's own bottom follows the keyboard height (which already includes the safe-area edge)
   return (
     <KeyboardAvoidingView testID="screen-onboarding" behavior="padding" style={{ flex: 1, backgroundColor: t.screenBg }}>
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + t.glass.inset + BAR + 24, paddingBottom: footerH + insets.bottom + 24, paddingHorizontal: GUTTER, gap: 16, flexGrow: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
@@ -227,8 +230,8 @@ export function OnboardingFlow() {
       </View>
 
       {/* floating glass footer: the one filled Continue; the reason Finish does not respond sits above it (I-20, D-075) */}
-      <View pointerEvents="box-none" onLayout={(e) => setFooterH(e.nativeEvent.layout.height)} style={{ position: 'absolute', left: t.glass.inset, right: t.glass.inset, bottom: insets.bottom + 8 }}>
-        <GlassSurface style={{ borderRadius: 34 }}>
+      <View testID="onboarding-footer" pointerEvents="box-none" onLayout={(e) => setFooterH(e.nativeEvent.layout.height)} style={{ position: 'absolute', left: t.glass.inset, right: t.glass.inset, bottom: (keyboard > 0 ? keyboard : insets.bottom) + 8 }}>
+        <GlassSurface>
           <View style={{ padding: 8, gap: 6 }}>
             {step === TOTAL_STEPS - 1 && !ok ? <Text variant="bodySmall" color="textOnGlass" testID="finish-hint" style={{ textAlign: 'center' }} accessibilityLiveRegion="polite">{tr(explicit ? 'onboarding.s5.finishHintBoth' : 'onboarding.s5.finishHint')}</Text> : null}
             <Button testID="onboarding-continue" label={step === TOTAL_STEPS - 1 ? tr('common.finish') : tr('common.continue')} disabled={!ok || busy} onPress={next} />
