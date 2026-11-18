@@ -50,8 +50,9 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
     centerElement: true
 - tapOn:
     id: energy-2
+# Clear removes the level (the slider has no tap-again-to-clear)
 - tapOn:
-    id: energy-2
+    id: energy-clear
 - tapOn:
     id: energy-4
 - takeScreenshot: energy-logged

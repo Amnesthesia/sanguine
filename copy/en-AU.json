@@ -138,6 +138,15 @@
     "quick": {
       "log": "Log today"
     },
+    "dial": {
+      "day": "Cycle day {day}.",
+      "periodLogged": "Period logged on days {from} to {to}.",
+      "periodEnding": "Likely ending on days {from} to {to}.",
+      "fertile": "Fertile window estimate, days {from} to {to}.",
+      "ovulation": "Ovulation estimate around day {day}.",
+      "next": "Next period likely days {from} to {to}.",
+      "legend": { "period": "Period", "estimate": "Estimate", "fertile": "Fertile window", "ovulation": "Ovulation" }
+    },
     "legend": "darker = more likely to be in the fertile window",
     "ring": {
       "dayLabel": "Day {day} of your cycle",
@@ -160,6 +169,12 @@
   "log": {
     "energy": "Energy",
     "energyLevels": { "1": "Very low", "2": "Low", "3": "OK", "4": "Good", "5": "High" },
+    "energyNotLogged": "Not logged",
+    "energyHint": "Tap a step to log",
+    "energyClear": "Clear",
+    "energyClearLabel": "Clear energy",
+    "loggedOnDay": "Logged on this day",
+    "removed": "Removed: {label}",
     "title": "Log",
     "flow": "Flow",
     "bleeding": "Bleeding",
@@ -770,7 +785,10 @@
       "themeSystem": "Match system",
       "themeLight": "Light",
       "themeDark": "Dark",
-      "motionNote": "Reduced motion follows your phone's setting."
+      "motionNote": "Reduced motion follows your phone's setting.",
+      "cycleDay": "Cycle day on calendar",
+      "cycleDayDesc": "Show the day of your cycle above each date.",
+      "cycleDayPreview": "Preview: 1, 2 and 3 November, with cycle days 2, 3 and 4 above the dates"
     },
     "tracking": {
       "title": "Tracking options",
@@ -787,7 +805,9 @@
       "guidanceDesc": "On Today and the day screen, notes on food, exercise and supplements for each part of the cycle, with the research behind them and how strong it is.",
       "ovulationEstimate": "Show ovulation estimate",
       "ovulationEstimateDesc": "Turn off to hide ovulation and fertile window estimates.",
-      "teenLocked": "Hidden by default for under 18s. You can turn it on here."
+      "teenLocked": "Hidden by default for under 18s. You can turn it on here.",
+      "uncertainEstimates": "Show uncertain estimates",
+      "uncertainEstimatesDesc": "Draw ovulation and fertile estimates even when your data is too irregular for a confident range. They are marked uncertain."
     },
     "about": {
       "title": "About",
@@ -855,6 +875,7 @@
   },
   "a11y": {
     "closeSheet": "Close log sheet",
+    "doneLog": "Done, close the log sheet",
     "openLog": "Open log",
     "flowSelected": "{level} flow selected",
     "symptomSelected": "{symptom}, {strength}, {n} of 3",
