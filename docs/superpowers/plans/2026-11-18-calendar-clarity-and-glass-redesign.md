@@ -8,7 +8,7 @@
 
 **Tech Stack:** Expo SDK 57, React Native, expo-router native tabs, `expo-glass-effect` (`GlassView`), `@expo/ui`, react-native-svg, zustand, i18next, vitest + React Testing Library (react-native-web), Maestro (iOS simulator only).
 
-**Specs:** `docs/superpowers/specs/2026-11-18-calendar-clarity-design.md` (behaviour) and `docs/superpowers/specs/2026-11-18-glass-redesign-design.md` (visual system and screens). Mockups: the design canvas "Sanguine glass redesign" (claude.ai artifact `4GnPfVGn2f1JqPVfh3kiWH`); each UI task names its artboards.
+**Specs:** `docs/superpowers/specs/2026-11-18-calendar-clarity-design.md` (behaviour) and `docs/superpowers/specs/2026-11-18-glass-redesign-design.md` (visual system and screens), with exact mockup values in `docs/superpowers/specs/2026-11-18-glass-design-language.md`. Mockups: the design canvas "Sanguine glass redesign" (claude.ai artifact `4GnPfVGn2f1JqPVfh3kiWH`); each UI task names its artboards.
 
 ## Global Constraints
 
