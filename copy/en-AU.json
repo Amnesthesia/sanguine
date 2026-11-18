@@ -349,8 +349,19 @@
       "predicted": "Predicted period",
       "fertile": "Fertile window likelihood",
       "ovulation": "Ovulation estimate",
+      "symptoms": "Symptoms",
+      "other": "Other log",
       "logged": "Logged",
       "moon": "Moon phase"
+    },
+    "legendRule": "Solid means you logged it. Dashed, dotted or glowing means it is an estimate.",
+    "sheet": {
+      "open": "Open the day sheet",
+      "showDetails": "Show details",
+      "showDetailsA11y": "Show details: how these were worked out, food and movement, sources",
+      "hideDetailsA11y": "Hide the details",
+      "closeA11y": "Close the day sheet",
+      "logRound": "Log"
     },
     "selectedSummary": "Day {day} · {items}",
     "a11y": {
@@ -400,6 +411,7 @@
       "nextPeriod": "Next period likely",
       "atMost": "at most {range}",
       "confidence": { "high": "high confidence", "medium": "medium confidence", "low": "low confidence" },
+      "rowRange": "{from} to {to}",
       "empty": "Nothing logged or estimated this month."
     }
   },

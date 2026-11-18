@@ -1,5 +1,5 @@
 appId: ${APP_ID}
-name: Calendar - food and movement summary card below the day card (P8-18)
+name: Calendar - food and movement sections in the day sheet's large detent (P8-18, P8-22)
 ---
 - runFlow:
     file: _open.yaml
@@ -14,27 +14,37 @@ name: Calendar - food and movement summary card below the day card (P8-18)
     visible:
       id: screen-calendar
     timeout: 10000
-# today is cycle day 11 (follicular): the card sits below the day card and gives a brief summary
-- scrollUntilVisible:
-    element:
-      id: guidance-summary
-    centerElement: true
-# the card is one accessible button on iOS, so Maestro reads its label: title, phase, food, movement, "Read more"
-- assertVisible: "Food and movement\\. Follicular phase · estimate\\. Food: .*\\. Movement: .*\\. Read more"
-- takeScreenshot: calendar-guidance-summary
-# the summary is brief: the long notes and the sources are on the day screen only
-- assertNotVisible: "Sources: .*"
-# tapping the card opens the day screen with the full notes
-- tapOn:
+# the summary card is gone: food and movement live in the day sheet, behind Show details
+- assertNotVisible:
     id: guidance-summary
+# today is cycle day 11 (follicular): tap the day card to open the sheet, then Show details for the large detent
+- tapOn:
+    id: day-card-open
+- tapOn:
+    id: sheet-expand
 - extendedWaitUntil:
     visible:
-      id: screen-day
+      id: guidance-sections
     timeout: 10000
 - scrollUntilVisible:
     element:
-      id: guidance-card
+      id: guidance-phase-follicular
     centerElement: true
+- assertVisible: "Follicular phase · estimate"
+- takeScreenshot: calendar-guidance-sheet
+# the notes carry their reasons, evidence grades and sources, as on the day screen
+- scrollUntilVisible:
+    element:
+      id: guidance-body
+    centerElement: true
+- scrollUntilVisible:
+    element:
+      id: guidance-sources
+    centerElement: true
+- assertVisible: "Sources.*"
+- takeScreenshot: calendar-guidance-sources
+# the scrim returns to the small detent
+- tapOn:
+    id: sheet-scrim
 - assertVisible:
-    id: guidance-card
-- takeScreenshot: calendar-guidance-day-screen
+    id: day-sheet

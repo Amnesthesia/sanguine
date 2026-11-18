@@ -231,6 +231,6 @@ export function monthRows(i: EstimateInput & { month: string; today: ISODate; pe
 }
 const shiftToFirst = (m: string, delta: number): ISODate => `${shiftMonth(m, delta)}-01` as ISODate;
 
-export type LegendKind = 'cycleDay' | 'period' | 'predicted' | 'fertile' | 'ovulation' | 'logged' | 'moon';
+export type LegendKind = 'cycleDay' | 'period' | 'predicted' | 'fertile' | 'ovulation' | 'symptoms' | 'other' | 'moon';
 /** The legend names the fertile window and ovulation only while those estimates are shown (PLAN.md §8.6: hidden under 18 by default). */
-export const calendarLegend = (showEstimate: boolean): LegendKind[] => (showEstimate ? ['cycleDay', 'period', 'predicted', 'fertile', 'ovulation', 'logged'] : ['cycleDay', 'period', 'predicted', 'logged']);
+export const calendarLegend = (showEstimate: boolean): LegendKind[] => (showEstimate ? ['cycleDay', 'period', 'predicted', 'fertile', 'ovulation', 'symptoms', 'other'] : ['cycleDay', 'period', 'predicted', 'symptoms', 'other']);

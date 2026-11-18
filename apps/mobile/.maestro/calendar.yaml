@@ -1,5 +1,5 @@
 appId: ${APP_ID}
-name: Calendar - month grid, marks, day summary, back-dating
+name: Calendar - month grid, marks, glass day card and day sheet, month list, back-dating
 ---
 - runFlow:
     file: _open.yaml
@@ -26,31 +26,38 @@ name: Calendar - month grid, marks, day summary, back-dating
     id: cal-title
 - assertVisible:
     id: cal-grid
-# today is selected: cycle day 11 and the temperature logged today
-- assertVisible: ".*Day 11 · BBT 36.42 °C.*"
-# each cell carries its cycle day as a badge and says it to VoiceOver (D-101)
+# today is selected: the glass day card (the sheet's closed detent) says cycle day 11 and lists the temperature logged today
+- assertVisible:
+    id: day-card-open
+    text: ".*Day 11.*Temperature.*"
+# each cell carries its cycle day as a small number above the circle and says it to VoiceOver (D-101, P8-20)
 - assertVisible:
     id: day-${output.today}
     text: ".*, cycle day 11,.*"
-# the period logged 10 days ago is solid, and a predicted range is hatched
+# the period logged 10 days ago is solid, and a predicted range is a dashed ring; solid means logged, dashed means estimate
 - assertVisible: ".*, period.*"
 - assertVisible: ".*predicted period, 80% range.*"
 - assertVisible: ".*likelihood of being in the fertile window.*"
 - assertVisible: "Fertile window likelihood"
 - assertVisible: "darker = more likely to be in the fertile window"
-- takeScreenshot: month
-# the Log button floats above the tab bar (D-099); a future day has none, and a caption says why
+# the legend names symptoms and other logs, and says what solid and dashed mean
+- assertVisible: "Symptoms"
+- assertVisible: "Other log"
 - assertVisible:
-    id: cal-edit
+    id: cal-legend-rule
+- takeScreenshot: month
+# the round Log button sits on the day card, the one filled control; a future day has none, and a caption says why
+- assertVisible:
+    id: day-log
 - tapOn:
     id: day-${output.tomorrow}
 - assertNotVisible:
-    id: cal-edit
+    id: day-log
 - assertVisible:
     id: cal-future-note
 # a future day says what is estimated for it, never "Nothing logged" (D-104)
 - assertVisible:
-    id: cal-details
+    id: day-card-open
     text: ".*(Fertile window: |Ovulation estimate |Period likely to start |Period possible: |No estimate covers this day).*"
 - assertNotVisible: ".*Nothing logged.*"
 # a predicted period day spells out the range and its confidence on the card and on the day screen
@@ -58,11 +65,19 @@ name: Calendar - month grid, marks, day summary, back-dating
     text: ".*predicted period, 80% range.*"
     index: 0
 - assertVisible:
-    id: cal-details
+    id: day-card-open
     text: ".*Period likely to start .* · (confident|fair estimate|rough estimate).*"
 - takeScreenshot: future-predicted
+# tapping the selected day opens the day sheet at its small detent; Details opens the day screen
 - tapOn:
-    id: cal-details
+    id: day-card-open
+- assertVisible:
+    id: day-sheet
+- assertVisible:
+    id: sheet-expand
+- takeScreenshot: sheet-small
+- tapOn:
+    id: day-details
 - extendedWaitUntil:
     visible:
       id: screen-day
@@ -114,7 +129,7 @@ name: Calendar - month grid, marks, day summary, back-dating
 - tapOn:
     id: day-${output.today}
 - assertVisible:
-    id: cal-edit
+    id: day-log
 # swipe the grid sideways between months (D-092); Today and the title return to this month
 - swipe:
     from:
@@ -127,7 +142,8 @@ name: Calendar - month grid, marks, day summary, back-dating
     id: cal-today
 - assertNotVisible:
     id: cal-today
-- assertVisible: ".*Day 11 · BBT 36.42 °C.*"
+- assertVisible:
+    id: day-sheet
 - swipe:
     from:
       id: cal-grid
@@ -138,13 +154,33 @@ name: Calendar - month grid, marks, day summary, back-dating
     id: cal-title-button
 - assertNotVisible:
     id: cal-today
-# tap yesterday
+# tap yesterday: the open sheet updates in place, with its logged entries as chips (each has an X)
 - tapOn:
     id: day-${output.yesterday}
-- assertVisible: ".*Day 10 · Bloating.*"
-# the sheet is reachable from a day, and day detail from Details
+- assertVisible:
+    id: day-sheet
+- assertVisible: "Bloating.*"
+- assertVisible:
+    text: "Remove: Bloating.*"
+# dragging up (or Show details) opens the large detent: estimates with their pictures, then food and movement
 - tapOn:
-    id: cal-details
+    id: sheet-expand
+- extendedWaitUntil:
+    visible:
+      id: estimate-sections
+    timeout: 10000
+- takeScreenshot: sheet-large-estimates
+- scrollUntilVisible:
+    element:
+      id: guidance-sections
+    centerElement: true
+- takeScreenshot: sheet-large-guidance
+- tapOn:
+    id: sheet-scrim
+- assertVisible:
+    id: day-sheet
+- tapOn:
+    id: day-details
 - extendedWaitUntil:
     visible:
       id: screen-day
@@ -162,7 +198,7 @@ name: Calendar - month grid, marks, day summary, back-dating
 - tapOn:
     id: day-${output.prev15}
 - tapOn:
-    id: cal-edit
+    id: day-log
 - extendedWaitUntil:
     visible:
       id: flow-medium
@@ -176,6 +212,25 @@ name: Calendar - month grid, marks, day summary, back-dating
     timeout: 10000
 - assertVisible: ".*Medium flow.*"
 - takeScreenshot: backdated
+# the month list under the grid spells out what was logged and estimated; a row selects its day
+- scrollUntilVisible:
+    element:
+      id: month-list
+    centerElement: true
+- takeScreenshot: month-list
+- tapOn:
+    id: month-row-logged-${output.prev15}
+- assertVisible:
+    id: day-card-open
+    text: ".*Medium flow.*"
+# the X on a chip removes the entry and the toast offers Undo
+- tapOn:
+    id: day-card-open
+- tapOn:
+    text: "Remove: .*flow.*"
+- assertVisible: "Removed: .*"
+- tapOn: "Undo"
+- assertVisible: ".*Medium flow.*"
 # irregular cycles: the ovulation estimate is uncertain, so the grid draws no band and the legend names none (D-098, D-106);
 # a day inside the wide range says so in words (its range runs from 4 days before today to 14 after)
 - runFlow:
@@ -197,10 +252,6 @@ name: Calendar - month grid, marks, day summary, back-dating
 - assertNotVisible:
     id: cal-fertile-caption
 - assertVisible:
-    id: cal-details
+    id: day-card-open
     text: ".*Ovulation estimate uncertain: could fall .* · rough estimate.*"
-- scrollUntilVisible:
-    element:
-      id: cal-details
-    centerElement: true
 - takeScreenshot: uncertain
