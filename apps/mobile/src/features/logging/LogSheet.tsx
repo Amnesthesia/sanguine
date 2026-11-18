@@ -141,7 +141,8 @@ export function LogSheet() {
           </View>
         </GlassSurface>
       </View>
-      <ToastHost />
+      {/* the log route is a native modal, which covers the root host: this one shows and announces while the sheet is open; 76 = bar 60 + its bottom padding 8 + gap 8 */}
+      <ToastHost modal top={(Platform.OS === 'android' ? insets.top + 8 : 16) + 76} />
 
       <ScrollView style={{ flex: 1 }} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 8, paddingBottom: insets.bottom + 32, gap: 16 }}>
         <View style={{ gap: 6, paddingHorizontal: 4 }}>
