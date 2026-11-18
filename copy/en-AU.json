@@ -565,7 +565,7 @@
     "lifeState": {
       "title": "Life state",
       "current": "Current",
-      "since": "Since {date}",
+      "sinceLabel": "Since",
       "history": "Earlier states",
       "options": {
         "none": "None (includes copper IUD)",
@@ -675,6 +675,18 @@
       "narrowBodyTeen": "Logging every period start, including the first day, matters most. The more cycles you log, the narrower the range becomes.",
       "symptomsTitle": "What does not change the estimates",
       "symptomsBody": "Symptoms, mood and notes never change an estimate. They show up in Insights so you can see your own patterns, but there is no published evidence that they predict when a period starts.",
+      "signals": {
+        "period": "Every period start",
+        "temperature": "Morning temperature",
+        "ovulationTest": "Ovulation tests",
+        "mucus": "Cervical mucus",
+        "position": "Cervical position"
+      },
+      "notChange": {
+        "symptoms": "Symptoms",
+        "mood": "Mood",
+        "notes": "Notes"
+      },
       "accuracyTitle": "How well it has done for you",
       "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gave at the start of that cycle held the real start date. Insights, Your accuracy, shows the count."
     },
@@ -852,6 +864,7 @@
       "devBuild": "Development build",
       "updated": "Updated {d}",
       "checkHint": "Tap to check for updates",
+      "checkAction": "Check for updates",
       "checking": "Checking for updates…",
       "check": {
         "off": "Updates are off in this build.",
