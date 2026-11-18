@@ -50,6 +50,18 @@ describe('pastOvulations', () => {
     expect(pastOvulations(history(), settings).map((r) => r.cycleId)).toEqual(['c1']);
   });
 
+  it.each([
+    ['pregnant', { kind: 'pregnant' as const, since: '2026-10-10' }],
+    ['non-IUD hormonal contraception', { kind: 'hormonal_contraception' as const, method: 'pill' as const, since: '2026-10-10' }],
+    ['postpartum before the first period', { kind: 'postpartum' as const, delivered: '2026-10-10', breastfeeding: false }],
+  ])('a suspended state (%s) gives no row for a cycle it covers, and a cycle before it keeps its row', (_name, state) => {
+    const settings = { ...FIXTURE_SETTINGS, lifeStates: [state] };
+    expect(pastOvulations(history(), settings).map((r) => r.cycleId)).toEqual(['c1']);
+    const biomarker = history();
+    biomarker.lh = [{ date: '2026-10-15', result: 'positive', provenance: 'manual' }];
+    expect(pastOvulations(biomarker, settings).map((r) => r.cycleId)).toEqual(['c1']);
+  });
+
   it('does not write into CycleRecord.ovulation', () => {
     const h = history();
     const before = structuredClone(analyzeCycles(h, FIXTURE_SETTINGS));

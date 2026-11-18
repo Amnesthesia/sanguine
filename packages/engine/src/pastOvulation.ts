@@ -31,7 +31,8 @@ export function pastOvulations(history: History, settings: EngineSettings): Past
     // Later completed cycles must not erase an earlier cycle's warm-up.
     const completed = records.filter((c) => c.nextStart !== undefined && c.nextStart <= nextStart);
     const gate = evaluateLifeStates(completed, { ...settings, lifeStates }, addDays(nextStart, -1));
-    if (gate.bleedingOnly) continue;
+    // A suspended state shows nothing past. classify.ts already marks such cycles life_state, so this is a backstop.
+    if (gate.bleedingOnly || gate.suspended) continue;
     const biomarker = record.ovulation?.basis !== 'calendar' ? record.ovulation : undefined;
     if (!biomarker && !gate.calendarEstimate) continue;
     const offset = record.length - luteal.m - 1;
