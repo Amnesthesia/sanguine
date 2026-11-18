@@ -127,6 +127,10 @@
       "line": "In {hits} of your last {cycles} cycles you logged {name} around this day.",
       "caption": "From your own logs. It does not change any estimate."
     },
+    "periodEndsLikely": "Period likely ends",
+    "nextPeriodLikely": "Next period likely",
+    "logsToday": "Logged today",
+    "closeSheet": "Close the food and movement notes",
     "periodInProgress": "Day {day} of your period",
     "periodLogged": "Logged: {flow} flow",
     "periodLikely": "Period likely in {lo}–{hi} days",
@@ -141,6 +145,13 @@
       "log": "Log today"
     },
     "dial": {
+      "kicker": "CYCLE DAY",
+      "noDataKicker": "NO DATA YET",
+      "noDataSub": "Log a period to start",
+      "pillFertile": "Fertile window · estimate",
+      "likelyEnds": "Likely ends {range}",
+      "ovulationLikely": "Ovulation likely {range}",
+      "nextPeriod": "Next period {range}",
       "day": "Cycle day {day}.",
       "periodLogged": "Period logged on days {from} to {to}.",
       "periodEnding": "Likely ending on days {from} to {to}.",
@@ -165,8 +176,7 @@
     "expandEstimate": "Show details",
     "collapseEstimate": "Hide details",
     "periodExpectedNow": "Period expected about now",
-    "periodLateRange": "Expected {range}",
-    "dayOfCycleHeader": "Day {day} of your cycle"
+    "periodLateRange": "Expected {range}"
   },
   "log": {
     "energy": "Energy",
@@ -948,7 +958,6 @@
     "flowSelected": "{level} flow selected",
     "symptomSelected": "{symptom}, {strength}, {n} of 3",
     "symptomHint": "Double-tap to change the strength. Press and hold to clear.",
-    "phaseRing": "Cycle day {day}. {phase}.",
     "tab": "{name} tab"
   },
   "date": {
@@ -965,7 +974,7 @@
     "suppLabel": "Supplements with some research",
     "suppCaveat": "Supplements are not tested like medicines and can interact with them. A pharmacist or doctor can check one with you before you start, especially if you take other medicines.",
     "more": "Why these notes",
-    "moreA11y": "Open the day screen with the reasons and sources for these notes",
+    "moreA11y": "Read the reasons, evidence and sources for these notes",
     "readMore": "Read more",
     "summary": {
       "menstrual": {

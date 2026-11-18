@@ -28,9 +28,9 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
       id: screen-today
     timeout: 90000
 - assertVisible:
-    id: phase-ring
+    id: cycle-dial
 - assertVisible:
-    id: headline-card
+    id: next-period-card
 - assertVisible: "Period likely in .* days"
 - assertVisible: ".*[Mm]ost likely .*"
 - assertVisible: "fair estimate"
@@ -47,15 +47,9 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - assertVisible: "Food and movement"
 - assertVisible:
     id: guidance-phase-follicular
-- assertVisible:
-    id: guidance-food-vitaminC
-- assertVisible: ".*For example: muesli with kiwifruit.*"
-- scrollUntilVisible:
-    element:
-      id: guidance-move
-    centerElement: true
-- assertNotVisible:
-    id: guidance-supps
+# compact: two tiles and Read more
+- assertVisible: ".*muesli with kiwifruit.*"
+- assertVisible: ".*Exercise lifts mood and energy.*"
 - takeScreenshot: guidance-today
 - scrollUntilVisible:
     element:
@@ -63,9 +57,10 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
     centerElement: true
 - tapOn:
     id: guidance-more
+# Read more opens the full sections in a sheet
 - extendedWaitUntil:
     visible:
-      id: screen-day
+      id: guidance-sheet
     timeout: 10000
 - scrollUntilVisible:
     element:
@@ -73,14 +68,17 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
     centerElement: true
 - assertVisible:
     id: guidance-body
+- assertNotVisible:
+    id: guidance-supps
 - scrollUntilVisible:
     element:
       id: guidance-sources
     centerElement: true
-- assertVisible: "Sources: .*"
-- takeScreenshot: guidance-day-full
+- assertVisible:
+    id: guidance-sources
+- takeScreenshot: guidance-sheet-full
 - tapOn:
-    id: day-back
+    id: guidance-sheet-close
 # the card sits above the footer, so the footer needs a scroll (P8-18)
 - scrollUntilVisible:
     element:
@@ -99,16 +97,29 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
     timeout: 90000
 - assertVisible: "Day 2 of your period"
 - assertVisible: "Logged: medium flow"
+- assertVisible:
+    id: period-end-card
+- assertVisible:
+    id: next-period-card
 - waitForAnimationToEnd
 - scrollUntilVisible:
     element:
       id: guidance-phase-menstrual
     centerElement: true
 - assertVisible: "Food and movement"
-- assertVisible:
-    id: guidance-phase-menstrual
-- assertVisible:
-    id: guidance-food-iron
+- assertVisible: ".*lentil dahl with a squeeze of lemon.*"
+- takeScreenshot: period-in-progress
+# supplements live in the sheet only
+- scrollUntilVisible:
+    element:
+      id: guidance-more
+    centerElement: true
+- tapOn:
+    id: guidance-more
+- extendedWaitUntil:
+    visible:
+      id: guidance-sheet
+    timeout: 10000
 - scrollUntilVisible:
     element:
       id: guidance-supps
@@ -120,7 +131,8 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
 - assertVisible:
     id: guidance-supp-zinc
 - takeScreenshot: guidance-period-supps
-- takeScreenshot: period-in-progress
+- tapOn:
+    id: guidance-sheet-close
 # irregular user: rough estimate and the quiet flag card
 - runFlow:
     file: _open.yaml

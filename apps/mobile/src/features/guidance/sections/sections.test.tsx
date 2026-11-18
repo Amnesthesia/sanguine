@@ -116,7 +116,7 @@ describe('GuidanceSections', () => {
     render(<GuidanceSections day={day} supplements compact onMore={more} />);
     expect(screen.getAllByTestId('guidance-tile')).toHaveLength(2);
     expect(screen.queryByTestId('guidance-supps')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Open the day screen/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Read the reasons, evidence and sources/ }));
     expect(more).toHaveBeenCalledOnce();
     expect(screen.getByText('Read more')).toBeTruthy();
   });

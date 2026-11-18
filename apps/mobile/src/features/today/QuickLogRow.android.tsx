@@ -11,7 +11,7 @@ import { View } from 'react-native';
 import { useTheme } from '@/theme';
 
 // ponytail: accessibilityLabel is iOS only; the Compose button announces its text. Add a Compose semantics modifier if TalkBack needs the date.
-export function QuickLogRow({ day, label, testID: id = 'quick-log' }: { day?: ISODate; label?: string; accessibilityLabel?: string; testID?: string } = {}) {
+export function QuickLogRow({ day, label, testID: id = 'quick-log' }: { day?: ISODate; label?: string; accessibilityLabel?: string; title?: string; subtitle?: string; testID?: string } = {}) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const router = useRouter();

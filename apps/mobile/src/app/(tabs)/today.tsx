@@ -1,15 +1,19 @@
-import { energyDays } from '@/features/logging/actions';
+import { dayEvents, type DayEvent, energyDays } from '@/features/logging/actions';
+import { describeEvent } from '@/features/logging/describe';
+import { removeEntry, undoRemoval, visibleEntries } from '@/features/logging/removeEntry';
+import { useCalendarData } from '@/features/calendar/useCalendarData';
 import { energyInsight, lowPhaseOf } from '@/features/insights/energyModel';
-import { useRouter } from 'expo-router';
-import { GuidanceCard } from '@/features/guidance/GuidanceCard';
+import { GuidanceSections } from '@/features/guidance/sections/GuidanceSections';
 import { phaseOn, showSupplements } from '@/features/guidance/guidance';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { analyzeCycles, diffDays } from '@sanguine/engine';
 import { effectivePrefs } from '@/data/prefs';
-import { EstimateCard, FlagCard, HeadlineCard, useMsg } from '@/features/today/cards';
-import { PhaseRing } from '@/features/today/PhaseRing';
+import { CycleDial, type DialCentre } from '@/features/today/CycleDial';
+import { dialModel } from '@/features/today/dialModel';
+import { EstimateCard, FlagCard, HeadlineCard, HeroCard, HeroWash, PausedRing, RangeCard, SectionsSheet, useHeroGlass, useMsg } from '@/features/today/cards';
+import { ovulationDrawable, shownFertileDays } from '@/features/today/fertileShown';
 import { QuickLogRow } from '@/features/today/QuickLogRow';
 import { buildToday, SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { pregnancyModel } from '@/features/today/pregnancyModel';
@@ -18,15 +22,19 @@ import { noteDay, symptomNote } from '@/features/today/symptomNote';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
-import { formatDay, formatRange } from '@/ui/format';
+import { EstimateTag } from '@/ui/EstimateTag';
+import { formatDay, formatRange, formatWeekday } from '@/ui/format';
+import { LoggedChip } from '@/ui/LoggedChip';
 import { Screen } from '@/ui/Screen';
+import { showToast } from '@/ui/Toast';
 import { Text } from '@/ui/Text';
 
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
   const msg = useMsg();
-  const router = useRouter();
   const { prediction, history, settings, today, prefs, profile, db, store, version, refresh } = useApp();
+  const { periodDays } = useCalendarData();
+  const heroGlass = useHeroGlass();
   const muteFlag = useApp((s) => s.muteFlag);
   const [todayFlow, setTodayFlow] = useState<string | undefined>();
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads today's log after every write
@@ -82,21 +90,74 @@ export default function TodayScreen() {
     [history, settings, records, answered, today],
   );
   const answer = (f: () => Promise<unknown>) => void f().then(() => refresh());
-  const word = model.confidence && model.state === 'predicted' ? t(`confidence.${model.confidence}`) : undefined;
   const shownFlags = model.flags.filter((f) => !f.insightOnly);
 
+  // today's logged entries as chips; removal is a retraction and the toast's Undo retracts what it wrote (D-113)
+  const [entries, setEntries] = useState<DayEvent[]>([]);
+  const loadEntries = useCallback(async () => { if (store) setEntries(visibleEntries(await dayEvents(store, today))); }, [store, today]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads today's entries after every write
+  useEffect(() => { void loadEntries(); }, [loadEntries, version]);
+  const saved = async () => { await refresh(); await loadEntries(); };
+  const onRemove = async (e: DayEvent) => {
+    if (!db || !store) return;
+    const label = describeEvent(e, t, prefs.tempUnit);
+    const written = await removeEntry(store, db, e);
+    await saved();
+    showToast(t('log.removed', { label }), { label: t('common.undo'), onPress: () => void undoRemoval(store, written).then(saved) });
+  };
+
+  // the dial: the effective gate (teen mode included) decides whether any fertile or ovulation mark is drawn
+  const includeUncertain = eff.showUncertainEstimates;
+  const dial = useMemo(() => dialModel({ ...(prediction ? { prediction } : {}), today, periodDays: [...periodDays], showEstimate, includeUncertain }), [prediction, today, periodDays, showEstimate, includeUncertain]);
+  const centre = useMemo<DialCentre>(() => {
+    const p = prediction;
+    if (!p || p.suspended || !model.dayOfCycle) return { kicker: t('today.dial.noDataKicker'), big: '–', sub: t('today.dial.noDataSub') };
+    const kicker = t('today.dial.kicker');
+    const big = String(model.dayOfCycle);
+    const next = p.nextPeriod;
+    const nextSub = next ? t('today.dial.nextPeriod', { range: formatRange(next.i80.lo, next.i80.hi) }) : undefined;
+    if (model.state === 'inProgress' && p.currentBleed) return { kicker, big, pill: t('today.dial.legend.period'), sub: t('today.dial.likelyEnds', { range: formatRange(p.currentBleed.i80.lo, p.currentBleed.i80.hi) }) };
+    if (showEstimate && shownFertileDays(p, { includeUncertain }).some((f) => f.date === today)) {
+      const o = p.ovulation;
+      const sub = o && ovulationDrawable(p, includeUncertain) ? t('today.dial.ovulationLikely', { range: formatRange(o.i80.lo, o.i80.hi) }) : nextSub;
+      return { kicker, big, pill: t('today.dial.pillFertile'), ...(sub ? { sub } : {}) };
+    }
+    const w = model.confidence ? t(`confidence.${model.confidence}`) : '';
+    const pill = w ? `${w.charAt(0).toLocaleUpperCase(i18n.language)}${w.slice(1)}` : undefined;
+    return { kicker, big, ...(pill ? { pill } : {}), ...(nextSub ? { sub: nextSub } : {}) };
+  }, [prediction, model.dayOfCycle, model.state, model.confidence, showEstimate, includeUncertain, today, t, i18n.language]);
+
+  const [sheet, setSheet] = useState(false);
+  const shortDate = `${formatWeekday(today).slice(0, 3)} ${formatDay(today)}`;
+  const next = prediction?.nextPeriod;
+  const paused = model.state === 'suspended';
+  // the headline is a hero card over the wash when it is about the next period; while the period is on, or with nothing to estimate, it is a plain card
+  const nextAsHero = !paused && model.state !== 'inProgress' && model.state !== 'empty' && next !== undefined;
+  const hasHero = !paused ? model.state !== 'empty' : pregnantSince !== undefined;
+
   return (
-    <Screen testID="screen-today" title={t('tabs.today')} floating={<QuickLogRow />}>
-      <PhaseRing ring={model.ring} dayOfCycle={model.dayOfCycle} phase={prediction?.currentPhase?.phase} />
-      <HeadlineCard headline={msg(model.headline)} {...(model.subtitle ? { subtitle: msg(model.subtitle) } : {})} {...(word ? { confidenceWord: word } : {})} />
+    <Screen
+      testID="screen-today" title={t('tabs.today')} bottomInset={96}
+      floating={<QuickLogRow title={shortDate} subtitle={model.dayOfCycle && !paused && model.state !== 'empty' ? t('today.ring.dayLabel', { day: model.dayOfCycle }) : model.state === 'empty' ? t('today.ring.noData') : ''} />}>
+      {heroGlass && hasHero ? <HeroWash /> : null}
+      <Text variant="caption" color="textSecondary" style={{ marginTop: -16 }} testID="today-date">{shortDate}</Text>
+      {paused ? <PausedRing /> : <CycleDial model={dial} centre={centre} />}
+      {dial.arcs.some((a) => a.kind === 'fertile') ? <Text variant="caption" color="textSecondary" style={{ textAlign: 'center', marginTop: -8 }} testID="today-legend">{t('today.legend')}</Text> : null}
+      {nextAsHero ? null : <HeadlineCard headline={msg(model.headline)} {...(model.subtitle ? { subtitle: msg(model.subtitle) } : {})} />}
+      {entries.length ? (
+        <View testID="today-logs" accessibilityRole="list" accessibilityLabel={t('today.logsToday')} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {entries.map((e) => <LoggedChip key={e.id} label={describeEvent(e, t, prefs.tempUnit)} mark={e.kind === 'flow' ? 'flow' : e.kind === 'symptom' ? 'symptom' : 'other'} onRemove={() => void onRemove(e)} />)}
+        </View>
+      ) : null}
       {pregnantSince ? (
-        <Card testID="pregnancy-card">
+        <HeroCard testID="pregnancy-card">
           {pregnancy ? (<>
+            <EstimateTag />
             <Text variant="heading" testID="pregnancy-week">{t('today.pregnancy.week', { week: pregnancy.week, day: pregnancy.day })}</Text>
             <Text testID="pregnancy-due">{t('today.pregnancy.due', { range: formatRange(pregnancy.due.lo, pregnancy.due.hi) })}</Text>
-            <Text variant="caption" color="textSecondary">{t(pregnancy.from === 'due' ? 'today.pregnancy.fromDue' : 'today.pregnancy.fromPeriod')}</Text>
-          </>) : <Text variant="bodySmall" color="textSecondary" testID="pregnancy-none">{t('today.pregnancy.none')}</Text>}
-        </Card>
+            <Text variant="caption" color="textOnGlass">{t(pregnancy.from === 'due' ? 'today.pregnancy.fromDue' : 'today.pregnancy.fromPeriod')}</Text>
+          </>) : <Text variant="bodySmall" color="textOnGlass" testID="pregnancy-none">{t('today.pregnancy.none')}</Text>}
+        </HeroCard>
       ) : null}
       {note.length ? (
         <Card testID="symptom-note" accessibilityRole="summary">
@@ -113,12 +174,30 @@ export default function TodayScreen() {
           <Button testID="short-cycle-no" kind="secondary" label={t('today.shortCycle.no')} onPress={() => answer(() => notAPeriod(store, db, shortQ))} />
         </Card>
       ) : null}
+      {model.state === 'inProgress' && prediction?.currentBleed ? (
+        <RangeCard testID="period-end-card" title={t('today.periodEndsLikely')} line={formatRange(prediction.currentBleed.i80.lo, prediction.currentBleed.i80.hi)} confidence={prediction.currentBleed.confidence} />
+      ) : null}
+      {!paused && next ? (
+        nextAsHero
+          ? <RangeCard testID="next-period-card" title={msg(model.headline)} {...(model.subtitle ? { line: msg(model.subtitle) } : {})} confidence={next.confidence} />
+          : <RangeCard testID="next-period-card" title={t('today.nextPeriodLikely')} line={formatRange(next.i80.lo, next.i80.hi)} confidence={next.confidence} />
+      ) : null}
       {model.estimate ? <EstimateCard m={model.estimate} /> : null}
       {shownFlags.slice(0, 1).map((f) => <FlagCard key={f.code} f={f} onMute={(c) => void muteFlag(c)} />)}
-      {guide ? <GuidanceCard energyLow={energyLow} day={guide} supplements={showSupplements(eff.teen)} onMore={() => router.push({ pathname: '/day/[date]', params: { date: today } })} /> : null}
+      {guide ? (
+        <View style={{ gap: 12 }}>
+          <GuidanceSections compact day={guide} supplements={showSupplements(eff.teen)} onMore={() => setSheet(true)} />
+          {energyLow ? <Card><Text variant="bodySmall" testID="guidance-energy-low">{t('guidance.energyLow')}</Text></Card> : null}
+        </View>
+      ) : null}
       <View style={{ paddingVertical: 8 }}>
         <Text variant="caption" color="textSecondary" style={{ textAlign: 'center' }} testID="today-footer">{t(model.footerKey)}</Text>
       </View>
+      {guide ? (
+        <SectionsSheet visible={sheet} onClose={() => setSheet(false)}>
+          <GuidanceSections compact={false} day={guide} supplements={showSupplements(eff.teen)} />
+        </SectionsSheet>
+      ) : null}
     </Screen>
   );
 }
