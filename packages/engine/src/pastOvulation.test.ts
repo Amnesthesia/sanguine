@@ -59,4 +59,71 @@ describe('pastOvulations', () => {
     expect(h).toEqual(input);
     expect(before.every(({ record }) => record.ovulation === undefined)).toBe(true);
   });
+  it('perimenopause overlapping a cycle requires biomarkers even after the state ends', () => {
+    const settings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'perimenopause' as const, since: '2026-10-10', until: '2026-10-20' }] };
+    expect(pastOvulations(history(), settings).map(r => r.cycleId)).toEqual(['c1']);
+    const h = history();
+    h.lh = [{ date: '2026-10-15', result: 'positive', provenance: 'manual' }];
+    expect(pastOvulations(h, settings)[1]?.basis).toBe('lh');
+  });
+
+  it('breastfeeding postpartum requires biomarkers until ovulation resumes after delivery', () => {
+    const settings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'postpartum' as const, delivered: '2026-10-03', breastfeeding: true }] };
+    expect(pastOvulations(history(), settings).map(r => r.cycleId)).toEqual(['c1']);
+    const h = history();
+    h.cycles[1]!.ovulation = { point: '2026-10-16', sd: 1, basis: 'calendar' };
+    expect(pastOvulations(h, settings).map(r => r.cycleId)).toEqual(['c1']);
+    h.lh = [{ date: '2026-10-15', result: 'positive', provenance: 'manual' }];
+    expect(pastOvulations(h, settings)[1]).toMatchObject({ basis: 'lh', confidence: 'low' });
+    const resumed = history();
+    resumed.lh = [{ date: '2026-09-15', result: 'positive', provenance: 'manual' }];
+    const delivered = resumed.cycles[0]!.start;
+    expect(pastOvulations(resumed, { ...settings, lifeStates: [{ ...settings.lifeStates[0]!, delivered }] })[1])
+      .toMatchObject({ cycleId: 'c2', basis: 'calendar', confidence: 'low' });
+  });
+
+  it('known irregular caps biomarker confidence at medium', () => {
+    const h = history();
+    h.cycles[1]!.ovulation = { point: '2026-10-16', sd: 1, basis: 'lh', confidence: 'high' };
+    const settings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'known_irregular' as const, reason: 'pcos' as const, since: '2026-10-03' }] };
+    expect(pastOvulations(h, settings)[1]?.confidence).toBe('medium');
+  });
+
+  it.each(['post_contraception', 'postpartum'] as const)('%s caps confidence during the first three completed cycles', kind => {
+    const h = historyFromLengths([28, 28, 28, 28], '2026-10-31');
+    const from = h.cycles[0]!.start;
+    const state = kind === 'post_contraception'
+      ? { kind, stopped: from, method: 'pill' }
+      : { kind, delivered: from, breastfeeding: false };
+    const rows = pastOvulations(h, { ...FIXTURE_SETTINGS, lifeStates: [state] });
+    expect(rows.map(r => r.confidence)).toEqual(['low', 'low', 'medium', 'medium']);
+  });
+
+  it('recomputes a stored calendar estimate from the closed cycle', () => {
+    const h = history();
+    h.cycles[1]!.ovulation = { point: '2026-10-05', offset: 2, sd: 1, basis: 'calendar', confidence: 'high' };
+    expect(pastOvulations(h, FIXTURE_SETTINGS)[1]).toEqual(pastOvulations(history(), FIXTURE_SETTINGS)[1]);
+  });
+
+  it.each([
+    ['2026-10-31', undefined, true],
+    ['2026-09-01', '2026-10-02', true],
+    ['2026-09-01', '2026-10-03', false],
+    ['2026-10-10', undefined, false],
+  ] as const)('IUD boundary since %s until %s retains row: %s', (since, until, retained) => {
+    const settings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'hormonal_contraception' as const, method: 'hormonal_iud' as const, since, until }] };
+    expect(pastOvulations(history(), settings).some(r => r.cycleId === 'c2')).toBe(retained);
+  });
+
+  it('an LH-dated sibling shifts the calendar point by the learned luteal change', () => {
+    const h = history();
+    h.lh = [{ date: '2026-09-15', result: 'positive', provenance: 'manual' }];
+    // Ovulation Sep 16 gives a 16-day luteal phase; prior mean 12.4, weight 10 -> posterior 140/11.
+    const before = pastOvulations(history(), FIXTURE_SETTINGS)[1]!;
+    const after = pastOvulations(h, FIXTURE_SETTINGS)[1]!;
+    expect(before.point).toBe('2026-10-18');
+    expect(after.point).toBe('2026-10-17');
+    expect(after.basis).toBe('calendar');
+  });
+
 });

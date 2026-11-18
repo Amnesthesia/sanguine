@@ -37,7 +37,7 @@ export function lifeStateStart(s: LifeState): ISODate {
   }
 }
 const active = (s: Stated, today: ISODate): boolean => lifeStateStart(s) <= today && (s.until === undefined || today <= s.until);
-const lowerCap = (a: Confidence | undefined, b: Confidence): Confidence => (a === undefined || RANK[b] < RANK[a] ? b : a);
+export const lowerCap = (a: Confidence | undefined, b: Confidence): Confidence => (a === undefined || RANK[b] < RANK[a] ? b : a);
 
 export function evaluateLifeStates(cycles: CycleRecord[], settings: EngineSettings, today: ISODate): LifeGate {
   const states = (settings.lifeStates as Stated[]).filter((s) => active(s, today));
