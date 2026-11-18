@@ -349,3 +349,6 @@ Status: open = not yet checked, carried by the owning backlog item; applied = co
 
 - D-147 (2026-11-18, recorded retroactively for P8-23) Ovulation wording in Insights, cycle detail and the report says what the number is: "Ovulation estimate 18–29 Nov" (a range with its basis in plain words) instead of "ovulation: calendar" (Insights history, cycle detail, the doctor report). The fix plan's copy pass (D-132) removed the last "calendar" method words from the caution and the frames.
   Rejected: keeping "calendar" as the basis word (owner, finding X5: no "calendar" as a method word).
+
+- D-149 (2026-11-19, P8-35) A `legible` glass surface draws its tint beside the glass material, not inside it, and is fully opaque when Reduce Transparency is on. Found on the simulator, where Reduce Transparency was on (iOS 26 stores it as `EnhancedBackgroundContrastEnabled`): every bar took the fallback and ghosted the month list at 6% (fill `F0`), so the tint (D-130, 0.72 then 0.94) was never drawn there. With the setting off the glass bar read cleanly at 0.94. A red test tint confirmed the new layout draws. Not seen: the old layout (tint inside `GlassView`) on a real device, so it is unknown whether the earlier tint ever worked there.
+  Rejected: raising `LEGIBLE_ALPHA` to 0.98 or 1 (it changed nothing: the fallback ignores it).

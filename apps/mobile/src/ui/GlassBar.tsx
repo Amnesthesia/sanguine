@@ -44,14 +44,26 @@ export function GlassSurface({ children, style, flat, legible, ...props }: ViewP
   const shape = { borderRadius: StyleSheet.flatten(style)?.borderRadius ?? t.radius.float };
   if (!t.isIOS) return <View {...props} style={[shape, { overflow: 'hidden', backgroundColor: t.cardBg, elevation: 2 }, style]}>{children}</View>;
   const dark = t.scheme === 'dark';
-  // first child, so the content (the later siblings) is drawn over it; the opaque fallback below needs none
+  // the tint view: `legible` surfaces draw it between the material and the content (below)
   const tint = legible ? <View testID="glass-legible-tint" pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: `${t.c.surface}${LEGIBLE_HEX}` }} /> : null;
+  const fill = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } as const;
+  // `legible`: the material is a sibling drawn first, then the tint, then the content (seen on the iOS 26 simulator with real glass: the list beneath no longer reads through the bar).
+  const glassOn = !reduce && materials && materials.glass.isLiquidGlassAvailable() && materials.glass.isGlassEffectAPIAvailable();
   const material = reduce || !materials
-    ? <View style={{ backgroundColor: `${t.c.surface}F0` }}>{children}</View>
-    : materials.glass.isLiquidGlassAvailable() && materials.glass.isGlassEffectAPIAvailable()
-      ? <materials.glass.GlassView glassEffectStyle="regular" colorScheme={t.scheme}>{tint}{children}</materials.glass.GlassView>
-      // System blur intensity is not a point radius; use the existing older-iOS material recipe.
-      : <materials.blur.BlurView intensity={40} tint={dark ? 'dark' : 'light'}>{tint}{children}</materials.blur.BlurView>;
+    // Reduce Transparency: a legible surface is fully opaque (the F0 fallback still let the list beneath ghost through)
+    ? <View style={{ backgroundColor: legible ? t.c.surface : `${t.c.surface}F0` }}>{children}</View>
+    : legible
+      ? <View>
+          {glassOn
+            ? <materials.glass.GlassView style={fill} glassEffectStyle="regular" colorScheme={t.scheme} />
+            : <materials.blur.BlurView style={fill} intensity={40} tint={dark ? 'dark' : 'light'} />}
+          {tint}
+          {children}
+        </View>
+      : glassOn
+        ? <materials.glass.GlassView glassEffectStyle="regular" colorScheme={t.scheme}>{children}</materials.glass.GlassView>
+        // System blur intensity is not a point radius; use the existing older-iOS material recipe.
+        : <materials.blur.BlurView intensity={40} tint={dark ? 'dark' : 'light'}>{children}</materials.blur.BlurView>;
   // The shadow sits on an outer view and the clip on an inner one, so the clip cannot cut the shadow off.
   const shadow = flat ? '0 1px 2px rgba(31,26,28,0.06)' : '0 1px 2px rgba(31,26,28,0.06), 0 14px 36px rgba(31,26,28,0.16)';
   return <View {...props} style={[shape, { boxShadow: shadow }, style]}>
