@@ -30,7 +30,8 @@ describe('phaseOn, open cycle', () => {
     for (const date of ['2026-11-03', '2026-11-04']) {
       expect(on(date, { today: '2026-11-03', prediction, cycles })).toEqual({ phase: prediction.currentPhase!.phase, expected: date > '2026-11-03' });
     }
-    expect(on('2026-11-05', { today: '2026-11-03', prediction, cycles })?.phase).not.toBe('menstrual');
+    // the day after the estimated end (currentBleed.point) leaves menstrual; here it is past nextPeriod.i80.hi (11-03), so no card
+    expect(on('2026-11-05', { today: '2026-11-03', prediction, cycles })).toBeUndefined();
     expect(on('2026-11-03', { prediction, cycles: [rec('2026-10-31', '2026-11-28', { end: '2026-11-02' })] })?.phase).not.toBe('menstrual');
   });
   it('today, cycle day 11, is follicular', () => expect(on(TODAY)).toEqual({ phase: 'follicular', expected: false }));

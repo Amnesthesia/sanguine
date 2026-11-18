@@ -63,4 +63,10 @@ describe('prefs', () => {
     expect(effectivePrefs(DEFAULT_PREFS, { birthYear: 1990 }, today).showOvulationEstimate).toBe(true);
     expect(effectivePrefs({ ...DEFAULT_PREFS, showOvulationEstimate: false }, { birthYear: 1990 }, today).showOvulationEstimate).toBe(false);
   });
+  it('uncertain estimates need the ovulation estimate to be showable', () => {
+    const on = { ...DEFAULT_PREFS, showUncertainEstimates: true };
+    expect(effectivePrefs(on, { birthYear: 2012 }, '2026-10-09').showUncertainEstimates).toBe(false); // teen, stored true
+    expect(effectivePrefs({ ...on, showOvulationEstimate: false }, { birthYear: 1990 }, '2026-10-09').showUncertainEstimates).toBe(false);
+    expect(effectivePrefs(on, { birthYear: 1990 }, '2026-10-09').showUncertainEstimates).toBe(true);
+  });
 });

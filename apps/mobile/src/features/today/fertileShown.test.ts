@@ -26,7 +26,9 @@ describe('estimate drawing gates', () => {
     expect(shownFertileDays(p)).toEqual(p.fertileDays!.slice(1));
   });
   it('missing predictions or ovulation cannot draw an ovulation mark', () => {
-    const { ovulation: _ovulation, fertileDays: _days, ...p } = prediction();
+    const p = prediction();
+    delete p.ovulation;
+    delete p.fertileDays;
     for (const includeUncertain of [false, true]) {
       expect(ovulationDrawable(undefined, includeUncertain)).toBe(false);
       expect(ovulationDrawable(p, includeUncertain)).toBe(false);
