@@ -21,6 +21,19 @@ const model: DialModel = {
 };
 
 describe('CycleDial', () => {
+  it('colours the centre pill by what it names: fertile window green, never the period rose', () => {
+    const bg = (tone: 'period' | 'fertile' | 'neutral', pill: string) => {
+      render(<CycleDial model={model} centre={{ ...centre, pill, pillTone: tone }} />);
+      const style = screen.getByTestId('dial-pill').style.backgroundColor;
+      cleanup();
+      return style;
+    };
+    const fertile = bg('fertile', 'Fertile window · estimate');
+    const period = bg('period', 'Period');
+    expect(fertile).not.toBe(period);
+    expect(fertile).toContain('92, 138, 110'); // colors.light.fertile #5C8A6E at a soft alpha
+    expect(period).toContain('244, 220, 224'); // accentSoft
+  });
   it('is one element with a spoken summary and a legend', () => {
     render(<CycleDial model={model} centre={centre} />);
     const dial = screen.getByTestId('cycle-dial');

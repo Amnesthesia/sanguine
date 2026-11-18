@@ -40,11 +40,6 @@ for (const mode of ['light', 'dark'] as const) {
     it('fertile on accentSoft (selected calendar cell) >= 3 (non-text)', () => expect(contrast(c.fertile, c.accentSoft)).toBeGreaterThanOrEqual(3));
     for (const fg of ['period', 'fertile', 'flag', 'focus'] as const)
       it(`${fg} on bg >= 3 (non-text)`, () => expect(contrast(c[fg], c.bg)).toBeGreaterThanOrEqual(3));
-    it('white-ish label on glassAccent composite >= 4.5', () => {
-      const g = glass[mode];
-      const comp = over(g.accentBase, g.accentAlpha, c.bg);
-      expect(contrast(g.onAccent, comp)).toBeGreaterThanOrEqual(4.5);
-    });
     it('opaque colours are 6-digit hex; cautionBg is rgba', () => {
       for (const [key, v] of Object.entries(c))
         expect(v).toMatch(key === 'cautionBg' ? /^rgba\(\d+,\d+,\d+,0\.10\)$/ : /^#[0-9A-Fa-f]{6}$/);

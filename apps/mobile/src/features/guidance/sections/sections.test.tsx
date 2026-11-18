@@ -121,7 +121,7 @@ describe('EstimateSections', () => {
     expect(text()).not.toContain('Wilcox');
     unmount();
     render0({ day: '2026-10-20', pastOv: widePast, includeUncertain: true });
-    expect(text()).toContain('Ovulation estimate uncertain: could have fallen 12–26 Oct · from your next period date');
+    expect(text()).toContain('Ovulation estimate uncertain: could have fallen 12–26 Oct · worked out from your cycle lengths');
     expect(text()).not.toContain('Ovulation was most likely');
   });
   it('a day before the open cycle with no past ovulation row shows no estimate cards at all', () => {

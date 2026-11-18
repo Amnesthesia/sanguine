@@ -33,7 +33,8 @@ describe('buildReport (P8-6)', () => {
     expect(html).toContain('<td>Cramps</td><td>2</td>');
     expect(html).not.toContain('temperature)');
     const withOv = buildReport(input(), { ...DEFAULT_REPORT, ovulation: true }, t);
-    expect(withOv).toContain('around 14 Jul 2026');
+    // the basis in words a doctor reads, never a copy key or "ovulation: temperature"
+    expect(withOv).toContain('around 14 Jul 2026 (temperature shift)');
     const teen = buildReport(input({ fertilityTools: false }), { ...DEFAULT_REPORT, ovulation: true }, t);
     expect(teen).not.toMatch(/ovulation/i);
   });

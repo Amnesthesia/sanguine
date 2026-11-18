@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { addDays, type EngineSettings, type History, type ISODate, pastOvulations, predict } from '@sanguine/engine';
 import type { ReactNode } from 'react';
-import { AccessibilityInfo, PanResponder } from 'react-native';
+import { AccessibilityInfo } from 'react-native';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
 import { DEFAULT_PREFS, type Prefs } from '@/data/prefs';
@@ -10,7 +10,8 @@ import { EventStore } from '@/data/store';
 import { openTestDb } from '@/data/testDb';
 import { dayState, saveLh, setFlow, setSymptom } from '@/features/logging/actions';
 import type * as CalendarModel from './calendarModel';
-import { nextDetent, sheetMaxHeight } from './DaySheet';
+import { sheetMaxHeight } from './DaySheet';
+import type { Detent } from './sheetSnap';
 
 type Model = typeof CalendarModel;
 type BuildInput = Parameters<Model['buildMonth']>[0];
@@ -22,6 +23,10 @@ vi.mock('@/state/app', () => ({ useApp: (sel?: (s: unknown) => unknown) => (sel 
 vi.mock('expo-router', () => ({ useRouter: () => ({ push: spies.push, back: vi.fn() }) }));
 vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }), SafeAreaView: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
 vi.mock('./SwipeMonth', () => ({ SwipeMonth: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
+// the movement runs on the UI thread (reanimated, gesture handler; its snapping is tested in sheetSnap.test.ts): here the sheet shows the detent it is at
+vi.mock('./SheetMotion', () => ({
+  SheetMotion: ({ detent, scrim, children }: { detent: Detent; scrim: ReactNode; children: (d: Detent, grip: (n: ReactNode) => ReactNode, largeH: number) => ReactNode }) => <>{detent === 'large' ? scrim : null}{children(detent, (n) => n, 700)}</>,
+}));
 vi.mock('@/services/locale', () => ({ deviceWeekStart: () => 'mon', deviceRegion: () => 'AU' }));
 vi.mock('@/features/today/todayModel', async (orig) => ({ ...(await orig<object>()), buildToday: () => ({ flags: [] }) }));
 vi.mock('@/features/guidance/guidance', async (orig) => ({ ...(await orig<object>()), phaseOn: () => ({ phase: 'follicular', expected: false }) }));
@@ -93,25 +98,55 @@ it('the large detent shows the estimate and guidance sections, with her period l
   expect(screen.getByTestId('day-sheet')).toBeTruthy();
 });
 
-it('maps a drag to a detent', () => {
-  expect(nextDetent('closed', -80)).toBe('small');
-  expect(nextDetent('small', -80)).toBe('large');
-  expect(nextDetent('large', 80)).toBe('small');
-  expect(nextDetent('small', 80)).toBe('closed');
-  expect(nextDetent('small', 10)).toBe('small');
+it('the sheet minimises to a compact bar: the date circle, the cycle day and period word, and Log; every detent has a labelled button', async () => {
+  const { store } = await setup();
+  await setFlow(store, TODAY, 'medium');
+  view();
+  const bar = screen.getByTestId('day-card');
+  expect(within(bar).getByText(/^Day 3 of your cycle/)).toBeTruthy();
+  expect(within(bar).getByTestId('day-log')).toBeTruthy();
+  expect(within(bar).queryByText(/Medium flow|Flow/)).toBeNull(); // the chips live in the sheet, not on the bar
+  // the bar's one button says the whole day to a screen reader and opens the sheet
+  const open = screen.getByTestId('day-card-open');
+  expect(open.getAttribute('aria-label')).toMatch(/^Today, Wednesday 18 November\. Day 3 of your cycle.*Open the day sheet$/);
+  fireEvent.click(open);
+  expect(screen.getByTestId('day-sheet')).toBeTruthy();
+  fireEvent.click(screen.getByTestId('sheet-grabber')); // Show details
+  expect(screen.getByTestId('day-sheet-large')).toBeTruthy();
+  expect(screen.getByTestId('sheet-grabber').getAttribute('aria-label')).toBe('Hide the details');
+  fireEvent.click(screen.getByTestId('day-sheet-close'));
+  expect(screen.getByTestId('day-sheet')).toBeTruthy();
+  fireEvent.click(screen.getByTestId('day-sheet-close')); // collapses to the bar
+  expect(screen.getByTestId('day-card')).toBeTruthy();
 });
 
-it('releasing a drag on the day card or the open sheet header moves the sheet one detent', async () => {
-  const create = vi.spyOn(PanResponder, 'create');
+it('one Show details in the open sheet; the day screen opens from the large detent as Open day', async () => {
   await setup();
   view();
-  const release = () => (create.mock.calls[create.mock.calls.length - 1]?.[0] as unknown as { onPanResponderRelease: (e: unknown, g: { dy: number; dx: number }) => void } | undefined)?.onPanResponderRelease({}, { dy: -80, dx: 0 });
-  expect(screen.getByTestId('day-card')).toBeTruthy();
-  act(release);
-  expect(screen.getByTestId('day-sheet')).toBeTruthy(); // closed -> small
-  act(release);
-  expect(screen.getByTestId('day-sheet-large')).toBeTruthy(); // small -> large
-  create.mockRestore();
+  fireEvent.click(screen.getByTestId('day-card-open'));
+  expect(screen.getAllByText('Show details')).toHaveLength(1);
+  expect(screen.queryByText('Details')).toBeNull();
+  expect(screen.queryByTestId('day-open')).toBeNull();
+  fireEvent.click(screen.getByTestId('sheet-expand'));
+  const openDay = screen.getByTestId('day-open');
+  expect(openDay.textContent).toBe('Open day');
+  expect(openDay.getAttribute('aria-label')).toBe('Open the full day screen: Wednesday 18 November');
+  fireEvent.click(openDay);
+  expect(spies.push).toHaveBeenCalledWith({ pathname: '/day/[date]', params: { date: TODAY } });
+  expect(filledButtons().map((b) => b.getAttribute('data-testid'))).toEqual(['day-log']);
+});
+
+it('the month list, legend and grid sit inside the 16 pt screen gutter, and the list text is inset from its hairlines', async () => {
+  const { store } = await setup();
+  await setSymptom(store, '2026-11-10', 'cramps', 2);
+  view();
+  const row = await screen.findByTestId('month-row-logged-2026-11-10');
+  const padded = (el: HTMLElement | null) => { for (let e = el; e; e = e.parentElement) if (e.style.paddingLeft === '16px' && e.style.paddingRight === '16px') return e; return null; };
+  const gutter = padded(screen.getByTestId('month-list'));
+  expect(gutter).not.toBeNull();
+  for (const id of ['cal-grid', 'cal-legend-rule']) expect(gutter?.contains(screen.getByTestId(id))).toBe(true);
+  expect(row.style.paddingLeft).toBe('8px');
+  expect(row.style.paddingRight).toBe('8px');
 });
 
 it('the small detent is height-bounded, with the entries and estimates in a scroll area and the header and actions pinned', async () => {
@@ -122,7 +157,8 @@ it('the small detent is height-bounded, with the entries and estimates in a scro
   const scroll = await screen.findByTestId('sheet-scroll');
   expect(scroll.style.maxHeight).toMatch(/^\d+(\.\d+)?px$/);
   expect(within(scroll).getAllByRole('button', { name: /^Remove:/ }).length).toBe(5);
-  for (const id of ['sheet-grabber', 'day-sheet-close', 'sheet-expand', 'day-log', 'day-details']) {
+  expect(screen.queryByTestId('day-details')).toBeNull();
+  for (const id of ['sheet-grabber', 'day-sheet-close', 'sheet-expand', 'day-log']) {
     expect(screen.getByTestId(id)).toBeTruthy();
     expect(scroll.contains(screen.getByTestId(id))).toBe(false);
   }
@@ -182,9 +218,12 @@ it('a future day has no Log and says nothing is estimated', async () => {
   view();
   fireEvent.click(screen.getByTestId('day-2026-11-25'));
   expect(screen.queryByTestId('day-log')).toBeNull();
+  expect(screen.getByTestId('day-card-open').getAttribute('aria-label')).toContain('No estimate covers this day.');
+  fireEvent.click(screen.getByTestId('day-card-open'));
   expect(screen.queryByText('Nothing logged')).toBeNull();
   expect(screen.getByText('No estimate covers this day.')).toBeTruthy();
   expect(screen.getByTestId('cal-future-note')).toBeTruthy();
+  expect(screen.queryByTestId('day-log')).toBeNull();
 });
 
 it('shows the cycle-day numbers, and hides them and their legend entry when the setting is off', async () => {
@@ -206,7 +245,7 @@ it('a month-list row selects its day', async () => {
   view();
   fireEvent.click(await screen.findByTestId('month-row-logged-2026-11-10'));
   expect(screen.getByTestId('day-2026-11-10').getAttribute('aria-selected')).toBe('true');
-  expect(within(screen.getByTestId('day-card')).getByText(/Tuesday 10 November/)).toBeTruthy();
+  expect(screen.getByTestId('day-card-open').getAttribute('aria-label')).toMatch(/^Tuesday 10 November\./);
 });
 
 it('marks symptom days with an accent dot and other logs with a grey one, and the legend names both', async () => {

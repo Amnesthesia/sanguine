@@ -16,8 +16,8 @@ export const colors = {
 
 /** iOS glass tints (rgba in the plan, split into base colour + alpha so contrast can be computed). */
 export const glass = {
-  light: { inset: 10, tintBase: '#FFFFFF', tintAlpha: 0.55, accentBase: '#BC4560', accentAlpha: 0.96, onAccent: '#FFFFFF' },
-  dark: { inset: 10, tintBase: '#000000', tintAlpha: 0.55, accentBase: '#D4607A', accentAlpha: 0.72, onAccent: '#FFFFFF' },
+  light: { inset: 10, tintBase: '#FFFFFF', tintAlpha: 0.55 },
+  dark: { inset: 10, tintBase: '#000000', tintAlpha: 0.55 },
 } as const;
 
 /** Android Material 3 roles (seed #BC4560). The surface roles are the iOS bg / surface / surface2 values, so Android is the same

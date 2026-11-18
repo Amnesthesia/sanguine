@@ -1,23 +1,71 @@
-import { addDays, type CycleRecord, type DailyLog, type ISODate, studentTQuantile } from '@sanguine/engine';
+import { addDays, type CycleRecord, type DailyLog, type ISODate, type PastOvulation, type Prediction, studentTQuantile } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { accuracyText, cycleLengthSeries, historyRows, lengthAxisLabels, phaseBars } from './insightsModel';
+import i18n from '@/i18n';
+import { accuracyText, cycleLengthSeries, cycleOvulation, historyRows, lengthAxisLabels, ovulationWords, phaseBars } from './insightsModel';
 
 const cyc = (id: string, start: ISODate, length: number | undefined, over: Partial<CycleRecord> = {}): CycleRecord => ({
   id, start, quality: 'valid', end: addDays(start, 3), bleedDays: 4, ...(length ? { length, nextStart: addDays(start, length) } : {}), ...over,
 });
+const past = (cycleId: string, lo: ISODate, hi: ISODate, basis: PastOvulation['basis'] = 'calendar'): PastOvulation =>
+  ({ cycleId, cycleStart: lo, point: lo, i80: { lo, hi }, basis, confidence: 'medium' });
 const cycles: CycleRecord[] = [cyc('a', '2026-08-04', 28), cyc('b', '2026-09-01', 29), cyc('c', '2026-09-30', undefined)];
 
 describe('historyRows (§8.3 Insights history)', () => {
-  it('newest first, with length, bleed days, ovulation basis and a current marker', () => {
-    const rows = historyRows(cycles, '2026-10-10');
+  it('newest first, with length, bleed days, the ovulation estimate and a current marker', () => {
+    const rows = historyRows(cycles, '2026-10-10', { pastOv: [past('b', '2026-09-13', '2026-09-17', 'lh')], prediction: { ovulation: { i80: { lo: '2026-10-12', hi: '2026-10-16' }, basis: 'calendar' } } as Prediction });
     expect(rows.map((r) => r.id)).toEqual(['c', 'b', 'a']);
-    expect(rows[0]).toMatchObject({ start: '30 Sep', current: true, lengthDays: undefined, dayOfCycle: 11, bleedDays: 4, basis: 'calendar', quality: 'valid' });
+    expect(rows[0]).toMatchObject({ start: '30 Sep', current: true, lengthDays: undefined, dayOfCycle: 11, bleedDays: 4, quality: 'valid', ovulation: { i80: { lo: '2026-10-12', hi: '2026-10-16' }, basis: 'calendar', past: false } });
+    expect(rows[1]?.ovulation).toEqual({ i80: { lo: '2026-09-13', hi: '2026-09-17' }, basis: 'lh', past: true });
+    // no engine estimate for the cycle (left out, hormonal IUD): no ovulation at all
+    expect(rows[2]?.ovulation).toBeUndefined();
     expect(rows[1]).toMatchObject({ start: '1 Sep', lengthDays: 29, current: false });
   });
-  it('carries a biomarker basis and flags an unusually long cycle with its three actions (incl. "I was pregnant", which needs the next start)', () => {
+  it('flags an unusually long cycle with its three actions (incl. "I was pregnant", which needs the next start)', () => {
     const rows = historyRows([cyc('x', '2026-05-01', 56, { quality: 'suspect_skip', ovulation: { point: '2026-05-20', sd: 1, basis: 'lh' } }), cyc('y', '2026-06-26', undefined)], '2026-07-01');
-    expect(rows[1]).toMatchObject({ basis: 'lh', quality: 'suspect_skip', offerMissedLog: true, midDay: '2026-05-29', nextStartISO: '2026-06-26' });
+    expect(rows[1]).toMatchObject({ quality: 'suspect_skip', offerMissedLog: true, midDay: '2026-05-29', nextStartISO: '2026-06-26' });
     expect(rows[0]?.offerMissedLog).toBe(false);
+  });
+});
+
+describe('cycleOvulation: the engine estimate behind a cycle row and the cycle screen', () => {
+  const pred = { ovulation: { point: '2026-10-14', i80: { lo: '2026-10-12', hi: '2026-10-16' }, sd: 1.5, confidence: 'medium', basis: 'bbt' } } as Prediction;
+  it('a closed cycle takes its pastOvulations row, the open cycle the prediction', () => {
+    expect(cycleOvulation({ id: 'b', nextStart: '2026-09-30' }, [past('b', '2026-09-13', '2026-09-17', 'lh')], pred)).toEqual({ i80: { lo: '2026-09-13', hi: '2026-09-17' }, basis: 'lh', past: true });
+    expect(cycleOvulation({ id: 'c', nextStart: undefined }, [], pred)).toEqual({ i80: { lo: '2026-10-12', hi: '2026-10-16' }, basis: 'bbt', past: false });
+  });
+  it('nothing when the engine gives no estimate or the prediction is suspended (past cycles included)', () => {
+    expect(cycleOvulation({ id: 'a', nextStart: '2026-09-01' }, [past('b', '2026-09-13', '2026-09-17')], pred)).toBeUndefined();
+    expect(cycleOvulation({ id: 'c', nextStart: undefined }, [], {} as Prediction)).toBeUndefined();
+    expect(cycleOvulation({ id: 'b', nextStart: '2026-09-30' }, [past('b', '2026-09-13', '2026-09-17')], { suspended: { reason: 'x' } } as Prediction)).toBeUndefined();
+  });
+});
+
+describe('ovulationWords (owner, real device: "calendar" meant nothing)', () => {
+  const tr = i18n.t.bind(i18n) as (k: string, p?: Record<string, string>) => string;
+  const on = { show: true, includeUncertain: false };
+  const est = (lo: ISODate, hi: ISODate, basis: PastOvulation['basis'] = 'calendar', isPast = true) => ({ i80: { lo, hi }, basis, past: isPast });
+  it('the 80% range, and no basis words for a calendar estimate', () => {
+    expect(ovulationWords(est('2026-10-13', '2026-10-17'), on, tr)).toEqual({ line: 'Ovulation estimate 13\u201317 Oct', basis: undefined });
+  });
+  it('the basis in plain words when a signal dated it', () => {
+    expect(ovulationWords(est('2026-10-13', '2026-10-15', 'lh'), on, tr)?.basis).toBe('from your LH tests');
+    expect(ovulationWords(est('2026-10-13', '2026-10-15', 'bbt'), on, tr)?.basis).toBe('from your temperature readings');
+    expect(ovulationWords(est('2026-10-13', '2026-10-15', 'mucus'), on, tr)?.basis).toBe('from your cervical mucus notes');
+    expect(ovulationWords(est('2026-10-13', '2026-10-15', 'combined'), on, tr)?.basis).toBe('from your tests and readings');
+    // every engine basis has words, never a raw key
+    for (const b of ['wearable', 'cervix'] as const) expect(ovulationWords(est('2026-10-13', '2026-10-15', b), on, tr)?.basis).toMatch(/^from your /);
+  });
+  it('a range over 12 days: only the word uncertain, never a date, unless she opted in to uncertain estimates', () => {
+    const wide = est('2026-10-05', '2026-10-18');
+    expect(ovulationWords(wide, on, tr)?.line).toBe('Ovulation estimate uncertain');
+    expect(ovulationWords(wide, { show: true, includeUncertain: true }, tr)?.line).toBe('Ovulation estimate uncertain: could have fallen 5\u201318 Oct');
+    expect(ovulationWords({ ...wide, past: false }, { show: true, includeUncertain: true }, tr)?.line).toBe('Ovulation estimate uncertain: could fall 5\u201318 Oct');
+    // exactly 12 days is not wide (an arm of 6 days, D-098)
+    expect(ovulationWords(est('2026-10-05', '2026-10-17'), on, tr)?.line).toBe('Ovulation estimate 5\u201317 Oct');
+  });
+  it('nothing when the estimate is hidden (teen mode, the setting) or there is none', () => {
+    expect(ovulationWords(est('2026-10-13', '2026-10-17'), { show: false, includeUncertain: true }, tr)).toBeUndefined();
+    expect(ovulationWords(undefined, on, tr)).toBeUndefined();
   });
 });
 

@@ -1,7 +1,7 @@
 import { energyInsight, MIN_CHART_POINTS } from '@/features/insights/energyModel';
 import { GUIDANCE, phaseOn } from '@/features/guidance/guidance';
 import { SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
-import { addDays, analyzeCycles, detectBbtShift, diffDays } from '@sanguine/engine';
+import { addDays, analyzeCycles, detectBbtShift, diffDays, pastOvulations } from '@sanguine/engine';
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -56,7 +56,9 @@ export default function InsightsScreen() {
   const energyFrom = addDays(today, -83);
   const energyMean = energy.window.length ? Math.round((energy.window.reduce((a, p) => a + p.level, 0) / energy.window.length) * 10) / 10 : 0;
   const closed = cycles.filter((c) => c.length !== undefined).length;
-  const rows = useMemo(() => historyRows(cycles, today), [cycles, today]);
+  const pastOv = useMemo(() => (history && settings ? pastOvulations(history, settings) : []), [history, settings]);
+  const rows = useMemo(() => historyRows(cycles, today, { pastOv, prediction }), [cycles, today, pastOv, prediction]);
+  const estimates = { show: fertilityTools && showEstimate, includeUncertain: eff.showUncertainEstimates };
   const series = useMemo(() => cycleLengthSeries(cycles, prediction?.cycleLength), [cycles, prediction]);
   const bars = useMemo(() => phaseBars(cycles, history?.logs ?? [], today), [cycles, history, today]);
   const pattern = useMemo(() => (settings && inPatternState(settings.lifeStates, today) ? cyclePattern(cycles, history?.logs ?? [], today) : undefined), [settings, cycles, history, today]);
@@ -82,7 +84,7 @@ export default function InsightsScreen() {
         ) : (<>
           {summary ? <LengthSummaryCard s={summary} /> : null}
           {rows.map((r) => (
-            <HistoryRow key={r.id} r={r} fertilityTools={fertilityTools} onOpen={() => router.push({ pathname: '/cycle/[id]', params: { id: r.id } })} onInclude={() => { if (store) void setCycleExcluded(store, r.startISO, false).then(refresh); }} actions={
+            <HistoryRow key={r.id} r={r} estimates={estimates} onOpen={() => router.push({ pathname: '/cycle/[id]', params: { id: r.id } })} onInclude={() => { if (store) void setCycleExcluded(store, r.startISO, false).then(refresh); }} actions={
               r.offerMissedLog && r.midDay ? (
                 <View style={{ gap: 2 }}>
                   <Button kind="text" testID="missed-log" label={tr('insights.missedLogPrompt')} onPress={() => router.push({ pathname: '/log', params: { day: r.midDay as string } })} />

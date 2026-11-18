@@ -1,7 +1,7 @@
 // Month grid view-model (PLAN.md §8.3, §8.5): which marks each day carries. Pure; the screen only draws it.
-import { addDays, diffDays, type ISODate, isoWeekday, type PastOvulation, type Prediction } from '@sanguine/engine';
+import { addDays, diffDays, fertileDayProbabilities, type ISODate, isoWeekday, type PastOvulation, type Prediction, Z80 } from '@sanguine/engine';
 import type { MoonPhase } from './moon';
-import { ovulationDrawable, ovulationUncertain, shownFertileDays, UNCERTAIN_ARM_DAYS } from '@/features/today/fertileShown';
+import { FERTILE_MIN_P, ovulationDrawable, ovulationUncertain, shownFertileDays, UNCERTAIN_ARM_DAYS } from '@/features/today/fertileShown';
 import i18n from '@/i18n';
 import type { WeekStart } from '@/i18n/locale';
 import { formatLong, formatMonthYear, formatRange } from '@/ui/format';
@@ -91,6 +91,8 @@ function estimateMarks(i: EstimateInput, today: ISODate) {
   // a band is a range: one shown day (the rest under the opacity floor, or clipped by the engine) is never drawn or worded as a fertile day
   const shownFertile = i.showEstimate ? shownFertileDays(p, { includeUncertain: i.includeUncertain }) : [];
   if (shownFertile.length > 1) for (const f of shownFertile) fertile.set(f.date, Math.min(1, f.pInWindow));
+  // past cycles get their fertile window too (owner, P8-23), on the same terms as the current one: `past` is already gated
+  for (const r of past) for (const f of pastFertileDays(r)) fertile.set(f.date, Math.max(fertile.get(f.date) ?? 0, f.pInWindow));
   const ovMarks = new Map<ISODate, 'point' | 'range'>();
   const put = (d: ISODate, v: 'point' | 'range') => { if (ovMarks.get(d) !== 'point') ovMarks.set(d, v); };
   for (const r of past) for (let d = r.i80.lo; d <= r.i80.hi; d = addDays(d, 1)) put(d, d === r.point ? 'point' : 'range');
@@ -103,6 +105,16 @@ function estimateMarks(i: EstimateInput, today: ISODate) {
     return { periodEstimate, bleed, core80, edge95, fertile: fertile.get(date), ovulation: ovMarks.get(date) };
   };
   return { cb, next, ov, uncertain, past, on, bleedFrom, fertile };
+}
+
+/** A past cycle's fertile window, rebuilt by the engine's own rule from its retrospective estimate (the row has no sd: its 80% range is
+ *  point ± Z80·sd, so sd = half-width / Z80, floored at half a day). Days under the drawing floor are left out; one day left is no window. */
+export function pastFertileDays(r: PastOvulation): Array<{ date: ISODate; pInWindow: number }> {
+  const sd = Math.max(0.5, diffDays(r.i80.hi, r.i80.lo) / 2 / Z80);
+  const days = fertileDayProbabilities({ point: r.point, sd, basis: r.basis }, r.cycleStart, diffDays(r.i80.hi, r.cycleStart) + 1)
+    .filter((f) => f.pInWindow >= FERTILE_MIN_P)
+    .map((f) => ({ date: f.date, pInWindow: Math.min(1, f.pInWindow) }));
+  return days.length > 1 ? days : [];
 }
 
 const fertileWord = (f: number) => t(`calendar.fertileWords.${f < 0.25 ? 'low' : f < 0.5 ? 'moderate' : 'high'}`);
@@ -213,14 +225,18 @@ export function monthRows(i: EstimateInput & { month: string; today: ISODate; pe
     if (lo) add('periodEstimate', lo, cb.i80.hi, t('calendar.list.periodEnds'), true);
   }
   if (i.showEstimate && !i.prediction?.suspended) {
-    const days = [...fertile.keys()].sort();
-    const first = days[0];
-    const last = days[days.length - 1];
-    if (first && last) {
+    // one row per window (a run of consecutive days): this cycle's and any past cycle's that falls in the month
+    const runs: ISODate[][] = [];
+    for (const d of [...fertile.keys()].sort()) {
+      const run = runs[runs.length - 1];
+      if (run && addDays(run[run.length - 1] as ISODate, 1) === d) run.push(d);
+      else runs.push([d]);
+    }
+    for (const run of runs) {
       // the likeliest days are a range of at least two, so the list never names a single fertile day
-      const top = days.filter((d) => (fertile.get(d) ?? 0) >= 0.5);
+      const top = run.filter((d) => (fertile.get(d) ?? 0) >= 0.5);
       const most = top.length > 1 ? t('calendar.list.fertileMost', { range: dayRange(top[0] as ISODate, top[top.length - 1] as ISODate) }) : '';
-      add('fertile', first, last, [t('calendar.list.fertile'), most].filter(Boolean).join(' · '), true);
+      add('fertile', run[0] as ISODate, run[run.length - 1] as ISODate, [t('calendar.list.fertile'), most].filter(Boolean).join(' · '), true);
     }
     if (ov && on(ov.point, false).ovulation) {
       const key = uncertain ? 'ovulationUncertain' : 'ovulation';

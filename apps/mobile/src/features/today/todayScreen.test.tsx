@@ -104,7 +104,8 @@ describe('Today, typical day', () => {
     env.scheme = 'dark';
     view();
     expect(screen.queryByTestId('hero-wash')).toBeNull();
-    expect(screen.queryAllByTestId('glass-view')).toHaveLength(0);
+    // the cards are opaque; only the floating Log today pill (navigation chrome, frame Today-Dark) may be glass
+    expect(screen.queryAllByTestId('glass-view').every((g) => g.contains(screen.getByTestId('quick-log')))).toBe(true);
     cleanup();
     env.scheme = 'light'; env.platform = 'android';
     view();

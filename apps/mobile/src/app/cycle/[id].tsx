@@ -1,12 +1,14 @@
 // Cycle detail (PLAN.md §8.3): one cycle, where its ovulation estimate came from, and whether it counts toward estimates.
-import { analyzeCycles, detectBbtShift, diffDays } from '@sanguine/engine';
+import { analyzeCycles, detectBbtShift, diffDays, pastOvulations } from '@sanguine/engine';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { effectivePrefs } from '@/data/prefs';
 import { fromC } from '@/features/logging/actions';
 import { setCycleExcluded } from '@/features/insights/cycleExclude';
+import { cycleOvulation, ovulationWords } from '@/features/insights/insightsModel';
 import { cycleTimeline } from '@/features/insights/readings';
+import { SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
@@ -20,8 +22,10 @@ export default function CycleDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { history, settings, prediction, store, refresh, prefs, profile, today } = useApp();
   // under 18 the ovulation date, its basis and the luteal length stay hidden like everywhere else (§8.6, I-18, D-075)
-  const { fertilityTools } = effectivePrefs(prefs, profile, today);
+  const eff = effectivePrefs(prefs, profile, today);
+  const { fertilityTools } = eff;
   const classified = useMemo(() => (history && settings ? analyzeCycles(history, settings) : []), [history, settings]);
+  const pastOv = useMemo(() => (history && settings ? pastOvulations(history, settings) : []), [history, settings]);
   const entry = classified.find((c) => c.record.id === id);
   const c = entry?.record;
   const conflict = prediction?.cycleQuality.find((q) => q.cycleId === id)?.conflict;
@@ -33,6 +37,8 @@ export default function CycleDetail() {
   }
   if (!c) return <SubScreen testID="screen-cycle" backTestID="cycle-back" title={tr('insights.cycleDetail.title')}><Card testID="cycle-missing"><Text color="textSecondary">{tr('insights.cycleDetail.missing')}</Text></Card></SubScreen>;
 
+  // the same estimate and words as the cycle's row in Insights: a date range, its basis in plain words, nothing when hidden or when the engine gives none
+  const ov = ovulationWords(cycleOvulation(c, pastOv, prediction), { show: fertilityTools && SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate, includeUncertain: eff.showUncertainEstimates }, tr);
   const luteal = c.ovulation && c.ovulation.basis !== 'calendar' && c.nextStart ? diffDays(c.nextStart, c.ovulation.point) - 1 : undefined;
   // the same readings Insights charts: undisturbed, by mouth, vagina or other (not wrist or finger)
   const temps = (history?.temperatures ?? []).filter((r) => !r.disturbed && (r.source === 'oral' || r.source === 'vaginal' || r.source === 'other'));
@@ -60,14 +66,12 @@ export default function CycleDetail() {
         <Text variant="heading" accessibilityRole="header">{tr('insights.cycleDetail.timeline')}</Text>
         {timeline.map((e) => <Text key={e.kind}>{timelineText(e)}</Text>)}
       </Card>
-      {fertilityTools ? <Card testID="cycle-ovulation" style={{ gap: 12 }}>
+      {ov ? <Card testID="cycle-ovulation" style={{ gap: 12 }}>
         <Text variant="heading" accessibilityRole="header">{tr('insights.cycleDetail.ovulation')}</Text>
         <EstimateTag />
-        {c.ovulation && c.ovulation.basis !== 'calendar' ? (<>
-          <Text>{formatDayYear(c.ovulation.point)}</Text>
-          <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.ovulationBasis', { basis: tr(`insights.ovulationBasis.${c.ovulation.basis}`).replace('ovulation: ', '') })}</Text>
-          {luteal !== undefined ? <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.luteal', { days: luteal })}</Text> : null}
-        </>) : <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.ovulationNone')}</Text>}
+        <Text>{ov.line}</Text>
+        <Text variant="bodySmall" color="textSecondary">{ov.basis ? tr('insights.cycleDetail.ovulationBasis', { basis: ov.basis }) : tr('insights.cycleDetail.ovulationNone')}</Text>
+        {ov.basis && luteal !== undefined ? <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.luteal', { days: luteal })}</Text> : null}
         {conflict ? <Text variant="bodySmall" testID="cycle-conflict">{tr('insights.cycleDetail.conflict')}</Text> : null}
       </Card> : null}
       {c.quality === 'user_excluded' ? <Text variant="bodySmall" color="textSecondary">{tr('insights.cycleDetail.excluded')}</Text> : null}
