@@ -31,4 +31,17 @@ describe('setCycleExcluded', () => {
     await setCycleExcluded(s, '2026-07-17', false);
     expect((await excludes(s)).map((e) => (JSON.parse(e.payload) as { cycle_start: string }).cycle_start)).toEqual(['2026-08-31']);
   });
+  it('leaving out twice (a double tap) appends once', async () => {
+    const s = await store();
+    await setCycleExcluded(s, '2026-07-17', true);
+    await setCycleExcluded(s, '2026-07-17', true);
+    expect(await excludes(s)).toHaveLength(1);
+  });
+  it('including retracts every active exclusion of the cycle, e.g. a synced duplicate', async () => {
+    const s = await store();
+    for (let i = 0; i < 2; i++) await s.append({ kind: 'cycle.exclude', payload: { cycle_start: '2026-07-17', reason: 'user_excluded' } });
+    await s.append({ kind: 'cycle.exclude', payload: { cycle_start: '2026-08-31', reason: 'user_excluded' } });
+    await setCycleExcluded(s, '2026-07-17', false);
+    expect((await excludes(s)).map((e) => (JSON.parse(e.payload) as { cycle_start: string }).cycle_start)).toEqual(['2026-08-31']);
+  });
 });

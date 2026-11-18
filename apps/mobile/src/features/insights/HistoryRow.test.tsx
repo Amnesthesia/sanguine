@@ -46,6 +46,19 @@ describe('LengthSummaryCard', () => {
     expect(screen.getByText('24\u201345 days')).toBeTruthy();
     expect(screen.getByText('24, 38, 31, 45, 27, 36 days \u00b7 21-day spread.')).toBeTruthy();
     expect(screen.getByText('Low confidence')).toBeTruthy();
-    expect(screen.getAllByTestId('meter-bar')).toHaveLength(3);
+    // low confidence is one filled bar out of three: the filled one is darker than the other two
+    const bars = screen.getAllByTestId('meter-bar').map((b) => getComputedStyle(b).backgroundColor);
+    expect(bars).toHaveLength(3);
+    expect(bars[1]).toBe(bars[2]);
+    expect(bars[0]).not.toBe(bars[1]);
+  });
+  it('says the list counts the cycles she left out, unlike the chart', () => {
+    render(<LengthSummaryCard s={summary} />);
+    expect(screen.getByText('Your last 6 completed cycles, including any you left out of estimates. The cycle length chart shows typical cycles only.')).toBeTruthy();
+  });
+  it('more confidence fills more bars', () => {
+    render(<LengthSummaryCard s={{ ...summary, confidence: 'high' }} />);
+    const bars = screen.getAllByTestId('meter-bar').map((b) => getComputedStyle(b).backgroundColor);
+    expect(new Set(bars).size).toBe(1);
   });
 });

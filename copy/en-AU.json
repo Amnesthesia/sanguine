@@ -547,7 +547,8 @@
     "includeLabel": "Include the cycle starting {date} in your estimates",
     "lengthSummary": {
       "range": "{min}\u2013{max} days",
-      "lengths": "{list} days \u00b7 {spread}-day spread."
+      "lengths": "{list} days \u00b7 {spread}-day spread.",
+      "scope": "Your last {n} completed cycles, including any you left out of estimates. The cycle length chart shows typical cycles only."
     },
     "chart": {
       "yAxis": "days",
@@ -588,6 +589,7 @@
       "timelineBleeding": "{range} \u00b7 Bleeding",
       "timelineLh": "{date} \u00b7 LH test positive",
       "timelineRise": "{date} \u00b7 Temperature rise",
+      "timelineReading": "{date} \u00b7 {value} \u00b0{unit}",
       "timelineNext": "{date} \u00b7 Next period",
       "missing": "This cycle is no longer in your history."
     }

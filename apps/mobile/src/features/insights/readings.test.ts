@@ -51,12 +51,19 @@ describe('phaseReading', () => {
 describe('cycleTimeline', () => {
   const rec = c('2026-10-03', 28, { end: '2026-10-06', nextStart: '2026-10-31' });
   const lh = [{ date: '2026-10-13', result: 'positive' as const }, { date: '2026-11-02', result: 'positive' as const }];
-  it('lists start, bleeding, first positive LH test, temperature rise and next period in order', () => {
-    expect(cycleTimeline(rec, lh, '2026-10-18', true).map((e) => e.kind)).toEqual(['started', 'bleeding', 'lh', 'rise', 'next']);
-    expect(cycleTimeline(rec, lh, '2026-10-18', true).find((e) => e.kind === 'lh')?.from).toBe('2026-10-13');
+  const temps = [{ date: '2026-10-25', valueC: 36.5 }, { date: '2026-10-27', valueC: 36.42 }, { date: '2026-11-01', valueC: 36.9 }];
+  const tl = (r: CycleRecord, l: typeof lh, rise: string | undefined, gate: boolean, t = temps) => cycleTimeline(r, l, rise, gate, t);
+  it('lists start, bleeding, last bleeding day, first positive LH test, temperature rise, latest temperature and next period in order', () => {
+    expect(tl(rec, lh, '2026-10-18', true).map((e) => e.kind)).toEqual(['started', 'bleeding', 'ended', 'lh', 'rise', 'reading', 'next']);
+    expect(tl(rec, lh, '2026-10-18', true).find((e) => e.kind === 'lh')?.from).toBe('2026-10-13');
+    expect(tl(rec, lh, '2026-10-18', true).find((e) => e.kind === 'ended')?.from).toBe('2026-10-06');
+  });
+  it('the temperature row is the latest reading inside this cycle, with its value in degrees C', () => {
+    const r = tl(rec, lh, undefined, true).find((e) => e.kind === 'reading');
+    expect(r).toMatchObject({ from: '2026-10-27', valueC: 36.42 });
   });
   it('drops the fertility rows when the gate is off, and rows without data', () => {
-    expect(cycleTimeline(rec, lh, '2026-10-18', false).map((e) => e.kind)).toEqual(['started', 'bleeding', 'next']);
-    expect(cycleTimeline(c('2026-10-31', undefined), [], undefined, true).map((e) => e.kind)).toEqual(['started']);
+    expect(tl(rec, lh, '2026-10-18', false).map((e) => e.kind)).toEqual(['started', 'bleeding', 'ended', 'next']);
+    expect(tl(c('2026-10-31', undefined), [], undefined, true, []).map((e) => e.kind)).toEqual(['started']);
   });
 });

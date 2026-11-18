@@ -1,6 +1,6 @@
 // Pure helpers for Insights and the cycle page: the length summary shown when cycles vary, the plain sentence under each chart,
 // and the cycle timeline. Descriptions of her own logs; none of them feeds the engine.
-import type { Confidence, CycleRecord, ISODate, LhTest } from '@sanguine/engine';
+import type { Confidence, CycleRecord, ISODate, LhTest, TemperatureReading } from '@sanguine/engine';
 import type { Phase } from './insightsModel';
 
 const SUMMARY_CYCLES = 6;
@@ -38,17 +38,20 @@ export function phaseReading(share: Record<Phase, number>): Phase | undefined {
   return top && share[top] > 0 && (next === undefined || share[top] > share[next]) ? top : undefined;
 }
 
-export interface TimelineEntry { kind: 'started' | 'bleeding' | 'lh' | 'rise' | 'next'; from: ISODate; to?: ISODate }
+export interface TimelineEntry { kind: 'started' | 'bleeding' | 'ended' | 'lh' | 'rise' | 'reading' | 'next'; from: ISODate; to?: ISODate; valueC?: number }
 
-/** One cycle's signals in date order. LH and temperature rows are fertility signals: dropped when the gate (`fertilityTools`) is off. */
-export function cycleTimeline(c: CycleRecord, lh: Array<Pick<LhTest, 'date' | 'result'>>, riseDay: ISODate | undefined, fertilityTools: boolean): TimelineEntry[] {
+/** One cycle's signals in date order. LH and temperature rows are fertility signals: dropped when the gate (`fertilityTools`) is off.
+ *  `temperatures` are the readings that count (undisturbed, taken by mouth, vagina or other); the row shows the latest one in the cycle. */
+export function cycleTimeline(c: CycleRecord, lh: Array<Pick<LhTest, 'date' | 'result'>>, riseDay: ISODate | undefined, fertilityTools: boolean, temperatures: Array<Pick<TemperatureReading, 'date' | 'valueC'>> = []): TimelineEntry[] {
   const inCycle = (d: ISODate) => d >= c.start && (c.nextStart === undefined || d < c.nextStart);
   const positive = fertilityTools ? lh.filter((x) => (x.result === 'positive' || x.result === 'peak') && inCycle(x.date)).map((x) => x.date).sort()[0] : undefined;
   const rise = fertilityTools && riseDay !== undefined && inCycle(riseDay) ? riseDay : undefined;
   const out: TimelineEntry[] = [{ kind: 'started', from: c.start }];
-  if (c.end) out.push({ kind: 'bleeding', from: c.start, to: c.end });
+  if (c.end) out.push({ kind: 'bleeding', from: c.start, to: c.end }, { kind: 'ended', from: c.end });
   if (positive) out.push({ kind: 'lh', from: positive });
   if (rise) out.push({ kind: 'rise', from: rise });
+  const reading = fertilityTools ? temperatures.filter((x) => inCycle(x.date)).sort((a, b) => (a.date < b.date ? -1 : 1)).at(-1) : undefined;
+  if (reading) out.push({ kind: 'reading', from: reading.date, valueC: reading.valueC });
   if (c.nextStart) out.push({ kind: 'next', from: c.nextStart });
-  return out;
+  return out.sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0)); // stable: same-day rows keep the order above
 }

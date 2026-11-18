@@ -20,6 +20,8 @@ export function LengthSummaryCard({ s }: { s: LengthSummary }) {
       <Text variant="heading" accessibilityRole="header">{tr('insights.lengthSummary.range', { min: s.min, max: s.max })}</Text>
       <Meter level={confidenceLevel(s.confidence)} word={tr(`estimates.how.confidence.${s.confidence}`)} />
       <Text variant="bodySmall">{tr('insights.lengthSummary.lengths', { list: s.lengths.join(', '), spread: s.spread })}</Text>
+      {/* this list keeps cycles she left out; the chart on the Charts tab does not, so say which is which */}
+      <Text variant="caption" color="textSecondary">{tr('insights.lengthSummary.scope', { n: s.lengths.length })}</Text>
     </Card>
   );
 }

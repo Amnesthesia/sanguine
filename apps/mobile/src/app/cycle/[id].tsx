@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { effectivePrefs } from '@/data/prefs';
+import { fromC } from '@/features/logging/actions';
 import { setCycleExcluded } from '@/features/insights/cycleExclude';
 import { cycleTimeline } from '@/features/insights/readings';
 import { useApp } from '@/state/app';
@@ -33,13 +34,17 @@ export default function CycleDetail() {
   if (!c) return <SubScreen testID="screen-cycle" backTestID="cycle-back" title={tr('insights.cycleDetail.title')}><Card testID="cycle-missing"><Text color="textSecondary">{tr('insights.cycleDetail.missing')}</Text></Card></SubScreen>;
 
   const luteal = c.ovulation && c.ovulation.basis !== 'calendar' && c.nextStart ? diffDays(c.nextStart, c.ovulation.point) - 1 : undefined;
-  const timeline = cycleTimeline(c, history?.lh ?? [], history ? detectBbtShift(history.temperatures, c.start)?.firstHighDate : undefined, fertilityTools);
+  // the same readings Insights charts: undisturbed, by mouth, vagina or other (not wrist or finger)
+  const temps = (history?.temperatures ?? []).filter((r) => !r.disturbed && (r.source === 'oral' || r.source === 'vaginal' || r.source === 'other'));
+  const timeline = cycleTimeline(c, history?.lh ?? [], history ? detectBbtShift(history.temperatures, c.start)?.firstHighDate : undefined, fertilityTools, temps);
   const timelineText = (e: (typeof timeline)[number]): string => {
     switch (e.kind) {
       case 'started': return tr('insights.cycleDetail.started', { date: formatDayYear(e.from) });
       case 'bleeding': return tr('insights.cycleDetail.timelineBleeding', { range: formatRange(e.from, e.to ?? e.from) });
+      case 'ended': return tr('insights.cycleDetail.ended', { date: formatDayYear(e.from) });
       case 'lh': return tr('insights.cycleDetail.timelineLh', { date: formatDay(e.from) });
       case 'rise': return tr('insights.cycleDetail.timelineRise', { date: formatDay(e.from) });
+      case 'reading': return tr('insights.cycleDetail.timelineReading', { date: formatDay(e.from), value: fromC(e.valueC ?? 0, prefs.tempUnit).toFixed(2), unit: prefs.tempUnit });
       case 'next': return tr('insights.cycleDetail.timelineNext', { date: formatDay(e.from) });
     }
   };
