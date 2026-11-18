@@ -147,15 +147,6 @@
       "next": "Next period likely days {from} to {to}.",
       "legend": { "period": "Period", "estimate": "Estimate", "fertile": "Fertile window", "ovulation": "Ovulation" }
     },
-    "dial": {
-      "day": "Cycle day {day}.",
-      "periodLogged": "Period logged on days {from} to {to}.",
-      "periodEnding": "Likely ending on days {from} to {to}.",
-      "fertile": "Fertile window estimate, days {from} to {to}.",
-      "ovulation": "Ovulation estimate around day {day}.",
-      "next": "Next period likely days {from} to {to}.",
-      "legend": { "period": "Period", "estimate": "Estimate", "fertile": "Fertile window", "ovulation": "Ovulation" }
-    },
     "legend": "darker = more likely to be in the fertile window",
     "ring": {
       "dayLabel": "Day {day} of your cycle",
@@ -998,6 +989,41 @@
       "early": "Early evidence",
       "general": "General guidance, not specific to this phase"
     },
+    "evidenceKey": {
+      "title": "How to read the evidence bars",
+      "strong": { "word": "Strong", "def": "large reviews or national guidelines agree." },
+      "some": { "word": "Some", "def": "several small trials point the same way, results vary." },
+      "early": { "word": "Early", "def": "one study, lab work, or a plausible link not tested in people." },
+      "general": { "word": "General", "def": "good advice on any day, not specific to this phase." },
+      "note": "Estimates use the same bars for confidence: how sure the app is about a date, from your own data."
+    },
+    "curve": {
+      "label": "Illustration of a typical cycle: estrogen rises in the first half and again a little after the middle; progesterone rises in the second half; both fall before the next period.",
+      "labelHere": "You are in this part of the cycle: {phase}.",
+      "labelExpected": "Expected: {phase}.",
+      "caption": "A typical cycle, drawn to explain. Not your own hormone levels.",
+      "period": "period",
+      "estrogen": "Estrogen",
+      "progesterone": "Progesterone",
+      "here": "you are here",
+      "hereExpected": "expected here",
+      "day1": "Day 1",
+      "day28": "Day 28"
+    },
+    "foodName": {
+      "iron": "Iron, with vitamin C",
+      "omega3": "Omega-3 from food",
+      "vitaminC": "Vitamin C",
+      "bVitamins": "B vitamins",
+      "zinc": "Zinc",
+      "fibre": "Fibre",
+      "vitaminDB6": "Vitamin D and B6",
+      "protein": "Protein",
+      "magnesium": "Magnesium",
+      "b12": "Vitamin B12",
+      "calcium": "Calcium",
+      "carbs": "Carbohydrates"
+    },
     "menstrual": {
       "body": "Estrogen and progesterone are at their lowest, and bleeding carries iron out of the body. In a study that tracked 397 substances in the blood and urine of 34 women across the cycle, amino acids and vitamin D were higher during the period than in the second half of the cycle.",
       "move": {
@@ -1121,6 +1147,62 @@
         "tip": "Magnesium: a few small, older trials reported fewer premenstrual symptoms; reviews call the evidence limited.",
         "why": "The trials had 28 to 38 women each, and another study found no benefit. Studies comparing blood magnesium in women with and without premenstrual symptoms are inconclusive."
       }
+    }
+  },
+  "estimates": {
+    "title": "Estimates",
+    "legendLogged": "logged",
+    "legendEstimate": "estimate",
+    "periodEnd": {
+      "title": "When this period ends",
+      "line": "Most likely ends {range}, around {point}."
+    },
+    "nextPeriod": {
+      "title": "Next period",
+      "line": "Most likely starts {range}, around {point}.",
+      "legend80": "8 in 10 chance it starts here",
+      "legend95": "About 19 in 20 within the whole bar",
+      "a11y": "8 in 10 chance it starts between {lo80} and {hi80}; about 19 in 20 between {lo95} and {hi95}"
+    },
+    "ovulation": {
+      "title": "Ovulation and fertile window",
+      "line": "Ovulation most likely {range}, around {point}.",
+      "linePast": "Ovulation was most likely {range}, around {point}.",
+      "curveLabel": "ovulation",
+      "stripStart": "This cycle from day 1",
+      "stripOvulation": "ovulation estimate days {lo} to {hi}, most likely day {point}",
+      "stripFertile": "fertile window estimate from day {lo} to day {hi}",
+      "stripNext": "next period likely days {lo} to {hi}"
+    },
+    "how": {
+      "label": "HOW IT WAS WORKED OUT",
+      "confidence": {
+        "high": "High confidence",
+        "medium": "Medium confidence",
+        "low": "Low confidence"
+      },
+      "days": "{n} days",
+      "and": "and",
+      "periodEndLengths": "Your last {count} periods lasted {list}.",
+      "periodEndOne": "Your last period lasted {list}.",
+      "periodEndNone": "There are no earlier periods to go on yet, so a typical length is used and the range is wide. It narrows as you log more.",
+      "periodEndFew": "A few periods are not much to go on, so the range is wide. It narrows as you log more.",
+      "periodEndPicture": "Typical period length is up to 8 days. Yours: {list}.",
+      "periodEndYours": "yours",
+      "periodEndShaded": "Shaded: periods up to 8 days long are within the typical range used by gynaecologists worldwide.",
+      "nextPeriodNone": "You have no completed cycles yet, so this rests on what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long.",
+      "nextPeriod": "Your own cycles ({count} used, averaging {mean} days) are combined with what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long.",
+      "nextPeriodFew": "With only {count} of your cycles, the study still carries much of the weight. After about six regular cycles your own pattern takes over and confidence can reach high.",
+      "calendarOnly": "Calendar only: no LH tests or temperatures this cycle",
+      "ovulationCalendar": "The phase after ovulation lasts about 12.4 days on average (give or take 2.4), so ovulation is placed that far before your expected next period.",
+      "ovulationCalendarWide": "Cycles differ mostly in the phase before ovulation, so a calendar estimate can be several days off. Positive LH tests or a temperature rise would narrow it.",
+      "ovulationPast": "This cycle has ended, so the estimate uses its known length instead of a forecast.",
+      "fertile": "The fertile window is the 6 days ending on ovulation day.",
+      "fertileWide": "Because ovulation itself is uncertain, the green band spreads wider, darker on the days most likely to be in the window.",
+      "sources": "Sources",
+      "src1": "Munro and others 2018, International Journal of Gynecology and Obstetrics (FIGO bleeding ranges).",
+      "src2": "Bull and others 2019, npj Digital Medicine (612,613 cycles, 124,648 users).",
+      "src3": "Wilcox and others 1995, New England Journal of Medicine (221 women)."
     }
   },
   "contentKit": {
