@@ -48,12 +48,12 @@ vi.mock('@/features/share/ics', () => ({
   calendarRanges: (_p: unknown, o: { fertile: boolean }) => ({ period: { lo: '2026-11-26', hi: '2026-11-30' }, ...(o.fertile ? { fertile: { lo: '2026-11-06', hi: '2026-11-18' } } : {}) }),
 }));
 vi.mock('@/services/shareCalendar', () => ({ nextCalendarExport: async () => ({ installId: 'i', sequence: 1 }), shareCalendarFile: vi.fn() }));
-import HealthScreen from './health';
-import PrivacyScreen from './privacy';
-import BackupScreen from './backup';
-import ReportScreen from './report';
-import CalendarExportScreen from './calendar';
-import LegalScreen from './legal';
+import HealthScreen from '@/app/settings/health';
+import PrivacyScreen from '@/app/settings/privacy';
+import BackupScreen from '@/app/settings/backup';
+import ReportScreen from '@/app/settings/report';
+import CalendarExportScreen from '@/app/settings/calendar';
+import LegalScreen from '@/app/settings/legal';
 import { BackupError, recoveryWordsToSecret } from '@sanguine/crypto';
 import { createBackup, restoreBackup } from '@/data/backup';
 import { getDeviceSecret, getOrCreateDeviceSecret } from '@/services/secrets';

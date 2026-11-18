@@ -19,10 +19,10 @@ vi.mock('@/data/settings', () => ({ getSetting: async (_db: unknown, _k: string,
 vi.mock('@/services/notifications', () => ({ ensurePermission: async () => true, remindersSupported: true }));
 vi.mock('@/services/widgets', () => ({ widgetsSupported: true }));
 import SettingsRoot from '@/app/(tabs)/settings';
-import AppearanceScreen from './appearance';
-import HowScreen from './how';
-import NotificationsScreen from './notifications';
-import TrackingScreen from './tracking';
+import AppearanceScreen from '@/app/settings/appearance';
+import HowScreen from '@/app/settings/how';
+import NotificationsScreen from '@/app/settings/notifications';
+import TrackingScreen from '@/app/settings/tracking';
 
 const today = '2026-11-18';
 const update = vi.fn();
@@ -155,7 +155,7 @@ describe('decorative views are hidden on both platforms', () => {
   const files = (dir: string): string[] => readdirSync(dir).flatMap((f) => { const p = join(dir, f); return statSync(p).isDirectory() ? files(p) : /\.tsx$/.test(p) && !/\.test\.tsx$/.test(p) ? [p] : []; });
   it('every accessibilityElementsHidden (iOS) comes with importantForAccessibility (Android) in the same tag', () => {
     const bad: string[] = [];
-    for (const f of [...files(__dirname), join(__dirname, '..', '(tabs)', 'settings.tsx')]) {
+    for (const f of [...files(join(__dirname, '..', '..', 'app', 'settings')), join(__dirname, '..', '..', 'app', '(tabs)', 'settings.tsx')]) {
       const src = readFileSync(f, 'utf8');
       for (const m of src.matchAll(/<[A-Za-z.]+\s[^<>]*?accessibilityElementsHidden[^<>]*?\/?>/gs)) if (!m[0].includes('importantForAccessibility')) bad.push(`${f.split('/app/')[1]}: ${m[0].slice(0, 60)}`);
     }

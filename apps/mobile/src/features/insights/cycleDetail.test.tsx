@@ -13,7 +13,7 @@ vi.mock('@/ui/SubScreen', () => ({ SubScreen: ({ children }: { children: ReactNo
 vi.mock('@sanguine/engine', async (orig) => ({ ...(await orig<typeof import('@sanguine/engine')>()), analyzeCycles: () => [{ record: app.cycle }] }));
 const setExcluded = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock('@/features/insights/cycleExclude', () => ({ setCycleExcluded: setExcluded }));
-import CycleDetail from './[id]';
+import CycleDetail from '@/app/cycle/[id]';
 
 afterEach(() => { cleanup(); setExcluded.mockClear(); });
 const temps = [{ date: '2026-10-25', valueC: 36.5, source: 'oral' }, { date: '2026-10-27', valueC: 36.42, source: 'oral' }, { date: '2026-10-28', valueC: 37.5, source: 'oral', disturbed: true }, { date: '2026-10-29', valueC: 35, source: 'wrist' }];
