@@ -34,6 +34,7 @@ export function EnergySlider({ value: committed, onChange }: { value: EnergyLeve
   const previewRef = useRef<EnergyLevel | null>(null);
   const show = (v: EnergyLevel | null) => { previewRef.current = v; setPreview(v); };
   // a committed release keeps the thumb where the finger left it until the saved value arrives, so it does not jump back for a moment
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the reset runs when the saved value arrives, not when `show` is recreated
   useEffect(() => show(null), [committed]);
   const finish = (commit: boolean) => {
     const v = previewRef.current;
