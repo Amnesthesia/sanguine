@@ -149,6 +149,8 @@ describe('privacy and data', () => {
     fireEvent.click(screen.getByTestId('privacy-export'));
     await waitFor(() => expect(screen.getByTestId('privacy-message').textContent).toContain('Export ready.'));
     expect(toast).not.toHaveBeenCalled();
+    // the row is disabled while the first export finishes: a click before that is ignored (flaky on a slow runner)
+    await waitFor(() => expect(screen.getByTestId('privacy-export').getAttribute('aria-disabled')).not.toBe('true'));
     svc.io.share.mockRejectedValueOnce(new Error('disk full'));
     fireEvent.click(screen.getByTestId('privacy-export'));
     await waitFor(() => expect(screen.getByTestId('privacy-message').textContent).toContain('The export could not be made. disk full'));
