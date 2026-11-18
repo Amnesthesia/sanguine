@@ -8,5 +8,8 @@ export function Cite({ n }: { n: number }) {
 }
 
 export function Sources({ items }: { items: string[] }) {
-  return <Card>{items.map((item, i) => <Text key={`${i}-${item}`} variant="caption">{i + 1}. {item}</Text>)}</Card>;
+  return <Card>{items.map((item, i) => (
+    // biome-ignore lint/suspicious/noArrayIndexKey: two sources can read the same, so the position is part of the identity
+    <Text key={`${i}-${item}`} variant="caption">{i + 1}. {item}</Text>
+  ))}</Card>;
 }
