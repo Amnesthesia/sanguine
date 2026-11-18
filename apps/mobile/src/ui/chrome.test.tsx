@@ -134,6 +134,14 @@ it('a toolbar second row sits inside the same glass and inside the measured tool
   while (wrapper && getComputedStyle(wrapper).position !== 'absolute') wrapper = wrapper.parentElement;
   expect(wrapper?.contains(title)).toBe(true);
 });
+it('a pushed page can pin one primary action after its content, and draws none by default', () => {
+  render(<SubScreen title="Day" testID="d" floating={<button type="button" data-testid="pinned">Log this day</button>}><span data-testid="body">Body</span></SubScreen>);
+  const pinned = screen.getByRole('button', { name: 'Log this day' });
+  expect(screen.getByTestId('body').compareDocumentPosition(pinned) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  cleanup();
+  render(<SubScreen title="Day" testID="d"><span>Body</span></SubScreen>);
+  expect(screen.queryByTestId('pinned')).toBeNull();
+});
 it('a toolbar without a second row draws none', () => {
   render(<SubScreen title="Plain" testID="p"><span>Body</span></SubScreen>);
   expect(screen.queryByTestId('glass-bar-below')).toBeNull();
