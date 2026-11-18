@@ -129,9 +129,31 @@ export function predict(history: History, settings: EngineSettings, today: ISODa
     : undefined;
   const fertileDays = ov ? fertileDayProbabilities(ov, start, FERTILE_HORIZON_DAYS) : undefined;
 
+  // D-111: estimate the remaining bleed from the last six valid closed cycles.
+  const bleedLengths = cycles.filter((c) => c.quality === 'valid' && c.nextStart !== undefined)
+    .slice(-6).map((c) => c.bleedDays).filter((d): d is number => d !== undefined).sort((a, b) => a - b);
+  const bleedCount = bleedLengths.length;
+  let bleedOffsets: { point: number; lo: number; hi: number };
+  if (bleedCount >= 2) {
+    const mid = bleedCount >> 1;
+    const medianBleed = bleedCount % 2 ? bleedLengths[mid]!
+      : (bleedLengths[mid - 1]! + bleedLengths[mid]!) / 2;
+    bleedOffsets = { point: Math.round(medianBleed) - 1, lo: bleedLengths[0]! - 1, hi: bleedLengths[bleedCount - 1]! - 1 };
+  } else {
+    bleedOffsets = { point: 4, lo: 3, hi: 6 };
+  }
+  const bleedEstimate: NonNullable<Prediction['currentBleed']> = {
+    point: on(bleedOffsets.point),
+    i80: { lo: on(bleedOffsets.lo), hi: on(bleedOffsets.hi) },
+    confidence: cap(bleedCount >= 4 && bleedOffsets.hi - bleedOffsets.lo <= 2 ? 'medium' : 'low', gate.confidenceCap),
+  };
+  const loggedEnd = open.end ?? start;
+  const currentBleed = bleedEstimate.point > loggedEnd && today <= bleedEstimate.i80.hi
+    && !history.logs.some((log) => log.date > loggedEnd && log.flow === 'none') ? bleedEstimate : undefined;
+
   // phase
   const offset = diffDays(today, start);
-  const menstrualEnd = open.end ?? addDays(start, DEFAULT_BLEED_DAYS - 1);
+  const menstrualEnd = currentBleed?.point ?? open.end ?? addDays(start, DEFAULT_BLEED_DAYS - 1);
   const ovOffset = ov ? (ov.offset ?? diffDays(ov.point, start)) : undefined;
   const phase: NonNullable<Prediction['currentPhase']>['phase'] =
     today <= menstrualEnd ? 'menstrual'
@@ -148,6 +170,7 @@ export function predict(history: History, settings: EngineSettings, today: ISODa
   return {
     ...base,
     nextPeriod,
+    ...(currentBleed ? { currentBleed } : {}),
     ...(ovulation ? { ovulation } : {}),
     ...(fertileDays ? { fertileDays } : {}),
     currentPhase: { phase, dayOfCycle: offset + 1 },

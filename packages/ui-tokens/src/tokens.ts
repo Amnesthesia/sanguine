@@ -2,11 +2,13 @@
 export const colors = {
   light: {
     bg: '#FFFFFF', surface: '#FFFFFF', surface2: '#F3F3F4', textPrimary: '#1F1A1C', textSecondary: '#6B6165',
+    textOnGlass: '#4A4246', caution: '#8A5512', cautionBg: 'rgba(185,116,30,0.10)', cautionText: '#5E3A0C',
     border: '#E4E4E6', accent: '#BC4560', accentSoft: '#F4DCE0', onAccentSoft: '#A3354F', period: '#B8324A', periodPredicted: '#D9A0AB',
     fertile: '#5C8A6E', ovulation: '#3F6F88', flag: '#B9741E', success: '#3E7D5A', focus: '#2E5C8A',
   },
   dark: {
     bg: '#000000', surface: '#1C1C1E', surface2: '#2C2C2E', textPrimary: '#F4EEEF', textSecondary: '#B3A8AC',
+    textOnGlass: '#CFC6CA', caution: '#D9A054', cautionBg: 'rgba(217,160,84,0.10)', cautionText: '#D9A054',
     border: '#3A3A3C', accent: '#D4607A', accentSoft: '#3A1F27', onAccentSoft: '#E8869A', period: '#D9607A', periodPredicted: '#7A4654',
     fertile: '#7FAF93', ovulation: '#7FA7C2', flag: '#D9A054', success: '#6FB68C', focus: '#8FBDE6',
   },
@@ -14,8 +16,8 @@ export const colors = {
 
 /** iOS glass tints (rgba in the plan, split into base colour + alpha so contrast can be computed). */
 export const glass = {
-  light: { tintBase: '#FFFFFF', tintAlpha: 0.55, accentBase: '#BC4560', accentAlpha: 0.96, onAccent: '#FFFFFF' },
-  dark: { tintBase: '#000000', tintAlpha: 0.55, accentBase: '#D4607A', accentAlpha: 0.72, onAccent: '#FFFFFF' },
+  light: { inset: 10, tintBase: '#FFFFFF', tintAlpha: 0.55, accentBase: '#BC4560', accentAlpha: 0.96, onAccent: '#FFFFFF' },
+  dark: { inset: 10, tintBase: '#000000', tintAlpha: 0.55, accentBase: '#D4607A', accentAlpha: 0.72, onAccent: '#FFFFFF' },
 } as const;
 
 /** Android Material 3 roles (seed #BC4560). The surface roles are the iOS bg / surface / surface2 values, so Android is the same
@@ -38,8 +40,12 @@ export const type = {
 } as const;
 
 export const radii = {
-  ios: { chip: 8, card: 16, sheet: 20 },
-  android: { chip: 8, card: 28, sheet: 24 },
+  ios: { chip: 8, card: 26, float: 28, sheet: 34 },
+  android: { chip: 8, card: 26, float: 28, sheet: 34 },
+} as const;
+/** Hairline ring without a layout border, plus the two soft card shadows. */
+export const elevation = {
+  card: { boxShadow: 'inset 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08)' },
 } as const;
 export const spacing = { ios: [4, 8, 12, 16, 24, 32, 48], android: [8, 16, 24, 32, 48] } as const;
 export const gutter = 16;

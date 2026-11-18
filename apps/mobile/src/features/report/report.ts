@@ -53,7 +53,7 @@ export function buildReport(i: ReportInput, o: ReportOptions, t: T): string {
   if (!first || !last) parts.push(`<p>${esc(t('report.noCycles'))}</p>`);
   else {
     parts.push(`<h2>${esc(t('report.cyclesTitle'))}</h2>`);
-    parts.push(`<p>${esc(t('report.covered', { n: closed.length, from: formatDayYear(first.start), to: formatDayYear(addDays(last.start, (last.length as number) - 1)) }))}<br/>${esc(t('report.lengths', { min: Math.min(...lengths), max: Math.max(...lengths), median: median(lengths) }))}</p>`);
+    parts.push(`<p>${esc(t('report.covered', { count: closed.length, n: closed.length, from: formatDayYear(first.start), to: formatDayYear(addDays(last.start, (last.length as number) - 1)) }))}<br/>${esc(t('report.lengths', { min: Math.min(...lengths), max: Math.max(...lengths), median: median(lengths) }))}</p>`);
     parts.push(lengthChart(lengths));
     parts.push(`<p class="small">${esc(t('report.chartNote'))}</p>`);
     parts.push(`<table><tr>${head.map((h) => `<th>${esc(h)}</th>`).join('')}</tr>${rows.join('')}</table>`);

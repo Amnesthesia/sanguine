@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { choiceOf, currentLifeStates, lifeStateHistory } from '@/features/settings/lifeState';
+import { SettingsIcon } from '@/features/settings/SettingsIcon';
 import { useApp } from '@/state/app';
 import { Group, SettingsRow } from '@/ui/SettingsRow';
 import { Screen } from '@/ui/Screen';
@@ -25,13 +26,13 @@ export default function SettingsScreen() {
   return (
     <Screen testID="screen-settings" title={t('settings.title')}>
       <Group>
-        <SettingsRow testID="settings-life" title={t('settings.lifeState.title')} description={life} onPress={go('/settings/lifestate')} />
-        <SettingsRow testID="settings-health" title={t('settings.health.title')} description={prefs.healthTypes.length ? t('settings.summary.healthN', { n: prefs.healthTypes.length }) : t('common.off')} onPress={go('/settings/health')} />
-        <SettingsRow testID="settings-privacy" title={t('settings.privacy.title')} description={`${t(prefs.appLock ? 'settings.summary.lockOn' : 'settings.summary.lockOff')} · ${t(prefs.cloudBackup ? 'settings.summary.backupOn' : 'settings.summary.backupOff')}`} onPress={go('/settings/privacy')} />
-        <SettingsRow testID="settings-notifications" title={t('settings.notifications.title')} description={t(prefs.notifications.enabled ? 'settings.summary.reminderOn' : 'settings.summary.reminderOff')} onPress={go('/settings/notifications')} />
-        <SettingsRow testID="settings-appearance" title={t('settings.appearance.title')} description={t(`settings.appearance.theme${prefs.theme === 'system' ? 'System' : prefs.theme === 'light' ? 'Light' : 'Dark'}`)} onPress={go('/settings/appearance')} />
-        <SettingsRow testID="settings-tracking" title={t('settings.tracking.title')} description={t('settings.summary.symptomsN', { n: prefs.symptoms.length })} onPress={go('/settings/tracking')} />
-        <SettingsRow testID="settings-about" title={t('settings.about.title')} onPress={go('/settings/about')} last />
+        <SettingsRow testID="settings-life" leadingIcon={<SettingsIcon name="life" />} title={t('settings.lifeState.title')} description={life} onPress={go('/settings/lifestate')} />
+        <SettingsRow testID="settings-health" leadingIcon={<SettingsIcon name="health" />} title={t('settings.health.title')} description={prefs.healthTypes.length ? t('settings.summary.healthN', { n: prefs.healthTypes.length }) : t('common.off')} onPress={go('/settings/health')} />
+        <SettingsRow testID="settings-privacy" leadingIcon={<SettingsIcon name="privacy" />} title={t('settings.privacy.title')} description={`${t(prefs.appLock ? 'settings.summary.lockOn' : 'settings.summary.lockOff')} · ${t(prefs.cloudBackup ? 'settings.summary.backupOn' : 'settings.summary.backupOff')}`} onPress={go('/settings/privacy')} />
+        <SettingsRow testID="settings-notifications" leadingIcon={<SettingsIcon name="notifications" />} title={t('settings.notifications.title')} description={t(prefs.notifications.enabled ? 'settings.summary.reminderOn' : 'settings.summary.reminderOff')} onPress={go('/settings/notifications')} />
+        <SettingsRow testID="settings-appearance" leadingIcon={<SettingsIcon name="appearance" />} title={t('settings.appearance.title')} description={t(`settings.appearance.theme${prefs.theme === 'system' ? 'System' : prefs.theme === 'light' ? 'Light' : 'Dark'}`)} onPress={go('/settings/appearance')} />
+        <SettingsRow testID="settings-tracking" leadingIcon={<SettingsIcon name="tracking" />} title={t('settings.tracking.title')} description={t('settings.summary.symptomsN', { n: prefs.symptoms.length })} onPress={go('/settings/tracking')} />
+        <SettingsRow testID="settings-about" leadingIcon={<SettingsIcon name="about" />} title={t('settings.about.title')} onPress={go('/settings/about')} last />
       </Group>
     </Screen>
   );

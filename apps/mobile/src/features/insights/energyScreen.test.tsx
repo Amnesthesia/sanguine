@@ -13,7 +13,8 @@ import { setEnergy } from '@/features/logging/actions';
 const app = vi.hoisted(() => ({ state: {} as Record<string, unknown> }));
 vi.mock('@/state/app', () => ({ useApp: () => app.state }));
 vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn() }) }));
-vi.mock('@/ui/Screen', () => ({ Screen: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
+vi.mock('@/ui/Screen', () => ({ Screen: ({ children, chrome }: { children: ReactNode; chrome?: ReactNode }) => <div>{chrome}{children}</div> }));
+vi.mock('@/ui/GlassBar', () => ({ GlassBar: ({ title, below }: { title: string; below?: ReactNode }) => <header><h1>{title}</h1>{below}</header> }));
 vi.mock('@/ui/Segmented', () => ({ Segmented: ({ onChange }: { onChange: (v: string) => void }) => <button type="button" onClick={() => onChange('charts')}>Charts</button> }));
 vi.mock('@/features/insights/charts', () => ({
   EnergyChart: ({ label }: { label: string }) => <div data-testid="chart-energy" role="img" aria-label={label} />,
@@ -42,6 +43,12 @@ describe('Energy card', () => {
     await lowEnergy(false);
     expect(screen.getByTestId('chart-energy').getAttribute('aria-label')).toContain('10 days logged');
     expect(screen.getByTestId('energy-suggestion-lowOverall')).toBeTruthy();
+    // the visible reading under the chart says what the chart shows
+    expect(screen.getByTestId('reading-energy').textContent).toBe('Energy averaged 1 out of 5 across 10 logged days.');
+  });
+  it('the bar title sits in the toolbar next to the segments', async () => {
+    await lowEnergy(false);
+    expect(screen.getByRole('heading', { name: 'Insights' })).toBeTruthy();
   });
   it('shows the chart but no averages or suggestions while suspended', async () => {
     await lowEnergy(true);

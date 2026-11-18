@@ -53,7 +53,8 @@ export function phaseOn({ date, today, prediction: p, cycles, showEstimate }: Ph
   if (!cycle || cycle.quality === 'life_state') return undefined;
   const expected = date > today;
   const at = (phase: GuidePhase): GuideDay => ({ phase, expected });
-  if (date <= (cycle.end ?? addDays(cycle.start, BLEED_DAYS_IF_UNLOGGED - 1))) return at('menstrual');
+  const bleedEnd = !cycle.nextStart && p.currentBleed ? p.currentBleed.point : (cycle.end ?? addDays(cycle.start, BLEED_DAYS_IF_UNLOGGED - 1));
+  if (date <= bleedEnd) return at('menstrual');
 
   let nextStart: ISODate;
   let ovulationDay: ISODate;

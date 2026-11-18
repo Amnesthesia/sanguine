@@ -23,6 +23,17 @@ const on = (date: ISODate, over: Partial<PhaseOnInput> = {}) =>
   phaseOn({ date, today: TODAY, prediction: pred(), cycles: CYCLES, showEstimate: true, ...over });
 
 describe('phaseOn, open cycle', () => {
+  it('says menstrual through the estimated period end, matching currentPhase', () => {
+    const prediction = pred({ asOf: '2026-11-03', currentPhase: { phase: 'menstrual', dayOfCycle: 4 },
+      currentBleed: { point: '2026-11-04', i80: { lo: '2026-11-03', hi: '2026-11-06' }, confidence: 'low' } });
+    const cycles = [rec('2026-10-31', undefined, { end: '2026-11-02' })];
+    for (const date of ['2026-11-03', '2026-11-04']) {
+      expect(on(date, { today: '2026-11-03', prediction, cycles })).toEqual({ phase: prediction.currentPhase!.phase, expected: date > '2026-11-03' });
+    }
+    // the day after the estimated end (currentBleed.point) leaves menstrual; here it is past nextPeriod.i80.hi (11-03), so no card
+    expect(on('2026-11-05', { today: '2026-11-03', prediction, cycles })).toBeUndefined();
+    expect(on('2026-11-03', { prediction, cycles: [rec('2026-10-31', '2026-11-28', { end: '2026-11-02' })] })?.phase).not.toBe('menstrual');
+  });
   it('today, cycle day 11, is follicular', () => expect(on(TODAY)).toEqual({ phase: 'follicular', expected: false }));
   it('a logged bleeding day is menstrual', () => expect(on('2026-10-05')?.phase).toBe('menstrual'));
   it('ovulation day and one day either side are ovulatory, and future days are expected', () => {

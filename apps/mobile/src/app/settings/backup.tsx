@@ -18,10 +18,12 @@ import { NoCapture } from '@/features/lock/ScreenProtection';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
+import { CautionPanel } from '@/ui/CautionPanel';
 import { Segmented } from '@/ui/Segmented';
 import { SubScreen } from '@/ui/SubScreen';
 import { TextField } from '@/ui/TextField';
 import { Text } from '@/ui/Text';
+import { showToast } from '@/ui/Toast';
 
 const MIN_PASSPHRASE = 8;
 
@@ -37,9 +39,12 @@ export default function BackupScreen() {
   /** A copy made by another phone is in the cloud: ask for that phone's recovery code to link this one (P8-7). */
   const [link, setLink] = useState(false);
   const [pct, setPct] = useState<number | undefined>();
+  /** What went wrong, needs doing, or what a finished action produced (backup ready, uploaded, records imported): one panel that stays until the next action, so she can read it. */
   const [msg, setMsg] = useState<string | undefined>();
   const [pending, setPending] = useState<{ words: string; next: () => Promise<void> } | undefined>();
   const service = cloud ? cloudServiceName(cloud) : '';
+  /** The message for a finished cloud upload: the result, a wait for Wi-Fi or a problem, all in the panel. */
+  const afterUpload = (status: 'uploaded' | 'conflict' | 'skipped' | 'failed') => status === 'uploaded' ? setMsg(t('settings.privacy.cloud.uploaded', { service })) : status === 'skipped' ? setMsg(t('settings.privacy.cloud.waitingWifi')) : setMsg(t(status === 'conflict' ? 'settings.privacy.cloud.otherPhone' : 'settings.privacy.cloud.failed', { service }));
   useEffect(() => { void getCloudStore().then(setCloud); }, []);
   const reloadLast = () => { if (db) void getSetting<string | null>(db, 'cloud.lastUploadAt', null).then(setLastUpload); };
   useEffect(reloadLast, [db]);
@@ -95,7 +100,8 @@ export default function BackupScreen() {
     if (!on) {
       await disableAutoBackup();
       await updatePrefs({ cloudBackup: false });
-      return setMsg(t('settings.privacy.cloud.off', { service }));
+      // a toast: she just flipped the switch and sees it off; nothing here needs reading twice
+      return showToast(t('settings.privacy.cloud.off', { service }));
     }
     if (pass.length < MIN_PASSPHRASE) return setMsg(t('settings.privacy.cloud.needPass'));
     // linking a second phone (P8-7, D-083): the first phone's recovery code makes this phone use the same device secret
@@ -113,7 +119,7 @@ export default function BackupScreen() {
         const r = await uploadCloudIfDue(db, store, true);
         if (r.merged > 0) await refresh();
         if (r.status === 'conflict') setLink(true);
-        setMsg(r.status === 'failed' ? t('settings.privacy.cloud.failed', { service }) : r.status === 'conflict' ? t('settings.privacy.cloud.otherPhone', { service }) : r.status === 'skipped' ? t('settings.privacy.cloud.waitingWifi') : t('settings.privacy.cloud.uploaded', { service }));
+        afterUpload(r.status);
         reloadLast();
       } catch (e) { setMsg((e as Error).message); } finally { setPct(undefined); setPass(''); setPass2(''); setCode(''); }
     };
@@ -133,7 +139,7 @@ export default function BackupScreen() {
         const r = await uploadCloudIfDue(db, store, true, true);
         if (r.merged > 0) await refresh();
         if (r.status === 'conflict') setLink(true);
-        setMsg(r.status === 'uploaded' ? t('settings.privacy.cloud.uploaded', { service }) : r.status === 'conflict' ? t('settings.privacy.cloud.otherPhone', { service }) : r.status === 'skipped' ? t('settings.privacy.cloud.waitingWifi') : t('settings.privacy.cloud.failed', { service }));
+        afterUpload(r.status);
         return reloadLast();
       }
       const { secret } = await getOrCreateDeviceSecret();
@@ -161,7 +167,7 @@ export default function BackupScreen() {
       <SubScreen testID="screen-recovery" title={t('settings.privacy.recoveryCode.title')}>
         <NoCapture />
         <Card testID="recovery-words">
-          <Text variant="heading">{t('settings.privacy.recoveryCode.words')}</Text>
+          <Text variant="heading" accessibilityRole="header">{t('settings.privacy.recoveryCode.words')}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
             {/* biome-ignore lint/suspicious/noArrayIndexKey: words can repeat; the position is the identity */}
             {pending.words.split(' ').map((w, i) => <Text key={`${i}-${w}`} variant="body" tabular style={{ width: '45%' }}>{`${i + 1}. ${w}`}</Text>)}
@@ -178,9 +184,10 @@ export default function BackupScreen() {
     );
   }
   return (
-    <SubScreen testID="screen-backup" title={t('settings.privacy.backup')}>
-      <Segmented testIDPrefix="backup-mode" value={mode} onChange={(m) => { setMode(m); setMsg(undefined); }} options={[{ value: 'create', label: t('settings.privacy.backupModeCreate') }, { value: 'restore', label: t('settings.privacy.backupRestore') }]} />
-      <Text variant="bodySmall" color="textSecondary">{t('settings.privacy.backupNote')}</Text>
+    <SubScreen testID="screen-backup" title={t('settings.privacy.backup')} below={<Segmented inGlass testIDPrefix="backup-mode" value={mode} onChange={(m) => { setMode(m); setMsg(undefined); }} options={[{ value: 'create', label: t('settings.privacy.backupModeCreate') }, { value: 'restore', label: t('settings.privacy.backupRestore') }]} />}>
+      <Text variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('settings.privacy.backupNote')}</Text>
+      {msg ? <View testID="backup-message" accessibilityLiveRegion="polite"><CautionPanel>{msg}</CautionPanel></View> : null}
+      {pct !== undefined ? <View testID="backup-progress" accessibilityLiveRegion="polite"><CautionPanel>{t('settings.privacy.backupWorking', { pct })}</CautionPanel></View> : null}
       <TextField testID="backup-pass" secure label={t('settings.privacy.passphrase')} value={pass} onChangeText={setPass} keyboardType="default" />
       {mode === 'create' ? <TextField testID="backup-pass2" secure label={t('settings.privacy.passphraseConfirm')} value={pass2} onChangeText={setPass2} keyboardType="default" /> : <TextField testID="restore-code" secure label={t('settings.privacy.restoreCodeLabel')} value={code} onChangeText={setCode} keyboardType="default" />}
       <Button testID={mode === 'create' ? 'backup-create' : 'backup-restore'} label={mode === 'create' ? t('settings.privacy.backupCreate') : t('settings.privacy.restorePick')} disabled={pct !== undefined || pass.length === 0} onPress={() => void (mode === 'create' ? create() : restore())} />
@@ -192,9 +199,7 @@ export default function BackupScreen() {
       {cloud && mode === 'create' && link ? <TextField testID="link-code" secure label={t('settings.privacy.cloud.linkCode')} helper={t('settings.privacy.cloud.linkHelp')} value={code} onChangeText={setCode} keyboardType="default" /> : null}
       {cloud && mode === 'create' ? <Button testID="cloud-upload-now" kind="secondary" label={t('settings.privacy.cloud.uploadNow')} disabled={pct !== undefined || pass.length === 0} onPress={() => void uploadNow()} /> : null}
       {cloud && mode === 'restore' ? <Button testID="cloud-restore" kind="secondary" label={t('settings.privacy.cloud.restore', { service })} disabled={pct !== undefined || pass.length === 0} onPress={() => void restoreFromCloud()} /> : null}
-      {cloud && lastUpload ? <Text testID="cloud-last" variant="bodySmall" color="textSecondary">{t('settings.privacy.cloud.lastUpload', { when: new Date(lastUpload).toLocaleString() })}</Text> : null}
-      {pct !== undefined ? <Text variant="bodySmall" testID="backup-progress" accessibilityLiveRegion="polite">{t('settings.privacy.backupWorking', { pct })}</Text> : null}
-      {msg ? <Text variant="bodySmall" testID="backup-message" accessibilityLiveRegion="polite">{msg}</Text> : null}
+      {cloud && lastUpload ? <Text testID="cloud-last" variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('settings.privacy.cloud.lastUpload', { when: new Date(lastUpload).toLocaleString() })}</Text> : null}
     </SubScreen>
   );
 }

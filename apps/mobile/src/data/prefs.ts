@@ -18,6 +18,10 @@ export interface Prefs {
   sexLogging: boolean;
   /** User override of the ovulation estimate card; teen mode forces it off until unlocked. */
   showOvulationEstimate: boolean;
+  /** Cycle-day numbers on the calendar (D-114). */
+  calendarCycleDay: boolean;
+  /** In-app opt-in for wide ovulation and fertile estimates (D-115). */
+  showUncertainEstimates: boolean;
   teenUnlockEstimate: boolean;
   /** Today's look-back symptom note (D-087). */
   symptomNote: boolean;
@@ -48,6 +52,8 @@ export const DEFAULT_PREFS: Prefs = {
   tempSource: 'oral',
   sexLogging: false,
   showOvulationEstimate: true,
+  calendarCycleDay: true,
+  showUncertainEstimates: false,
   teenUnlockEstimate: false,
   symptomNote: true,
   cycleGuidance: true,
@@ -74,13 +80,17 @@ export async function savePrefs(db: Database, p: Prefs): Promise<void> {
 
 /** Teen mode (age 13-17): fertility estimate card and sexual-activity logging are off by default (PLAN.md §8.6). Exact when a date of birth is stored (D-055). */
 export const isTeen = isTeenOn;
-export function effectivePrefs(p: Prefs, profile: { birthDate?: string | undefined; birthYear?: number | undefined }, today: string): { showOvulationEstimate: boolean; sexLogging: boolean; teen: boolean; fertilityTools: boolean } {
+export function effectivePrefs(p: Prefs, profile: { birthDate?: string | undefined; birthYear?: number | undefined }, today: string): { showOvulationEstimate: boolean; showUncertainEstimates: boolean; sexLogging: boolean; teen: boolean; fertilityTools: boolean } {
   const teen = isTeen(profile, today);
+  const showOvulationEstimate = p.showOvulationEstimate && (!teen || p.teenUnlockEstimate);
   return {
     teen,
     /** Ovulation tests, cervical mucus and position, ovulation inferences: off under 18 until unlocked (PLAN.md §8.6); an adult who hides the estimate card still keeps them. */
     fertilityTools: !teen || p.teenUnlockEstimate,
-    showOvulationEstimate: p.showOvulationEstimate && (!teen || p.teenUnlockEstimate),
+    showOvulationEstimate,
+    /** Drawing uncertain ranges needs the estimate itself to be showable, and never in teen mode, even unlocked (ER-58, D-124: the switch is
+     *  hidden for every teen): a stored true never survives the teen gate or an adult hiding the estimate. */
+    showUncertainEstimates: p.showUncertainEstimates && showOvulationEstimate && !teen,
     sexLogging: p.sexLogging,
   };
 }

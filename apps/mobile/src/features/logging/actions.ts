@@ -66,7 +66,8 @@ async function periodRunContext(db: Database, day: ISODate): Promise<PeriodConte
 
 /** Sets or clears the flow for a day. Tapping the level already set clears it. `splitAt` records the user's answer that a day inside the
  *  join window is a separate period: that day (this one, or the start of the period it would join) begins a new period (D-052). */
-export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel, o: { kind?: FlowKind; clots?: boolean; splitAt?: ISODate; mergeAt?: ISODate; askedOn?: ISODate } = {}): Promise<void> {
+export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel, o: { kind?: FlowKind; clots?: boolean; splitAt?: ISODate; mergeAt?: ISODate; askedOn?: ISODate } = {}): Promise<EventRow[]> {
+  const written: EventRow[] = [];
   const kind = o.kind ?? 'period';
   // clearing a day drops every join answer written on it or asked from it: an answer on itself would leave a bleed-less one-day period, and
   // an answer it caused on another day would later apply to different data (D-052)
@@ -74,27 +75,32 @@ export async function setFlow(store: EventStore, day: ISODate, level: FlowLevel,
     for (const e of activeEvents(await store.events())) {
       if (e.kind !== 'period.start') continue;
       const p = JSON.parse(e.payload) as { merge?: unknown; asked_on?: unknown };
-      if (typeof p.merge === 'boolean' && (e.effective_day === day || p.asked_on === day)) await store.retract(e.id);
+      if (typeof p.merge === 'boolean' && (e.effective_day === day || p.asked_on === day)) written.push(await store.retract(e.id));
     }
   }
   const events: NewEvent[] = [{ kind: 'flow', payload: { day, level, flow_kind: kind, ...(o.clots ? { clots: true } : {}) } }];
   if (o.splitAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.splitAt, merge: false, ...(o.askedOn ? { asked_on: o.askedOn } : {}) } });
   else if (o.mergeAt && kind === 'period' && level !== 'none' && level !== 'spotting') events.unshift({ kind: 'period.start', payload: { day: o.mergeAt, merge: true, ...(o.askedOn ? { asked_on: o.askedOn } : {}) } });
-  await store.appendMany(events);
+  written.push(...await store.appendMany(events));
+  return written;
 }
 
 /** One entry per symptom and day (D-097): earlier ones are retracted, so the day detail lists the current strength only and
  * deleting it leaves nothing behind; 0 just clears. */
-export async function setSymptom(store: EventStore, day: ISODate, code: string, intensity: 0 | 1 | 2 | 3): Promise<void> {
+export async function setSymptom(store: EventStore, day: ISODate, code: string, intensity: 0 | 1 | 2 | 3): Promise<EventRow[]> {
+  const written: EventRow[] = [];
   const old = (await dayEvents(store, day)).filter((e) => e.kind === 'symptom' && e.data.code === code);
-  for (const e of old) await store.retract(e.id);
-  if (intensity > 0) await store.append({ kind: 'symptom', payload: { day, code, intensity } });
+  for (const e of old) written.push(await store.retract(e.id));
+  if (intensity > 0) written.push(await store.append({ kind: 'symptom', payload: { day, code, intensity } }));
+  return written;
 }
 
 /** The user's own energy rating (P8-19, D-108): one entry per day like a symptom (D-097); 0 clears. */
-export async function setEnergy(store: EventStore, day: ISODate, level: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
-  for (const e of (await dayEvents(store, day)).filter((x) => x.kind === 'energy')) await store.retract(e.id);
-  if (level > 0) await store.append({ kind: 'energy', payload: { day, level } });
+export async function setEnergy(store: EventStore, day: ISODate, level: 0 | 1 | 2 | 3 | 4 | 5): Promise<EventRow[]> {
+  const written: EventRow[] = [];
+  for (const e of (await dayEvents(store, day)).filter((x) => x.kind === 'energy')) written.push(await store.retract(e.id));
+  if (level > 0) written.push(await store.append({ kind: 'energy', payload: { day, level } }));
+  return written;
 }
 export const energyDays = (db: Database) =>
   db.all<{ day: ISODate; level: number }>('SELECT day, energy AS level FROM daily_log WHERE energy IS NOT NULL ORDER BY day');
@@ -110,19 +116,21 @@ export async function dayEvents(store: EventStore, day: ISODate): Promise<DayEve
 }
 
 /** One biomarker of a type per day: earlier ones are retracted, then the new one is written. */
-async function replaceBiomarker(store: EventStore, day: ISODate, type: string, payload: Record<string, unknown>): Promise<void> {
+async function replaceBiomarker(store: EventStore, day: ISODate, type: string, payload: Record<string, unknown>): Promise<EventRow[]> {
+  const written: EventRow[] = [];
   const old = (await dayEvents(store, day)).filter((e) => e.kind === 'biomarker' && e.data.type === type);
-  for (const e of old) await store.retract(e.id);
-  await store.append({ kind: 'biomarker', payload: { day, type, ...payload } });
+  for (const e of old) written.push(await store.retract(e.id));
+  written.push(await store.append({ kind: 'biomarker', payload: { day, type, ...payload } }));
+  return written;
 }
 
 export const toC = (v: number, unit: 'C' | 'F'): number => (unit === 'F' ? ((v - 32) * 5) / 9 : v);
 export const fromC = (v: number, unit: 'C' | 'F'): number => (unit === 'F' ? (v * 9) / 5 + 32 : v);
 
 /** Temperatures are stored in °C; the unit is a display preference. */
-export async function saveTemperature(store: EventStore, day: ISODate, o: { valueC: number; time?: string | undefined; source: string; disturbed?: boolean; wearable?: boolean }): Promise<void> {
+export async function saveTemperature(store: EventStore, day: ISODate, o: { valueC: number; time?: string | undefined; source: string; disturbed?: boolean; wearable?: boolean }): Promise<EventRow[]> {
   if (!Number.isFinite(o.valueC)) throw new Error('temperature must be a number');
-  await replaceBiomarker(store, day, o.wearable ? 'skin_temp' : 'bbt', {
+  return replaceBiomarker(store, day, o.wearable ? 'skin_temp' : 'bbt', {
     value: { valueC: Math.round(o.valueC * 100) / 100 }, source: o.source, ...(o.time ? { measured_at: `${day}T${o.time}:00` } : {}), ...(o.disturbed ? { disturbed: true } : {}),
   });
 }

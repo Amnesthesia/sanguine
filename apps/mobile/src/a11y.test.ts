@@ -77,8 +77,8 @@ describe('motion (§8.9: reduced motion degrades to cross-fades; the ring never 
 });
 
 describe('meaning is never colour alone', () => {
-  it('the calendar cell draws period (solid + dots), predicted (hatch) and fertile (underline) as shapes and labels them in words', () => {
+  it('the calendar cell draws period (solid), estimates (dashed ring) and fertile (band with a solid lower edge) as shapes and labels them in words', () => {
     const cell = readFileSync(join(__dirname, 'features/calendar/DayCellView.tsx'), 'utf8');
-    for (const shape of ['Pattern', 'backgroundColor: on ? t.c.period', 'height: 4', 'accessibilityLabel={cell.label}']) expect(cell).toContain(shape);
+    for (const shape of ["borderStyle: 'dashed'", 'backgroundColor: filled ? t.c.period', 'height: 1.5', 'accessibilityLabel={cell.label}']) expect(cell).toContain(shape);
   });
 });

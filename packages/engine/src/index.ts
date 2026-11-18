@@ -15,3 +15,4 @@ export { combineOvulation } from './combine';
 export { evaluateLifeStates, lifeStateStart, suggestPerimenopause } from './lifestate';
 export { evaluateFlags } from './flags';
 export { analyzeCycles, predict } from './predict';
+export { pastOvulations, type PastOvulation } from './pastOvulation';

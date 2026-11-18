@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings: appearance</title>
+<style>
+body{margin:0}
+a{color:#BC4560}a:hover{color:#A3354F}
+</style>
+</head>
+<body>
+
+
+<div style="width: 390px; height: 844px; position: relative; box-sizing: border-box; background: #FFFFFF; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
+
+  <!-- content layer: opaque -->
+  <div style="padding: 78px 16px 40px 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <!-- theme: single select (radio), each option a small picture of the app in that theme -->
+    <section role="radiogroup" aria-labelledby="theme-h" style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 14px">
+      <h2 id="theme-h" style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600">Theme</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+        <button type="button" role="radio" aria-checked="true" style="border: 0; background: none; padding: 0; font: inherit; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <span aria-hidden="true" style="width: 74px; height: 112px; border-radius: 18px; overflow: hidden; display: flex; box-shadow: 0 0 0 2px #F3F3F4, 0 0 0 4px #BC4560">
+            <span style="flex: 1; background: #FFFFFF; padding: 12px 6px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px"><span style="height: 6px; width: 24px; border-radius: 3px; background: #1F1A1C"></span><span style="height: 14px; border-radius: 7px; background: #F3F3F4"></span><span style="height: 14px; border-radius: 7px; background: #F3F3F4"></span><span style="width: 12px; height: 12px; border-radius: 6px; background: #B8324A"></span></span>
+            <span style="flex: 1; background: #000000; padding: 12px 6px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px"><span style="height: 6px; width: 20px; border-radius: 3px; background: #F4EEEF"></span><span style="height: 14px; border-radius: 7px; background: #2C2C2E"></span><span style="height: 14px; border-radius: 7px; background: #2C2C2E"></span><span style="width: 12px; height: 12px; border-radius: 6px; background: #D9607A"></span></span>
+          </span>
+          <span style="font-size: 15px; font-weight: 600">Match system</span>
+          <span aria-hidden="true" style="width: 22px; height: 22px; border-radius: 11px; background: #BC4560; display: flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        </button>
+        <button type="button" role="radio" aria-checked="false" style="border: 0; background: none; padding: 0; font: inherit; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <span aria-hidden="true" style="width: 74px; height: 112px; border-radius: 18px; overflow: hidden; display: flex; box-shadow: 0 0 0 1px #E4E4E6">
+            <span style="flex: 1; background: #FFFFFF; padding: 12px 8px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px"><span style="height: 6px; width: 30px; border-radius: 3px; background: #1F1A1C"></span><span style="height: 14px; border-radius: 7px; background: #F3F3F4"></span><span style="height: 14px; border-radius: 7px; background: #F3F3F4"></span><span style="width: 12px; height: 12px; border-radius: 6px; background: #B8324A"></span></span>
+          </span>
+          <span style="font-size: 15px">Light</span>
+          <span aria-hidden="true" style="width: 22px; height: 22px; box-sizing: border-box; border-radius: 11px; border: 1.5px solid #6B6165"></span>
+        </button>
+        <button type="button" role="radio" aria-checked="false" style="border: 0; background: none; padding: 0; font: inherit; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <span aria-hidden="true" style="width: 74px; height: 112px; border-radius: 18px; overflow: hidden; display: flex; box-shadow: 0 0 0 1px #E4E4E6">
+            <span style="flex: 1; background: #000000; padding: 12px 8px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px"><span style="height: 6px; width: 30px; border-radius: 3px; background: #F4EEEF"></span><span style="height: 14px; border-radius: 7px; background: #2C2C2E"></span><span style="height: 14px; border-radius: 7px; background: #2C2C2E"></span><span style="width: 12px; height: 12px; border-radius: 6px; background: #D9607A"></span></span>
+          </span>
+          <span style="font-size: 15px">Dark</span>
+          <span aria-hidden="true" style="width: 22px; height: 22px; box-sizing: border-box; border-radius: 11px; border: 1.5px solid #6B6165"></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- new (Calendar redesign): the small cycle-day number above each date. On by default. -->
+    <section aria-label="Calendar" style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); display: flex; flex-direction: column; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px 10px 16px">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Cycle day on calendar</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Show the day of your cycle above each date.</span></span>
+        <button type="button" role="switch" aria-checked="true" aria-label="Cycle day on calendar" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #BC4560; display: flex; justify-content: flex-end; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+      <!-- preview: three days as the calendar draws them, cycle day above the date -->
+      <div role="img" aria-label="Preview: 1, 2 and 3 November, with cycle days 2, 3 and 4 above the dates" style="margin: 0 16px 16px 16px; border-radius: 16px; background: #FFFFFF; padding: 10px 12px; display: flex; justify-content: center; gap: 18px">
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 2px"><span style="font-size: 10px; line-height: 13px; font-weight: 600; color: #6B6165">2</span><span style="width: 36px; height: 36px; border-radius: 18px; background: #B8324A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 15px">1</span></span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 2px"><span style="font-size: 10px; line-height: 13px; font-weight: 600; color: #6B6165">3</span><span style="width: 36px; height: 36px; border-radius: 18px; background: #B8324A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #BC4560">2</span></span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 2px"><span style="font-size: 10px; line-height: 13px; font-weight: 400; color: #6B6165">4</span><span style="width: 36px; height: 36px; box-sizing: border-box; border-radius: 18px; border: 1.5px dashed #B8324A; color: #1F1A1C; display: flex; align-items: center; justify-content: center; font-size: 15px">3</span></span>
+      </div>
+    </section>
+
+    <p style="margin: 0 4px; font-size: 13px; line-height: 18px; color: #6B6165">Reduced motion follows your phone's setting.</p>
+  </div>
+
+  <!-- navigation layer: glass toolbar (D-096) -->
+  <header style="position: absolute; top: 10px; left: 10px; right: 10px; border-radius: 30px; padding: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 10px 30px rgba(31,26,28,0.14), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(255,255,255,0.35); display: flex; align-items: center; gap: 6px">
+    <button type="button" aria-label="Back" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.5); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(31,26,28,0.08); color: #1F1A1C; font-size: 22px">‹</button>
+    <h1 style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600; flex: 1; text-align: center">Appearance</h1>
+    <span aria-hidden="true" style="width: 44px; height: 44px; flex-shrink: 0"></span>
+  </header>
+</div>
+
+</body>
+</html>

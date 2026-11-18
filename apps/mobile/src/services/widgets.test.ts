@@ -1,4 +1,6 @@
 import { addDays, type EngineSettings, type History, type ISODate, predict } from '@sanguine/engine';
+import { readFileSync } from 'node:fs';
+import { colors, contrast } from '@sanguine/ui-tokens';
 import { describe, expect, it } from 'vitest';
 import '@/i18n';
 import { widgetSnapshot } from './widgets';
@@ -27,4 +29,33 @@ describe('widget snapshot (P3-5, §8.8 discreet by default)', () => {
     const empty: History = { cycles: [], temperatures: [], lh: [], mucus: [], cervix: [], logs: [] };
     expect(snap(empty, '2026-10-10', true)).toMatchObject({ day: 0, progress: 0 });
   });
+});
+
+// The widget function cannot import tokens (WidgetKit serialises it), so its colours are literals; this keeps them equal to the tokens
+// and readable (frames/Widgets-Notifications.html: surface2 card, textPrimary/textSecondary, onAccentSoft link, period ring).
+describe('widget colours (glass redesign frame)', () => {
+  const src = readFileSync(new URL('../widgets/TodayWidget.tsx', import.meta.url), 'utf8');
+  const m = src.match(/colorScheme === 'dark'\s*\?\s*(\{[^}]*\})\s*:\s*(\{[^}]*\})/);
+  const parse = (o: string) => Object.fromEntries([...o.matchAll(/(\w+): '(#[0-9A-Fa-f]{6})'/g)].map((x) => [x[1], x[2]])) as Record<string, string>;
+  it('has a dark and a light palette', () => expect(m).not.toBeNull());
+  // the palette test above proves the values; these prove each one is applied to the element it was contrast-checked for
+  it('applies each colour to its element: card c.surface, headline c.text, link c.link, ring c.ring, secondary lines c.sub', () => {
+    expect(src.match(/containerBackground\(c\.surface, 'widget'\)/g)).toHaveLength(2);
+    expect(src).toMatch(/foregroundStyle\(c\.text\)\]\}>\{props\.headline \?\? dayText\}/);
+    expect(src).toMatch(/label="Log period"[^>]*foregroundStyle\(c\.link\)/);
+    expect(src).toMatch(/tint\(c\.ring\)/);
+    expect(src).toMatch(/foregroundStyle\(c\.sub\)\]\}>\{props\.appName\}/);
+    expect(src).toMatch(/foregroundStyle\(c\.sub\)\]\}>\{props\.detail\}/);
+  });
+  for (const [i, mode] of (['dark', 'light'] as const).entries()) {
+    const pal = parse(m?.[i + 1] ?? '');
+    const t = colors[mode];
+    it(`${mode}: literals equal the tokens`, () => {
+      expect(pal).toEqual({ surface: t.surface2, text: t.textPrimary, sub: t.textSecondary, link: t.onAccentSoft, ring: t.period });
+    });
+    it(`${mode}: text >= 4.5:1 and ring >= 3:1 on the card`, () => {
+      for (const k of ['text', 'sub', 'link']) expect(contrast(pal[k] ?? '', pal.surface ?? '')).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(pal.ring ?? '', pal.surface ?? '')).toBeGreaterThanOrEqual(3);
+    });
+  }
 });

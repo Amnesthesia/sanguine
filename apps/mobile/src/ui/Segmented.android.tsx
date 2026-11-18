@@ -5,7 +5,7 @@ import { fillMaxWidth, testID } from '@expo/ui/jetpack-compose/modifiers';
 import { m3 } from '@sanguine/ui-tokens';
 import { useTheme } from '@/theme';
 
-export function Segmented<T extends string>({ options, value, onChange, testIDPrefix }: { options: Array<{ value: T; label: string }>; value: T; onChange: (v: T) => void; testIDPrefix?: string }) {
+export function Segmented<T extends string>({ options, value, onChange, testIDPrefix }: { inGlass?: boolean; options: Array<{ value: T; label: string }>; value: T; onChange: (v: T) => void; testIDPrefix?: string }) {
   const t = useTheme();
   const m = m3[t.scheme === 'dark' ? 'dark' : 'light'];
   return (

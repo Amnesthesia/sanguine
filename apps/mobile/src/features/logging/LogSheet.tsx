@@ -6,17 +6,25 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Platform, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FlowLevel } from '@/data/events';
-import { dayEvents, dayState, fromC, periodContext, setFlow, setSymptom, setEnergy, type DayState } from './actions';
+import { dayEvents, dayState, fromC, periodContext, setFlow, setSymptom, setEnergy, type DayEvent, type DayState } from './actions';
+import { EnergySlider, type EnergyLevel } from './EnergySlider';
 import { FlowSelector } from './FlowSelector';
 import { MoreSection } from './MoreSection';
 import { SymptomGrid } from './SymptomGrid';
 import { describeEvent } from './describe';
+import { LoggedEntries } from './LoggedEntries';
+import { cycleDayOf } from '../calendar/calendarModel';
+import { visibleEntries } from './removeEntry';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
+import { Button } from '@/ui/Button';
+import { Card } from '@/ui/Card';
 import { Chips } from '@/ui/Chips';
+import { GlassSurface } from '@/ui/GlassBar';
 import { GUTTER } from '@/ui/Screen';
 import { formatDay, formatLong } from '@/ui/format';
 import { Text } from '@/ui/Text';
+import { ToastHost } from '@/ui/Toast';
 
 /** Set only by deep links from outside the app (widget, home-screen quick actions); in-app buttons open the sheet plain (D-097). */
 type Section = 'period' | 'temperature';
@@ -29,9 +37,10 @@ export function LogSheet() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ section?: Section; day?: string }>();
-  const { db, store, prefs, today, settings, refresh } = useApp();
+  const { db, store, prefs, today, settings, history, refresh } = useApp();
   const [day, setDay] = useState<ISODate>((params.day as ISODate | undefined) ?? today);
   const [state, setState] = useState<DayState>(EMPTY);
+  const [entries, setEntries] = useState<DayEvent[]>([]);
   const [summaries, setSummaries] = useState<Record<string, string>>({});
   const [startsHere, setStartsHere] = useState(false);
   const [bleedKind, setBleedKind] = useState<BleedKind>('withdrawal_bleed');
@@ -52,6 +61,7 @@ export function LogSheet() {
     setAfterPregnancy(Boolean(ctx.afterPregnancy));
     if (s.flowKind === 'period' || s.flowKind === 'post_pregnancy') setPpKind(s.flowKind);
     setStartsHere(Boolean(cyc));
+    setEntries(visibleEntries(evs));
     const sum: Record<string, string> = {};
     for (const e of evs) {
       if (e.kind !== 'biomarker') { if (e.kind === 'sex') sum.sex = describeEvent(e, tr, prefs.tempUnit); if (e.kind === 'note') sum.note = tr('day.entry.note'); continue; }
@@ -95,47 +105,73 @@ export function LogSheet() {
     await saved();
   }
 
-  async function onEnergy(v: '1' | '2' | '3' | '4' | '5') {
+  async function onEnergy(level: EnergyLevel) {
     if (!store) return;
-    const level = Number(v) as 1 | 2 | 3 | 4 | 5;
-    await setEnergy(store, day, state.energy === level ? 0 : level); // tapping the chosen level again clears it
+    await setEnergy(store, day, level);
     await saved();
   }
 
   const symptomCodes = useMemo(() => prefs.symptoms, [prefs.symptoms]);
   const isToday = day >= today;
   const heading = (key: string) => <Text variant="heading" accessibilityRole="header">{tr(key)}</Text>;
+  const cardStyle = { gap: 12 } as const;
+  const navButton = { borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: t.chipBg } as const;
+  const cycleDay = cycleDayOf(history?.cycles.map((c) => c.start) ?? [], day);
+  // frames: "Today · Day 3 · Saved" once something is logged, "Today · Day 3 of your cycle" before
+  const subline = [day === today ? tr('calendar.today') : null, cycleDay ? tr(entries.length ? 'calendar.summaryDay' : 'today.ring.dayLabel', { day: cycleDay }) : null, entries.length ? tr('log.saved') : null].filter(Boolean).join(' · ');
   return (
     <View style={{ flex: 1, backgroundColor: t.cardBg }} testID="screen-log">
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: GUTTER, paddingTop: Platform.OS === 'android' ? insets.top + 8 : 16, paddingBottom: 8 }}>
-        <Pressable testID="log-prev" accessibilityRole="button" accessibilityLabel={tr('log.previousDay')} onPress={() => setDay(addDays(day, -1))} style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
-          <Text variant="heading" color="accent" style={{ fontSize: 28, lineHeight: 32 }}>‹</Text>
+      <View style={{ paddingHorizontal: t.glass.inset, paddingTop: Platform.OS === 'android' ? insets.top + 8 : 16, paddingBottom: 8 }}>
+        <Pressable testID="log-grabber" accessibilityRole="button" accessibilityLabel={tr('a11y.closeSheet')} onPress={() => router.back()} style={{ alignSelf: 'center', width: 60, height: 44, marginVertical: -12, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: t.hairline }} />
         </Pressable>
-        <Text variant="heading" accessibilityRole="header" testID="log-title" style={{ flex: 1, textAlign: 'center' }}>{formatLong(day)}</Text>
-        <Pressable testID="log-next" accessibilityRole="button" accessibilityLabel={tr('log.nextDay')} aria-disabled={isToday} disabled={isToday} onPress={() => setDay(addDays(day, 1))} style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center', opacity: isToday ? 0.3 : 1 }}>
-          <Text variant="heading" color="accent" style={{ fontSize: 28, lineHeight: 32 }}>›</Text>
-        </Pressable>
-        <Pressable testID="log-done" accessibilityRole="button" accessibilityLabel={tr('common.done')} onPress={() => router.back()} style={{ minWidth: 56, minHeight: 48, alignItems: 'flex-end', justifyContent: 'center' }}>
-          <Text variant="heading" color="accent">{tr('common.done')}</Text>
-        </Pressable>
+        <GlassSurface>
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 8, gap: 6 }}>
+            <Pressable testID="log-prev" accessibilityRole="button" accessibilityLabel={tr('log.previousDay')} onPress={() => setDay(addDays(day, -1))} style={[navButton, { minWidth: 44, minHeight: 44 }]}>
+              <Text variant="heading" color="textOnGlass" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ fontSize: 22, lineHeight: 26 }}>‹</Text>
+            </Pressable>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text variant="heading" accessibilityRole="header" testID="log-title" style={{ textAlign: 'center' }}>{formatLong(day)}</Text>
+              {subline ? <Text variant="caption" color="textOnGlass" testID="log-subline" style={{ textAlign: 'center' }}>{subline}</Text> : null}
+            </View>
+            <Pressable testID="log-next" accessibilityRole="button" accessibilityLabel={tr('log.nextDay')} aria-disabled={isToday} disabled={isToday} onPress={() => setDay(addDays(day, 1))} style={[navButton, { minWidth: 44, minHeight: 44, opacity: isToday ? 0.3 : 1 }]}>
+              <Text variant="heading" color="textOnGlass" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ fontSize: 22, lineHeight: 26 }}>›</Text>
+            </Pressable>
+            {/* the sheet's one filled control; it only closes, every entry is already saved */}
+            <Button testID="log-done" label={tr('common.done')} accessibilityLabel={tr('a11y.doneLog')} onPress={() => router.back()} style={{ minHeight: 44, paddingHorizontal: 18 }} />
+          </View>
+        </GlassSurface>
       </View>
+      {/* the log route is a native modal, which covers the root host: this one shows and announces while the sheet is open; 76 = bar 60 + its bottom padding 8 + gap 8 */}
+      <ToastHost modal top={(Platform.OS === 'android' ? insets.top + 8 : 16) + 76} />
 
-      <ScrollView style={{ flex: 1 }} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: insets.bottom + 32, gap: 16 }}>
-        {heading(hormonal || afterPregnancy ? 'log.bleeding' : 'log.flow')}
-        {hormonal ? (
-          <Chips testIDPrefix="bleed-kind" value={bleedKind} onChange={setBleedKind} options={[hormonalIud ? { value: 'period', label: tr('log.periodBleed') } : { value: 'withdrawal_bleed', label: tr('log.withdrawalBleed') }, { value: 'on_contraception', label: tr('log.otherBleed') }]} />
-        ) : afterPregnancy ? (
-          <Chips testIDPrefix="pp-kind" value={ppKind} onChange={setPpKind} options={[{ value: 'post_pregnancy', label: tr('log.afterPregnancyBleed') }, { value: 'period', label: tr('log.periodBleed') }]} />
-        ) : null}
-        <FlowSelector value={state.flow === 'none' ? null : state.flow} onChange={(l) => void onFlow(l)} />
-        {startsHere && !hormonal && state.flow && state.flow !== 'none' && state.flow !== 'spotting' ? <Text variant="caption" color="textSecondary" testID="new-period-caption">{tr('log.newPeriod', { date: formatDay(day) })}</Text> : null}
-        {heading('log.symptoms')}
-        <SymptomGrid codes={symptomCodes} values={state.symptoms} onSet={(c, n) => void onSymptom(c, n)} />
-        {heading('log.energy')}
-        <Chips testIDPrefix="energy" value={state.energy ? (String(state.energy) as '1') : undefined} onChange={(v) => void onEnergy(v)}
-          options={(['1', '2', '3', '4', '5'] as const).map((v) => ({ value: v, label: tr(`log.energyLevels.${v}`) }))} />
-        {heading('log.more')}
-        {db && store ? <MoreSection day={day} db={db} store={store} prefs={prefs} state={state} summaries={summaries} openRow={section === 'temperature' ? 'temperature' : undefined} onSaved={() => void saved()} /> : null}
+      <ScrollView style={{ flex: 1 }} contentInsetAdjustmentBehavior="never" keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" automaticallyAdjustKeyboardInsets contentContainerStyle={{ paddingHorizontal: GUTTER, paddingTop: 8, paddingBottom: insets.bottom + 32, gap: 16 }}>
+        <View style={{ gap: 6, paddingHorizontal: 4 }}>
+          <Text variant="caption" accessibilityRole="header" style={{ fontWeight: '600' }} color="textSecondary">{tr('log.loggedOnDay')}</Text>
+          <LoggedEntries entries={entries} onChanged={saved} />
+        </View>
+        <Card style={cardStyle}>
+          {heading(hormonal || afterPregnancy ? 'log.bleeding' : 'log.flow')}
+          {hormonal ? (
+            <Chips testIDPrefix="bleed-kind" value={bleedKind} onChange={setBleedKind} options={[hormonalIud ? { value: 'period', label: tr('log.periodBleed') } : { value: 'withdrawal_bleed', label: tr('log.withdrawalBleed') }, { value: 'on_contraception', label: tr('log.otherBleed') }]} />
+          ) : afterPregnancy ? (
+            <Chips testIDPrefix="pp-kind" value={ppKind} onChange={setPpKind} options={[{ value: 'post_pregnancy', label: tr('log.afterPregnancyBleed') }, { value: 'period', label: tr('log.periodBleed') }]} />
+          ) : null}
+          <FlowSelector value={state.flow === 'none' ? null : state.flow} onChange={(l) => void onFlow(l)} />
+          {startsHere && !hormonal && state.flow && state.flow !== 'none' && state.flow !== 'spotting' ? <Text variant="caption" color="textSecondary" testID="new-period-caption">{tr('log.newPeriod', { date: formatDay(day) })}</Text> : null}
+        </Card>
+        <Card style={cardStyle}>
+          {heading('log.symptoms')}
+          <SymptomGrid codes={symptomCodes} values={state.symptoms} onSet={(c, n) => void onSymptom(c, n)} />
+        </Card>
+        <Card style={cardStyle}>
+          {heading('log.energy')}
+          <EnergySlider value={(state.energy ?? 0) as EnergyLevel} onChange={(v) => void onEnergy(v)} />
+        </Card>
+        <Card style={[cardStyle, { paddingBottom: 4, gap: 4 }]}>
+          {heading('log.more')}
+          {db && store ? <MoreSection day={day} db={db} store={store} prefs={prefs} state={state} summaries={summaries} openRow={section === 'temperature' ? 'temperature' : undefined} onSaved={() => void saved()} /> : null}
+        </Card>
       </ScrollView>
     </View>
   );

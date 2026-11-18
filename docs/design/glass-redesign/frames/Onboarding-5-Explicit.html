@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboarding step 5: explicit-consent region, one box ticked, no screen lock</title>
+<style>
+body{margin:0}
+a{color:#BC4560}a:hover{color:#A3354F}
+</style>
+</head>
+<body>
+
+
+<div style="width: 390px; height: 844px; position: relative; box-sizing: border-box; background: #FFFFFF; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
+  <!-- content layer: opaque -->
+  <main style="padding: 84px 24px 140px 24px; display: flex; flex-direction: column; gap: 16px">
+    <h1 id="q" style="margin: 0; font-size: 28px; line-height: 34px; font-weight: 700; color: #1F1A1C">Your data stays with you</h1>
+    <p style="margin: 0; font-size: 16px; line-height: 24px; color: #1F1A1C">Everything you log stays on this phone, encrypted. Sanguine has no account and no server; we cannot see your data and cannot hand it to anyone. Backups, if you turn them on, are encrypted before they reach your iCloud or Google Drive.</p>
+    <p style="margin: 0; font-size: 13px; line-height: 18px; color: #6B6165">App lock is off because this phone has no screen lock.</p>
+    <div style="border-radius: 24px; background: #F3F3F4; overflow: hidden">
+      <label for="consent" style="position: relative; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 12px 16px; box-sizing: border-box; font-size: 16px; line-height: 22px; color: #1F1A1C; cursor: pointer">
+        <input id="consent" type="checkbox" checked="" style="position: absolute; left: 16px; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 0; opacity: 0">
+        <span aria-hidden="true" style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 13px; background: #BC4560; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 7.5L5.5 10.5L11.5 3.5" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+        <span style="flex: 1">I understand what Sanguine stores and where.</span>
+      </label>
+      <label for="consent-explicit" style="position: relative; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 12px 16px; box-sizing: border-box; border-top: 1px solid #E4E4E6; font-size: 16px; line-height: 22px; color: #1F1A1C; cursor: pointer">
+        <input id="consent-explicit" type="checkbox" style="position: absolute; left: 16px; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 0; opacity: 0">
+        <span aria-hidden="true" style="width: 26px; height: 26px; flex-shrink: 0; box-sizing: border-box; border-radius: 13px; border: 2px solid #BC4560"></span>
+        <span style="flex: 1">I agree that Sanguine stores my health information on this phone, as described above.</span>
+      </label>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
+      <button type="button" style="min-height: 52px; border-radius: 26px; border: 0; background: #F3F3F4; color: #1F1A1C; font-size: 16px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20C12 20 4.5 15.4 4.5 9.9A4 4 0 0 1 12 7.6A4 4 0 0 1 19.5 9.9C19.5 15.4 12 20 12 20Z" fill="none" stroke="#BC4560" stroke-width="1.7" stroke-linejoin="round"></path></svg>Import from Apple Health</button>
+      <button type="button" style="min-height: 52px; border-radius: 26px; border: 0; background: #F3F3F4; color: #1F1A1C; font-size: 16px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 18.5H17A4 4 0 0 0 17.6 10.5A5.8 5.8 0 0 0 6.4 9.8A4.4 4.4 0 0 0 7.2 18.5Z" fill="none" stroke="#BC4560" stroke-width="1.7" stroke-linejoin="round"></path><path d="M12 16V11.5M9.8 13.4L12 11.2L14.2 13.4" fill="none" stroke="#BC4560" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>Set up encrypted backup</button>
+    </div>
+  </main>
+
+  <!-- navigation layer: Back and Skip as floating glass controls, the progress dots on a small glass platter (D-095). No tab bar during onboarding. -->
+  <header style="position: absolute; top: 10px; left: 10px; right: 10px; height: 44px; display: flex; align-items: center">
+    <div style="width: 80px; display: flex; justify-content: flex-start"><button type="button" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 1px 2px rgba(31,26,28,0.06), 0 8px 22px rgba(31,26,28,0.14), inset 0 1px 0 rgba(255,255,255,0.95); color: #1F1A1C; font-size: 22px; padding: 0">‹</button></div>
+    <div style="flex: 1; display: flex; justify-content: center">
+      <div role="img" aria-label="Step 5 of 5" style="height: 30px; padding: 0 12px; border-radius: 15px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 1px 2px rgba(31,26,28,0.06), 0 8px 22px rgba(31,26,28,0.14), inset 0 1px 0 rgba(255,255,255,0.95); display: flex; align-items: center; gap: 7px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #BC4560"></span><span style="width: 8px; height: 8px; border-radius: 4px; background: #BC4560"></span><span style="width: 8px; height: 8px; border-radius: 4px; background: #BC4560"></span><span style="width: 8px; height: 8px; border-radius: 4px; background: #BC4560"></span><span style="width: 22px; height: 8px; border-radius: 4px; background: #BC4560"></span></div>
+    </div>
+    <div style="width: 80px; display: flex; justify-content: flex-end"></div>
+  </header>
+
+  <!-- navigation layer: floating glass footer with the one filled primary -->
+  <div style="position: absolute; left: 10px; right: 10px; bottom: 12px; border-radius: 34px; padding: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 1px 2px rgba(31,26,28,0.06), 0 14px 36px rgba(31,26,28,0.18), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(31,26,28,0.04); display: flex; flex-direction: column; gap: 6px">
+    <p role="status" style="margin: 4px 12px 0 12px; font-size: 13px; line-height: 18px; color: #4A4246; text-align: center">Tick both boxes above to finish.</p>
+    <button type="button" disabled="" aria-disabled="true" style="min-height: 52px; border-radius: 26px; border: 0; background: rgba(31,26,28,0.08); color: #6B6165; box-shadow: none; font-size: 17px; font-weight: 600; font-family: inherit">Finish</button>
+  </div>
+</div>
+
+</body>
+</html>

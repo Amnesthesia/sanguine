@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App lock: Face ID, passcode fallback, failed, app switcher</title>
+<style>
+body{margin:0}
+a{color:#BC4560}a:hover{color:#A3354F}
+</style>
+</head>
+<body>
+
+
+<div style="width: 390px; height: 3520px; position: relative; box-sizing: border-box; background: #FFFFFF; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
+  <div style="height: 36px; padding: 0 16px; display: flex; align-items: center; background: #F3F3F4; border-top: 1px solid #E4E4E6; border-bottom: 1px solid #E4E4E6; font-size: 12px; line-height: 16px; font-weight: 600; color: #6B6165">1 · Locked at launch or after a minute away: iOS opens Face ID by itself</div>
+  <section aria-label="Lock screen" style="position: relative; height: 844px; background: #FFFFFF">
+    <div role="dialog" aria-modal="true" aria-labelledby="lock-title-1" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 32px; box-sizing: border-box; text-align: center">
+      <span aria-hidden="true" style="width: 72px; height: 72px; border-radius: 36px; background: #F4DCE0; display: flex; align-items: center; justify-content: center"><svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="3" fill="none" stroke="#A3354F" stroke-width="1.7"></rect><path d="M8.2 10.5V8A3.8 3.8 0 0 1 15.8 8V10.5" fill="none" stroke="#A3354F" stroke-width="1.7" stroke-linecap="round"></path><path d="M12 14.4V16.6" stroke="#A3354F" stroke-width="1.7" stroke-linecap="round"></path></svg></span>
+      <h1 id="lock-title-1" style="margin: 0; font-size: 24px; line-height: 30px; font-weight: 700">Sanguine is locked</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 21px; color: #6B6165">You can lock Sanguine with Face ID, your fingerprint or your phone's passcode in Settings, Privacy and data.</p>
+      <button type="button" style="margin-top: 8px; min-height: 52px; min-width: 200px; padding: 0 28px; border-radius: 26px; border: 0; background: rgba(188,69,96,0.96); color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 16px rgba(188,69,96,0.32); font-size: 17px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4H8.5M15.5 4H17.5A2.5 2.5 0 0 1 20 6.5V8.5M20 15.5V17.5A2.5 2.5 0 0 1 17.5 20H15.5M8.5 20H6.5A2.5 2.5 0 0 1 4 17.5V15.5M9 9.2V10.6M15 9.2V10.6M12.2 9.2V13.2H11.2M9.4 15.4C10.8 16.6 13.2 16.6 14.6 15.4" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>Unlock</button>
+    </div>
+    <div aria-hidden="true" style="position: absolute; left: 50%; top: 300px; width: 240px; margin-left: -120px; border-radius: 28px; background: rgba(229,229,234,0.94); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: 0 20px 50px rgba(31,26,28,0.25); padding: 22px 16px 16px 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: #1F1A1C">
+      <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: #4A4246">IOS SYSTEM PROMPT, NOT APP UI</span>
+      <svg width="56" height="56" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4H8.5M15.5 4H17.5A2.5 2.5 0 0 1 20 6.5V8.5M20 15.5V17.5A2.5 2.5 0 0 1 17.5 20H15.5M8.5 20H6.5A2.5 2.5 0 0 1 4 17.5V15.5M9 9.2V10.6M15 9.2V10.6M12.2 9.2V13.2H11.2M9.4 15.4C10.8 16.6 13.2 16.6 14.6 15.4" fill="none" stroke="#1F1A1C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <span style="font-size: 15px; font-weight: 600">Face ID</span>
+      <span style="font-size: 13px; line-height: 18px; color: #4A4246">Reason shown by the system: “Unlock Sanguine”</span>
+    </div>
+  </section>
+  <div style="height: 36px; padding: 0 16px; display: flex; align-items: center; background: #F3F3F4; border-top: 1px solid #E4E4E6; border-bottom: 1px solid #E4E4E6; font-size: 12px; line-height: 16px; font-weight: 600; color: #6B6165">2 · Face ID not recognised: the system falls back to the passcode</div>
+  <section aria-label="Lock screen" style="position: relative; height: 844px; background: #FFFFFF">
+    <div role="dialog" aria-modal="true" aria-labelledby="lock-title-2" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 32px; box-sizing: border-box; text-align: center">
+      <span aria-hidden="true" style="width: 72px; height: 72px; border-radius: 36px; background: #F4DCE0; display: flex; align-items: center; justify-content: center"><svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="3" fill="none" stroke="#A3354F" stroke-width="1.7"></rect><path d="M8.2 10.5V8A3.8 3.8 0 0 1 15.8 8V10.5" fill="none" stroke="#A3354F" stroke-width="1.7" stroke-linecap="round"></path><path d="M12 14.4V16.6" stroke="#A3354F" stroke-width="1.7" stroke-linecap="round"></path></svg></span>
+      <h1 id="lock-title-2" style="margin: 0; font-size: 24px; line-height: 30px; font-weight: 700">Sanguine is locked</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 21px; color: #6B6165">You can lock Sanguine with Face ID, your fingerprint or your phone's passcode in Settings, Privacy and data.</p>
+      <button type="button" style="margin-top: 8px; min-height: 52px; min-width: 200px; padding: 0 28px; border-radius: 26px; border: 0; background: rgba(188,69,96,0.96); color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 16px rgba(188,69,96,0.32); font-size: 17px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4H8.5M15.5 4H17.5A2.5 2.5 0 0 1 20 6.5V8.5M20 15.5V17.5A2.5 2.5 0 0 1 17.5 20H15.5M8.5 20H6.5A2.5 2.5 0 0 1 4 17.5V15.5M9 9.2V10.6M15 9.2V10.6M12.2 9.2V13.2H11.2M9.4 15.4C10.8 16.6 13.2 16.6 14.6 15.4" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>Unlock</button>
+    </div>
+    <div aria-hidden="true" style="position: absolute; left: 50%; top: 260px; width: 240px; margin-left: -120px; border-radius: 28px; background: rgba(229,229,234,0.94); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); box-shadow: 0 20px 50px rgba(31,26,28,0.25); padding: 22px 16px 16px 16px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: #1F1A1C">
+      <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px; color: #4A4246">IOS SYSTEM PROMPT, NOT APP UI</span>
+      <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4H8.5M15.5 4H17.5A2.5 2.5 0 0 1 20 6.5V8.5M20 15.5V17.5A2.5 2.5 0 0 1 17.5 20H15.5M8.5 20H6.5A2.5 2.5 0 0 1 4 17.5V15.5M9 9.2V10.6M15 9.2V10.6M12.2 9.2V13.2H11.2M9.4 15.4C10.8 16.6 13.2 16.6 14.6 15.4" fill="none" stroke="#4A4246" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <span style="font-size: 15px; font-weight: 600">Face ID not recognised</span>
+      <span style="font-size: 13px; line-height: 18px; color: #4A4246">The system offers to try again or to use the phone’s passcode (fallback on)</span>
+      <span style="align-self: stretch; min-height: 44px; border-radius: 22px; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #1F1A1C">Try Face ID again</span>
+      <span style="align-self: stretch; min-height: 44px; border-radius: 22px; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; font-size: 15px; color: #1F1A1C">Enter passcode</span>
+    </div>
+  </section>
+  <div style="height: 36px; padding: 0 16px; display: flex; align-items: center; background: #F3F3F4; border-top: 1px solid #E4E4E6; border-bottom: 1px solid #E4E4E6; font-size: 12px; line-height: 16px; font-weight: 600; color: #6B6165">3 · Cancelled or failed: message under the text; Unlock asks again</div>
+  <section aria-label="Lock screen" style="position: relative; height: 844px; background: #FFFFFF">
+    <div role="dialog" aria-modal="true" aria-labelledby="lock-title-3" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 32px; box-sizing: border-box; text-align: center">
+      <span aria-hidden="true" style="width: 72px; height: 72px; border-radius: 36px; background: #F4DCE0; display: flex; align-items: center; justify-content: center"><svg width="32" height="32" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="3" fill="none" stroke="#A3354F" stroke-width="1.7"></rect><path d="M8.2 10.5V8A3.8 3.8 0 0 1 15.8 8V10.5" fill="none" stroke="#A3354F" stroke-width="1.7" stroke-linecap="round"></path><path d="M12 14.4V16.6" stroke="#A3354F" stroke-width="1.7" stroke-linecap="round"></path></svg></span>
+      <h1 id="lock-title-3" style="margin: 0; font-size: 24px; line-height: 30px; font-weight: 700">Sanguine is locked</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 21px; color: #6B6165">You can lock Sanguine with Face ID, your fingerprint or your phone's passcode in Settings, Privacy and data.</p>
+      <p aria-live="polite" style="margin: 0; display: flex; gap: 6px; align-items: flex-start; font-size: 14px; line-height: 20px; color: #B8324A"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><circle cx="7" cy="7" r="6" fill="none" stroke="#B8324A" stroke-width="1.5"></circle><path d="M7 3.8V7.6M7 9.8V10" stroke="#B8324A" stroke-width="1.6" stroke-linecap="round"></path></svg><span>Could not unlock. Try again.</span></p>
+      <button type="button" style="margin-top: 8px; min-height: 52px; min-width: 200px; padding: 0 28px; border-radius: 26px; border: 0; background: rgba(188,69,96,0.96); color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 16px rgba(188,69,96,0.32); font-size: 17px; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5V6.5A2.5 2.5 0 0 1 6.5 4H8.5M15.5 4H17.5A2.5 2.5 0 0 1 20 6.5V8.5M20 15.5V17.5A2.5 2.5 0 0 1 17.5 20H15.5M8.5 20H6.5A2.5 2.5 0 0 1 4 17.5V15.5M9 9.2V10.6M15 9.2V10.6M12.2 9.2V13.2H11.2M9.4 15.4C10.8 16.6 13.2 16.6 14.6 15.4" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>Unlock</button>
+    </div>
+  </section>
+  <div style="height: 36px; padding: 0 16px; display: flex; align-items: center; background: #F3F3F4; border-top: 1px solid #E4E4E6; border-bottom: 1px solid #E4E4E6; font-size: 12px; line-height: 16px; font-weight: 600; color: #6B6165">4 · App switcher and launch: blank cover until the lock decision</div>
+  <section aria-label="App switcher" style="position: relative; height: 844px; background: #3A3436">
+    <!-- iOS app switcher (system). The app's snapshot is the plain cover: no data, no brand, no name beyond the icon label. -->
+    <div aria-hidden="true" style="position: absolute; left: 65px; top: 120px; width: 260px; display: flex; flex-direction: column; gap: 10px">
+      <span style="display: flex; align-items: center; gap: 8px; color: #FFFFFF; font-size: 13px; font-weight: 600"><span style="width: 24px; height: 24px; border-radius: 6px; background: #F5E8E2; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3)"></span>Sanguine</span>
+      <span style="height: 563px; border-radius: 34px; background: #FFFFFF; box-shadow: 0 20px 50px rgba(0,0,0,0.45)"></span>
+    </div>
+    <p style="position: absolute; left: 24px; right: 24px; bottom: 40px; margin: 0; font-size: 13px; line-height: 18px; color: #E4E4E6; text-align: center">The card is the blank cover (screen colour only). With the discreet icon on, the system label reads “Notes”.</p>
+  </section>
+</div>
+
+</body>
+</html>

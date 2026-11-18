@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings: about, after an update check found nothing new</title>
+<style>
+body{margin:0}
+a{color:#BC4560}a:hover{color:#A3354F}
+</style>
+</head>
+<body>
+
+
+<div style="width: 390px; height: 2400px; position: relative; box-sizing: border-box; background: #FFFFFF; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
+
+  <!-- content layer: opaque -->
+  <div style="padding: 70px 16px 40px 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <!-- the About band: the client's brand, kept as on the current screen (D-049, D-051). Blush field and ink are constants
+         of this band and the splash only. The lock-up is the client's image asset, recoloured, never redrawn. Dark: field
+         #2A1518, rule #E3A7AD, tagline #F5E8E2. The tagline rotates per launch and is hidden in teen mode. -->
+    <div role="img" aria-label="Sanguine" style="border-radius: 24px; background: #F5E8E2; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 28px 0">
+      <div style="width: 200px; height: 226px; box-sizing: border-box; border-radius: 20px; border: 1.5px dashed rgba(115,57,59,0.55); display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px; font-size: 12px; line-height: 17px; color: #73393B">Client lock-up image: emblem over the script logotype (assets/brand/splash-lockup.png), 200 wide</div>
+      <div style="width: 200px; height: 1px; background: #73393B; opacity: 0.6"></div>
+      <p style="margin: 0; padding: 0 24px; text-align: center; font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif; font-size: 13px; line-height: 20px; letter-spacing: 3px; text-transform: uppercase; color: #73393B">The River of Blood never empties; it only crests.</p>
+    </div>
+
+    <!-- version and the over-the-air update check (D-103). The line under the version names the running bundle:
+         "As installed from the store", "Updated {date}" for an over-the-air update, or "Development build". -->
+    <section aria-label="Version" style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); display: flex; flex-direction: column; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid #E4E4E6">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Version 1.0.0</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Updated 14 Nov 2026</span></span>
+        <!-- checking: the pill is disabled and reads "Checking for updates…" with a spinner; a newer update downloads and the app restarts into it -->
+        <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); color: #1F1A1C; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 6px; flex-shrink: 0"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12A7.5 7.5 0 1 1 17 6.4M19.5 3.5V8H15" fill="none" stroke="#BC4560" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>Check for updates</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 16px">
+        <span style="font-size: 14px; line-height: 20px; color: #6B6165">Estimate engine 0.2.2</span>
+        <span style="font-size: 12px; line-height: 17px; color: #6B6165; font-variant-numeric: tabular-nums; user-select: text">Engine hash 26c4af6b15b3</span>
+      </div>
+    </section>
+
+    <section aria-label="Disclaimer" style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: 15px; line-height: 21px">Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional.</p>
+      <p style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">Sanguine is not a contraceptive and is not a medical device.</p>
+    </section>
+
+    <!-- how to read estimates: the fixed note, the way into the explainer, and the glossary of fixed terms -->
+    <h2 style="margin: 12px 0 0 4px; font-size: 22px; line-height: 28px; font-weight: 700">How to read estimates</h2>
+    <section aria-label="How to read estimates" style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px">
+      <p style="margin: 0; font-size: 14px; line-height: 20px">Every estimate is a range with a confidence word. A darker fertile-window underline means more likely to be in the window; it never marks a single day. Estimates change when you log more. Symptoms never change an estimate.</p>
+    </section>
+    <a href="#" aria-label="How Sanguine estimates. How the ranges are worked out, what the confidence words mean and what changes them." style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; text-decoration: none; color: #1F1A1C">
+      <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 17px; background: #F4DCE0; display: flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M3 12H21" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round"></path><rect x="7" y="8.5" width="10" height="7" rx="3.5" fill="none" stroke="#A3354F" stroke-width="1.8"></rect></svg></span>
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">How Sanguine estimates</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">How the ranges are worked out, what the confidence words mean and what changes them.</span></span>
+      <span aria-hidden="true" style="font-size: 20px; color: #6B6165">›</span>
+    </a>
+    <section aria-label="Words Sanguine uses" style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 6px 16px">
+      <dl style="margin: 0; display: flex; flex-direction: column">
+        <div style="padding: 10px 0; border-bottom: 1px solid #E4E4E6"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">period</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">Days of menstrual bleeding.</dd></div>
+        <div style="padding: 10px 0; border-bottom: 1px solid #E4E4E6"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">bleeding</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">Any blood loss logged, including spotting and bleeding outside a period.</dd></div>
+        <div style="padding: 10px 0; border-bottom: 1px solid #E4E4E6"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">spotting</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">Very light bleeding, less than a period.</dd></div>
+        <div style="padding: 10px 0; border-bottom: 1px solid #E4E4E6"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">cycle</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">From the first day of one period to the day before the next.</dd></div>
+        <div style="padding: 10px 0; border-bottom: 1px solid #E4E4E6"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">estimate</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">A calculated guess shown with a range, never a certainty.</dd></div>
+        <div style="padding: 10px 0; border-bottom: 1px solid #E4E4E6"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">range</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">The span of days an estimate is likely to fall in.</dd></div>
+        <div style="padding: 10px 0; border-bottom: 1px solid #E4E4E6"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">ovulation</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">When an egg is released. Sanguine estimates this day and shows a range.</dd></div>
+        <div style="padding: 10px 0; border-bottom: 1px solid #E4E4E6"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">fertile window</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">The days around ovulation shown with a likelihood. Darker means more likely to be in the window.</dd></div>
+        <div style="padding: 10px 0"><dt style="font-size: 14px; line-height: 20px; font-weight: 600">biomarker</dt><dd style="margin: 0; font-size: 14px; line-height: 20px; color: #6B6165">A measurable sign such as temperature, an ovulation test or cervical mucus.</dd></div>
+      </dl>
+    </section>
+
+    <!-- sources -->
+    <h2 style="margin: 12px 0 0 4px; font-size: 22px; line-height: 28px; font-weight: 700">Sources</h2>
+    <p style="margin: 0 4px; font-size: 13px; line-height: 18px; color: #6B6165">The published studies the estimates are based on.</p>
+    <section aria-label="Sources" style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 14px 16px">
+      <ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; line-height: 18px">
+        <li><strong style="font-weight: 600">Bull et al. 2019, npj Digital Medicine</strong><span style="display: block; color: #6B6165">Cycle-length prior, follicular and luteal phase lengths, age bands</span></li>
+        <li><strong style="font-weight: 600">Fehring et al. 2006</strong><span style="display: block; color: #6B6165">Check on the average cycle length</span></li>
+        <li><strong style="font-weight: 600">Wilcox et al. 1995 and 2000</strong><span style="display: block; color: #6B6165">The six-day fertile window and why it varies</span></li>
+        <li><strong style="font-weight: 600">Ecochard et al. 2001</strong><span style="display: block; color: #6B6165">Timing of ovulation tests, temperature rise and cervical mucus</span></li>
+        <li><strong style="font-weight: 600">Zhu et al. 2021</strong><span style="display: block; color: #6B6165">Wrist temperature compared with oral temperature</span></li>
+        <li><strong style="font-weight: 600">FIGO 2018 (Munro et al.)</strong><span style="display: block; color: #6B6165">Typical ranges for cycle length, regularity and bleeding</span></li>
+        <li><strong style="font-weight: 600">International evidence-based guideline 2023, adolescent ranges</strong><span style="display: block; color: #6B6165">Thresholds in the first years after the first period</span></li>
+        <li><strong style="font-weight: 600">STRAW+10 (Harlow et al. 2012)</strong><span style="display: block; color: #6B6165">Changes in cycle patterns from the 40s</span></li>
+        <li><strong style="font-weight: 600">Li et al. 2020 and 2022</strong><span style="display: block; color: #6B6165">How missed logs distort cycle lengths</span></li>
+      </ol>
+    </section>
+
+    <!-- policies: each row only once its text is ready (POLICIES.*.ready) -->
+    <nav aria-label="Policies" style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); display: flex; flex-direction: column; overflow: hidden; margin-top: 4px">
+      <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 16px; box-sizing: border-box; text-decoration: none; color: #1F1A1C; border-bottom: 1px solid #E4E4E6"><span style="flex: 1; font-size: 17px; line-height: 22px">Privacy policy</span><span aria-hidden="true" style="font-size: 20px; color: #6B6165">›</span></a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 16px; box-sizing: border-box; text-decoration: none; color: #1F1A1C"><span style="flex: 1; font-size: 17px; line-height: 22px">Consumer health data policy</span><span aria-hidden="true" style="font-size: 20px; color: #6B6165">›</span></a>
+    </nav>
+
+    <!-- licences -->
+    <h2 style="margin: 12px 0 0 4px; font-size: 22px; line-height: 28px; font-weight: 700">Licences</h2>
+    <section aria-label="Licences" style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 6px 16px">
+      <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E4E4E6; font-size: 14px; line-height: 20px"><span>Sanguine estimate engine</span><span style="color: #6B6165; flex-shrink: 0">MIT</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E4E4E6; font-size: 14px; line-height: 20px"><span>Expo, React Native, React</span><span style="color: #6B6165; flex-shrink: 0">MIT</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E4E4E6; font-size: 14px; line-height: 20px"><span>noble-ciphers, noble-hashes, scure-bip39</span><span style="color: #6B6165; flex-shrink: 0">MIT</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E4E4E6; font-size: 14px; line-height: 20px"><span>fflate, zustand, i18next, react-i18next</span><span style="color: #6B6165; flex-shrink: 0">MIT</span></div>
+      <div style="display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; font-size: 14px; line-height: 20px"><span>Cormorant Garamond (taglines)</span><span style="color: #6B6165; flex-shrink: 0; text-align: right">SIL Open Font Licence 1.1</span></div>
+    </section>
+  </div>
+
+  <!-- navigation layer: glass toolbar (D-096) -->
+  <header style="position: absolute; top: 10px; left: 10px; right: 10px; border-radius: 30px; padding: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 10px 30px rgba(31,26,28,0.14), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(255,255,255,0.35); display: flex; align-items: center; gap: 6px">
+    <button type="button" aria-label="Back" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.5); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(31,26,28,0.08); color: #1F1A1C; font-size: 22px">‹</button>
+    <h1 style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600; flex: 1; text-align: center">About</h1>
+    <span aria-hidden="true" style="width: 44px; height: 44px; flex-shrink: 0"></span>
+  </header>
+
+  <!-- navigation layer: toast after the check. Other results: "Couldn't check for updates. Try again when you're online."
+       and "Updates are off in this build." When a newer update is found the app restarts into it, and the next launch shows
+       "Sanguine has been updated." once. -->
+  <div role="status" style="position: absolute; top: 76px; left: 10px; right: 10px; border-radius: 26px; padding: 0 18px; min-height: 52px; display: flex; align-items: center; gap: 10px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 1px 2px rgba(31,26,28,0.06), 0 14px 36px rgba(31,26,28,0.16), inset 0 1px 0 rgba(255,255,255,0.95)">
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#3E7D5A" stroke-width="1.8"></circle><path d="M8 12.3L10.8 15L16 9.5" fill="none" stroke="#3E7D5A" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <span style="font-size: 15px; line-height: 20px; color: #1F1A1C">Sanguine is up to date.</span>
+  </div>
+</div>
+
+</body>
+</html>

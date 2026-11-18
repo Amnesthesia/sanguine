@@ -51,7 +51,7 @@ export function MoreSection({ day, store, db, prefs, state, summaries, openRow, 
         <View key={r.id} style={{ borderTopWidth: 1, borderTopColor: t.hairline }}>
           <Pressable testID={`more-${r.id}`} accessibilityRole="button" accessibilityLabel={`${r.label}. ${summaries[r.id] ?? tr('log.add')}`} aria-expanded={open === r.id} onPress={() => toggle(r.id)}
             style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <Text>{r.label}</Text>
+            <Text style={open === r.id ? { fontWeight: "600" } : undefined}>{r.label}</Text>
             <Text variant="bodySmall" color={summaries[r.id] ? 'textPrimary' : 'accent'}>{summaries[r.id] ?? tr('log.add')}</Text>
           </Pressable>
           {open === r.id ? (
@@ -109,7 +109,7 @@ function TemperatureEditor({ day, store, db, prefs, onSaved }: { day: ISODate; s
         <Text style={{ flex: 1 }}>{tr('log.disturbed')}</Text>
         <Switch testID="temp-disturbed" accessibilityLabel={tr('log.disturbed')} value={disturbed} onValueChange={setDisturbed} trackColor={{ true: theme.c.accent }} />
       </View>
-      <Button testID="temp-save" label={tr('log.save')} onPress={() => void save()} />
+      <Button testID="temp-save" kind="secondary" label={tr('log.save')} onPress={() => void save()} />
     </View>
   );
 }
@@ -125,7 +125,7 @@ function CervixEditor({ day, store, onSaved }: { day: ISODate; store: EventStore
       {group('position', ['low', 'mid', 'high'])}
       {group('firmness', ['firm', 'medium', 'soft'])}
       {group('opening', ['closed', 'partial', 'open'])}
-      <Button testID="cervix-save" label={tr('log.save')} onPress={() => void saveCervix(store, day, v).then(onSaved)} />
+      <Button testID="cervix-save" kind="secondary" label={tr('log.save')} onPress={() => void saveCervix(store, day, v).then(onSaved)} />
     </View>
   );
 }
@@ -141,7 +141,7 @@ function NoteEditor({ day, store, onSaved }: { day: ISODate; store: EventStore; 
         style={{ minHeight: 96, borderRadius: t.radius.tile, padding: 12, fontSize: 16, color: t.c.textPrimary, backgroundColor: t.chipBg, textAlignVertical: 'top' }}
       />
       <Text variant="caption" color="textSecondary">{tr('log.noteLocked')}</Text>
-      <Button testID="note-save" label={tr('log.save')} disabled={text.trim() === ''} onPress={() => void (async () => { await saveNote(store, day, text.trim(), await getNoteKey(), deviceClock); onSaved(); })()} />
+      <Button testID="note-save" kind="secondary" label={tr('log.save')} disabled={text.trim() === ''} onPress={() => void (async () => { await saveNote(store, day, text.trim(), await getNoteKey(), deviceClock); onSaved(); })()} />
     </View>
   );
 }

@@ -1,20 +1,22 @@
-import { GuidanceCard } from '@/features/guidance/GuidanceCard';
-import { phaseOn, showSupplements } from '@/features/guidance/guidance';
-// Day detail (PLAN.md §8.3): everything logged that day with provenance, edit, delete, and the two correction actions.
-import { analyzeCycles, type ISODate } from '@sanguine/engine';
+// Day detail (PLAN.md §8.3): the Log this day button pinned at the bottom, the cycle day, what was logged as removable chips with provenance, the correction actions, then the full estimate and food-and-movement sections.
+import { analyzeCycles, type ISODate, pastOvulations } from '@sanguine/engine';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
-import { dayEstimates } from '@/features/calendar/calendarModel';
+import { EstimateSections } from '@/features/guidance/sections/EstimateSections';
+import { GuidanceSections } from '@/features/guidance/sections/GuidanceSections';
+import { cycleDayOf } from '@/features/calendar/calendarModel';
+import { usePeriodDays } from '@/features/calendar/useCalendarData';
+import { phaseOn, showSupplements } from '@/features/guidance/guidance';
 import { type DayEvent, dayEvents, dayState, markNotAPeriod, markSpotting } from '@/features/logging/actions';
 import { describeEvent } from '@/features/logging/describe';
+import { LoggedEntries } from '@/features/logging/LoggedEntries';
+import { visibleEntries } from '@/features/logging/removeEntry';
 import { SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { useApp } from '@/state/app';
-import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
-import { Card } from '@/ui/Card';
 import { formatLong } from '@/ui/format';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
@@ -27,7 +29,6 @@ function provenance(e: DayEvent, tr: (k: string) => string): string {
 
 export default function DayDetail() {
   const { t: tr } = useTranslation();
-  const t = useTheme();
   const router = useRouter();
   const { date } = useLocalSearchParams<{ date: string }>();
   const day = date as ISODate;
@@ -43,53 +44,44 @@ export default function DayDetail() {
   }, [store, db, day]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads entries after writes in the log sheet
   useEffect(() => { void reload(); }, [reload, version]);
-  // the calendar marks on this day in words (D-104); a future day cannot be logged, so it offers neither "Nothing logged" nor Edit
+  // a future day cannot be logged: estimates only, no entries and no "Nothing logged"
   const isFuture = day > today;
   const eff = effectivePrefs(prefs, profile, today);
   const showEstimate = SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate;
-  const estimates = useMemo(() => dayEstimates(day, prediction, showEstimate, isPeriodDay), [day, prediction, showEstimate, isPeriodDay]);
+  const cycles = useMemo(() => (history && settings ? analyzeCycles(history, settings).map((c) => c.record) : []), [history, settings]);
+  const pastOv = useMemo(() => (history && settings ? pastOvulations(history, settings) : []), [history, settings]);
+  const cycleStarts = useMemo(() => history?.cycles.map((c) => c.start) ?? [], [history]);
+  const periodDays = usePeriodDays(); // the same logged period days the calendar and the dial draw solid
+  // lengths of her recent closed periods, oldest first, for the period-end card
+  const periodLengths = useMemo(() => cycles.filter((c) => c.nextStart && c.bleedDays).map((c) => c.bleedDays as number).slice(-6), [cycles]);
   const guide = useMemo(
-    () => (prefs.cycleGuidance && history && settings
-      ? phaseOn({ date: day, today, prediction, cycles: analyzeCycles(history, settings).map((c) => c.record), showEstimate })
-      : undefined),
-    [prefs.cycleGuidance, history, settings, day, today, prediction, showEstimate],
+    () => (prefs.cycleGuidance && history && settings ? phaseOn({ date: day, today, prediction, cycles, showEstimate }) : undefined),
+    [prefs.cycleGuidance, history, settings, day, today, prediction, cycles, showEstimate],
   );
   const after = async () => { await refresh(); await reload(); };
-  // a deleted entry cannot be brought back from this screen, so ask first (I-14, D-075); the event log keeps it as a retraction
-  const confirmDelete = (e: DayEvent) => Alert.alert(tr('day.deleteConfirmTitle'), describeEvent(e, tr, prefs.tempUnit), [
-    { text: tr('common.cancel'), style: 'cancel' },
-    { text: tr('day.deleteConfirmAction'), style: 'destructive', onPress: () => void store?.retract(e.id).then(after) }, // verb + noun so the alert button differs from the row's "Delete"
-  ]);
+  const entries = visibleEntries(events);
+  // "Day 2 of your cycle · Period": the same count as the calendar's day sheet; a future day's is an estimate
+  const cycleDay = cycleDayOf(cycleStarts, day);
+  const subline = [cycleDay ? tr('day.subline.cycleDay', { day: cycleDay }) : null, isFuture ? tr('day.subline.estimate') : isPeriodDay ? tr('day.subline.period') : null].filter(Boolean).join(' · ');
 
   return (
-    <SubScreen testID="screen-day" backTestID="day-back" title={formatLong(day)} bottomInset={32}>
-      {events.length === 0 && !isFuture ? <Text color="textSecondary">{tr('day.nothingLogged')}</Text> : null}
-      {events.length ? (
-        // one row per entry (U-16, D-076): the text with its provenance, and Delete at the trailing edge
-        <Card style={{ padding: 0, gap: 0 }}>
-          {events.map((e, i) => (
-            <View key={e.id} testID={`event-${e.kind}`} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 16, paddingRight: 4, minHeight: 52, borderBottomWidth: i === events.length - 1 ? 0 : 1, borderBottomColor: t.hairline }}>
-              <Text style={{ flex: 1, paddingVertical: 8 }}>{describeEvent(e, tr, prefs.tempUnit)}<Text color="textSecondary">{provenance(e, tr)}</Text></Text>
-              <Button kind="text" testID={`event-delete-${e.kind}`} label={tr('common.delete')} accessibilityLabel={`${tr('day.deleteEntry')}: ${describeEvent(e, tr, prefs.tempUnit)}`} onPress={() => confirmDelete(e)} />
-            </View>
-          ))}
-        </Card>
-      ) : null}
-      {estimates.length || isFuture ? (
-        <Card testID="day-estimates" style={{ gap: 6 }}>
-          <Text variant="heading" accessibilityRole="header">{tr('day.estimates.title')}</Text>
-          {estimates.length ? estimates.map((l) => <Text key={l} testID="day-estimate">{l}</Text>) : <Text color="textSecondary">{tr('day.estimates.none')}</Text>}
-          {estimates.length ? <Text variant="caption" color="textSecondary">{tr('day.estimates.note')}</Text> : null}
-        </Card>
-      ) : null}
-      {guide ? <GuidanceCard day={guide} supplements={showSupplements(eff.teen)} full /> : null}
-      <View style={{ gap: 4 }}>
-        {isFuture ? <Text variant="caption" color="textSecondary" testID="day-future-note">{tr('calendar.futureNote')}</Text> : <Button testID="day-edit" label={tr('day.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />}
-        {isPeriodDay && db && store ? (<>
+    <SubScreen testID="screen-day" backTestID="day-back" title={formatLong(day)} bottomInset={32} floating={isFuture ? undefined : <Button testID="day-edit" label={tr('calendar.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />}>
+      {subline ? <Text testID="day-subline" color="textSecondary" style={{ marginHorizontal: 4 }}>{subline}</Text> : null}
+      {isFuture ? null : (
+        <View style={{ gap: 6 }}>
+          <Text variant="caption" accessibilityRole="header" style={{ fontWeight: '600' }} color="textSecondary">{tr('log.loggedOnDay')}</Text>
+          <LoggedEntries entries={entries} onChanged={after} labelFor={(e) => `${describeEvent(e, tr, prefs.tempUnit)}${provenance(e, tr)}`} />
+        </View>
+      )}
+      {isPeriodDay && !isFuture && db && store ? (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <Button testID="day-not-period" kind="secondary" label={tr('day.notAPeriod')} onPress={() => void markNotAPeriod(store, db, day).then(after)} />
           <Button testID="day-spotting" kind="secondary" label={tr('day.markSpotting')} onPress={() => void markSpotting(store, day).then(after)} />
-        </>) : null}
-      </View>
+        </View>
+      ) : null}
+      {prediction && !prediction.suspended ? <EstimateSections prediction={prediction} day={day} pastOv={pastOv} cycleStarts={cycleStarts} periodDays={periodDays} showEstimate={showEstimate} includeUncertain={eff.showUncertainEstimates} periodLengths={periodLengths} /> : isFuture ? <Text testID="day-no-estimate">{tr('day.estimates.none')}</Text> : null}
+      {guide ? <GuidanceSections day={guide} supplements={showSupplements(eff.teen)} compact={false} /> : null}
+      {isFuture ? <Text variant="caption" color="textSecondary" testID="day-future-note">{tr('calendar.futureNote')}</Text> : null}
     </SubScreen>
   );
 }

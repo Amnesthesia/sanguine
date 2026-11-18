@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { contrast, over } from './contrast';
-import { colors, glass } from './tokens';
+import { colors, elevation, glass, radii } from './tokens';
 
 for (const mode of ['light', 'dark'] as const) {
   const c = colors[mode];
@@ -9,6 +9,24 @@ for (const mode of ['light', 'dark'] as const) {
     for (const bg of ['bg', 'surface', 'surface2'] as const)
       for (const fg of ['textPrimary', 'textSecondary'] as const)
         it(`${fg} on ${bg} >= 4.5`, () => expect(contrast(c[fg], c[bg])).toBeGreaterThanOrEqual(4.5));
+    for (const bg of ['bg', 'surface', 'surface2'] as const) {
+      for (const fg of ['textOnGlass', 'caution', 'cautionText'] as const) {
+        it(`${fg} on ${bg} >= 4.5`, () => {
+          const ratio = contrast(c[fg], c[bg]);
+          expect(ratio, `${fg} on ${bg}: ${ratio.toFixed(4)}:1`).toBeGreaterThanOrEqual(4.5);
+        });
+      }
+      for (const fg of ['caution', 'cautionText'] as const) {
+        it(`${fg} on cautionBg over ${bg} >= 4.5`, () => {
+          const rgba = c.cautionBg.match(/^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/);
+          expect(rgba).not.toBeNull();
+          if (!rgba) throw new Error('Expected an rgba cautionBg');
+          const base = `#${rgba.slice(1, 4).map(v => Number(v).toString(16).padStart(2, '0')).join('')}`;
+          const ratio = contrast(c[fg], over(base, Number(rgba[4]), c[bg]));
+          expect(ratio, `${fg} on cautionBg over ${bg}: ${ratio.toFixed(4)}:1`).toBeGreaterThanOrEqual(4.5);
+        });
+      }
+    }
     // accent text is used on bg and surface only; chips on surface2 use textPrimary (D-008)
     for (const bg of ['bg', 'surface'] as const)
       for (const fg of ['accent'] as const)
@@ -27,8 +45,18 @@ for (const mode of ['light', 'dark'] as const) {
       const comp = over(g.accentBase, g.accentAlpha, c.bg);
       expect(contrast(g.onAccent, comp)).toBeGreaterThanOrEqual(4.5);
     });
-    it('every token is a 6-digit hex', () => {
-      for (const v of Object.values(c)) expect(v).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    it('opaque colours are 6-digit hex; cautionBg is rgba', () => {
+      for (const [key, v] of Object.entries(c))
+        expect(v).toMatch(key === 'cautionBg' ? /^rgba\(\d+,\d+,\d+,0\.10\)$/ : /^#[0-9A-Fa-f]{6}$/);
     });
   });
 }
+
+it('uses the exact glass redesign tokens', () => {
+  expect(colors.light).toMatchObject({ textOnGlass: '#4A4246', caution: '#8A5512', cautionBg: 'rgba(185,116,30,0.10)', cautionText: '#5E3A0C' });
+  expect(colors.dark).toMatchObject({ textOnGlass: '#CFC6CA', caution: colors.dark.flag, cautionBg: 'rgba(217,160,84,0.10)', cautionText: colors.dark.flag });
+  for (const platform of ['ios', 'android'] as const)
+    expect(radii[platform]).toMatchObject({ card: 26, float: 28, sheet: 34 });
+  for (const mode of ['light', 'dark'] as const) expect(glass[mode].inset).toBe(10);
+  expect(elevation.card.boxShadow).toBe('inset 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08)');
+});

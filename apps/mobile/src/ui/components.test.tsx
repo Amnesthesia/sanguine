@@ -1,7 +1,10 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { AccessibilityInfo } from 'react-native';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
+import { hexToRgb } from '@sanguine/ui-tokens';
+import { buildTheme } from '@/theme';
 import { Chips } from './Chips';
 import { DateField, dateToIso, isoToDate } from './DateField';
 
@@ -14,11 +17,14 @@ vi.mock('@expo/ui/community/datetime-picker', () => ({
     </>
   ),
 }));
+vi.mock('react-native-svg', () => ({ default: () => null, Path: () => null }));
 import { OptionList } from './OptionList';
 import { ProgressDots } from './ProgressDots';
 import { TextField } from './TextField';
 
 afterEach(cleanup);
+// the step platter is a glass surface, which asks the OS for Reduce Transparency
+Object.assign(AccessibilityInfo, { isReduceTransparencyEnabled: vi.fn().mockResolvedValue(true), addEventListener: vi.fn(() => ({ remove: vi.fn() })) });
 
 function Harness() {
   const [v, setV] = useState<'a' | 'b' | undefined>();
@@ -34,6 +40,18 @@ describe('OptionList', () => {
     expect(screen.getByRole('radio', { name: 'Alpha' }).getAttribute('aria-checked')).toBe('true');
     expect(screen.getByRole('radio', { name: 'Beta' }).getAttribute('aria-checked')).toBe('false');
     expect(screen.getByText('second')).toBeTruthy();
+  });
+  it('is one grouped list with a checkmark and bold text on the selected row only', () => {
+    render(<Harness />);
+    expect(screen.queryAllByTestId('option-check')).toHaveLength(0);
+    fireEvent.click(screen.getByRole('radio', { name: 'Beta' }));
+    const checks = screen.getAllByTestId('option-check');
+    expect(checks).toHaveLength(1);
+    expect(screen.getByRole('radio', { name: 'Beta' }).contains(checks[0] as HTMLElement)).toBe(true);
+    expect(screen.getByText('Beta').style.fontWeight).toBe('600');
+    expect(screen.getByText('Alpha').style.fontWeight).not.toBe('600');
+    expect(screen.getByRole('radio', { name: 'Alpha' }).parentElement).toBe(screen.getByRole('radio', { name: 'Beta' }).parentElement);
+    expect(screen.getByTestId('o-b')).toBeTruthy();
   });
 });
 
@@ -89,5 +107,17 @@ describe('TextField and ProgressDots', () => {
   it('progress is a single labelled element', () => {
     render(<ProgressDots step={2} total={5} />);
     expect(screen.getByLabelText('Step 3 of 5')).toBeTruthy();
+  });
+  it('draws the current step as a pill, earlier steps as dots and later ones faint', () => {
+    render(<ProgressDots step={2} total={5} />);
+    const marks = screen.getAllByTestId('step-dot');
+    expect(marks.map((m) => m.style.width)).toEqual(['8px', '8px', '22px', '8px', '8px']);
+    const colour = marks.map((m) => m.style.backgroundColor);
+    expect(colour[0]).toBe(colour[2]);
+    expect(colour[3]).not.toBe(colour[2]);
+    expect(colour[3]).toBe(colour[4]);
+    // later steps are the glass text colour at 30% (the frame's faint dot), not the hairline border colour, which vanishes on the platter
+    const [r, g, b] = hexToRgb(buildTheme('light', 'ios').c.textOnGlass);
+    expect(colour[3]).toBe(`rgba(${r}, ${g}, ${b}, 0.3)`);
   });
 });

@@ -16,6 +16,19 @@ describe('settings', () => {
 });
 
 describe('prefs', () => {
+  it('defaults to cycle-day numbers on and uncertain estimates off', () => {
+    expect(DEFAULT_PREFS.calendarCycleDay).toBe(true);
+    expect(DEFAULT_PREFS.showUncertainEstimates).toBe(false);
+  });
+  it('adds new defaults to old saved prefs and preserves explicit choices', async () => {
+    const db = openTestDb();
+    await migrate(db);
+    await setSetting(db, 'prefs', { theme: 'dark' });
+    expect(await loadPrefs(db)).toMatchObject({ calendarCycleDay: true, showUncertainEstimates: false });
+    await savePrefs(db, { ...DEFAULT_PREFS, calendarCycleDay: false, showUncertainEstimates: true });
+    expect(await loadPrefs(db)).toMatchObject({ calendarCycleDay: false, showUncertainEstimates: true });
+    expect(effectivePrefs(await loadPrefs(db), { birthYear: 2012 }, '2026-11-03').showOvulationEstimate).toBe(false);
+  });
   it('defaults are the most private option and the 8 default symptoms', () => {
     expect(DEFAULT_SYMPTOMS).toEqual(['cramps', 'headache', 'bloating', 'breast_tenderness', 'mood_low', 'acne', 'fatigue', 'midcycle_spotting']);
     expect(DEFAULT_PREFS.sexLogging).toBe(false);
@@ -49,5 +62,12 @@ describe('prefs', () => {
     expect(effectivePrefs({ ...DEFAULT_PREFS, teenUnlockEstimate: true }, { birthYear: 2012 }, today).showOvulationEstimate).toBe(true);
     expect(effectivePrefs(DEFAULT_PREFS, { birthYear: 1990 }, today).showOvulationEstimate).toBe(true);
     expect(effectivePrefs({ ...DEFAULT_PREFS, showOvulationEstimate: false }, { birthYear: 1990 }, today).showOvulationEstimate).toBe(false);
+  });
+  it('uncertain estimates need the ovulation estimate to be showable', () => {
+    const on = { ...DEFAULT_PREFS, showUncertainEstimates: true };
+    expect(effectivePrefs(on, { birthYear: 2012 }, '2026-10-09').showUncertainEstimates).toBe(false); // teen, stored true
+    expect(effectivePrefs({ ...on, teenUnlockEstimate: true }, { birthYear: 2012 }, '2026-10-09').showUncertainEstimates).toBe(false); // unlocked teen: never in teen mode (ER-58, D-124)
+    expect(effectivePrefs({ ...on, showOvulationEstimate: false }, { birthYear: 1990 }, '2026-10-09').showUncertainEstimates).toBe(false);
+    expect(effectivePrefs(on, { birthYear: 1990 }, '2026-10-09').showUncertainEstimates).toBe(true);
   });
 });

@@ -6,10 +6,10 @@
 | --- | --- |
 | Text contrast ≥ 4.5:1 and non-text ≥ 3:1 for every colour token, light and dark | `packages/ui-tokens/src/tokens.test.ts` |
 | Every `Pressable`, `Switch`, `TextInput` has an accessibility label; every `Pressable` declares a target of at least 44 | `apps/mobile/src/a11y.test.ts` |
-| No custom animation anywhere (reduced motion is therefore met; the ring is static) | `apps/mobile/src/a11y.test.ts` |
+| No custom animation anywhere (reduced motion is therefore met; the dial is static) | `apps/mobile/src/a11y.test.ts` |
 | Period, predicted range and fertile band are drawn as shapes and spoken in words, never opacity | `calendarModel.test.ts`, `a11y.test.ts` |
 | Screens at about 150% text size on iOS (Dynamic Type AX1, ~160%) and Android (font scale 1.5) | `apps/mobile/.maestro/fontscale.sh ios\|android`, screenshots in `docs/screenshots/P2-14/` |
-| Above 150% the ring collapses to a text header; below, quick-log buttons and symptom tiles reflow instead of splitting words | `PhaseRing`, `QuickLogRow`, `SymptomGrid` |
+| Above 150% the dial's words move under it; below, quick-log buttons and symptom tiles reflow instead of splitting words | `CycleDial`, `QuickLogRow`, `SymptomGrid` |
 
 ## Manual script (VoiceOver on iOS, TalkBack on Android)
 

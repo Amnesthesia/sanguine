@@ -1,4 +1,5 @@
 {
+  "chrome": { "actionAvailable": "{message}, {label} available" },
   "app": {
     "name": "Sanguine",
     "discreetName": "Notes",
@@ -43,6 +44,7 @@
   },
   "onboarding": {
     "progress": "Step {n} of {total}",
+    "skipStep": "Skip this question",
     "s1": {
       "title": "Track and understand your cycle",
       "body": "Sanguine estimates when your next period and your ovulation are likely, using what you log. Estimates are ranges, not promises. Sanguine is not a contraceptive and is not a medical device."
@@ -67,6 +69,7 @@
       "weekAgo": "A week ago",
       "other": "Another date",
       "chosen": "Last period started {date}",
+      "startedLabel": "Last period started",
       "usualLengthInvalid": "Enter a number of days from 15 to 90."
     },
     "s4": {
@@ -124,6 +127,10 @@
       "line": "In {hits} of your last {cycles} cycles you logged {name} around this day.",
       "caption": "From your own logs. It does not change any estimate."
     },
+    "periodEndsLikely": "Period likely ends",
+    "nextPeriodLikely": "Next period likely",
+    "logsToday": "Logged today",
+    "closeSheet": "Close the food and movement notes",
     "periodInProgress": "Day {day} of your period",
     "periodLogged": "Logged: {flow} flow",
     "periodLikely": "Period likely in {lo}–{hi} days",
@@ -136,6 +143,25 @@
     "suspended": "Estimates are paused while “{state}” is set.",
     "quick": {
       "log": "Log today"
+    },
+    "dial": {
+      "kicker": "CYCLE DAY",
+      "noDataKicker": "NO DATA YET",
+      "noDataSub": "Log a period to start",
+      "pillFertile": "Fertile window · estimate",
+      "likelyEnds": "Likely ends {range}",
+      "ovulationLikely": "Ovulation likely {range}",
+      "nextPeriod": "Next period {range}",
+      "day": "Cycle day {day}.",
+      "periodLogged": "Period logged on days {from} to {to}.",
+      "periodLoggedOne": "Period logged on day {day}.",
+      "periodEnding": "Likely ending on days {from} to {to}.",
+      "periodEndingOne": "Likely ending on day {day}.",
+      "fertile": "Fertile window estimate, days {from} to {to}.",
+      "ovulation": "Ovulation estimate around day {day}.",
+      "next": "Next period likely days {from} to {to}.",
+      "nextOne": "Next period likely day {day}.",
+      "legend": { "period": "Period", "estimate": "Estimate", "fertile": "Fertile window", "ovulation": "Ovulation" }
     },
     "legend": "darker = more likely to be in the fertile window",
     "ring": {
@@ -152,13 +178,17 @@
     "legendFertile": "darker = more likely to be in the fertile window",
     "expandEstimate": "Show details",
     "collapseEstimate": "Hide details",
-    "periodExpectedNow": "Period expected about now",
-    "periodLateRange": "Expected {range}",
-    "dayOfCycleHeader": "Day {day} of your cycle"
+    "periodLateRange": "Expected {range}"
   },
   "log": {
     "energy": "Energy",
     "energyLevels": { "1": "Very low", "2": "Low", "3": "OK", "4": "Good", "5": "High" },
+    "energyNotLogged": "Not logged",
+    "energyHint": "Tap a step to log",
+    "energyClear": "Clear",
+    "energyClearLabel": "Clear energy",
+    "loggedOnDay": "Logged on this day",
+    "removed": "Removed: {label}",
     "title": "Log",
     "flow": "Flow",
     "bleeding": "Bleeding",
@@ -248,12 +278,22 @@
     "title": "{date}",
     "nothingLogged": "Nothing logged for this day.",
     "estimates": {
-      "title": "Estimates for this day",
       "period": "Period likely to start {range}",
       "period95": "Period possible: the wider range is {range}",
       "ovulationPoint": "Ovulation estimate {range}, most likely this day",
       "ovulation": "Ovulation estimate {range}",
       "ovulationUncertain": "Ovulation estimate uncertain: could fall {range}",
+      "periodEnd": "Period likely to end {range}",
+      "ovulationPastPoint": "Ovulation estimate {range}, most likely this day · {basis}",
+      "ovulationPast": "Ovulation estimate {range} · {basis}",
+      "ovulationPastUncertain": "Ovulation estimate uncertain: could have fallen {range} · {basis}",
+      "basis": {
+        "calendar": "from your next period date",
+        "lh": "from your LH tests",
+        "bbt": "from your temperature readings",
+        "mucus": "from your cervical mucus notes",
+        "combined": "from your tests and readings"
+      },
       "fertile": "Fertile window: {word} likelihood",
       "none": "No estimate covers this day.",
       "note": "Estimates are ranges worked out from your own logs, not promises."
@@ -269,10 +309,11 @@
     "joinPrompt": "This is within a week of the period that started on {date}. Is it the same period?",
     "samePeriod": "Same period",
     "newPeriod": "A new period",
-    "edit": "Edit",
-    "deleteEntry": "Delete this entry",
-    "deleteConfirmTitle": "Delete this entry?",
-    "deleteConfirmAction": "Delete entry",
+    "subline": {
+      "cycleDay": "Day {day} of your cycle",
+      "period": "Period",
+      "estimate": "estimate"
+    },
     "entry": {
       "energy": "Energy: {level} ({n} of 5)",
       "flow": "{level} flow",
@@ -310,8 +351,18 @@
       "predicted": "Predicted period",
       "fertile": "Fertile window likelihood",
       "ovulation": "Ovulation estimate",
-      "logged": "Logged",
+      "symptoms": "Symptoms",
+      "other": "Other log",
       "moon": "Moon phase"
+    },
+    "legendRule": "Solid means you logged it. Dashed, dotted or glowing means it is an estimate.",
+    "sheet": {
+      "open": "Open the day sheet",
+      "showDetails": "Show details",
+      "showDetailsA11y": "Show details: how these were worked out, food and movement, sources",
+      "hideDetailsA11y": "Hide the details",
+      "closeA11y": "Close the day sheet",
+      "logRound": "Log"
     },
     "selectedSummary": "Day {day} · {items}",
     "a11y": {
@@ -324,6 +375,9 @@
       "fertile": "{word} likelihood of being in the fertile window",
       "ovulation": "ovulation estimate",
       "logged": "something logged",
+      "symptoms": "symptoms logged",
+      "periodEstimate": "estimated period day",
+      "periodEstimateEdge": "possible period day, estimate",
       "titleHint": "Swipe up or down to change the month. Double-tap to go to today."
     },
     "fertileWords": {
@@ -346,7 +400,21 @@
       "Sun"
     ],
     "ovulationUncertainCaption": "Ovulation estimate uncertain",
-    "legendLogged": "Logged"
+    "legendLogged": "Logged",
+    "list": {
+      "periodDay": "Period day {day}",
+      "period": "Period",
+      "periodEnds": "Period likely ends · estimate from your usual length",
+      "fertile": "Fertile window, estimate",
+      "fertileMost": "most likely {range}",
+      "ovulation": "Ovulation estimate, range {range}",
+      "ovulationUncertain": "Ovulation estimate uncertain, range {range}",
+      "nextPeriod": "Next period likely",
+      "atMost": "at most {range}",
+      "confidence": { "high": "high confidence", "medium": "medium confidence", "low": "low confidence" },
+      "rowRange": "{from} to {to}",
+      "empty": "Nothing logged or estimated this month."
+    }
   },
   "report": {
     "title": "Cycle summary for a health professional",
@@ -355,7 +423,8 @@
     "lifeState": "Life state set in the app: {state}",
     "noCycles": "No complete cycles are logged yet.",
     "cyclesTitle": "Cycles",
-    "covered": "{n} cycles from {from} to {to}",
+    "covered_one": "{n} cycle from {from} to {to}",
+    "covered_other": "{n} cycles from {from} to {to}",
     "lengths": "Cycle lengths: {min} to {max} days, middle value {median}",
     "chartNote": "Bars: cycle length in days, oldest first. Dashed lines: 21 and 35 days, the range FIGO 2018 describes as typical for adults.",
     "colStart": "Start",
@@ -381,6 +450,8 @@
     "includeTemperatures": "Temperature counts",
     "includeFlags": "Patterns the app pointed out",
     "includeOvulation": "Ovulation estimates per cycle",
+    "alsoInclude": "Also include",
+    "alwaysIncluded": "Always in the PDF: the cycle table and chart, your age, the life state you set, and the estimate engine version.",
     "share": "Make and share the PDF",
     "failed": "The PDF could not be made."
   },
@@ -398,7 +469,9 @@
       "lowPhaseTip": "Exercise lifts mood and energy for most people, and even one session helps on average. On those days, a walk, yoga or a lighter session still counts.",
       "highPhase": "Your energy was highest {phaseIn}: {mean} out of 5 on average. If you enjoy harder sessions, this is when you have tended to feel up to them.",
       "lowOverall": "Your energy was low on most days you logged in the last 4 weeks: {mean} out of 5 on average over {n} days. Tiredness that lasts for weeks has many possible causes. A doctor can help you check what is going on.",
-      "caption": "From your own logs. Energy does not change any estimate."
+      "caption": "From your own logs. Energy does not change any estimate.",
+      "reading": "Energy averaged {mean} out of 5 across {n} logged days.",
+      "axis": "Energy \u00b7 1\u20135"
     },
     "pattern": {
       "title": "Your cycle pattern",
@@ -471,8 +544,25 @@
     "confirmLong": "No, this cycle was this long",
     "viewCycle": "Cycle details",
     "needTwo": "Insights appear after two complete cycles.",
+    "excludedByYou": "excluded by you",
+    "includeLabel": "Include the cycle starting {date} in your estimates",
+    "lengthSummary": {
+      "range": "{min}\u2013{max} days",
+      "lengths": "{list} days \u00b7 {spread}-day spread.",
+      "scope": "Your last {n} completed cycles, including any you left out of estimates. The cycle length chart shows typical cycles only."
+    },
     "chart": {
       "yAxis": "days",
+      "dayLabel": "Day {n}",
+      "lengthA11y": "Cycle length chart: {list} days.",
+      "tempA11y": "Temperature chart, {n} readings.",
+      "tempA11yCoverline": "Temperature chart, {n} readings, coverline {value} {unit}.",
+      "readLengthSame": "Your last {n} typical cycles were {len} days long.",
+      "readLengthRange": "Your last {n} typical cycles were {min} to {max} days long.",
+      "readTempAbove": "The last three readings sit above the coverline.",
+      "readTempBelow": "The last three readings sit below the coverline.",
+      "readPhase": "{name}: logged most often {phaseIn}.",
+      "readPhaseIn": { "menstrual": "during bleeding", "follicular": "in the follicular phase", "luteal": "in the luteal phase" },
       "bandCaption": "Shaded: where the next cycle is likely to fall (80%).",
       "noTemps": "No temperatures logged this cycle.",
       "fewTemps": "The chart appears after six morning temperatures in this cycle. To go: {n}.",
@@ -495,7 +585,14 @@
       "exclude": "Leave out of estimates",
       "include": "Include in estimates",
       "excluded": "This cycle is left out of your estimates.",
-      "conflict": "The signals you logged did not agree, so the most precise one was used."
+      "conflict": "The signals you logged did not agree, so the most precise one was used.",
+      "timeline": "Timeline",
+      "timelineBleeding": "{range} \u00b7 Bleeding",
+      "timelineLh": "{date} \u00b7 LH test positive",
+      "timelineRise": "{date} \u00b7 Temperature rise",
+      "timelineReading": "{date} \u00b7 {value} \u00b0{unit}",
+      "timelineNext": "{date} \u00b7 Next period",
+      "missing": "This cycle is no longer in your history."
     }
   },
   "settings": {
@@ -513,7 +610,7 @@
     "lifeState": {
       "title": "Life state",
       "current": "Current",
-      "since": "Since {date}",
+      "sinceLabel": "Since",
       "history": "Earlier states",
       "options": {
         "none": "None (includes copper IUD)",
@@ -614,17 +711,54 @@
       "rangeTitle": "Where the period range comes from",
       "rangeBody": "Sanguine looks at the lengths of your last 12 cycles. Before you have logged a few, it starts from published averages for your age group (Bull et al. 2019) and moves towards your own pattern as cycles are added. In most life states, recent cycles and older ones count the same. A cycle that looks like a missed log, or that falls in a life change you set (such as pregnancy, or the months after stopping a hormonal method), is left out or counted less. The result is the range of days that has an 80% likelihood of holding your next period start; the calendar also shows the wider 95% range.",
       "confidenceTitle": "What the confidence words mean",
-      "confidenceHigh": "Confident: at least six cycles and a period range no wider than about a week.",
-      "confidenceMedium": "Fair estimate: at least two cycles and a period range of up to about 11 days.",
-      "confidenceLow": "Rough estimate: fewer than two cycles, or cycles that vary so much the range is wider than about 11 days. The range is wide on purpose.",
-      "confidenceNone": "No estimate: not enough data yet, or a life change you set pauses the estimates.",
+      "confidence": {
+        "high": { "word": "Confident", "rule": "At least six cycles and a period range no wider than about a week." },
+        "medium": { "word": "Fair estimate", "rule": "At least two cycles and a period range of up to about 11 days." },
+        "low": { "word": "Rough estimate", "rule": "Fewer than two cycles, or cycles that vary so much the range is wider than about 11 days. The range is wide on purpose." },
+        "none": { "word": "No estimate", "rule": "Not enough data yet, or a life change you set pauses the estimates." }
+      },
       "narrowTitle": "What narrows the range",
       "narrowBody": "Logging every period start, including the first day, matters most. Morning temperature, ovulation tests, cervical mucus and cervical position can date ovulation in a cycle after it happens, which sharpens the next period estimate and the fertile window estimate.",
       "narrowBodyTeen": "Logging every period start, including the first day, matters most. The more cycles you log, the narrower the range becomes.",
       "symptomsTitle": "What does not change the estimates",
       "symptomsBody": "Symptoms, mood and notes never change an estimate. They show up in Insights so you can see your own patterns, but there is no published evidence that they predict when a period starts.",
+      "signals": {
+        "period": "Every period start",
+        "temperature": "Morning temperature",
+        "ovulationTest": "Ovulation tests",
+        "mucus": "Cervical mucus",
+        "position": "Cervical position"
+      },
+      "notChange": {
+        "symptoms": "Symptoms",
+        "mood": "Mood",
+        "notes": "Notes"
+      },
       "accuracyTitle": "How well it has done for you",
-      "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gave at the start of that cycle held the real start date. Insights, Your accuracy, shows the count."
+      "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gave at the start of that cycle held the real start date. Insights, Your accuracy, shows the count.",
+      "draw": {
+        "blendLabel": "With two cycles logged, the estimate still leans on published averages; it moves towards your own pattern as cycles are added, up to your last 12.",
+        "blendLeft": "Published averages",
+        "blendRight": "Your own pattern",
+        "blendZero": "0 cycles",
+        "blendYou": "you: 2",
+        "blendMax": "12",
+        "rangeHeading": "Your next period, as a range",
+        "rangeLabel": "80% likelihood the next period starts between 26 and 30 November; the wider 95% range is 24 November to 2 December.",
+        "rangeFrom95": "24 Nov",
+        "rangeFrom80": "26",
+        "rangeTo80": "30",
+        "rangeTo95": "2 Dec",
+        "range80": "80% range",
+        "range95": "95% range",
+        "accuracyLabel": "Drawing: three past cycles. For each, the range given at the start of the cycle, and the real start date: inside the range twice, just outside it once.",
+        "narrowLabel": "Logging every period start, then morning temperature, ovulation tests, cervical mucus and cervical position, turn a wide range into a narrower one.",
+        "narrowLabelTeen": "Logging every period start turns a wide range into a narrower one.",
+        "notChangeLabel": "Symptoms, mood and notes go to Insights, never into the estimates.",
+        "notChangeInsights": "Insights",
+        "notChangeEstimates": "Estimates",
+        "sampleNote": "Drawn to explain, not your own data."
+      }
     },
     "calendar": {
       "title": "Add to someone's calendar",
@@ -758,6 +892,7 @@
       "widgetDetails": "Show details in widgets",
       "widgetDetailsDesc": "Off: widgets show only the day of your cycle.",
       "next": "Next reminder: {date}",
+      "pairLabel": "{setting}. Off shows: {off}. On shows: {on}.",
       "none": "No reminder is due yet. Reminders follow your estimates once you log a period.",
       "denied": "Notifications are turned off for Sanguine in your phone's settings.",
       "permissionTitle": "Sanguine reminder",
@@ -769,7 +904,10 @@
       "themeSystem": "Match system",
       "themeLight": "Light",
       "themeDark": "Dark",
-      "motionNote": "Reduced motion follows your phone's setting."
+      "motionNote": "Reduced motion follows your phone's setting.",
+      "cycleDay": "Cycle day on calendar",
+      "cycleDayDesc": "Show the day of your cycle above each date.",
+      "cycleDayPreview": "Preview: 1, 2 and 3 November, with cycle days 2, 3 and 4 above the dates"
     },
     "tracking": {
       "title": "Tracking options",
@@ -786,7 +924,9 @@
       "guidanceDesc": "On Today and the day screen, notes on food, exercise and supplements for each part of the cycle, with the research behind them and how strong it is.",
       "ovulationEstimate": "Show ovulation estimate",
       "ovulationEstimateDesc": "Turn off to hide ovulation and fertile window estimates.",
-      "teenLocked": "Hidden by default for under 18s. You can turn it on here."
+      "teenLocked": "Hidden by default for under 18s. You can turn it on here.",
+      "uncertainEstimates": "Show uncertain estimates",
+      "uncertainEstimatesDesc": "Draw ovulation and fertile estimates even when your data is too irregular for a confident range. They are marked uncertain."
     },
     "about": {
       "title": "About",
@@ -795,6 +935,7 @@
       "devBuild": "Development build",
       "updated": "Updated {d}",
       "checkHint": "Tap to check for updates",
+      "checkAction": "Check for updates",
       "checking": "Checking for updates…",
       "check": {
         "off": "Updates are off in this build.",
@@ -854,11 +995,11 @@
   },
   "a11y": {
     "closeSheet": "Close log sheet",
+    "doneLog": "Done, close the log sheet",
     "openLog": "Open log",
     "flowSelected": "{level} flow selected",
     "symptomSelected": "{symptom}, {strength}, {n} of 3",
     "symptomHint": "Double-tap to change the strength. Press and hold to clear.",
-    "phaseRing": "Cycle day {day}. {phase}.",
     "tab": "{name} tab"
   },
   "date": {
@@ -874,8 +1015,7 @@
     "sourcesLabel": "Sources",
     "suppLabel": "Supplements with some research",
     "suppCaveat": "Supplements are not tested like medicines and can interact with them. A pharmacist or doctor can check one with you before you start, especially if you take other medicines.",
-    "more": "Why these notes",
-    "moreA11y": "Open the day screen with the reasons and sources for these notes",
+    "moreA11y": "Read the reasons, evidence and sources for these notes",
     "readMore": "Read more",
     "summary": {
       "menstrual": {
@@ -926,6 +1066,41 @@
       "some": "Some evidence",
       "early": "Early evidence",
       "general": "General guidance, not specific to this phase"
+    },
+    "evidenceKey": {
+      "title": "How to read the evidence bars",
+      "strong": { "word": "Strong", "def": "large reviews or national guidelines agree." },
+      "some": { "word": "Some", "def": "several small trials point the same way, results vary." },
+      "early": { "word": "Early", "def": "one study, lab work, or a plausible link not tested in people." },
+      "general": { "word": "General", "def": "good advice on any day, not specific to this phase." },
+      "note": "Estimates use the same bars for confidence: how sure the app is about a date, from your own data."
+    },
+    "curve": {
+      "label": "Illustration of a typical cycle: estrogen rises in the first half and again a little after the middle; progesterone rises in the second half; both fall before the next period.",
+      "labelHere": "You are in this part of the cycle: {phase}.",
+      "labelExpected": "Expected: {phase}.",
+      "caption": "A typical cycle, drawn to explain. Not your own hormone levels.",
+      "period": "period",
+      "estrogen": "Estrogen",
+      "progesterone": "Progesterone",
+      "here": "you are here",
+      "hereExpected": "expected here",
+      "day1": "Day 1",
+      "day28": "Day 28"
+    },
+    "foodName": {
+      "iron": "Iron, with vitamin C",
+      "omega3": "Omega-3 from food",
+      "vitaminC": "Vitamin C",
+      "bVitamins": "B vitamins",
+      "zinc": "Zinc",
+      "fibre": "Fibre",
+      "vitaminDB6": "Vitamin D and B6",
+      "protein": "Protein",
+      "magnesium": "Magnesium",
+      "b12": "Vitamin B12",
+      "calcium": "Calcium",
+      "carbs": "Carbohydrates"
     },
     "menstrual": {
       "body": "Estrogen and progesterone are at their lowest, and bleeding carries iron out of the body. In a study that tracked 397 substances in the blood and urine of 34 women across the cycle, amino acids and vitamin D were higher during the period than in the second half of the cycle.",
@@ -1051,5 +1226,67 @@
         "why": "The trials had 28 to 38 women each, and another study found no benefit. Studies comparing blood magnesium in women with and without premenstrual symptoms are inconclusive."
       }
     }
+  },
+  "estimates": {
+    "title": "Estimates",
+    "legendLogged": "logged",
+    "legendEstimate": "estimate",
+    "periodEnd": {
+      "title": "When this period ends",
+      "line": "Most likely ends {range}, around {point}."
+    },
+    "nextPeriod": {
+      "title": "Next period",
+      "line": "Most likely starts {range}, around {point}.",
+      "legend80": "8 in 10 chance it starts here",
+      "legend95": "About 19 in 20 within the whole bar",
+      "a11y": "8 in 10 chance it starts between {lo80} and {hi80}; about 19 in 20 between {lo95} and {hi95}"
+    },
+    "ovulation": {
+      "title": "Ovulation and fertile window",
+      "titleWords": "Ovulation",
+      "line": "Ovulation most likely {range}, around {point}.",
+      "linePast": "Ovulation was most likely {range}, around {point}.",
+      "curveLabel": "ovulation",
+      "stripStart": "This cycle from day 1",
+      "stripOvulation": "ovulation estimate days {lo} to {hi}, most likely day {point}",
+      "stripFertile": "fertile window estimate from day {lo} to day {hi}",
+      "stripNext": "next period likely days {lo} to {hi}"
+    },
+    "how": {
+      "label": "HOW IT WAS WORKED OUT",
+      "confidence": {
+        "high": "High confidence",
+        "medium": "Medium confidence",
+        "low": "Low confidence"
+      },
+      "days": "{n} days",
+      "and": "and",
+      "periodEndLengths": "Your last {count} periods lasted {list}.",
+      "periodEndOne": "Your last period lasted {list}.",
+      "periodEndNone": "There are no earlier periods to go on yet, so a typical length is used and the range is wide. It narrows as you log more.",
+      "periodEndFew": "A few periods are not much to go on, so the range is wide. It narrows as you log more.",
+      "periodEndPicture": "Typical period length is up to 8 days. Yours: {list}.",
+      "periodEndYours": "yours",
+      "periodEndShaded": "Shaded: periods up to 8 days long are within the typical range used by gynaecologists worldwide.",
+      "nextPeriodNone": "You have no completed cycles yet, so this rests on what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long.",
+      "nextPeriod": "Your own cycles ({count} used) are combined with what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long. Together they point to a cycle of about {mean} days for you.",
+      "nextPeriodFew": "With only {count} of your cycles, the study still carries much of the weight. After about six regular cycles your own pattern takes over and confidence can reach high.",
+      "calendarOnly": "Calendar only: no LH tests or temperatures this cycle",
+      "ovulationCalendar": "The phase after ovulation lasts about 12.4 days on average (give or take 2.4), so ovulation is placed that far before your expected next period.",
+      "ovulationCalendarWide": "Cycles differ mostly in the phase before ovulation, so a calendar estimate can be several days off. Positive LH tests or a temperature rise would narrow it.",
+      "ovulationPast": "This cycle has ended, so the estimate uses its known length instead of a forecast.",
+      "fertile": "The fertile window is the 6 days ending on ovulation day.",
+      "fertileWide": "Because ovulation itself is uncertain, the green band spreads wider, darker on the days most likely to be in the window.",
+      "sources": "Sources",
+      "src1": "Munro and others 2018, International Journal of Gynecology and Obstetrics (FIGO bleeding ranges).",
+      "src2": "Bull and others 2019, npj Digital Medicine (612,613 cycles, 124,648 users).",
+      "src3": "Wilcox and others 1995, New England Journal of Medicine (221 women)."
+    }
+  },
+  "contentKit": {
+    "estimate": "ESTIMATE",
+    "remove": "Remove: {label}",
+    "source": "Source {n}"
   }
 }

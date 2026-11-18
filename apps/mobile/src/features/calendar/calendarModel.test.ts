@@ -1,6 +1,6 @@
-import { addDays, diffDays, type EngineSettings, type History, type ISODate, predict } from '@sanguine/engine';
+import { addDays, diffDays, type EngineSettings, type History, type ISODate, type PastOvulation, pastOvulations, type Prediction, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { buildMonth, cycleDayOf, dayEstimates, showCycleDay, monthOf, shiftMonth, swipeMonthDelta } from './calendarModel';
+import { buildMonth, cycleDayOf, dayEstimates, monthOf, monthRows, shiftMonth, showCycleDay, swipeMonthDelta } from './calendarModel';
 
 const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
 const today = '2026-10-10';
@@ -12,7 +12,7 @@ function hist(lengths: number[], last: ISODate, bleed = 4): History {
 const typical = hist([28, 29], '2026-09-30'); // 4 Aug, 1 Sep, 30 Sep
 const periodDays = (h: History) => new Set(h.cycles.flatMap((c) => Array.from({ length: 4 }, (_, i) => addDays(c.start, i))));
 const month = (m: string, over: Partial<Parameters<typeof buildMonth>[0]> = {}) =>
-  buildMonth({ month: m, today, periodDays: periodDays(typical), loggedDays: new Set(['2026-10-01', '2026-10-10']), prediction: predict(typical, S, today), showEstimate: true, cycleStarts: typical.cycles.map((c) => c.start), ...over });
+  buildMonth({ month: m, today, periodDays: periodDays(typical), loggedDays: new Set(['2026-10-01', '2026-10-10']), prediction: predict(typical, S, today), showEstimate: true, includeUncertain: false, pastOv: [], symptomDays: new Set(), cycleStarts: typical.cycles.map((c) => c.start), ...over });
 const cell = (m: ReturnType<typeof buildMonth>, d: ISODate) => m.cells.find((c) => c.date === d) as NonNullable<(typeof m.cells)[number]>;
 
 describe('swipeMonthDelta', () => {
@@ -65,16 +65,15 @@ describe('period, predicted range and logged marks', () => {
     expect(p).toBeDefined();
     const lo80 = p?.i80.lo as string;
     const hi80 = p?.i80.hi as string;
-    expect(cell(m, lo80).predicted80).toBe(true);
-    expect(cell(m, hi80).predicted80).toBe(true);
+    expect(cell(m, lo80).periodEstimate).toBe('core');
+    expect(cell(m, hi80).periodEstimate).toBe('core');
     const before = addDays(lo80, -1);
-    expect(cell(m, before).predicted80).toBe(false);
-    expect(cell(m, before).predicted95Edge).toBe(before >= (p?.i95.lo as string));
+    expect(cell(m, before).periodEstimate).toBe(before >= (p?.i95.lo as string) ? 'edge' : undefined);
   });
   it('predicted days are not drawn over logged period days', () => {
     const early = hist([28, 29], '2026-10-02');
     const m = month('2026-10', { periodDays: periodDays(early), prediction: predict(early, S, '2026-10-02') });
-    expect(m.cells.filter((c) => c.period && c.predicted80)).toEqual([]);
+    expect(m.cells.filter((c) => c.period && c.periodEstimate)).toEqual([]);
   });
   it('log dots mark days with anything logged', () => {
     const m = month('2026-10');
@@ -114,7 +113,7 @@ describe('fertile band and ovulation marker (§8.5)', () => {
     const h = hist([28, 29], '2026-09-30');
     h.lh = [{ date: '2026-10-12', result: 'negative', provenance: 'manual' }, { date: '2026-10-13', result: 'positive', provenance: 'manual' }];
     const p = predict(h, S, '2026-10-14');
-    const m = buildMonth({ month: '2026-10', today: '2026-10-14', periodDays: periodDays(h), loggedDays: new Set(), prediction: p, showEstimate: true });
+    const m = buildMonth({ month: '2026-10', today: '2026-10-14', periodDays: periodDays(h), loggedDays: new Set(), prediction: p, showEstimate: true, includeUncertain: false, pastOv: [], symptomDays: new Set() });
     expect(m.ovulationUncertain).toBe(false);
     expect(cell(m, '2026-10-14').ovulation).toBe('point');
     expect(m.cells.filter((c) => c.ovulation === 'range').length).toBe(2);
@@ -131,7 +130,7 @@ describe('accessibility labels', () => {
     const fertileCell = m.cells.find((c) => c.fertile !== undefined && c.fertile > 0.45) as NonNullable<(typeof m.cells)[number]>;
     expect(fertileCell.label).toMatch(/(moderate|high) likelihood of being in the fertile window/);
     expect(fertileCell.label).not.toMatch(/opacity|0\.\d/);
-    const predicted = m.cells.find((c) => c.predicted80) as NonNullable<(typeof m.cells)[number]>;
+    const predicted = m.cells.find((c) => c.periodEstimate === 'core') as NonNullable<(typeof m.cells)[number]>;
     expect(predicted.label).toContain('predicted period, 80% range');
   });
 });
@@ -156,7 +155,7 @@ describe('cycle day on each cell (D-100)', () => {
     expect(cell(m, '2026-09-30').cycleDay).toBe(1);
     expect(cell(m, today).cycleDay).toBe(11);
     expect(cell(m, today).label).toContain('cycle day 11');
-    expect(buildMonth({ month: '2026-10', today, periodDays: new Set(), loggedDays: new Set(), prediction: undefined, showEstimate: true }).cells.every((c) => c.cycleDay === undefined)).toBe(true);
+    expect(buildMonth({ month: '2026-10', today, periodDays: new Set(), loggedDays: new Set(), prediction: undefined, showEstimate: true, includeUncertain: false, pastOv: [], symptomDays: new Set() }).cells.every((c) => c.cycleDay === undefined)).toBe(true);
   });
   it('every day of the shown month carries a badge (D-101); days outside the month do not', () => {
     const m = month('2026-10');
@@ -169,11 +168,11 @@ describe('cycle day on each cell (D-100)', () => {
 describe('months without a prediction', () => {
   it('a past month shows logged marks only', () => {
     const m = month('2026-08');
-    expect(m.cells.some((c) => c.predicted80 || c.fertile !== undefined)).toBe(false);
+    expect(m.cells.some((c) => c.periodEstimate || c.fertile !== undefined)).toBe(false);
     expect(cell(m, '2026-08-04').period).toBe(true);
   });
   it('no prediction at all is fine', () => {
-    const m = buildMonth({ month: '2026-10', today, periodDays: new Set(), loggedDays: new Set(), prediction: undefined, showEstimate: true });
+    const m = buildMonth({ month: '2026-10', today, periodDays: new Set(), loggedDays: new Set(), prediction: undefined, showEstimate: true, includeUncertain: false, pastOv: [], symptomDays: new Set() });
     expect(m.cells).toHaveLength(42);
   });
 });
@@ -198,7 +197,7 @@ describe('week start', () => {
 
 describe('moon phases on the month (D-089)', () => {
   it('a day with a principal phase carries it and says it to VoiceOver; other days and no map carry nothing', () => {
-    const base = { month: '2026-10', today: '2026-10-10', periodDays: new Set<string>(), loggedDays: new Set<string>(), prediction: undefined, showEstimate: true };
+    const base = { month: '2026-10', today: '2026-10-10', periodDays: new Set<string>(), loggedDays: new Set<string>(), prediction: undefined, showEstimate: true, includeUncertain: false, pastOv: [], symptomDays: new Set<string>() };
     const m = buildMonth({ ...base, moon: new Map([['2026-10-26', 'full' as const]]) });
     const cell = m.cells.find((c) => c.date === '2026-10-26');
     expect(cell?.moon).toBe('full');
@@ -210,13 +209,13 @@ describe('moon phases on the month (D-089)', () => {
 
 describe('the day estimates spelled out (D-104)', () => {
   const p = predict(typical, S, today);
-  const est = (d: ISODate, showEstimate = true, period = false) => dayEstimates(d, p, showEstimate, period);
+  const est = (d: ISODate, showEstimate = true, period = false) => dayEstimates(d, { prediction: p, pastOv: [], showEstimate, includeUncertain: false, period });
   const m = month('2026-10');
   it('says what every mark on a day means, and only the marks the grid draws', () => {
     for (const c of m.cells) {
       const lines = est(c.date, true, c.period);
-      expect(lines.some((l) => l.startsWith('Period likely'))).toBe(c.predicted80);
-      expect(lines.some((l) => l.startsWith('Period possible'))).toBe(c.predicted95Edge);
+      expect(lines.some((l) => l.startsWith('Period likely to start'))).toBe(c.periodEstimate === 'core');
+      expect(lines.some((l) => l.startsWith('Period possible'))).toBe(c.periodEstimate === 'edge');
       expect(lines.some((l) => l.startsWith('Fertile window'))).toBe(c.fertile !== undefined);
       expect(lines.some((l) => l.startsWith('Ovulation estimate'))).toBe(c.ovulation !== undefined);
     }
@@ -236,11 +235,11 @@ describe('the day estimates spelled out (D-104)', () => {
     for (const c of m.cells) expect(est(c.date, false, c.period).every((l) => l.startsWith('Period'))).toBe(true);
   });
   it('nothing for a day without marks, a logged period day, or no prediction', () => {
-    const plain = m.cells.find((c) => !c.period && !c.predicted80 && !c.predicted95Edge && c.fertile === undefined && c.ovulation === undefined) as (typeof m.cells)[number];
+    const plain = m.cells.find((c) => !c.period && !c.periodEstimate && c.fertile === undefined && c.ovulation === undefined) as (typeof m.cells)[number];
     expect(est(plain.date)).toEqual([]);
     const next = p.nextPeriod as NonNullable<typeof p.nextPeriod>;
     expect(est(next.i80.lo, true, true).some((l) => l.startsWith('Period'))).toBe(false);
-    expect(dayEstimates('2026-10-25', undefined, true, false)).toEqual([]);
+    expect(dayEstimates('2026-10-25', { pastOv: [], showEstimate: true, includeUncertain: false, period: false })).toEqual([]);
   });
 });
 
@@ -251,13 +250,215 @@ describe('an uncertain ovulation estimate, in words only (D-106)', () => {
   it('days inside the wide range say the estimate is uncertain and where it could fall; the grid still draws nothing', () => {
     const m = month('2026-10', { prediction: p, periodDays: periodDays(irregular) });
     expect(m.ovulationUncertain).toBe(true);
-    const lines = dayEstimates(ov.point, p, true, false);
+    const lines = dayEstimates(ov.point, { prediction: p, pastOv: [], showEstimate: true, includeUncertain: false, period: false });
     expect(lines.some((l) => /^Ovulation estimate uncertain: could fall .+–.+ · rough estimate$/.test(l))).toBe(true);
-    expect(dayEstimates(ov.i80.lo, p, true, false).some((l) => l.startsWith('Ovulation estimate uncertain'))).toBe(true);
-    expect(dayEstimates(addDays(ov.i80.lo, -1), p, true, false).some((l) => l.startsWith('Ovulation'))).toBe(false);
-    for (const c of m.cells) expect(dayEstimates(c.date, p, true, c.period).some((l) => l.startsWith('Fertile window'))).toBe(false);
+    expect(dayEstimates(ov.i80.lo, { prediction: p, pastOv: [], showEstimate: true, includeUncertain: false, period: false }).some((l) => l.startsWith('Ovulation estimate uncertain'))).toBe(true);
+    expect(dayEstimates(addDays(ov.i80.lo, -1), { prediction: p, pastOv: [], showEstimate: true, includeUncertain: false, period: false }).some((l) => l.startsWith('Ovulation'))).toBe(false);
+    for (const c of m.cells) expect(dayEstimates(c.date, { prediction: p, pastOv: [], showEstimate: true, includeUncertain: false, period: c.period }).some((l) => l.startsWith('Fertile window'))).toBe(false);
   });
   it('says nothing about ovulation while the estimate is hidden (teen)', () => {
-    expect(dayEstimates(ov.point, p, false, false).some((l) => l.startsWith('Ovulation'))).toBe(false);
+    expect(dayEstimates(ov.point, { prediction: p, pastOv: [], showEstimate: false, includeUncertain: false, period: false }).some((l) => l.startsWith('Ovulation'))).toBe(false);
+  });
+});
+
+// ---- P8-20: period-end estimate, past ovulation, symptom marks, month list ----
+const base = (over: Partial<Prediction> = {}): Prediction => ({
+  engineVersion: 'test', asOf: '2026-11-02', cycleLength: { mean: 29, sd: 2, nu: 5, scale: 2, nCyclesUsed: 3 }, flags: [], cycleQuality: [], ...over,
+});
+const bleed = { point: '2026-11-04', i80: { lo: '2026-11-03', hi: '2026-11-05' }, confidence: 'medium' as const };
+const novPeriod = new Set<ISODate>(['2026-10-31', '2026-11-01', '2026-11-02']);
+const novPrediction = base({
+  currentPhase: { phase: 'menstrual', dayOfCycle: 3 },
+  currentBleed: bleed,
+  nextPeriod: { point: '2026-11-28', i80: { lo: '2026-11-26', hi: '2026-11-30' }, i95: { lo: '2026-11-24', hi: '2026-12-02' }, confidence: 'medium', daysOfDataUsed: 90 },
+  ovulation: { point: '2026-11-14', i80: { lo: '2026-11-10', hi: '2026-11-18' }, sd: 2, confidence: 'medium', basis: 'calendar' },
+  fertileDays: Array.from({ length: 15 }, (_, k) => ({ date: addDays('2026-11-06', k), pInWindow: k >= 4 && k <= 9 ? 0.8 : 0.3 })),
+});
+const novArgs = { month: '2026-11', today: '2026-11-02' as ISODate, periodDays: novPeriod, prediction: novPrediction, showEstimate: true, includeUncertain: false, pastOv: [] as PastOvulation[], symptomDays: new Set<ISODate>(), cycleStarts: ['2026-10-31' as ISODate] };
+const novCell = (over: Partial<Parameters<typeof buildMonth>[0]>, d: ISODate) => cell(buildMonth({ ...novArgs, loggedDays: new Set(), ...over }), d);
+
+// October 2026 has a closed cycle (2 Oct - 31 Oct); its estimate sits in October
+const oct = hist([28, 28], '2026-10-31'); // 6 Sep, 3 Oct, 31 Oct... lengths from the helper
+const octPast = pastOvulations(oct, S);
+const octMonth = (over: Partial<Parameters<typeof buildMonth>[0]> = {}) => buildMonth({ month: '2026-10', today: '2026-11-10', periodDays: periodDays(oct), loggedDays: new Set(), prediction: predict(oct, S, '2026-11-10'), showEstimate: true, includeUncertain: false, pastOv: octPast, symptomDays: new Set(), cycleStarts: oct.cycles.map((c) => c.start), ...over });
+// days of the shown month only: the spill-over days of November legitimately carry the current cycle's band
+const marked = (m: ReturnType<typeof buildMonth>) => m.cells.filter((c) => c.inMonth && (c.ovulation !== undefined || c.fertile !== undefined));
+
+describe('rest of a period in progress (currentBleed)', () => {
+  it('core up to the point, edge to i80.hi, never over a logged day', () => {
+    expect(novCell({}, '2026-11-02').periodEstimate).toBeUndefined();
+    expect(novCell({}, '2026-11-03').periodEstimate).toBe('core');
+    expect(novCell({}, '2026-11-04').periodEstimate).toBe('core');
+    expect(novCell({}, '2026-11-05').periodEstimate).toBe('edge');
+    expect(novCell({}, '2026-11-06').periodEstimate).toBeUndefined();
+    expect(novCell({}, '2026-11-01').periodEstimate).toBeUndefined();
+  });
+  it('a past month keeps no estimated period days once today passes the range', () => {
+    // without the stale guard the range would be counted back from today (6 Nov, cycle day 3) and still mark 4 and 5 Nov
+    const stale = { ...novPrediction, asOf: '2026-11-06' as ISODate };
+    for (const d of ['2026-11-03', '2026-11-04', '2026-11-05'] as ISODate[]) {
+      expect(novCell({ today: '2026-11-06', prediction: stale }, d).periodEstimate).toBeUndefined();
+      const lines = dayEstimates(d, { prediction: stale, pastOv: [], showEstimate: true, includeUncertain: false, period: false });
+      expect(lines.some((l) => l.startsWith('Period likely to end'))).toBe(false);
+    }
+    const m = buildMonth({ ...novArgs, today: '2026-11-06', prediction: stale, loggedDays: new Set() });
+    expect(m.cells.filter((c) => c.date < '2026-11-23' && c.periodEstimate !== undefined)).toEqual([]);
+  });
+  it('dayEstimates counts the period end against the `today` it is given, and against asOf when it is not given one', () => {
+    const at = (today?: ISODate) => dayEstimates('2026-11-04', { prediction: { ...novPrediction, asOf: '2026-11-02' }, pastOv: [], showEstimate: true, includeUncertain: false, period: false, ...(today ? { today } : {}) });
+    expect(at().some((l) => l.startsWith('Period likely to end'))).toBe(true);
+    expect(at('2026-11-02' as ISODate).some((l) => l.startsWith('Period likely to end'))).toBe(true);
+    expect(at('2026-11-06' as ISODate).some((l) => l.startsWith('Period likely to end'))).toBe(false);
+  });
+  it('nothing while suspended', () => {
+    expect(novCell({ prediction: { ...novPrediction, suspended: { reason: 'pregnant' } } }, '2026-11-03').periodEstimate).toBeUndefined();
+  });
+  it('is worded as an estimate with the range of its last day', () => {
+    const lines = dayEstimates('2026-11-03', { prediction: novPrediction, pastOv: [], showEstimate: true, includeUncertain: false, period: false });
+    expect(lines).toContain('Period likely to end 3–5 Nov · fair estimate');
+    expect(novCell({}, '2026-11-03').label).toContain('estimated period day');
+  });
+});
+
+describe('the spoken label follows the drawn mark', () => {
+  // the next period's 80% range starts on 5 Nov, inside the unlikely tail of the period in progress: the mark is core, so the words say estimated, not possible
+  const overlap = { ...novPrediction, nextPeriod: { ...(novPrediction.nextPeriod as NonNullable<Prediction['nextPeriod']>), i80: { lo: '2026-11-05', hi: '2026-11-09' }, i95: { lo: '2026-11-03', hi: '2026-11-11' } } } as Prediction;
+  it('a day that is both an edge bleed day and in the next 80% range is core and labelled estimated', () => {
+    const c = novCell({ prediction: overlap }, '2026-11-05');
+    expect(c.periodEstimate).toBe('core');
+    expect(c.label).toContain('estimated period day');
+    expect(c.label).not.toContain('possible period day');
+  });
+  it('a plain edge day still says possible, a plain next-period day says predicted', () => {
+    expect(novCell({}, '2026-11-05').label).toContain('possible period day, estimate');
+    expect(novCell({}, '2026-11-27').label).toContain('predicted period, 80% range');
+  });
+});
+
+describe('a single fertile day is never drawn or worded (§8.5)', () => {
+  const oneDay = { ...novPrediction, fertileDays: [{ date: '2026-11-10' as ISODate, pInWindow: 0.9 }, { date: '2026-11-11' as ISODate, pInWindow: 0.05 }] };
+  it('one shown day leaves no band, no estimate line and no row', () => {
+    const m = buildMonth({ ...novArgs, prediction: oneDay, loggedDays: new Set() });
+    expect(m.cells.some((c) => c.fertile !== undefined)).toBe(false);
+    expect(dayEstimates('2026-11-10', { prediction: oneDay, pastOv: [], showEstimate: true, includeUncertain: false, period: false }).some((l) => l.startsWith('Fertile window'))).toBe(false);
+    expect(monthRows({ ...novArgs, prediction: oneDay, loggedText: new Map() }).some((r) => r.kind === 'fertile')).toBe(false);
+  });
+  it('a range of two days is still drawn', () => {
+    const two = { ...novPrediction, fertileDays: [{ date: '2026-11-10' as ISODate, pInWindow: 0.9 }, { date: '2026-11-11' as ISODate, pInWindow: 0.6 }] };
+    expect(buildMonth({ ...novArgs, prediction: two, loggedDays: new Set() }).cells.filter((c) => c.fertile !== undefined)).toHaveLength(2);
+    expect(monthRows({ ...novArgs, prediction: two, loggedText: new Map() }).filter((r) => r.kind === 'fertile')).toHaveLength(1);
+  });
+});
+
+describe('past ovulation on the grid', () => {
+  it('marks the October cycle, one point with a range around it', () => {
+    expect(octPast.length).toBeGreaterThan(0);
+    const m = octMonth();
+    expect(m.cells.filter((c) => c.inMonth && c.ovulation === 'point')).toHaveLength(1);
+    expect(m.cells.filter((c) => c.inMonth && c.ovulation === 'range').length).toBeGreaterThan(0);
+    expect(m.cells.filter((c) => c.inMonth && c.fertile !== undefined)).toEqual([]); // no fertile band in past months
+  });
+  it('draws none when the estimate gate is off, even with the uncertain setting on', () => {
+    const wide = octPast.map((r) => ({ ...r, i80: { lo: addDays(r.point, -9), hi: addDays(r.point, 9) } }));
+    expect(marked(octMonth({ showEstimate: false }))).toEqual([]);
+    expect(marked(octMonth({ showEstimate: false, includeUncertain: true, pastOv: wide }))).toEqual([]);
+  });
+  it('a wide past range is drawn only when the uncertain setting is on', () => {
+    const wide = octPast.map((r) => ({ ...r, i80: { lo: addDays(r.point, -9), hi: addDays(r.point, 9) } }));
+    expect(marked(octMonth({ pastOv: wide }))).toEqual([]);
+    expect(marked(octMonth({ pastOv: wide, includeUncertain: true })).length).toBeGreaterThan(0);
+  });
+  it('nothing past while suspended', () => {
+    const p = { ...predict(oct, S, '2026-11-10'), suspended: { reason: 'pregnant' } };
+    expect(marked(octMonth({ prediction: p }))).toEqual([]);
+    const point = (octPast[0] as PastOvulation).point;
+    expect(dayEstimates(point, { prediction: p, pastOv: octPast, showEstimate: true, includeUncertain: true, period: false })).toEqual([]);
+    expect(monthRows({ ...novArgs, month: '2026-10', today: '2026-11-10', prediction: p, pastOv: octPast, loggedText: new Map(), includeUncertain: true }).some((r) => r.kind === 'ovulation')).toBe(false);
+  });
+});
+
+describe('uncertain setting never overrides the estimate gate', () => {
+  const irregular = hist([24, 38, 31, 45, 27, 36], '2026-10-01');
+  const p = predict(irregular, S, today);
+  it('includeUncertain with showEstimate false: no marks, no ovulation words, no rows', () => {
+    const past = pastOvulations(irregular, S);
+    const m = month('2026-10', { prediction: p, periodDays: periodDays(irregular), showEstimate: false, includeUncertain: true, pastOv: past });
+    expect(m.cells.some((c) => c.ovulation !== undefined || c.fertile !== undefined)).toBe(false);
+    for (const c of m.cells) {
+      const lines = dayEstimates(c.date, { prediction: p, pastOv: past, showEstimate: false, includeUncertain: true, period: c.period });
+      expect(lines.filter((l) => /vulation|ertile/.test(l))).toEqual([]);
+    }
+    const rows = monthRows({ ...novArgs, month: '2026-10', today, prediction: p, pastOv: past, showEstimate: false, includeUncertain: true, loggedText: new Map() });
+    expect(rows.some((r) => r.kind === 'ovulation' || r.kind === 'fertile')).toBe(false);
+  });
+  it('includeUncertain with the gate on draws the wide estimate and words it uncertain', () => {
+    const m = month('2026-10', { prediction: p, periodDays: periodDays(irregular), includeUncertain: true });
+    expect(m.cells.filter((c) => c.ovulation === 'point')).toHaveLength(1);
+    expect(m.cells.some((c) => c.fertile !== undefined)).toBe(true);
+    expect(m.ovulationUncertain).toBe(true);
+    expect(m.ovulationHidden).toBe(false);
+    const point = (p.ovulation as NonNullable<typeof p.ovulation>).point;
+    expect(dayEstimates(point, { prediction: p, pastOv: [], showEstimate: true, includeUncertain: true, period: false }).some((l) => l.startsWith('Ovulation estimate uncertain'))).toBe(true);
+    expect(month('2026-10', { prediction: p, periodDays: periodDays(irregular) }).ovulationHidden).toBe(true);
+  });
+});
+
+describe('dayEstimates words a past ovulation with its basis', () => {
+  const row = (basis: PastOvulation['basis']): PastOvulation => ({ cycleId: 'x', cycleStart: '2026-10-01', point: '2026-10-15', i80: { lo: '2026-10-13', hi: '2026-10-17' }, basis, confidence: 'medium' });
+  const words = (basis: PastOvulation['basis'], d: ISODate) => dayEstimates(d, { pastOv: [row(basis)], showEstimate: true, includeUncertain: false, period: false });
+  it('names the range and where it came from', () => {
+    expect(words('calendar', '2026-10-15')).toEqual(['Ovulation estimate 13–17 Oct, most likely this day · from your next period date']);
+    expect(words('lh', '2026-10-13')).toEqual(['Ovulation estimate 13–17 Oct · from your LH tests']);
+    expect(words('lh', '2026-10-18')).toEqual([]);
+  });
+});
+
+describe('symptom marks', () => {
+  it('flags days with a symptom; other logged days keep only `logged`', () => {
+    const m = month('2026-10', { symptomDays: new Set<ISODate>(['2026-10-10']) });
+    expect(cell(m, '2026-10-10').symptoms).toBe(true);
+    expect(cell(m, '2026-10-10').logged).toBe(true);
+    expect(cell(m, '2026-10-10').label).toContain('symptoms logged');
+    expect(cell(m, '2026-10-01').symptoms).toBe(false);
+    expect(cell(m, '2026-10-01').label).toContain('something logged');
+  });
+  it('cycleDayPast is true up to today and false after', () => {
+    const m = month('2026-10');
+    expect(cell(m, today).cycleDayPast).toBe(true);
+    expect(cell(m, addDays(today, 1)).cycleDayPast).toBe(false);
+    expect(cell(m, '2026-10-05').cycleDayPast).toBe(true);
+  });
+});
+
+describe('monthRows', () => {
+  const loggedText = new Map<ISODate, string[]>([['2026-11-01', ['Cramps', 'Headache']], ['2026-11-02', ['Cramps', 'Energy: low (2 of 5)']]]);
+  const rows = monthRows({ ...novArgs, loggedText });
+  it('lists logged days, the period end, the fertile window once, ovulation and the next period in date order', () => {
+    expect(rows.map((r) => [r.label, r.kind])).toEqual([
+      ['1', 'logged'], ['2', 'logged'], ['3–5', 'periodEstimate'], ['6–20', 'fertile'], ['14', 'ovulation'], ['26–30', 'nextPeriod'],
+    ]);
+    expect(rows.map((r) => [r.from, r.to])).toEqual([
+      ['2026-11-01', '2026-11-01'], ['2026-11-02', '2026-11-02'], ['2026-11-03', '2026-11-05'], ['2026-11-06', '2026-11-20'], ['2026-11-14', '2026-11-14'], ['2026-11-26', '2026-11-30'],
+    ]);
+    expect(rows.map((r) => r.estimate)).toEqual([false, false, true, true, true, true]);
+  });
+  it('words each row', () => {
+    expect(rows.map((r) => r.text)).toEqual([
+      'Period day 2 · Cramps · Headache',
+      'Period day 3 · Cramps · Energy: low (2 of 5)',
+      'Period likely ends · estimate from your usual length',
+      'Fertile window, estimate · most likely 10–15',
+      'Ovulation estimate, range 10–18 · medium confidence',
+      'Next period likely · at most 24 Nov – 2 Dec · medium confidence',
+    ]);
+  });
+  it('a past cycle row says where its estimate came from; an empty month says nothing is there', () => {
+    const past = monthRows({ ...novArgs, month: '2026-10', today: '2026-11-10', prediction: undefined, periodDays: new Set(), pastOv: [{ cycleId: 'x', cycleStart: '2026-10-01', point: '2026-10-15', i80: { lo: '2026-10-13', hi: '2026-10-17' }, basis: 'lh', confidence: 'medium' }], loggedText: new Map() });
+    expect(past.map((r) => r.text)).toEqual(['Ovulation estimate, range 13–17 · from your LH tests']);
+    expect(monthRows({ ...novArgs, month: '2027-03', today: '2026-11-10', prediction: undefined, periodDays: new Set(), loggedText: new Map() })).toEqual([]);
+  });
+  it('a range that runs into another month carries the month names', () => {
+    const r = monthRows({ ...novArgs, prediction: base({ nextPeriod: { point: '2026-11-30', i80: { lo: '2026-11-28', hi: '2026-12-02' }, i95: { lo: '2026-11-26', hi: '2026-12-04' }, confidence: 'low', daysOfDataUsed: 30 } }), periodDays: new Set(), loggedText: new Map() });
+    expect(r[0]).toMatchObject({ label: '28 Nov – 2 Dec', from: '2026-11-28', to: '2026-11-30' });
   });
 });

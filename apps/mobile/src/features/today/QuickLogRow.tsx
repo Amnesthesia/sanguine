@@ -6,11 +6,11 @@ import { BlurView } from 'expo-blur';
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from 'expo-glass-effect';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AccessibilityInfo, Platform, Pressable, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
+import { useReduceTransparency } from '@/ui/useReduceTransparency';
 
 const LIQUID_GLASS = Platform.OS === 'ios' && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 /** Reduce Transparency fallback: `surface` at 94% (PLAN.md §9.2). */
@@ -18,22 +18,12 @@ const FALLBACK_ALPHA = 'F0';
 
 const rgba = (hex: string, a: number) => `rgba(${[1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)).join(',')},${a})`;
 
-function useReduceTransparency(): boolean {
-  const [on, setOn] = useState(false);
-  useEffect(() => {
-    if (Platform.OS !== 'ios') return;
-    void AccessibilityInfo.isReduceTransparencyEnabled().then(setOn).catch(() => {});
-    const sub = AccessibilityInfo.addEventListener('reduceTransparencyChanged', setOn);
-    return () => sub.remove();
-  }, []);
-  return on;
-}
-
-export function QuickLogRow({ day, label: shown, accessibilityLabel, testID = 'quick-log' }: { day?: ISODate; label?: string; accessibilityLabel?: string; testID?: string } = {}) {
+/** `title` and `subtitle` (Today: the date and cycle day) sit at the left of the pill, the one action at the right (frames). */
+export function QuickLogRow({ day, label: shown, accessibilityLabel, title, subtitle, testID = 'quick-log' }: { day?: ISODate; label?: string; accessibilityLabel?: string; title?: string; subtitle?: string; testID?: string } = {}) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const router = useRouter();
-  const reduceTransparency = useReduceTransparency();
+  const reduceTransparency = useReduceTransparency(Platform.OS === 'ios');
   const mode = Platform.OS !== 'ios' ? 'tonal' : reduceTransparency ? 'solid' : LIQUID_GLASS ? 'glass' : 'blur';
   const g = glass[t.scheme === 'dark' ? 'dark' : 'light'];
   const label = shown ?? tr('today.quick.log');
@@ -55,7 +45,15 @@ export function QuickLogRow({ day, label: shown, accessibilityLabel, testID = 'q
   const inner = tinted ? (
     <GlassView glassEffectStyle="regular" tintColor={rgba(g.accentBase, g.accentAlpha)} isInteractive style={{ borderRadius: 999, overflow: 'hidden' }}>{button}</GlassView>
   ) : button;
-  const row = <View style={{ padding: 4 }}>{inner}</View>;
+  const row = title ? (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4, paddingLeft: 16, paddingRight: 4 }}>
+      <View testID="quick-log-text" style={{ flex: 1, minWidth: 0 }}>
+        <Text variant="heading" style={{ fontSize: 15, lineHeight: 20 }}>{title}</Text>
+        {subtitle ? <Text variant="caption" color="textOnGlass">{subtitle}</Text> : null}
+      </View>
+      <View style={{ flexShrink: 0 }}>{inner}</View>
+    </View>
+  ) : <View style={{ padding: 4 }}>{inner}</View>;
   const shape = { borderRadius: 999, overflow: 'hidden' as const };
   switch (mode) {
     case 'glass':

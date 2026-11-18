@@ -12,6 +12,9 @@ name: Delete everything returns the app to first launch
 - tapOn: Settings
 - tapOn:
     id: settings-privacy
+- scrollUntilVisible:
+    element:
+      id: privacy-delete
 - tapOn:
     id: privacy-delete
 - assertVisible: "Delete everything?"
