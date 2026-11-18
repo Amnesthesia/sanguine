@@ -96,7 +96,7 @@ it('mounts the full estimate and guidance sections with the engine inputs', asyn
   app.state = { db, store, today, prefs: DEFAULT_PREFS, profile: {}, version: 0, refresh: vi.fn(), prediction, history, settings: { lifeStates: [] } };
   render(<DayDetail />);
   await screen.findByTestId('estimate-sections');
-  expect(sections.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ prediction, day: '2026-10-14', showEstimate: true, pastOv: expect.any(Array), periodLengths: [5] });
+  expect(sections.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ prediction, day: '2026-10-14', showEstimate: true, includeUncertain: false, pastOv: expect.any(Array), periodLengths: [5] });
   await screen.findByTestId('guidance-sections');
   expect(sections.guidance.mock.calls.at(-1)?.[0]).toMatchObject({ compact: false });
 });
@@ -113,5 +113,67 @@ it('shows only estimates on a future day: no chips, no nothing-logged line, no l
   expect(screen.queryByText('Nothing logged for this day.')).toBeNull();
   expect(screen.queryByTestId('event-symptom')).toBeNull();
   expect(screen.queryByTestId('day-edit')).toBeNull();
+  expect(screen.queryByText('Logged on this day')).toBeNull();
+  expect(screen.queryByTestId('day-not-period')).toBeNull();
+  expect(screen.queryByTestId('guidance-sections')).toBeNull();
   expect(screen.getByTestId('day-future-note')).toBeTruthy();
+});
+
+it('says no estimate covers a future day when there is no prediction or it is paused', async () => {
+  const today = '2026-10-14';
+  const { db, store } = await setup(today);
+  route.date = '2026-10-20';
+  app.state = { db, store, today, prefs: DEFAULT_PREFS, profile: {}, version: 0, refresh: vi.fn() };
+  const view = render(<DayDetail />);
+  await screen.findByText('No estimate covers this day.');
+  expect(screen.queryByTestId('estimate-sections')).toBeNull();
+  view.unmount();
+  app.state = { ...app.state, prediction: { ...prediction, suspended: { reason: 'pregnant' } } };
+  render(<DayDetail />);
+  await screen.findByText('No estimate covers this day.');
+});
+
+const withPrefs = async (prefs: object, profile: object) => {
+  const today = '2026-10-14';
+  const { db, store } = await setup(today);
+  app.state = { db, store, today, prefs: { ...DEFAULT_PREFS, ...prefs }, profile, version: 0, refresh: vi.fn(), prediction };
+  render(<DayDetail />);
+  await screen.findByTestId('estimate-sections');
+  return sections.estimate.mock.calls.at(-1)?.[0];
+};
+
+it('hands the uncertain-estimates preference to the estimate sections', async () => {
+  expect(await withPrefs({ showUncertainEstimates: true }, {})).toMatchObject({ showEstimate: true, includeUncertain: true });
+});
+
+it('teen mode: no ovulation estimate and no uncertain estimates reach the sections, even with the opt-in stored', async () => {
+  expect(await withPrefs({ showUncertainEstimates: true }, { birthDate: '2011-03-01' })).toMatchObject({ showEstimate: false, includeUncertain: false });
+});
+
+it('an adult who hides the ovulation estimate gets neither it nor the uncertain ones', async () => {
+  expect(await withPrefs({ showOvulationEstimate: false, showUncertainEstimates: true }, {})).toMatchObject({ showEstimate: false, includeUncertain: false });
+});
+
+it('names the cycle day and says Period on a logged period day, with the log button above the estimates', async () => {
+  const today = '2026-10-14';
+  const { db, store } = await setup(today);
+  await setFlow(store, today, 'medium', { kind: 'period' });
+  const history = { cycles: [{ id: 'a', start: '2026-10-12', end: null, quality: 'valid' }], temperatures: [], lh: [], mucus: [], cervix: [], logs: [] };
+  app.state = { db, store, today, prefs: DEFAULT_PREFS, profile: {}, version: 0, refresh: vi.fn(), prediction, history, settings: { lifeStates: [] } };
+  render(<DayDetail />);
+  await screen.findByText('Day 3 of your cycle · Period');
+  const log = screen.getByRole('button', { name: 'Log this day' });
+  expect(log.getAttribute('data-testid') ?? log.closest('[data-testid]')?.getAttribute('data-testid')).toBe('day-edit');
+  const estimates = await screen.findByTestId('estimate-sections');
+  expect(log.compareDocumentPosition(estimates) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+
+it('marks the cycle day of a future day as an estimate', async () => {
+  const today = '2026-10-14';
+  const { db, store } = await setup(today);
+  const history = { cycles: [{ id: 'a', start: '2026-10-12', end: null, quality: 'valid' }], temperatures: [], lh: [], mucus: [], cervix: [], logs: [] };
+  route.date = '2026-10-20';
+  app.state = { db, store, today, prefs: DEFAULT_PREFS, profile: {}, version: 0, refresh: vi.fn(), prediction, history, settings: { lifeStates: [] } };
+  render(<DayDetail />);
+  await screen.findByText('Day 9 of your cycle · estimate');
 });

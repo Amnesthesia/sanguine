@@ -1,4 +1,4 @@
-// Day detail (PLAN.md §8.3): what was logged that day as removable chips with provenance, the two correction actions, then the full estimate and food-and-movement sections.
+// Day detail (PLAN.md §8.3): the cycle day, what was logged as removable chips with provenance, the correction actions and the Log this day button, then the full estimate and food-and-movement sections.
 import { analyzeCycles, type ISODate, pastOvulations } from '@sanguine/engine';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -7,6 +7,7 @@ import { View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
 import { EstimateSections } from '@/features/guidance/sections/EstimateSections';
 import { GuidanceSections } from '@/features/guidance/sections/GuidanceSections';
+import { cycleDayOf } from '@/features/calendar/calendarModel';
 import { phaseOn, showSupplements } from '@/features/guidance/guidance';
 import { type DayEvent, dayEvents, dayState, markNotAPeriod, markSpotting } from '@/features/logging/actions';
 import { describeEvent } from '@/features/logging/describe';
@@ -65,9 +66,13 @@ export default function DayDetail() {
     showToast(tr('log.removed', { label }), { label: tr('common.undo'), onPress: () => void undoRemoval(store, written).then(after) });
   };
   const entries = visibleEntries(events);
+  // "Day 2 of your cycle · Period": the same count as the calendar's day sheet; a future day's is an estimate
+  const cycleDay = cycleDayOf(history?.cycles.map((c) => c.start) ?? [], day);
+  const subline = [cycleDay ? tr('day.subline.cycleDay', { day: cycleDay }) : null, isFuture ? tr('day.subline.estimate') : isPeriodDay ? tr('day.subline.period') : null].filter(Boolean).join(' · ');
 
   return (
     <SubScreen testID="screen-day" backTestID="day-back" title={formatLong(day)} bottomInset={32}>
+      {subline ? <Text testID="day-subline" color="textSecondary" style={{ marginHorizontal: 4 }}>{subline}</Text> : null}
       {isFuture ? null : (
         <View style={{ gap: 6 }}>
           <Text variant="caption" accessibilityRole="header" style={{ fontWeight: '600' }} color="textSecondary">{tr('log.loggedOnDay')}</Text>
@@ -88,11 +93,10 @@ export default function DayDetail() {
           <Button testID="day-spotting" kind="secondary" label={tr('day.markSpotting')} onPress={() => void markSpotting(store, day).then(after)} />
         </View>
       ) : null}
-      {prediction ? <EstimateSections prediction={prediction} day={day} pastOv={pastOv} showEstimate={showEstimate} periodLengths={periodLengths} /> : null}
+      {isFuture ? null : <Button testID="day-edit" label={tr('calendar.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />}
+      {prediction && !prediction.suspended ? <EstimateSections prediction={prediction} day={day} pastOv={pastOv} showEstimate={showEstimate} includeUncertain={eff.showUncertainEstimates} periodLengths={periodLengths} /> : isFuture ? <Text testID="day-no-estimate">{tr('day.estimates.none')}</Text> : null}
       {guide ? <GuidanceSections day={guide} supplements={showSupplements(eff.teen)} compact={false} /> : null}
-      {isFuture
-        ? <Text variant="caption" color="textSecondary" testID="day-future-note">{tr('calendar.futureNote')}</Text>
-        : <Button testID="day-edit" label={tr('day.edit')} onPress={() => router.push({ pathname: '/log', params: { day } })} />}
+      {isFuture ? <Text variant="caption" color="textSecondary" testID="day-future-note">{tr('calendar.futureNote')}</Text> : null}
     </SubScreen>
   );
 }
