@@ -114,6 +114,7 @@ export interface Prediction {
   asOf: ISODate;
   suspended?: { reason: string }; // life state blocks prediction
   nextPeriod?: { point: ISODate; i80: Interval; i95: Interval; confidence: Confidence; daysOfDataUsed: number };
+  currentBleed?: { point: ISODate; i80: Interval; confidence: Confidence };
   cycleLength: { mean: number; sd: number; nu: number; scale: number; nCyclesUsed: number };
   ovulation?: { point: ISODate; i80: Interval; sd: number; confidence: Confidence; basis: 'calendar' | 'bbt' | 'lh' | 'mucus' | 'combined' };
   fertileDays?: Array<{ date: ISODate; pInWindow: number }>; // Wilcox 6-day window, probability-weighted
