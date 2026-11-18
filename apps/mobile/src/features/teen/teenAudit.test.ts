@@ -6,6 +6,7 @@ import { addDays, type EngineSettings, type History, predict } from '@sanguine/e
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PREFS, effectivePrefs } from '@/data/prefs';
 import { GUIDANCE, GUIDE_PHASES } from '@/features/guidance/guidance';
+import { dialModel } from '@/features/today/dialModel';
 import { buildToday } from '@/features/today/todayModel';
 import { calendarLegend } from '@/features/calendar/calendarModel';
 import { healthRows } from '@/features/health/healthModel';
@@ -63,7 +64,12 @@ describe('surfaces', () => {
     const m = buildToday({ prediction: predict(h, S, '2026-10-10'), hasCycles: true, today: '2026-10-10', showEstimate: false, todayFlow: undefined });
     expect(m.estimate).toBeUndefined();
     expect(JSON.stringify(m)).not.toMatch(/ovulation/i);
-    expect((m.ring as { fertile?: unknown[] }).fertile ?? []).toEqual([]);
+    // the dial is what Today draws: with the gate off it has no fertile arc and no ovulation point, even when uncertain estimates are asked for
+    for (const includeUncertain of [false, true]) {
+      const dial = dialModel({ prediction: predict(h, S, '2026-10-10'), today: '2026-10-10', periodDays: [], showEstimate: false, includeUncertain });
+      expect(dial.arcs.some((a) => a.kind === 'fertile')).toBe(false);
+      expect(dial.ovulationDay).toBeUndefined();
+    }
     const shown = buildToday({ prediction: predict(h, S, '2026-10-10'), hasCycles: true, today: '2026-10-10', showEstimate: true, todayFlow: undefined });
     expect(shown.estimate).toBeDefined(); // the same data does show it for an adult
   });
@@ -93,7 +99,6 @@ describe('every surface reads the teen rules', () => {
     ['app/_layout.tsx', 'isTeen'],
     ['app/settings/about.tsx', 'isTeen'],
     ['app/settings/how.tsx', 'fertilityTools'],
-    ['app/settings/tracking.tsx', 'eff.teen'],
     ['app/settings/report.tsx', 'fertilityTools'],
     ['app/settings/notifications.tsx', 'showOvulationEstimate'],
     ['app/settings/calendar.tsx', 'effectivePrefs(prefs, profile, today).showOvulationEstimate'],

@@ -1,7 +1,8 @@
 import { type EngineSettings, type History, type ISODate, type Prediction, predict } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import { addDays } from '@sanguine/engine';
-import { buildToday, ringModel, SHOW_OVULATION_ESTIMATE } from './todayModel';
+import { dialModel } from './dialModel';
+import { buildToday, SHOW_OVULATION_ESTIMATE } from './todayModel';
 
 const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
 const start = '2026-10-01';
@@ -23,7 +24,6 @@ describe('headline states', () => {
     expect(v.state).toBe('empty');
     expect(v.headline.key).toBe('today.empty.title');
     expect(v.subtitle?.key).toBe('today.empty.body');
-    expect(v.ring.kind).toBe('noData');
     expect(v.estimate).toBeUndefined();
   });
   it('period in progress: day number and logged flow', () => {
@@ -51,12 +51,11 @@ describe('headline states', () => {
     expect(v.headline.key).toBe('today.periodLater');
     expect(v.subtitle).toEqual({ key: 'today.periodLateRange', params: { range: '27 Oct – 2 Nov' } });
   });
-  it('suspended by a life state names the state and shows no ring phase', () => {
+  it('suspended by a life state names the state and shows no phase', () => {
     const s: EngineSettings = { ...S, lifeStates: [{ kind: 'hormonal_contraception', method: 'combined_pill', since: start }] };
     const v = view(hist([28, 30, 29]), '2026-10-10', {}, s);
     expect(v.state).toBe('suspended');
     expect(v.headline).toEqual({ key: 'today.suspended', params: { stateKey: 'settings.lifeState.options.hormonal' } });
-    expect(v.ring.kind).toBe('suspended');
     expect(v.estimate).toBeUndefined();
     expect(v.flags).toEqual([]);
   });
@@ -70,12 +69,14 @@ describe('estimate card (R-01, §2.3, §8.5)', () => {
     expect(v.estimate?.uncertain).toBe(false); // arms of 5 days are within 6 (D-098)
     expect(v.estimate?.title).toMatchObject({ key: 'today.ovulationTitle' }); // the dates appear once, in the fixed sentence
   });
-  it('an irregular history reads "estimate uncertain" and the ring draws no fertile band (§9.8 state 4, D-098)', () => {
-    const v = view(hist([24, 38, 31, 45, 27, 36]), '2026-10-10');
+  it('an irregular history reads "estimate uncertain" and the dial draws no fertile band (§9.8 state 4, D-098)', () => {
+    const h = hist([24, 38, 31, 45, 27, 36]);
+    const v = view(h, '2026-10-10');
     expect(v.estimate?.uncertain).toBe(true);
     expect(v.estimate?.title).toEqual({ key: 'today.ovulationUncertainShort' });
-    if (v.ring.kind !== 'cycle') throw new Error('kind');
-    expect(v.ring.fertile).toEqual([]);
+    const dial = dialModel({ prediction: predict(h, S, '2026-10-10'), today: '2026-10-10', periodDays: [], showEstimate: true, includeUncertain: false });
+    expect(dial.arcs.some((a) => a.kind === 'fertile')).toBe(false);
+    expect(dial.ovulationDay).toBeUndefined();
   });
   it('a precise (LH) estimate reads "estimated around" with a confidence word', () => {
     const h = hist([28, 30, 29]);
@@ -110,37 +111,6 @@ describe('flags', () => {
     const v = buildToday({ prediction: p, hasCycles: true, today: '2027-01-15', showEstimate: true, todayFlow: undefined });
     const f = v.flags.find((x) => x.code === 'missed');
     expect(f?.extraKey).toBe('flags.missed.pregnancyTest');
-  });
-});
-
-describe('ring (§9.5)', () => {
-  it('maps cycle days to angles around the circle from the top', () => {
-    const r = ringModel({ cycleLength: 28, dayOfCycle: 11, bleedDays: 4, fertile: [], predicted: undefined, kind: 'cycle' });
-    if (r.kind !== 'cycle') throw new Error('kind');
-    expect(r.today.deg).toBeCloseTo(((11 - 0.5) / 28) * 360, 6);
-    expect(r.period).toEqual({ from: 0, to: (4 / 28) * 360 });
-  });
-  it('fertile band opacity follows p, clamped to 0.1-1, one segment per day', () => {
-    const r = ringModel({ cycleLength: 28, dayOfCycle: 11, bleedDays: 4, fertile: [{ day: 8, p: 0.05 }, { day: 14, p: 0.55 }, { day: 15, p: 1.4 }], predicted: undefined, kind: 'cycle' });
-    if (r.kind !== 'cycle') throw new Error('kind');
-    expect(r.fertile.map((f) => f.opacity)).toEqual([0.1, 0.55, 1]);
-  });
-  it('the ring is never a single highlighted fertile day for a real estimate', () => {
-    const v = view(hist([28, 30, 29]), '2026-10-10');
-    if (v.ring.kind !== 'cycle') throw new Error('kind');
-    expect(v.ring.fertile.length).toBeGreaterThan(8);
-    expect(v.ring.fertile.length).toBeLessThan(20); // days under p 0.1 are not drawn, as on the calendar
-  });
-  it('predicted period is an arc over the 80% range and wraps nothing beyond one turn', () => {
-    const v = view(hist([28, 30, 29]), '2026-10-10');
-    if (v.ring.kind !== 'cycle') throw new Error('kind');
-    expect(v.ring.predicted && v.ring.predicted.to > v.ring.predicted.from).toBe(true);
-    expect(v.ring.predicted && v.ring.predicted.to <= 360).toBe(true);
-  });
-  it('late: the today tick stays on the circle', () => {
-    const v = view(hist([28, 30, 29]), '2026-12-20');
-    if (v.ring.kind !== 'cycle') throw new Error('kind');
-    expect(v.ring.today.deg).toBeLessThanOrEqual(360);
   });
 });
 

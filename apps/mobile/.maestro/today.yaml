@@ -16,7 +16,7 @@ name: Today screen states (sample-data scenarios from PLAN.md §9.6)
     id: estimate-card
 - waitForAnimationToEnd
 - assertNotVisible:
-    id: guidance-card
+    id: guidance-sections-compact
 - takeScreenshot: empty
 # typical user, cycle day 11
 - runFlow:

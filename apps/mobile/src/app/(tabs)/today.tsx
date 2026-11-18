@@ -1,14 +1,14 @@
 import { dayEvents, type DayEvent, energyDays } from '@/features/logging/actions';
-import { describeEvent } from '@/features/logging/describe';
-import { removeEntry, undoRemoval, visibleEntries } from '@/features/logging/removeEntry';
-import { useCalendarData } from '@/features/calendar/useCalendarData';
+import { LoggedEntries } from '@/features/logging/LoggedEntries';
+import { visibleEntries } from '@/features/logging/removeEntry';
+import { usePeriodDays } from '@/features/calendar/useCalendarData';
 import { energyInsight, lowPhaseOf } from '@/features/insights/energyModel';
 import { GuidanceSections } from '@/features/guidance/sections/GuidanceSections';
 import { phaseOn, showSupplements } from '@/features/guidance/guidance';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { analyzeCycles, diffDays } from '@sanguine/engine';
+import { analyzeCycles } from '@sanguine/engine';
 import { effectivePrefs } from '@/data/prefs';
 import { CycleDial, type DialCentre } from '@/features/today/CycleDial';
 import { dialModel } from '@/features/today/dialModel';
@@ -24,16 +24,14 @@ import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { EstimateTag } from '@/ui/EstimateTag';
 import { formatDay, formatRange, formatWeekday } from '@/ui/format';
-import { LoggedChip } from '@/ui/LoggedChip';
 import { Screen } from '@/ui/Screen';
-import { showToast } from '@/ui/Toast';
 import { Text } from '@/ui/Text';
 
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
   const msg = useMsg();
   const { prediction, history, settings, today, prefs, profile, db, store, version, refresh } = useApp();
-  const { periodDays } = useCalendarData();
+  const periodDays = usePeriodDays(); // two small queries; the full calendar data (event scan, past ovulations) is not needed here
   const heroGlass = useHeroGlass();
   const muteFlag = useApp((s) => s.muteFlag);
   const [todayFlow, setTodayFlow] = useState<string | undefined>();
@@ -58,11 +56,9 @@ export default function TodayScreen() {
   const eff = effectivePrefs(prefs, profile, today);
   const records = useMemo(() => (history && settings ? analyzeCycles(history, settings).map((c) => c.record) : []), [history, settings]);
   const showEstimate = SHOW_OVULATION_ESTIMATE && eff.showOvulationEstimate;
-  const lastCycle = history?.cycles.at(-1);
-  const bleedDays = lastCycle?.end ? diffDays(lastCycle.end, lastCycle.start) + 1 : undefined;
   const model = useMemo(
-    () => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate, todayFlow, ...(bleedDays ? { bleedDays } : {}) }),
-    [prediction, history, today, showEstimate, todayFlow, bleedDays],
+    () => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate, todayFlow }),
+    [prediction, history, today, showEstimate, todayFlow],
   );
   const guide = useMemo(
     () => (prefs.cycleGuidance ? phaseOn({ date: today, today, prediction, cycles: records, showEstimate }) : undefined),
@@ -98,13 +94,6 @@ export default function TodayScreen() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads today's entries after every write
   useEffect(() => { void loadEntries(); }, [loadEntries, version]);
   const saved = async () => { await refresh(); await loadEntries(); };
-  const onRemove = async (e: DayEvent) => {
-    if (!db || !store) return;
-    const label = describeEvent(e, t, prefs.tempUnit);
-    const written = await removeEntry(store, db, e);
-    await saved();
-    showToast(t('log.removed', { label }), { label: t('common.undo'), onPress: () => void undoRemoval(store, written).then(saved) });
-  };
 
   // the dial: the effective gate (teen mode included) decides whether any fertile or ovulation mark is drawn
   const includeUncertain = eff.showUncertainEstimates;
@@ -133,26 +122,26 @@ export default function TodayScreen() {
   const paused = model.state === 'suspended';
   // the headline is a hero card over the wash when it is about the next period; while the period is on, or with nothing to estimate, it is a plain card
   const nextAsHero = !paused && model.state !== 'inProgress' && model.state !== 'empty' && next !== undefined;
-  const hasHero = !paused ? model.state !== 'empty' : pregnantSince !== undefined;
+  const hasHero = pregnantSince !== undefined || (!paused && model.state !== 'empty'); // the wash shows whenever a glass hero card renders
 
   return (
     <Screen
       testID="screen-today" title={t('tabs.today')} bottomInset={96}
       floating={<QuickLogRow title={shortDate} subtitle={model.dayOfCycle && !paused && model.state !== 'empty' ? t('today.ring.dayLabel', { day: model.dayOfCycle }) : model.state === 'empty' ? t('today.ring.noData') : ''} />}>
       {heroGlass && hasHero ? <HeroWash /> : null}
-      <Text variant="caption" color="textSecondary" style={{ marginTop: -16 }} testID="today-date">{shortDate}</Text>
+      <Text variant="caption" color="textOnGlass" style={{ marginTop: -16 }} testID="today-date" accessibilityElementsHidden importantForAccessibility="no">{shortDate}</Text>{/* hidden from screen readers: the quick-log pill carries the same date */}
       {paused ? <PausedRing /> : <CycleDial model={dial} centre={centre} />}
-      {dial.arcs.some((a) => a.kind === 'fertile') ? <Text variant="caption" color="textSecondary" style={{ textAlign: 'center', marginTop: -8 }} testID="today-legend">{t('today.legend')}</Text> : null}
+      {dial.arcs.some((a) => a.kind === 'fertile') ? <Text variant="caption" color="textOnGlass" style={{ textAlign: 'center', marginTop: -8 }} testID="today-legend">{t('today.legend')}</Text> : null}
       {nextAsHero ? null : <HeadlineCard headline={msg(model.headline)} {...(model.subtitle ? { subtitle: msg(model.subtitle) } : {})} />}
       {entries.length ? (
-        <View testID="today-logs" accessibilityRole="list" accessibilityLabel={t('today.logsToday')} style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          {entries.map((e) => <LoggedChip key={e.id} label={describeEvent(e, t, prefs.tempUnit)} mark={e.kind === 'flow' ? 'flow' : e.kind === 'symptom' ? 'symptom' : 'other'} onRemove={() => void onRemove(e)} />)}
+        <View testID="today-logs" accessibilityRole="list" accessibilityLabel={t('today.logsToday')}>
+          <LoggedEntries entries={entries} onChanged={saved} />
         </View>
       ) : null}
       {pregnantSince ? (
         <HeroCard testID="pregnancy-card">
           {pregnancy ? (<>
-            <EstimateTag />
+            <EstimateTag onGlass={heroGlass} />
             <Text variant="heading" testID="pregnancy-week">{t('today.pregnancy.week', { week: pregnancy.week, day: pregnancy.day })}</Text>
             <Text testID="pregnancy-due">{t('today.pregnancy.due', { range: formatRange(pregnancy.due.lo, pregnancy.due.hi) })}</Text>
             <Text variant="caption" color="textOnGlass">{t(pregnancy.from === 'due' ? 'today.pregnancy.fromDue' : 'today.pregnancy.fromPeriod')}</Text>

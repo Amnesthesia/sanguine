@@ -59,12 +59,11 @@ export function HeroWash() {
   );
 }
 
-/** A card of the hero: glass where there is a wash behind it, otherwise the opaque card with a hairline. Content on it uses textOnGlass for secondary text. */
+/** A card of the hero: glass where there is a wash behind it, otherwise the opaque Card (ring and two shadows, no border: the same as every other card on the screen). Content on it uses textOnGlass for secondary text. */
 export function HeroCard({ children, ...rest }: ViewProps & { children: ReactNode }) {
-  const t = useTheme();
   const glass = useHeroGlass();
   if (glass) return <GlassSurface flat {...rest}><View style={{ padding: 16, gap: 10 }}>{children}</View></GlassSurface>;
-  return <Card {...rest} style={{ gap: 10, borderWidth: 1, borderColor: t.hairline }}>{children}</Card>;
+  return <Card {...rest} style={{ gap: 10 }}>{children}</Card>;
 }
 
 /** A pill-shaped quiet button for use on glass: label in textOnGlass (accent text fails contrast on glass). */
@@ -93,9 +92,10 @@ export function HeadlineCard({ headline, subtitle }: { headline: string; subtitl
 
 /** One estimate as a hero card: the tag, what it is, the range, and how sure (a meter with its word). */
 export function RangeCard({ testID, title, line, confidence }: { testID: string; title: string; line?: string; confidence: Confidence }) {
+  const glass = useHeroGlass();
   return (
     <HeroCard testID={testID} accessibilityRole="summary">
-      <EstimateTag />
+      <EstimateTag onGlass={glass} />
       <Text variant="heading" accessibilityRole="header">{title}</Text>
       {line ? <Text variant="bodySmall" color="textOnGlass">{line}</Text> : null}
       <ConfidenceMeter confidence={confidence} />
@@ -107,11 +107,12 @@ export function RangeCard({ testID, title, line, confidence }: { testID: string;
 export function EstimateCard({ m }: { m: EstimateModel }) {
   const { t } = useTranslation();
   const msg = useMsg();
+  const glass = useHeroGlass();
   const [open, setOpen] = useState(m.expanded);
   const title = msg(m.title);
   return (
     <HeroCard testID="estimate-card">
-      <EstimateTag />
+      <EstimateTag onGlass={glass} />
       <Text variant="heading" accessibilityRole="header">{title}</Text>
       <ConfidenceMeter confidence={m.confidence} />
       <Text variant="bodySmall" color="textOnGlass" testID="estimate-legal">{msg(m.legal)}</Text>

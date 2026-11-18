@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { type EngineSettings, type History, type ISODate, addDays, predict } from '@sanguine/engine';
-import { colors } from '@sanguine/ui-tokens';
+import { colors, glass } from '@sanguine/ui-tokens';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { AccessibilityInfo } from 'react-native';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -110,6 +110,9 @@ describe('Today, typical day', () => {
     view();
     expect(screen.queryByTestId('hero-wash')).toBeNull();
     expect(screen.getByTestId('next-period-card')).toBeTruthy();
+    // card rule: ring and two shadows, no border (a hairline border made the hero cards differ from every other card)
+    const card = getComputedStyle(screen.getByTestId('next-period-card'));
+    expect(['', '0px']).toContain(card.borderTopWidth);
   });
 });
 
@@ -138,7 +141,7 @@ describe('Today, empty and paused', () => {
     view();
     expect(body()).toContain('Log your period to start');
     expect(body()).toContain('Sanguine needs one period date to begin; two or three cycles make estimates useful.');
-    expect(screen.getByTestId('cycle-dial').getAttribute('aria-label')).toBe('NO DATA YET – Log a period to start');
+    expect(screen.getByTestId('cycle-dial').getAttribute('aria-label')).toBe('NO DATA YET. Log a period to start');
     expect(screen.queryByTestId('estimate-card')).toBeNull();
     expect(screen.queryByTestId('next-period-card')).toBeNull();
     expect(screen.queryByTestId('hero-wash')).toBeNull();
@@ -167,6 +170,27 @@ describe('Today, teen mode', () => {
     expect(screen.queryByTestId('guidance-supps')).toBeNull();
     expect(screen.getByTestId('next-period-card')).toBeTruthy(); // the period estimate stays
   });
+
+  it('keeps the gate on an irregular (uncertain) history too', async () => {
+    await setup({ today: '2026-10-13', history: hist([24, 38, 31, 45, 27, 36]), prefs: { showUncertainEstimates: true, showOvulationEstimate: true }, profile: { birthDate: '2011-03-01' } });
+    view();
+    expect(screen.queryByTestId('estimate-card')).toBeNull();
+    expect(body()).not.toMatch(/ovulat|fertile|supplement/i);
+    expect(screen.getByTestId('cycle-dial').getAttribute('aria-label')).not.toMatch(/ovulat|fertile/i);
+  });
+});
+
+describe('Today, estimate tag', () => {
+  const tagColour = () => screen.getAllByText('ESTIMATE').map((n) => getComputedStyle(n).color);
+  it('uses the glass ink on glass (iOS light) and the card ink where the hero card is opaque', async () => {
+    await setup({ today: '2026-10-13' });
+    view();
+    for (const c of tagColour()) expect(c).toBe('rgb(47, 85, 104)'); // #2F5568
+    cleanup();
+    env.scheme = 'dark';
+    view();
+    for (const c of tagColour()) expect(c).toBe('rgb(127, 167, 194)'); // dark ovulation
+  });
 });
 
 describe('contrast on the hero', () => {
@@ -177,5 +201,17 @@ describe('contrast on the hero', () => {
     expect(contrast(c.textOnGlass, wash)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(c.textPrimary, wash)).toBeGreaterThanOrEqual(4.5);
     expect(contrast(colors.dark.textOnGlass, colors.dark.surface)).toBeGreaterThanOrEqual(4.5);
+  });
+  it('the estimate tag ink on glass reads at 4.5:1 over the wash where the cards sit, and the captions are textOnGlass', () => {
+    const c = colors.light;
+    const glassOver = (b: string) => over(glass.light.tintBase, glass.light.tintAlpha, b);
+    const blob = { rose: [c.accent, 0.18], blue: [c.ovulation, 0.12], green: [c.fertile, 0.13] } as const;
+    const stack = (names: Array<keyof typeof blob>) => names.reduce<string>((bg, n) => over(blob[n][0], blob[n][1], bg), c.bg);
+    // the cards sit below the rose blob (it fades out by about y 310); under them the blue and green blobs can overlap
+    for (const names of [['rose'], ['blue'], ['green'], ['blue', 'green']] as const) {
+      expect(contrast('#2F5568', glassOver(stack([...names])))).toBeGreaterThanOrEqual(4.5);
+    }
+    // the date and legend captions sit at the top, over the rose blob; they are textOnGlass, which is asserted over every blob above
+    expect(contrast(c.textOnGlass, stack(['rose']))).toBeGreaterThanOrEqual(4.5);
   });
 });

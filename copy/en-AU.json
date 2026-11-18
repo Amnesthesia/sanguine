@@ -179,7 +179,6 @@
     "legendFertile": "darker = more likely to be in the fertile window",
     "expandEstimate": "Show details",
     "collapseEstimate": "Hide details",
-    "periodExpectedNow": "Period expected about now",
     "periodLateRange": "Expected {range}"
   },
   "log": {
@@ -355,7 +354,6 @@
       "ovulation": "Ovulation estimate",
       "symptoms": "Symptoms",
       "other": "Other log",
-      "logged": "Logged",
       "moon": "Moon phase"
     },
     "legendRule": "Solid means you logged it. Dashed, dotted or glowing means it is an estimate.",
@@ -1018,7 +1016,6 @@
     "sourcesLabel": "Sources",
     "suppLabel": "Supplements with some research",
     "suppCaveat": "Supplements are not tested like medicines and can interact with them. A pharmacist or doctor can check one with you before you start, especially if you take other medicines.",
-    "more": "Why these notes",
     "moreA11y": "Read the reasons, evidence and sources for these notes",
     "readMore": "Read more",
     "summary": {
