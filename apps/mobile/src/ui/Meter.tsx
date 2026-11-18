@@ -12,7 +12,7 @@ export function Meter({ level, word }: { level: Level; word: string }) {
   const t = useTheme();
   return (
     <View accessible accessibilityLabel={word} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <View accessibilityElementsHidden style={{ flexDirection: 'row', gap: 2 }}>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ flexDirection: 'row', gap: 2 }}>
         {[0, 1, 2].map(i => <View key={i} testID="meter-bar" style={{ width: 4, height: 11, borderRadius: 2, backgroundColor: i < level ? t.c.textPrimary : t.c.border }} />)}
       </View>
       <Text variant="caption">{word}</Text>

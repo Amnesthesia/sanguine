@@ -1112,6 +1112,7 @@
   },
   "contentKit": {
     "estimate": "ESTIMATE",
-    "remove": "Remove: {label}"
+    "remove": "Remove: {label}",
+    "source": "Source {n}"
   }
 }
