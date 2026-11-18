@@ -276,6 +276,7 @@
     "title": "{date}",
     "nothingLogged": "Nothing logged for this day.",
     "estimates": {
+      "title": "Estimates for this day",
       "period": "Period likely to start {range}",
       "period95": "Period possible: the wider range is {range}",
       "ovulationPoint": "Ovulation estimate {range}, most likely this day",
@@ -307,11 +308,10 @@
     "joinPrompt": "This is within a week of the period that started on {date}. Is it the same period?",
     "samePeriod": "Same period",
     "newPeriod": "A new period",
-    "subline": {
-      "cycleDay": "Day {day} of your cycle",
-      "period": "Period",
-      "estimate": "estimate"
-    },
+    "edit": "Edit",
+    "deleteEntry": "Delete this entry",
+    "deleteConfirmTitle": "Delete this entry?",
+    "deleteConfirmAction": "Delete entry",
     "entry": {
       "energy": "Energy: {level} ({n} of 5)",
       "flow": "{level} flow",
@@ -710,10 +710,12 @@
       "rangeTitle": "Where the period range comes from",
       "rangeBody": "Sanguine looks at the lengths of your last 12 cycles. Before you have logged a few, it starts from published averages for your age group (Bull et al. 2019) and moves towards your own pattern as cycles are added. In most life states, recent cycles and older ones count the same. A cycle that looks like a missed log, or that falls in a life change you set (such as pregnancy, or the months after stopping a hormonal method), is left out or counted less. The result is the range of days that has an 80% likelihood of holding your next period start; the calendar also shows the wider 95% range.",
       "confidenceTitle": "What the confidence words mean",
-      "confidenceHigh": "Confident: at least six cycles and a period range no wider than about a week.",
-      "confidenceMedium": "Fair estimate: at least two cycles and a period range of up to about 11 days.",
-      "confidenceLow": "Rough estimate: fewer than two cycles, or cycles that vary so much the range is wider than about 11 days. The range is wide on purpose.",
-      "confidenceNone": "No estimate: not enough data yet, or a life change you set pauses the estimates.",
+      "confidence": {
+        "high": { "word": "Confident", "rule": "At least six cycles and a period range no wider than about a week." },
+        "medium": { "word": "Fair estimate", "rule": "At least two cycles and a period range of up to about 11 days." },
+        "low": { "word": "Rough estimate", "rule": "Fewer than two cycles, or cycles that vary so much the range is wider than about 11 days. The range is wide on purpose." },
+        "none": { "word": "No estimate", "rule": "Not enough data yet, or a life change you set pauses the estimates." }
+      },
       "narrowTitle": "What narrows the range",
       "narrowBody": "Logging every period start, including the first day, matters most. Morning temperature, ovulation tests, cervical mucus and cervical position can date ovulation in a cycle after it happens, which sharpens the next period estimate and the fertile window estimate.",
       "narrowBodyTeen": "Logging every period start, including the first day, matters most. The more cycles you log, the narrower the range becomes.",
@@ -732,7 +734,30 @@
         "notes": "Notes"
       },
       "accuracyTitle": "How well it has done for you",
-      "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gave at the start of that cycle held the real start date. Insights, Your accuracy, shows the count."
+      "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gave at the start of that cycle held the real start date. Insights, Your accuracy, shows the count.",
+      "draw": {
+        "blendLabel": "With two cycles logged, the estimate still leans on published averages; it moves towards your own pattern as cycles are added, up to your last 12.",
+        "blendLeft": "Published averages",
+        "blendRight": "Your own pattern",
+        "blendZero": "0 cycles",
+        "blendYou": "you: 2",
+        "blendMax": "12",
+        "rangeHeading": "Your next period, as a range",
+        "rangeLabel": "80% likelihood the next period starts between 26 and 30 November; the wider 95% range is 24 November to 2 December.",
+        "rangeFrom95": "24 Nov",
+        "rangeFrom80": "26",
+        "rangeTo80": "30",
+        "rangeTo95": "2 Dec",
+        "range80": "80% range",
+        "range95": "95% range",
+        "accuracyLabel": "Drawing: three past cycles. For each, the range given at the start of the cycle, and the real start date: inside the range twice, just outside it once.",
+        "narrowLabel": "Logging every period start, then morning temperature, ovulation tests, cervical mucus and cervical position, turn a wide range into a narrower one.",
+        "narrowLabelTeen": "Logging every period start turns a wide range into a narrower one.",
+        "notChangeLabel": "Symptoms, mood and notes go to Insights, never into the estimates.",
+        "notChangeInsights": "Insights",
+        "notChangeEstimates": "Estimates",
+        "sampleNote": "Drawn to explain, not your own data."
+      }
     },
     "calendar": {
       "title": "Add to someone's calendar",
@@ -866,6 +891,7 @@
       "widgetDetails": "Show details in widgets",
       "widgetDetailsDesc": "Off: widgets show only the day of your cycle.",
       "next": "Next reminder: {date}",
+      "pairLabel": "{setting}. Off shows: {off}. On shows: {on}.",
       "none": "No reminder is due yet. Reminders follow your estimates once you log a period.",
       "denied": "Notifications are turned off for Sanguine in your phone's settings.",
       "permissionTitle": "Sanguine reminder",
