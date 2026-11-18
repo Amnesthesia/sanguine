@@ -11,6 +11,7 @@ vi.mock('@/theme', async (orig) => { const m = await orig<typeof import('@/theme
 vi.mock('expo-glass-effect', () => ({ GlassView: ({ children }: { children: ReactNode }) => <div data-testid="glass-view">{children}</div>, isLiquidGlassAvailable: () => env.glassAvailable, isGlassEffectAPIAvailable: () => env.glassAvailable }));
 vi.mock('expo-blur', () => ({ BlurView: ({ children }: { children: ReactNode }) => <div data-testid="blur-view">{children}</div> }));
 import { colors, glass } from '@sanguine/ui-tokens';
+import { buildTheme } from '@/theme';
 import { contrast, over } from '../../../../packages/ui-tokens/src/contrast';
 import { ToastHost, showToast } from './Toast';
 import { SubScreen } from './SubScreen';
@@ -102,6 +103,23 @@ it('GlassSurface paints the real material on its first render once the setting i
   cleanup();
   surface();
   expect(screen.getByTestId('glass-view')).toBeTruthy();
+});
+
+it('two surfaces mounted together both get the material', async () => {
+  render(<><GlassSurface testID="a"><span>one</span></GlassSurface><GlassSurface testID="b"><span>two</span></GlassSurface></>);
+  await settle();
+  expect(screen.getAllByTestId('glass-view')).toHaveLength(2);
+});
+it('GlassSurface clips its content to the radius it is given, and to the float radius by default', async () => {
+  const { unmount } = render(<GlassSurface testID="r" style={{ borderRadius: 34 }}><span>inside</span></GlassSurface>);
+  await settle();
+  const clip = (id: string) => screen.getByTestId(id).firstElementChild as HTMLElement;
+  expect(getComputedStyle(screen.getByTestId('r')).borderTopLeftRadius).toBe('34px');
+  expect(getComputedStyle(clip('r')).borderTopLeftRadius).toBe('34px');
+  unmount();
+  render(<GlassSurface testID="d"><span>inside</span></GlassSurface>);
+  await settle();
+  expect(getComputedStyle(clip('d')).borderTopLeftRadius).toBe(`${buildTheme('light', 'ios').radius.float}px`);
 });
 
 it('a toolbar second row sits inside the same glass and inside the measured toolbar wrapper', async () => {

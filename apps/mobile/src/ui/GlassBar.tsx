@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { View, type ViewProps } from 'react-native';
+import { StyleSheet, View, type ViewProps } from 'react-native';
 import { create } from 'zustand';
 import { useTheme } from '@/theme';
 import { Text } from './Text';
@@ -8,6 +8,16 @@ import { useReduceTransparency } from './useReduceTransparency';
 type Materials = { glass: typeof import('expo-glass-effect'); blur: typeof import('expo-blur') };
 // Loaded on first use (importing Screen only for GUTTER must not start the native modules), then kept for later surfaces.
 let loaded: Materials | undefined;
+let loading: Promise<Materials | undefined> | undefined;
+// One shared load for every surface. A failure leaves the opaque surface in place (it is readable) and is reported once, in development;
+// `typeof` because __DEV__ is not defined under vitest.
+const loadMaterials = () => loading ??= Promise.all([import('expo-glass-effect'), import('expo-blur')]).then(
+  ([glass, blur]) => (loaded = { glass, blur }),
+  (error: unknown) => {
+    if (typeof __DEV__ !== 'undefined' && __DEV__) console.warn('GlassSurface: the glass material failed to load; drawing the opaque surface instead.', error);
+    return undefined;
+  },
+);
 
 /** Bottom edge (from the screen top) of the active screen's floating toolbar, so the toast sits just under it. 0: no toolbar. */
 export const useChromeBottom = create<{ bottom: number }>(() => ({ bottom: 0 }));
@@ -20,10 +30,10 @@ export function GlassSurface({ children, style, flat, ...props }: ViewProps & { 
   useEffect(() => {
     if (!t.isIOS || reduce || materials) return;
     let mounted = true;
-    void Promise.all([import('expo-glass-effect'), import('expo-blur')]).then(([glass, blur]) => { loaded = { glass, blur }; if (mounted) setMaterials(loaded); }).catch(() => {});
+    void loadMaterials().then((m) => { if (mounted && m) setMaterials(m); });
     return () => { mounted = false; };
   }, [t.isIOS, reduce, materials]);
-  const shape = { borderRadius: t.radius.float };
+  const shape = { borderRadius: StyleSheet.flatten(style)?.borderRadius ?? t.radius.float };
   if (!t.isIOS) return <View {...props} style={[shape, { overflow: 'hidden', backgroundColor: t.cardBg, elevation: 2 }, style]}>{children}</View>;
   const dark = t.scheme === 'dark';
   const material = reduce || !materials
