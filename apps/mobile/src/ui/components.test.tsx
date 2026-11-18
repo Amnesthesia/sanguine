@@ -3,6 +3,8 @@ import { AccessibilityInfo } from 'react-native';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
+import { hexToRgb } from '@sanguine/ui-tokens';
+import { buildTheme } from '@/theme';
 import { Chips } from './Chips';
 import { DateField, dateToIso, isoToDate } from './DateField';
 
@@ -114,5 +116,8 @@ describe('TextField and ProgressDots', () => {
     expect(colour[0]).toBe(colour[2]);
     expect(colour[3]).not.toBe(colour[2]);
     expect(colour[3]).toBe(colour[4]);
+    // later steps are the glass text colour at 30% (the frame's faint dot), not the hairline border colour, which vanishes on the platter
+    const [r, g, b] = hexToRgb(buildTheme('light', 'ios').c.textOnGlass);
+    expect(colour[3]).toBe(`rgba(${r}, ${g}, ${b}, 0.3)`);
   });
 });
