@@ -14,12 +14,13 @@ import { Chips } from '@/ui/Chips';
 import { Group, SwitchRow } from '@/ui/SettingsRow';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
-import { showToast } from '@/ui/Toast';
 
 export default function HealthScreen() {
   const { t } = useTranslation();
   const { prefs, profile, today, updatePrefs, health, syncHealth, resolveHealthAsk } = useApp();
   const [available, setAvailable] = useState<boolean | undefined>();
+  /** Access was refused for the last type she switched on: she needs to read it and act (phone settings), so it is a panel, not a toast. */
+  const [denied, setDenied] = useState(false);
   useEffect(() => { void getHealthDriver().then((d) => setAvailable(d !== null)); }, []);
   const platform = healthPlatformName();
   const eff = effectivePrefs(prefs, profile, today);
@@ -34,8 +35,9 @@ export default function HealthScreen() {
 
   async function toggle(type: HealthType, on: boolean) {
     if (on) {
-      try { await requestHealthAccess([type]); } catch { showToast(t('settings.health.denied')); return; }
+      try { await requestHealthAccess([type]); } catch { setDenied(true); return; }
     }
+    setDenied(false);
     await updatePrefs({ healthTypes: withType(prefs.healthTypes, type, on) });
     if (on) void syncHealth({ force: true });
   }
@@ -73,6 +75,7 @@ export default function HealthScreen() {
         <Button testID="health-sync-now" label={health.running ? t('settings.health.syncing') : t('settings.health.syncNow')} disabled={health.running || prefs.healthTypes.length === 0} onPress={() => void syncHealth({ force: true })} />
       </Card>
 
+      {denied ? <View testID="health-denied" accessibilityLiveRegion="polite"><CautionPanel>{t('settings.health.denied')}</CautionPanel></View> : null}
       <Group>
         {rows.map((r, i) => (
           <SwitchRow

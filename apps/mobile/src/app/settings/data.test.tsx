@@ -1,5 +1,6 @@
 // P8-22: the settings data screens (health, privacy, backup, report, calendar export, legal) on the glass kit. Every progress, error and
-// result state keeps its copy and shows in a caution panel, a toast or a disabled control; ids used by the Maestro flows stay.
+// result state keeps its copy and shows in a caution panel or a disabled control (a toast only for a confirmation she need not read twice);
+// ids used by the Maestro flows stay.
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { Alert } from 'react-native';
@@ -53,6 +54,13 @@ import BackupScreen from './backup';
 import ReportScreen from './report';
 import CalendarExportScreen from './calendar';
 import LegalScreen from './legal';
+import { BackupError, recoveryWordsToSecret } from '@sanguine/crypto';
+import { createBackup, restoreBackup } from '@/data/backup';
+import { getDeviceSecret, getOrCreateDeviceSecret } from '@/services/secrets';
+import { pickBackupBytes } from '@/services/backup';
+import { uploadCloudIfDue } from '@/services/cloud';
+import { shareReportPdf } from '@/services/report';
+import { shareCalendarFile } from '@/services/shareCalendar';
 
 const today = '2026-11-18';
 const update = vi.fn();
@@ -108,12 +116,14 @@ describe('health sync', () => {
     expect(hasCaution('health-empty')).toBe(true);
     expect(screen.getByTestId('health-open-settings')).toBeTruthy();
   });
-  it('tells a refused permission in a toast and leaves the type off', async () => {
+  it('tells a refused permission in a panel that stays, and leaves the type off', async () => {
     svc.health.request.mockRejectedValueOnce(new Error('denied'));
     render(<HealthScreen />);
     await waitFor(() => expect(switchNamed('Period flow')).toBeTruthy());
     fireEvent.click(switchNamed('Period flow') as HTMLElement);
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Sanguine could not ask for access.'));
+    await waitFor(() => expect(screen.getByTestId('health-denied').textContent).toContain('Sanguine could not ask for access.'));
+    expect(hasCaution('health-denied')).toBe(true);
+    expect(toast).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
   });
   it('hides sexual activity under 18 and keeps the "Read only" wording on wrist temperature', async () => {
@@ -133,11 +143,12 @@ describe('privacy and data', () => {
     expect(screen.getByText('Discreet app icon').parentElement?.parentElement?.querySelector('svg')).toBeTruthy();
     await waitFor(() => expect(screen.getByText('Given on 2026-09-05. To withdraw it, delete your data.')).toBeTruthy());
   });
-  it('toasts "Export ready." and shows an export failure in a caution panel', async () => {
+  it('keeps "Export ready." and an export failure in a panel that stays', async () => {
     svc.io.share.mockResolvedValueOnce(undefined);
     render(<PrivacyScreen />);
     fireEvent.click(screen.getByTestId('privacy-export'));
-    await waitFor(() => expect(toast).toHaveBeenCalledWith('Export ready.'));
+    await waitFor(() => expect(screen.getByTestId('privacy-message').textContent).toContain('Export ready.'));
+    expect(toast).not.toHaveBeenCalled();
     svc.io.share.mockRejectedValueOnce(new Error('disk full'));
     fireEvent.click(screen.getByTestId('privacy-export'));
     await waitFor(() => expect(screen.getByTestId('privacy-message').textContent).toContain('The export could not be made. disk full'));
@@ -164,11 +175,15 @@ describe('privacy and data', () => {
     expect(hasCaution('privacy-message')).toBe(true);
     expect(toast).not.toHaveBeenCalled();
   });
-  it('refuses the app lock without a screen lock and says why in the panel', async () => {
+  it('refuses the app lock without a screen lock and says why in a panel under the switches, not at the top of the screen', async () => {
     svc.lock.has.mockResolvedValueOnce(false);
     render(<PrivacyScreen />);
     fireEvent.click(switchNamed('App lock') as HTMLElement);
-    await waitFor(() => expect(screen.getByTestId('privacy-message').textContent).toContain('Turn on a screen lock on this phone first.'));
+    await waitFor(() => expect(screen.getByTestId('privacy-lock-message').textContent).toContain('Turn on a screen lock on this phone first.'));
+    expect(hasCaution('privacy-lock-message')).toBe(true);
+    expect(screen.queryByTestId('privacy-message')).toBeNull();
+    // it sits after the protection switches (document order), where she tapped
+    expect(screen.getByTestId('privacy-protect').compareDocumentPosition(screen.getByTestId('privacy-lock-message')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(update).not.toHaveBeenCalled();
   });
   it('asks before deleting, with the destructive action last-named in the alert', () => {
@@ -221,6 +236,78 @@ describe('encrypted backup', () => {
     fireEvent.click(switchNamed('Keep a copy in iCloud Drive') as HTMLElement);
     await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.stringMatching(/^Cloud copy is off\..*iCloud Drive/)));
   });
+  const typePass = (v = 'correct horse') => fireEvent.change(screen.getByTestId('backup-pass'), { target: { value: v } });
+  const restoreTab = () => fireEvent.click(screen.getByText('Restore'));
+  it('shows "Encrypting… n%" in a panel while the backup is made', async () => {
+    vi.mocked(getOrCreateDeviceSecret).mockResolvedValue({ secret: new Uint8Array(32), created: false } as never);
+    vi.mocked(createBackup).mockImplementationOnce((async (_d: unknown, _s: unknown, o: { onProgress: (f: number) => void }) => { o.onProgress(0.5); return new Promise(() => {}); }) as never);
+    render(<BackupScreen />);
+    typePass();
+    fireEvent.change(screen.getByTestId('backup-pass2'), { target: { value: 'correct horse' } });
+    fireEvent.click(screen.getByTestId('backup-create'));
+    await waitFor(() => expect(screen.getByTestId('backup-progress').textContent).toContain('Encrypting… 50%'));
+    expect(hasCaution('backup-progress')).toBe(true);
+  });
+  it('keeps "Imported n records." after a restore in a panel that stays, not a toast', async () => {
+    vi.mocked(getDeviceSecret).mockResolvedValue(new Uint8Array(32));
+    vi.mocked(pickBackupBytes).mockResolvedValue(new Uint8Array(1));
+    vi.mocked(restoreBackup).mockResolvedValueOnce({ imported: 3 } as never);
+    render(<BackupScreen />);
+    restoreTab();
+    typePass();
+    fireEvent.click(screen.getByTestId('backup-restore'));
+    await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toContain('Imported 3 records.'));
+    expect(toast).not.toHaveBeenCalled();
+  });
+  it('explains a bad recovery code, a missing key and a wrong passphrase in the panel', async () => {
+    vi.mocked(pickBackupBytes).mockResolvedValue(new Uint8Array(1));
+    render(<BackupScreen />);
+    restoreTab();
+    typePass();
+    fireEvent.change(screen.getByTestId('restore-code'), { target: { value: 'nonsense' } });
+    vi.mocked(recoveryWordsToSecret).mockReturnValueOnce(null as never);
+    fireEvent.click(screen.getByTestId('backup-restore'));
+    await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toContain('That recovery code is not valid.'));
+    expect(hasCaution('backup-message')).toBe(true);
+    // no code typed and no key on this phone
+    vi.mocked(getDeviceSecret).mockResolvedValueOnce(null as never);
+    fireEvent.change(screen.getByTestId('restore-code'), { target: { value: '' } });
+    typePass();
+    fireEvent.click(screen.getByTestId('backup-restore'));
+    await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toContain('This phone has no recovery key.'));
+    // the backup does not open with this passphrase
+    vi.mocked(getDeviceSecret).mockResolvedValueOnce(new Uint8Array(32));
+    vi.mocked(restoreBackup).mockRejectedValueOnce(new BackupError('auth' as never, 'x'));
+    typePass();
+    fireEvent.click(screen.getByTestId('backup-restore'));
+    await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toContain('That passphrase or recovery code does not open this backup.'));
+  });
+  it('keeps "Uploaded to" inline, and a cloud failure or another phone\'s copy in the panel', async () => {
+    vi.mocked(getOrCreateDeviceSecret).mockResolvedValue({ secret: new Uint8Array(32), created: false } as never);
+    svc.cloud.store = { get: vi.fn(async () => null), put: vi.fn(async () => { throw new Error('offline'); }) };
+    setup({ cloudBackup: true });
+    vi.mocked(uploadCloudIfDue).mockResolvedValueOnce({ status: 'uploaded', merged: 0 } as never).mockResolvedValueOnce({ status: 'conflict', merged: 0 } as never);
+    render(<BackupScreen />);
+    await waitFor(() => expect(screen.getByTestId('cloud-upload-now')).toBeTruthy());
+    typePass();
+    fireEvent.click(screen.getByTestId('cloud-upload-now'));
+    await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toContain('Uploaded to iCloud Drive.'));
+    expect(toast).not.toHaveBeenCalled();
+    typePass();
+    fireEvent.click(screen.getByTestId('cloud-upload-now'));
+    await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toContain('already holds a copy from another phone'));
+    expect(hasCaution('backup-message')).toBe(true);
+    // automatic copy off: the upload runs here and the store fails
+    cleanup();
+    setup({ cloudBackup: false });
+    vi.mocked(createBackup).mockResolvedValueOnce(new Uint8Array(1) as never);
+    render(<BackupScreen />);
+    await waitFor(() => expect(screen.getByTestId('cloud-upload-now')).toBeTruthy());
+    typePass();
+    fireEvent.click(screen.getByTestId('cloud-upload-now'));
+    await waitFor(() => expect(screen.getByTestId('backup-message').textContent).toContain('Could not reach iCloud Drive.'));
+    expect(hasCaution('backup-message')).toBe(true);
+  });
   it('asks for the passphrase before restoring from the cloud copy', async () => {
     svc.cloud.store = { get: vi.fn() };
     render(<BackupScreen />);
@@ -240,6 +327,20 @@ describe('report for a doctor', () => {
     expect(screen.getByTestId('report-covered').textContent).toBe('2 cycles from 5 Sep 2026 to 30 Oct 2026');
     expect(screen.getByText(/^Always in the PDF:/)).toBeTruthy();
     expect(screen.getByTestId('report-ovulation')).toBeTruthy();
+  });
+  it('says "1 cycle", not "1 cycles", when one cycle is covered', () => {
+    setup({}, { history: { cycles: [{ start: '2026-09-05', length: 28 }], logs: [], temperatures: [] }, prediction: undefined, settings: { lifeStates: [] } });
+    render(<ReportScreen />);
+    expect(screen.getByTestId('report-covered').textContent).toBe('1 cycle from 5 Sep 2026 to 2 Oct 2026');
+  });
+  it('shows a PDF failure in a panel and keeps the share button', async () => {
+    withHistory();
+    vi.mocked(shareReportPdf).mockRejectedValueOnce(new Error('no printer'));
+    render(<ReportScreen />);
+    fireEvent.click(screen.getByTestId('report-share'));
+    await waitFor(() => expect(screen.getByTestId('report-message').textContent).toContain('The PDF could not be made. no printer'));
+    expect(hasCaution('report-message')).toBe(true);
+    expect(screen.getByTestId('report-share')).toBeTruthy();
   });
   it('hides the ovulation switch in teen mode', () => {
     withHistory(teen);
@@ -265,6 +366,14 @@ describe('add to someone’s calendar', () => {
     fireEvent.click(switchNamed('Include the fertile window estimate') as HTMLElement);
     expect(screen.getByText('Fertile window estimate 6–18 Nov')).toBeTruthy();
     expect(within(screen.getByTestId('calendar-export-preview')).getAllByText('ESTIMATE').length).toBe(2);
+  });
+  it('shows a share failure in a panel', async () => {
+    withPrediction();
+    vi.mocked(shareCalendarFile).mockRejectedValueOnce(new Error('no app'));
+    render(<CalendarExportScreen />);
+    fireEvent.click(screen.getByTestId('calendar-export-share'));
+    await waitFor(() => expect(screen.getByTestId('calendar-export-message').textContent).toContain('The calendar file could not be shared. no app'));
+    expect(hasCaution('calendar-export-message')).toBe(true);
   });
   it('hides the fertile option in teen mode', () => {
     withPrediction(teen);

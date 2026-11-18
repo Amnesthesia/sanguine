@@ -56,7 +56,7 @@ export default function ReportScreen() {
         <Text {...heading}>{t('report.cyclesN')}</Text>
         <Chips testIDPrefix="report-cycles" value={count} onChange={setCount} options={COUNTS.map((c) => ({ value: c, label: c === 'all' ? t('report.all') : c }))} />
         <Text testID="report-covered" variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>
-          {first && lastCycle ? t('report.covered', { n: covered.length, from: formatDayYear(first.start), to: formatDayYear(addDays(lastCycle.start, (lastCycle.length as number) - 1)) }) : t('report.noCycles')}
+          {first && lastCycle ? t('report.covered', { count: covered.length, n: covered.length, from: formatDayYear(first.start), to: formatDayYear(addDays(lastCycle.start, (lastCycle.length as number) - 1)) }) : t('report.noCycles')}
         </Text>
       </View>
       <View style={{ gap: 6 }}>

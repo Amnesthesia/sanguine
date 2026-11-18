@@ -14,7 +14,6 @@ import { CautionPanel } from '@/ui/CautionPanel';
 import { Group, SettingsRow, SwitchRow } from '@/ui/SettingsRow';
 import { SubScreen } from '@/ui/SubScreen';
 import { Text } from '@/ui/Text';
-import { showToast } from '@/ui/Toast';
 
 /** The small drawings of the frame: the lock beside the intro, an arrow into or out of a tray on the export and import rows, the leaf on the discreet icon row. */
 function Glyph({ name }: { name: 'lock' | 'download' | 'upload' | 'leaf' }) {
@@ -30,8 +29,10 @@ export default function PrivacyScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { db, store, prefs, updatePrefs, refresh, deleteEverything } = useApp();
-  /** What the last action left to say: an error, or the import result. It stays until the next action (a caution panel, not a toast). */
+  /** What the last export or import left to say: ready, an error, or the import result. It stays until the next action (a panel, not a toast). */
   const [msg, setMsg] = useState<string | undefined>();
+  /** The refusal from the App lock switch, shown right under the switches she tapped (the panel above may be off-screen). */
+  const [lockMsg, setLockMsg] = useState<string | undefined>();
   const [busy, setBusy] = useState<'export' | 'import' | undefined>();
   const [consentAt, setConsentAt] = useState<string | null>(null);
   useEffect(() => { if (db) void getConsent(db).then((c) => setConsentAt(c?.at ?? null)); }, [db]);
@@ -71,7 +72,7 @@ export default function PrivacyScreen() {
       </Card>
       {msg ? <View testID="privacy-message" accessibilityLiveRegion="polite"><CautionPanel>{msg}</CautionPanel></View> : null}
       <Group>
-        <SettingsRow testID="privacy-export" title={t('settings.privacy.export')} description={busy === 'export' ? t('settings.privacy.exportBusy') : t('settings.privacy.exportDesc')} disabled={busy !== undefined} right={<Glyph name="download" />} onPress={() => db && store && void run('export', async () => { await shareExport(db, store); showToast(t('settings.privacy.exportDone')); return undefined; })} />
+        <SettingsRow testID="privacy-export" title={t('settings.privacy.export')} description={busy === 'export' ? t('settings.privacy.exportBusy') : t('settings.privacy.exportDesc')} disabled={busy !== undefined} right={<Glyph name="download" />} onPress={() => db && store && void run('export', async () => { await shareExport(db, store); return t('settings.privacy.exportDone'); })} />
         <SettingsRow testID="privacy-import" title={t('settings.privacy.import')} description={t('settings.privacy.importDesc')} disabled={busy !== undefined} right={<Glyph name="upload" />} onPress={() => db && store && void importFile(db, store)} last />
       </Group>
       <Group>
@@ -80,13 +81,14 @@ export default function PrivacyScreen() {
         <SettingsRow testID="privacy-backup" title={t('settings.privacy.backup')} description={t('settings.privacy.backupDesc')} onPress={() => router.push('/settings/backup' as never)} last />
       </Group>
       <Group>
-        <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setMsg(t('settings.privacy.appLockOnly')); return; } setMsg(undefined); await updatePrefs({ appLock: v }); })()} />
+        <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setLockMsg(t('settings.privacy.appLockOnly')); return; } setLockMsg(undefined); await updatePrefs({ appLock: v }); })()} />
         <SwitchRow
           testID="privacy-icon" leadingIcon={<Glyph name="leaf" />} title={t('settings.privacy.discreetIcon')} disabled={!discreetOk}
           description={discreetOk ? t(Platform.OS === 'android' ? 'settings.privacy.discreetIconDescAndroid' : 'settings.privacy.discreetIconDesc') : t('settings.privacy.discreetIconUnavailable')}
           value={prefs.discreetIcon} onChange={(v) => void switchIcon(v)} />
         <SwitchRow testID="privacy-protect" title={t('settings.privacy.screenProtection')} description={t('settings.privacy.screenProtectionDesc')} value={prefs.screenProtection} onChange={(v) => void updatePrefs({ screenProtection: v })} last />
       </Group>
+      {lockMsg ? <View testID="privacy-lock-message" accessibilityLiveRegion="polite"><CautionPanel>{lockMsg}</CautionPanel></View> : null}
       <Group>
         <SettingsRow testID="privacy-consent" title={t('settings.privacy.consentTitle')} description={consentAt ? t('settings.privacy.consentGiven', { date: consentAt.slice(0, 10) }) : t('settings.privacy.consentNone')} last />
       </Group>

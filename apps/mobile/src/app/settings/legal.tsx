@@ -13,7 +13,7 @@ export default function LegalScreen() {
   const policy = doc === 'consumerHealth' ? POLICIES.consumerHealth : POLICIES.privacy;
   return (
     <SubScreen testID="screen-legal" title={policy.title}>
-      <View accessibilityLabel={policy.title} style={{ gap: 12, paddingHorizontal: 4 }}>
+      <View style={{ gap: 12, paddingHorizontal: 4 }}>
         {policy.blocks.map((b, i) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: static document, never reordered
           <View key={i} style={b.type === 'li' ? { flexDirection: 'row', gap: 10 } : undefined}>

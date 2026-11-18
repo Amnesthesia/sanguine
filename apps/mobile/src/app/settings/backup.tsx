@@ -39,13 +39,12 @@ export default function BackupScreen() {
   /** A copy made by another phone is in the cloud: ask for that phone's recovery code to link this one (P8-7). */
   const [link, setLink] = useState(false);
   const [pct, setPct] = useState<number | undefined>();
-  /** What went wrong or needs doing (a caution panel). Good news is a toast through `say` and clears this. */
+  /** What went wrong, needs doing, or what a finished action produced (backup ready, uploaded, records imported): one panel that stays until the next action, so she can read it. */
   const [msg, setMsg] = useState<string | undefined>();
   const [pending, setPending] = useState<{ words: string; next: () => Promise<void> } | undefined>();
   const service = cloud ? cloudServiceName(cloud) : '';
-  const say = (text: string) => { setMsg(undefined); showToast(text); };
-  /** The message for a finished cloud upload: a problem stays in the panel, an upload or a wait for Wi-Fi is a toast. */
-  const afterUpload = (status: 'uploaded' | 'conflict' | 'skipped' | 'failed') => status === 'uploaded' ? say(t('settings.privacy.cloud.uploaded', { service })) : status === 'skipped' ? say(t('settings.privacy.cloud.waitingWifi')) : setMsg(t(status === 'conflict' ? 'settings.privacy.cloud.otherPhone' : 'settings.privacy.cloud.failed', { service }));
+  /** The message for a finished cloud upload: the result, a wait for Wi-Fi or a problem, all in the panel. */
+  const afterUpload = (status: 'uploaded' | 'conflict' | 'skipped' | 'failed') => status === 'uploaded' ? setMsg(t('settings.privacy.cloud.uploaded', { service })) : status === 'skipped' ? setMsg(t('settings.privacy.cloud.waitingWifi')) : setMsg(t(status === 'conflict' ? 'settings.privacy.cloud.otherPhone' : 'settings.privacy.cloud.failed', { service }));
   useEffect(() => { void getCloudStore().then(setCloud); }, []);
   const reloadLast = () => { if (db) void getSetting<string | null>(db, 'cloud.lastUploadAt', null).then(setLastUpload); };
   useEffect(reloadLast, [db]);
@@ -64,7 +63,7 @@ export default function BackupScreen() {
       const { secret, created } = await getOrCreateDeviceSecret();
       const bytes = await createBackup(db, store, { passphrase: pass, deviceSecret: secret, clock: deviceClock, ...backupCrypto(), onProgress: (f) => setPct(Math.round(f * 100)) });
       if (__DEV__) console.log(`[backup] sealed ${bytes.length} bytes in ${Date.now() - started} ms`);
-      const share = async () => { await shareFile(bytes, `sanguine-backup-${todayLocal()}.sgb`, 'application/octet-stream'); say(t('settings.privacy.backupReady')); };
+      const share = async () => { await shareFile(bytes, `sanguine-backup-${todayLocal()}.sgb`, 'application/octet-stream'); setMsg(t('settings.privacy.backupReady')); };
       // the code is shown until the person has confirmed they saved it, even if they left this screen the first time
       if (created || !(await getSetting(db, 'recoveryShown', false))) setPending({ words: recoveryCodeFor(secret), next: share });
       else await share();
@@ -86,7 +85,7 @@ export default function BackupScreen() {
       if (!bytes) return fromCloud ? setMsg(t('settings.privacy.cloud.none', { service })) : undefined;
       const r = await restoreBackup(db, store, bytes, pass, secret, (f) => setPct(Math.round(f * 100)), nativeArgon2() ?? undefined);
       await refresh();
-      say(t('settings.privacy.importDone', { n: r.imported }));
+      setMsg(t('settings.privacy.importDone', { n: r.imported }));
     } catch (e) {
       setMsg(e instanceof BackupError && e.code === 'auth' ? t('settings.privacy.restoreWrongPassphrase') : (e as Error).message);
     } finally { setPct(undefined); setPass(''); setCode(''); }
@@ -101,7 +100,8 @@ export default function BackupScreen() {
     if (!on) {
       await disableAutoBackup();
       await updatePrefs({ cloudBackup: false });
-      return say(t('settings.privacy.cloud.off', { service }));
+      // a toast: she just flipped the switch and sees it off; nothing here needs reading twice
+      return showToast(t('settings.privacy.cloud.off', { service }));
     }
     if (pass.length < MIN_PASSPHRASE) return setMsg(t('settings.privacy.cloud.needPass'));
     // linking a second phone (P8-7, D-083): the first phone's recovery code makes this phone use the same device secret
@@ -157,7 +157,7 @@ export default function BackupScreen() {
       if (previous) await cloud.put(BACKUP_PREV, previous);
       await cloud.put(BACKUP_NAME, bytes);
       await setSetting(db, 'cloud.lastUploadAt', new Date().toISOString());
-      say(t('settings.privacy.cloud.uploaded', { service }));
+      setMsg(t('settings.privacy.cloud.uploaded', { service }));
       reloadLast();
     } catch { setMsg(t('settings.privacy.cloud.failed', { service })); } finally { setPct(undefined); setPass(''); setPass2(''); }
   }
