@@ -2,6 +2,7 @@
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState, View } from 'react-native';
+import Svg, { Path, Rect } from 'react-native-svg';
 import { useApp } from '@/state/app';
 import { useLock } from '@/state/lock';
 import { useTheme } from '@/theme';
@@ -35,11 +36,20 @@ export function LockGate({ children }: { children: ReactNode }) {
     <View style={{ flex: 1 }}>
       {children}
       {locked ? (
-        <View testID="lock-screen" accessibilityViewIsModal style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: t.screenBg, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16 }}>
-          <Text variant="title" accessibilityRole="header" style={{ textAlign: 'center' }}>{tr('lock.title')}</Text>
-          <Text color="textSecondary" style={{ textAlign: 'center' }}>{tr('lock.explain')}</Text>
-          {failed ? <Text variant="bodySmall" style={{ color: t.c.period }} accessibilityLiveRegion="polite">{tr('lock.failed')}</Text> : null}
-          <Button testID="unlock-button" label={tr('lock.unlock')} onPress={() => void tryUnlock(tr('lock.reason'))} />
+        <View testID="lock-screen" accessibilityViewIsModal style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: t.screenBg, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+          {/* a narrow column, so the text stays readable on a tablet */}
+          <View style={{ width: '100%', maxWidth: 420, alignItems: 'center', gap: 16 }}>
+            <View testID="lock-glyph" aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: t.c.accentSoft, alignItems: 'center', justifyContent: 'center' }}>
+              <Svg width={32} height={32} viewBox="0 0 24 24">
+                <Rect x={5} y={10.5} width={14} height={10} rx={3} fill="none" stroke={t.c.onAccentSoft} strokeWidth={1.7} />
+                <Path d="M8.2 10.5V8A3.8 3.8 0 0 1 15.8 8V10.5M12 14.4V16.6" fill="none" stroke={t.c.onAccentSoft} strokeWidth={1.7} strokeLinecap="round" />
+              </Svg>
+            </View>
+            <Text variant="title" accessibilityRole="header" style={{ textAlign: 'center', fontWeight: '700' }}>{tr('lock.title')}</Text>
+            <Text color="textSecondary" style={{ textAlign: 'center', fontSize: 15, lineHeight: 21 }}>{tr('lock.explain')}</Text>
+            {failed ? <Text variant="bodySmall" style={{ color: t.c.period, textAlign: 'center' }} accessibilityLiveRegion="polite">{tr('lock.failed')}</Text> : null}
+            <Button testID="unlock-button" label={tr('lock.unlock')} onPress={() => void tryUnlock(tr('lock.reason'))} style={{ marginTop: 8, minWidth: 200 }} />
+          </View>
         </View>
       ) : null}
       {undecided && !locked ? <View pointerEvents="none" testID="lock-pending" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: t.screenBg }} /> : null}

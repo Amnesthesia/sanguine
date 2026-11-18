@@ -44,6 +44,7 @@
   },
   "onboarding": {
     "progress": "Step {n} of {total}",
+    "skipStep": "Skip this question",
     "s1": {
       "title": "Track and understand your cycle",
       "body": "Sanguine estimates when your next period and your ovulation are likely, using what you log. Estimates are ranges, not promises. Sanguine is not a contraceptive and is not a medical device."
@@ -68,6 +69,7 @@
       "weekAgo": "A week ago",
       "other": "Another date",
       "chosen": "Last period started {date}",
+      "startedLabel": "Last period started",
       "usualLengthInvalid": "Enter a number of days from 15 to 90."
     },
     "s4": {
