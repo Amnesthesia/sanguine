@@ -40,12 +40,28 @@ for (const mode of ['light', 'dark'] as const) {
     it('fertile on accentSoft (selected calendar cell) >= 3 (non-text)', () => expect(contrast(c.fertile, c.accentSoft)).toBeGreaterThanOrEqual(3));
     for (const fg of ['period', 'fertile', 'flag', 'focus'] as const)
       it(`${fg} on bg >= 3 (non-text)`, () => expect(contrast(c[fg], c.bg)).toBeGreaterThanOrEqual(3));
+    // the filled primary (Button, Log today, Continue, round +) carries white ink at 4.5:1 in both themes (D-131)
+    it('onAccent on accentFill >= 4.5', () => expect(contrast(c.onAccent, c.accentFill)).toBeGreaterThanOrEqual(4.5));
+    it('onAccent is white', () => expect(c.onAccent).toBe('#FFFFFF'));
+    // the filled primary is still the accent rose: same hue, only darker (dark) or equal (light)
+    it('accentFill is non-text >= 3 on bg', () => expect(contrast(c.accentFill, c.bg)).toBeGreaterThanOrEqual(3));
+    it('dialTrack is the frame value', () => expect(c.dialTrack).toBe(mode === 'light' ? '#ECE7E9' : '#2A2628'));
+    // the dial legend's estimate swatch must be seen on the screen background (T6)
+    it('estimateSwatch on bg: dark >= 3 (non-text)', () => {
+      if (mode === 'dark') expect(contrast(c.estimateSwatch, c.bg)).toBeGreaterThanOrEqual(3);
+    });
     it('opaque colours are 6-digit hex; cautionBg is rgba', () => {
       for (const [key, v] of Object.entries(c))
         expect(v).toMatch(key === 'cautionBg' ? /^rgba\(\d+,\d+,\d+,0\.10\)$/ : /^#[0-9A-Fa-f]{6}$/);
     });
   });
 }
+
+it('light primary fill is the accent; dark is a darker rose, not black-ink-on-light', () => {
+  expect(colors.light.accentFill).toBe(colors.light.accent);
+  expect(colors.dark.accentFill).not.toBe(colors.dark.accent);
+  expect(contrast(colors.dark.accentFill, colors.dark.bg)).toBeGreaterThanOrEqual(3);
+});
 
 it('uses the exact glass redesign tokens', () => {
   expect(colors.light).toMatchObject({ textOnGlass: '#4A4246', caution: '#8A5512', cautionBg: 'rgba(185,116,30,0.10)', cautionText: '#5E3A0C' });

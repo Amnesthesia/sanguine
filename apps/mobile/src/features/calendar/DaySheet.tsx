@@ -35,7 +35,10 @@ export interface DaySheetProps {
   today: ISODate;
   /** The grid cell of the day: the bar's disc is drawn like it. */
   cell: DayCell | undefined;
+  /** Undefined while estimates are paused: no "Day N" then. */
   cycleDay: number | undefined;
+  /** The life state that pauses estimates ("Pregnant"), named where the cycle day would be (calendar spec part 2, fix plan C5). */
+  paused?: string | undefined;
   period: boolean;
   detent: Detent;
   onDetent: (d: Detent) => void;
@@ -73,10 +76,9 @@ export function DaySheet(p: DaySheetProps) {
   const scrollMax = Math.max(96, maxH - headH - footH - 8 - 16 - 12 * 2);
   const onGlass = { color: t.c.textOnGlass } as const;
   const title = formatLong(p.date);
-  const subline = [p.date === p.today ? tr('calendar.today') : null, p.cycleDay ? tr('calendar.summaryDay', { day: p.cycleDay }) : null, p.period ? tr('calendar.list.period') : null].filter(Boolean).join(' · ');
-  // the bar's one line, as the frame's day card: "Day 3 of your cycle · Period"
-  const barLine = [p.cycleDay ? tr('day.subline.cycleDay', { day: p.cycleDay }) : null, p.period ? tr('calendar.list.period') : null].filter(Boolean).join(' · ');
-  const onPrimary = t.scheme === 'dark' ? t.c.bg : t.c.surface;
+  const subline = [p.date === p.today ? tr('calendar.today') : null, p.paused ?? (p.cycleDay ? tr('calendar.summaryDay', { day: p.cycleDay }) : null), p.period ? tr('calendar.list.period') : null].filter(Boolean).join(' · ');
+  // the bar's one line, as the frame's day card: "Day 3 of your cycle · Period"; while paused, the state instead of the cycle day
+  const barLine = [p.paused ?? (p.cycleDay ? tr('day.subline.cycleDay', { day: p.cycleDay }) : null), p.period ? tr('calendar.list.period') : null].filter(Boolean).join(' · ');
   const empty = p.entries.length === 0;
   const chips = empty ? null : <LoggedEntries entries={p.entries} onChanged={p.onChanged} />;
   const futureNote = p.isFuture ? <Text variant="caption" testID="cal-future-note" style={onGlass}>{tr('calendar.futureNote')}</Text> : null;
@@ -92,7 +94,7 @@ export function DaySheet(p: DaySheetProps) {
       <Text variant="bodySmall" testID="sheet-estimate" style={{ ...onGlass, flex: 1 }}>{l}</Text>
     </View>
   ));
-  const log = p.isFuture ? null : <Button testID="day-log" label={tr('calendar.edit')} accessibilityLabel={`${tr('calendar.edit')}: ${title}`} icon={<Plus color={onPrimary} />} onPress={p.onLog} style={{ flex: 1 }} />;
+  const log = p.isFuture ? null : <Button testID="day-log" label={tr('calendar.edit')} accessibilityLabel={`${tr('calendar.edit')}: ${title}`} icon={<Plus color={t.c.onAccent} />} onPress={p.onLog} style={{ flex: 1 }} />;
   const grabber = (color: string) => <View style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: color }} />;
 
   const header = (large: boolean) => (
@@ -117,17 +119,18 @@ export function DaySheet(p: DaySheetProps) {
     const heading = p.date === p.today ? `${tr('calendar.today')}, ${title}` : title;
     const summary = [heading, barLine, ...labels, ...(empty && !p.isFuture ? [tr('calendar.summaryNothing')] : []), ...p.estimates.slice(0, 2), tr('calendar.sheet.open')].filter(Boolean).join('. ');
     return grip(
-      <View testID="day-card" style={{ paddingHorizontal: 12, paddingTop: 6, paddingBottom: 10, gap: 4 }}>
+      <View testID="day-card" style={{ paddingLeft: 12, paddingRight: 10, paddingTop: 6, paddingBottom: 10, gap: 4 }}>
         <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ alignItems: 'center' }}>{grabber(`${t.c.textOnGlass}38`)}</View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           {/* the date circle and the line are one button that opens the sheet; its label carries the whole day, so a screen reader loses nothing the old card said */}
           <Pressable testID="day-card-open" accessibilityRole="button" accessibilityLabel={summary} onPress={() => p.onDetent('small')} style={{ flex: 1, minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            {p.cell ? <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><DayDisc cell={p.cell} selected={false} size={44} /></View> : null}
+            {/* drawn exactly like its grid cell, which is always the selected one (fix plan C12) */}
+            {p.cell ? <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><DayDisc cell={p.cell} selected size={44} testID="bar-disc" /></View> : null}
             <Text variant="bodySmall" style={{ ...onGlass, flex: 1, fontWeight: '600' }}>{barLine || title}</Text>
           </Pressable>
           {p.isFuture ? null : (
-            <Pressable testID="day-log" accessibilityRole="button" accessibilityLabel={`${tr('calendar.sheet.logRound')}: ${title}`} onPress={p.onLog} style={{ width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: t.c.accent }}>
-              <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Plus color={onPrimary} size={20} /></View>
+            <Pressable testID="day-log" accessibilityRole="button" accessibilityLabel={`${tr('calendar.sheet.logRound')}: ${title}`} onPress={p.onLog} style={{ width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: t.c.accentFill }}>
+              <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Plus color={t.c.onAccent} size={20} /></View>
             </Pressable>
           )}
         </View>

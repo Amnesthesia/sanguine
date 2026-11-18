@@ -85,19 +85,19 @@ name: Logging sheet - two-tap period, two-tap symptom, temperature, correction
       id: screen-day
     timeout: 20000
 - assertVisible: "Medium flow"
-- assertVisible: "Cramps 2/3"
+- assertVisible: "Cramps \\(moderate\\)"
 - assertVisible: "Temperature 36.50 °C.*"
 - assertVisible: "Energy: Good \\(4 of 5\\)"
 - takeScreenshot: day-detail
 # removing is one tap on the chip's remove control (D-113): no confirm, a toast offers Undo
-- tapOn: "Remove: Cramps 2/3.*"
-- assertVisible: "Removed: Cramps 2/3.*"
-- assertNotVisible: "Cramps 2/3"
+- tapOn: "Remove: Cramps \\(moderate\\).*"
+- assertVisible: "Removed: Cramps \\(moderate\\).*"
+- assertNotVisible: "Cramps \\(moderate\\)"
 - tapOn: "Undo"
-- assertVisible: "Cramps 2/3"
+- assertVisible: "Cramps \\(moderate\\)"
 # remove again: it stays gone, the rest of the day is untouched
-- tapOn: "Remove: Cramps 2/3.*"
-- assertNotVisible: "Cramps 2/3"
+- tapOn: "Remove: Cramps \\(moderate\\).*"
+- assertNotVisible: "Cramps \\(moderate\\)"
 - assertVisible: "Medium flow"
 
 # P3-9 (D-052): a day 4 days before a period asks "Is it the same period?"; same joins, new splits

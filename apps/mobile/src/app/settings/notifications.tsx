@@ -18,6 +18,9 @@ import { SubScreen } from '@/ui/SubScreen';
 import { formatDay } from '@/ui/format';
 import { Text } from '@/ui/Text';
 
+/** A heading between groups (frame Settings-Notifications): 15 semibold, a little in from the card edge. */
+const SECTION = { fontSize: 15, lineHeight: 20, fontWeight: '600', marginTop: 8, marginLeft: 4 } as const;
+
 /** The two notification texts side by side, the current one outlined: a drawing, not a control. */
 function NotificationPair({ on, onText, offText, setting }: { on: boolean; onText: string; offText: string; setting: string }) {
   const { t } = useTranslation();
@@ -101,7 +104,7 @@ export default function NotificationsScreen() {
         </View>
       ) : null}
 
-      <Text variant="heading" accessibilityRole="header">{t('settings.notifications.yourReminders')}</Text>
+      <Text accessibilityRole="header" style={SECTION}>{t('settings.notifications.yourReminders')}</Text>
       <Group>
         {shown.length === 0 ? <SettingsRow title={t('settings.notifications.noRules')} disabled last /> : shown.map((r, i) => (
           <View key={r.id} testID={`rule-${r.event}-${r.days}`} style={{ minHeight: 56, paddingLeft: 16, paddingRight: 8, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: i === shown.length - 1 ? 0 : 1, borderBottomColor: th.hairline }}>
@@ -123,7 +126,7 @@ export default function NotificationsScreen() {
         </View>
       </Card>
 
-      <Text variant="heading" accessibilityRole="header">{t('settings.notifications.widgets')}</Text>
+      <Text accessibilityRole="header" style={SECTION}>{t('settings.notifications.widgets')}</Text>
       <Group>
         <SwitchRow testID="quick-actions" title={t('settings.notifications.quickActions')} description={prefs.discreetIcon ? t('settings.notifications.quickActionsDiscreet') : t('settings.notifications.quickActionsDesc')} disabled={prefs.discreetIcon} value={quick && !prefs.discreetIcon} onChange={(v) => void (async () => { if (db) { await setSetting(db, 'quickActions', v); setQuick(v); await refresh(); } })()} />
         {widgetsSupported

@@ -30,13 +30,13 @@ describe.each(Object.entries(modes))('Log today pill, %s', (mode, arrange) => {
       await settle();
       const button = screen.getByTestId('quick-log');
       const style = getComputedStyle(button);
-      expect(hex(style.backgroundColor)).toBe(colors[scheme].accent);
+      expect(hex(style.backgroundColor)).toBe(colors[scheme].accentFill);
       expect(style.backgroundColor).not.toMatch(/rgba\(.*,\s*0(\.\d+)?\)|transparent/);
       // at most the one pill material, and the capsule is never inside a second glass
       expect(screen.queryAllByTestId('glass-view')).toHaveLength(mode === 'glass' ? 1 : 0);
       expect(button.closest('[data-testid="glass-view"]')?.parentElement?.closest('[data-testid="glass-view"]') ?? null).toBeNull();
       const ink = hex(getComputedStyle(screen.getByText('Log today')).color);
-      expect(contrast(ink, colors[scheme].accent)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(ink, colors[scheme].accentFill)).toBeGreaterThanOrEqual(4.5);
       expect(screen.getByTestId('quick-log-text').textContent).toBe('Thu 12 Nov' + 'Day 13 of your cycle');
     });
   }
@@ -48,4 +48,12 @@ it('opens the log sheet for the day it is given, with a label longer than the vi
   const button = screen.getByRole('button', { name: 'Log today, Thu 12 Nov' });
   fireEvent.click(button);
   expect(env.push).toHaveBeenCalledWith({ pathname: '/log', params: { day: '2026-11-12' } });
+});
+
+describe('Log today pill, legible glass (text under it must not read through)', () => {
+  it('lays the legible tint on the glass material', async () => {
+    render(<QuickLogRow title="Thu 12 Nov" subtitle="Day 13 of your cycle" />);
+    await settle();
+    expect(screen.getByTestId('glass-legible-tint')).toBeTruthy();
+  });
 });

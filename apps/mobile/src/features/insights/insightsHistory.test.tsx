@@ -8,7 +8,10 @@ import { DEFAULT_PREFS } from '@/data/prefs';
 
 const app = vi.hoisted(() => ({ state: {} as Record<string, unknown>, cycles: [] as Array<Record<string, unknown>>, pastOv: [] as Array<Record<string, unknown>> }));
 vi.mock('@/state/app', () => ({ useApp: () => app.state }));
-vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+const link = vi.hoisted(() => ({ params: {} as Record<string, string> }));
+vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn() }), useLocalSearchParams: () => link.params }));
+// This cycle has its own test (ThisCycle.test.tsx); here only which segment shows matters
+vi.mock('@/features/insights/ThisCycle', () => ({ ThisCycle: () => <div data-testid="this-cycle" /> }));
 vi.mock('@/ui/Screen', () => ({ Screen: ({ children, chrome }: { children: ReactNode; chrome?: ReactNode }) => <div>{chrome}{children}</div> }));
 vi.mock('@/ui/GlassBar', () => ({ GlassBar: ({ title, below }: { title: string; below?: ReactNode }) => <header data-testid="bar"><h1>{title}</h1>{below}</header> }));
 vi.mock('@/ui/Segmented', () => ({ Segmented: ({ inGlass, testIDPrefix }: { inGlass?: boolean; testIDPrefix?: string }) => <nav data-testid={testIDPrefix} data-inglass={String(!!inGlass)} /> }));
@@ -18,7 +21,7 @@ const setExcluded = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock('@/features/insights/cycleExclude', () => ({ setCycleExcluded: setExcluded }));
 import InsightsScreen from '@/app/(tabs)/insights';
 
-afterEach(() => { cleanup(); setExcluded.mockClear(); });
+afterEach(() => { cleanup(); setExcluded.mockClear(); link.params = {}; });
 
 const cycle = (n: number, length: number | undefined, quality = 'valid') => ({ id: `c${n}`, start: `2026-0${n}-01`, ...(length ? { length, nextStart: `2026-0${n + 1}-01` } : {}), quality });
 async function show(confidence: 'low' | 'high', refresh = vi.fn(async () => {}), profile: Record<string, unknown> = {}) {
@@ -65,5 +68,24 @@ describe('Insights history', () => {
   it('teen mode hides every ovulation estimate', async () => {
     await show('high', undefined, { birthYear: 2012 });
     expect(document.body.textContent).not.toMatch(/ovulation/i);
+  });
+});
+
+describe('Insights > This cycle link (D-134)', () => {
+  it('Today\'s Read more and More about this cycle open the This cycle segment in every build', async () => {
+    link.params = { tab: 'this-cycle', at: '1' };
+    app.cycles = [];
+    app.state = { history: { logs: [], temperatures: [], lh: [] }, settings: { lifeStates: [] }, prediction: undefined, prefs: DEFAULT_PREFS, profile: {}, today: '2026-04-10', version: 0, db: undefined };
+    render(<InsightsScreen />);
+    expect(await screen.findByTestId('this-cycle')).toBeTruthy();
+    expect(screen.queryByTestId('insights-empty')).toBeNull();
+  });
+  it('any other tab value from a link is ignored outside a dev build', async () => {
+    link.params = { tab: 'charts' };
+    app.cycles = [];
+    app.state = { history: { logs: [], temperatures: [], lh: [] }, settings: { lifeStates: [] }, prediction: undefined, prefs: DEFAULT_PREFS, profile: {}, today: '2026-04-10', version: 0, db: undefined };
+    render(<InsightsScreen />);
+    expect(screen.queryByTestId('this-cycle')).toBeNull();
+    expect(screen.queryByTestId('card-energy')).toBeNull(); // still on History: the Charts segment always has its energy card
   });
 });

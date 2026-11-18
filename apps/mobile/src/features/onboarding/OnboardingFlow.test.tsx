@@ -37,6 +37,13 @@ describe('OnboardingFlow on the glass chrome', () => {
     expect(screen.queryByTestId('onboarding-skip')).toBeNull();
     expect(screen.getAllByRole('button', { name: 'Continue' })).toHaveLength(1);
   });
+  it('the step title is 28 pt bold, as the frames draw it', async () => {
+    render(<OnboardingFlow />);
+    await act(async () => {});
+    const h = screen.getByRole('heading', { name: 'Track and understand your cycle' });
+    expect(h.style.fontSize).toBe('28px');
+    expect(h.style.fontWeight).toBe('700');
+  });
   it('Skip shows on the two optional steps only, with a label that says what it skips', async () => {
     render(<OnboardingFlow />);
     await act(async () => {});

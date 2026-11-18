@@ -1,8 +1,9 @@
+import { useDevParams } from '@/features/dev/devParams';
 import { energyInsight, MIN_CHART_POINTS } from '@/features/insights/energyModel';
 import { GUIDANCE, phaseOn } from '@/features/guidance/guidance';
 import { SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { addDays, analyzeCycles, detectBbtShift, diffDays, pastOvulations } from '@sanguine/engine';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
@@ -16,6 +17,7 @@ import { lengthReading, lengthSummary, phaseReading, tempReading } from '@/featu
 import { accuracyText, cycleLengthSeries, historyRows, phaseBars } from '@/features/insights/insightsModel';
 import { addPastPregnancy } from '@/features/settings/lifeState';
 import { cyclePattern, inPatternState } from '@/features/insights/patternModel';
+import { ThisCycle } from '@/features/insights/ThisCycle';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -26,7 +28,7 @@ import { Segmented } from '@/ui/Segmented';
 import { formatDay, formatRange } from '@/ui/format';
 import { Text } from '@/ui/Text';
 
-type Tab = 'history' | 'charts' | 'accuracy';
+type Tab = 'history' | 'charts' | 'accuracy' | 'this-cycle';
 // below these a chart is two dots on an empty axis and reads as broken (U-22, D-076)
 const MIN_LENGTH_POINTS = 3; // two points are one line segment, not a trend (U-22, D-093); only cycles marked typical count (cycleLengthSeries); copy insights.chart.fewLengths names the 3
 const MIN_TEMP_POINTS = 6;
@@ -39,6 +41,13 @@ export default function InsightsScreen() {
   const eff = effectivePrefs(prefs, profile, today);
   const { fertilityTools } = eff;
   const [tab, setTab] = useState<Tab>('history');
+  // dev only (tools/verify-screens): `?tab=history|charts|accuracy|this-cycle` opens a segment from a link
+  const devTab = useDevParams().tab;
+  useEffect(() => { if (devTab === 'history' || devTab === 'charts' || devTab === 'accuracy' || devTab === 'this-cycle') setTab(devTab); }, [devTab]);
+  // every build: Today's Read more and the day sheet's and day screen's "More about this cycle ›" open This cycle (thisCycleHref); `at` is new per tap
+  const link = useLocalSearchParams<{ tab?: string; at?: string }>();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `at` changes on every tap, so the same link opens the segment again
+  useEffect(() => { if (link.tab === 'this-cycle') setTab('this-cycle'); }, [link.tab, link.at]);
   const [ledger, setLedger] = useState<LedgerSummary>({ total: 0, in80: 0, in95: 0, meanAbsError: 0 });
   const [scored, setScored] = useState<LedgerRow[]>([]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the ledger after every write
@@ -75,7 +84,7 @@ export default function InsightsScreen() {
   return (
     <Screen testID="screen-insights" chrome={
       // the segmented control rides in the glass toolbar under the title, one glass surface (frames Insights-*)
-      <GlassBar title={tr('insights.title')} below={<Segmented inGlass testIDPrefix="insights-tab" value={tab} onChange={setTab} options={[{ value: 'history', label: tr('insights.segments.history') }, { value: 'charts', label: tr('insights.segments.charts') }, { value: 'accuracy', label: tr('insights.segments.accuracy') }]} />} />
+      <GlassBar title={tr('insights.title')} below={<Segmented inGlass testIDPrefix="insights-tab" value={tab} onChange={setTab} options={[{ value: 'history', label: tr('insights.segments.history') }, { value: 'charts', label: tr('insights.segments.charts') }, { value: 'accuracy', label: tr('insights.segments.accuracy') }, { value: 'this-cycle', label: tr('insights.segments.thisCycle') }]} />} />
     }>
 
       {tab === 'history' ? (
@@ -226,6 +235,8 @@ export default function InsightsScreen() {
           ))}
         </Card>
       ) : null}
+
+      {tab === 'this-cycle' ? <ThisCycle /> : null}
     </Screen>
   );
 }

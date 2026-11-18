@@ -1,0 +1,492 @@
+{
+  "_comment": "One row per frame in docs/design/glass-redesign/frames (plus extra rows for scrolled states). id: output name; frame: the frame file without .html; seed: dev/seed query (wipeData, theme and appearance are added by run.sh); link: path after sanguine://, {today}, {today-N} and {today+N} become dates; scroll: dev-only ?scroll= value (top, or an anchor from features/dev/devParams.ts, optionally @offset); darkFrame: the frame the dark variant is compared with; variants: default light, dark, 150; reachable false rows say why in `reason`.",
+  "rows": [
+    {
+      "id": "Calendar-1-Closed",
+      "frame": "Calendar-1-Closed",
+      "reachable": true,
+      "seed": "scenario=inProgress",
+      "link": "calendar?day={today}&sheet=closed",
+      "scroll": "top",
+      "darkFrame": "Calendar-Dark"
+    },
+    {
+      "id": "Calendar-2-SheetOpen",
+      "frame": "Calendar-2-SheetOpen",
+      "reachable": true,
+      "seed": "scenario=inProgress",
+      "link": "calendar?day={today}&sheet=small",
+      "scroll": "top"
+    },
+    {
+      "id": "Calendar-3-SheetExpanded",
+      "frame": "Calendar-3-SheetExpanded",
+      "reachable": true,
+      "seed": "scenario=inProgress",
+      "link": "calendar?day={today}&sheet=large",
+      "scroll": "top"
+    },
+    {
+      "id": "Calendar-Dark",
+      "frame": "Calendar-Dark",
+      "reachable": true,
+      "seed": "scenario=inProgress",
+      "link": "calendar?day={today}&sheet=closed",
+      "scroll": "top",
+      "variants": [
+        "dark"
+      ]
+    },
+    {
+      "id": "Calendar-1-Closed-list-under-bar",
+      "frame": "Calendar-1-Closed",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "calendar?day={today}&sheet=closed",
+      "scroll": "list@-200",
+      "note": "month list scrolled under the toolbar and the compact bar: nothing beneath may read through (X1)"
+    },
+    {
+      "id": "Today-Period",
+      "frame": "Today-Period",
+      "reachable": true,
+      "seed": "scenario=inProgress",
+      "link": "today",
+      "scroll": "top"
+    },
+    {
+      "id": "Today-Typical",
+      "frame": "Today-Typical",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "today",
+      "scroll": "top",
+      "darkFrame": "Today-Dark"
+    },
+    {
+      "id": "Today-Typical-estimates",
+      "frame": "Today-Typical",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "today",
+      "scroll": "estimates@-160",
+      "note": "the estimate cards sit under the floating Log bar: nothing beneath may read through (X1)"
+    },
+    {
+      "id": "Today-Typical-guidance",
+      "frame": "Today-Typical",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "today",
+      "scroll": "guidance",
+      "note": "food and movement block"
+    },
+    {
+      "id": "Today-Irregular-Flag",
+      "frame": "Today-Irregular-Flag",
+      "reachable": true,
+      "seed": "scenario=irregular",
+      "link": "today",
+      "scroll": "top"
+    },
+    {
+      "id": "Today-Empty",
+      "frame": "Today-Empty",
+      "reachable": true,
+      "seed": "scenario=empty",
+      "link": "today",
+      "scroll": "top"
+    },
+    {
+      "id": "Today-Pregnant",
+      "frame": "Today-Pregnant",
+      "reachable": true,
+      "seed": "scenario=pregnant",
+      "link": "today",
+      "scroll": "top"
+    },
+    {
+      "id": "Today-Dark",
+      "frame": "Today-Dark",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "today",
+      "scroll": "top",
+      "variants": [
+        "dark"
+      ]
+    },
+    {
+      "id": "Today-Suspended",
+      "frame": "Today-Suspended",
+      "reachable": false,
+      "reason": "no sample scenario puts the app in a hormonal-contraception life state; add a `suspended` scenario to features/dev/scenarios.ts and this row becomes reachable"
+    },
+    {
+      "id": "Insights-History",
+      "frame": "Insights-History",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "insights?tab=history"
+    },
+    {
+      "id": "Insights-Charts",
+      "frame": "Insights-Charts",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "insights?tab=charts",
+      "note": "the frame shows illustrative data; the typical sample has one temperature reading, so the temperature chart shows its empty state"
+    },
+    {
+      "id": "Insights-Accuracy",
+      "frame": "Insights-Accuracy",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "insights?tab=accuracy"
+    },
+    {
+      "id": "Insights-Irregular",
+      "frame": "Insights-Irregular",
+      "reachable": true,
+      "seed": "scenario=irregular",
+      "link": "insights?tab=history"
+    },
+    {
+      "id": "Insights-Empty",
+      "frame": "Insights-Empty",
+      "reachable": true,
+      "seed": "scenario=empty",
+      "link": "insights?tab=history"
+    },
+    {
+      "id": "Insights-Pattern",
+      "frame": "Insights-Pattern",
+      "reachable": true,
+      "seed": "scenario=pattern",
+      "link": "insights?tab=history"
+    },
+    {
+      "id": "Cycle-Detail",
+      "frame": "Cycle-Detail",
+      "reachable": false,
+      "reason": "the route takes a generated cycle id; open it by tapping a row in Insights > History"
+    },
+    {
+      "id": "Day-Screen",
+      "frame": "Day-Screen",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "day/{today-9}",
+      "scroll": "top"
+    },
+    {
+      "id": "Day-Screen-estimates",
+      "frame": "Day-Screen",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "day/{today-9}",
+      "scroll": "estimates",
+      "note": "estimate sections at the top of the screen, under the toolbar"
+    },
+    {
+      "id": "Day-Screen-Future",
+      "frame": "Day-Screen-Future",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "day/{today+6}",
+      "scroll": "top"
+    },
+    {
+      "id": "Log-Sheet-Empty",
+      "frame": "Log-Sheet-Empty",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "log?day={today-5}",
+      "note": "a day inside the cycle with nothing logged"
+    },
+    {
+      "id": "Log-Sheet-Filled",
+      "frame": "Log-Sheet-Filled",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "log",
+      "note": "today with a temperature entry; the removed-entry state and the Undo toast need a tap, so they are not shown"
+    },
+    {
+      "id": "Log-Sheet-More",
+      "frame": "Log-Sheet-More",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "log?section=temperature",
+      "note": "the More block opened on temperature; sex logging is off in the sample, so the frame's sex row is not shown"
+    },
+    {
+      "id": "Log-Sheet-Contraception",
+      "frame": "Log-Sheet-Contraception",
+      "reachable": false,
+      "reason": "needs a hormonal-contraception life state; no sample scenario sets one"
+    },
+    {
+      "id": "Log-Period-Question",
+      "frame": "Log-Period-Question",
+      "reachable": false,
+      "reason": "needs a day a few days before a logged period start; the sample scenarios have no such pair"
+    },
+    {
+      "id": "Onboarding-1",
+      "frame": "Onboarding-1",
+      "reachable": true,
+      "seed": "scenario=empty",
+      "link": "onboarding",
+      "note": "the seed marks onboarding done; the route still opens step 1"
+    },
+    {
+      "id": "Onboarding-2",
+      "frame": "Onboarding-2",
+      "reachable": false,
+      "reason": "step 2 needs a tap on Continue; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Onboarding-2-Error",
+      "frame": "Onboarding-2-Error",
+      "reachable": false,
+      "reason": "step 2 with an invalid year needs typing; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Onboarding-3",
+      "frame": "Onboarding-3",
+      "reachable": false,
+      "reason": "step 3 needs taps; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Onboarding-3-DontKnow",
+      "frame": "Onboarding-3-DontKnow",
+      "reachable": false,
+      "reason": "step 3 needs taps; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Onboarding-4",
+      "frame": "Onboarding-4",
+      "reachable": false,
+      "reason": "step 4 needs taps; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Onboarding-4-Postpartum",
+      "frame": "Onboarding-4-Postpartum",
+      "reachable": false,
+      "reason": "step 4 needs taps; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Onboarding-5",
+      "frame": "Onboarding-5",
+      "reachable": false,
+      "reason": "step 5 needs taps; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Onboarding-5-Explicit",
+      "frame": "Onboarding-5-Explicit",
+      "reachable": false,
+      "reason": "step 5 needs taps and an explicit-consent region; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Onboarding-Dark",
+      "frame": "Onboarding-Dark",
+      "reachable": false,
+      "reason": "step 2 needs a tap on Continue; the flow keeps its step in component state, with no link parameter"
+    },
+    {
+      "id": "Lock-Screen",
+      "frame": "Lock-Screen",
+      "reachable": false,
+      "reason": "shown only on a cold start with the app lock on; needs a relaunch and Face ID, not a link"
+    },
+    {
+      "id": "Splash",
+      "frame": "Splash",
+      "reachable": false,
+      "reason": "shown for two seconds at launch"
+    },
+    {
+      "id": "Widgets-Notifications",
+      "frame": "Widgets-Notifications",
+      "reachable": false,
+      "reason": "home-screen widgets and system notifications are not app screens"
+    },
+    {
+      "id": "Design-Language",
+      "frame": "Design-Language",
+      "reachable": false,
+      "reason": "a design reference page, not a screen"
+    },
+    {
+      "id": "Surface-Options",
+      "frame": "Surface-Options",
+      "reachable": false,
+      "reason": "a design reference page, not a screen"
+    },
+    {
+      "id": "Settings-Root",
+      "frame": "Settings-Root",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings"
+    },
+    {
+      "id": "Settings-Tracking",
+      "frame": "Settings-Tracking",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/tracking"
+    },
+    {
+      "id": "Settings-Appearance",
+      "frame": "Settings-Appearance",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/appearance"
+    },
+    {
+      "id": "Settings-Notifications",
+      "frame": "Settings-Notifications",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/notifications"
+    },
+    {
+      "id": "Settings-LifeState",
+      "frame": "Settings-LifeState",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/lifestate"
+    },
+    {
+      "id": "Settings-About",
+      "frame": "Settings-About",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/about"
+    },
+    {
+      "id": "Settings-How",
+      "frame": "Settings-How",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/how"
+    },
+    {
+      "id": "Settings-Privacy",
+      "frame": "Settings-Privacy",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/privacy"
+    },
+    {
+      "id": "Settings-Backup",
+      "frame": "Settings-Backup",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/backup"
+    },
+    {
+      "id": "Settings-Health-Off",
+      "frame": "Settings-Health-Off",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/health"
+    },
+    {
+      "id": "Settings-Report",
+      "frame": "Settings-Report",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/report"
+    },
+    {
+      "id": "Settings-CalendarExport",
+      "frame": "Settings-CalendarExport",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/calendar"
+    },
+    {
+      "id": "Settings-Legal",
+      "frame": "Settings-Legal",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "settings/legal?doc=privacy"
+    },
+    {
+      "id": "Settings-CalendarExport-Teen",
+      "frame": "Settings-CalendarExport-Teen",
+      "reachable": true,
+      "seed": "scenario=typical&teen=1",
+      "link": "settings/calendar"
+    },
+    {
+      "id": "Settings-Health-On",
+      "frame": "Settings-Health-On",
+      "reachable": false,
+      "reason": "needs Health access granted on the device"
+    },
+    {
+      "id": "Settings-Report-Share",
+      "frame": "Settings-Report-Share",
+      "reachable": false,
+      "reason": "the system share sheet opens after a tap and is not part of the app"
+    },
+    {
+      "id": "Settings-Delete-Confirm",
+      "frame": "Settings-Delete-Confirm",
+      "reachable": false,
+      "reason": "an alert opened by a tap on Delete everything"
+    },
+    {
+      "id": "Settings-Backup-Restore",
+      "frame": "Settings-Backup-Restore",
+      "reachable": false,
+      "reason": "needs a backup file and a wrong passphrase typed"
+    },
+    {
+      "id": "Settings-Backup-OtherPhone",
+      "frame": "Settings-Backup-OtherPhone",
+      "reachable": false,
+      "reason": "needs a cloud copy from another phone"
+    },
+    {
+      "id": "Settings-Backup-RecoveryCode",
+      "frame": "Settings-Backup-RecoveryCode",
+      "reachable": false,
+      "reason": "shown once after the first backup is made"
+    },
+    {
+      "id": "Calendar-Bar-Compact",
+      "frame": "Calendar-Bar-Compact",
+      "reachable": true,
+      "seed": "scenario=inProgress",
+      "link": "calendar?day={today}&sheet=closed",
+      "scroll": "top"
+    },
+    {
+      "id": "Calendar-Past-Bands",
+      "frame": "Calendar-Past-Bands",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "calendar?day={today}&sheet=closed",
+      "scroll": "top"
+    },
+    {
+      "id": "Calendar-Drag-States",
+      "frame": "Calendar-Drag-States",
+      "reachable": false,
+      "reason": "three drag states are mid-gesture; only the resting detents (sheet=closed|small|large) can be opened by link"
+    },
+    {
+      "id": "Insights-This-Cycle",
+      "frame": "Insights-This-Cycle",
+      "reachable": true,
+      "seed": "scenario=typical",
+      "link": "insights?tab=this-cycle",
+      "scroll": "top"
+    }
+  ]
+}

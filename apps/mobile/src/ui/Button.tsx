@@ -6,8 +6,8 @@ import { Text } from './Text';
 /** Capsule button with a 44 pt minimum target. `accessibilityLabel` defaults to the label. `icon` is rendered as given (a string caller supplies its own <Text>). */
 export function Button({ label, kind = 'primary', icon, style, ...rest }: Omit<PressableProps, 'children'> & { label: string; icon?: ReactNode; kind?: 'primary' | 'secondary' | 'text' | 'destructive' }) {
   const t = useTheme();
-  const bg = kind === 'primary' ? t.c.accent : kind === 'secondary' ? t.cardBg : 'transparent';
-  const fg = kind === 'primary' ? (t.scheme === 'dark' ? t.c.bg : t.c.surface) : kind === 'destructive' ? t.c.period : kind === 'text' ? t.c.onAccentSoft : t.c.textPrimary;
+  const bg = kind === 'primary' ? t.c.accentFill : kind === 'secondary' ? t.cardBg : 'transparent';
+  const fg = kind === 'primary' ? t.c.onAccent : kind === 'destructive' ? t.c.period : kind === 'text' ? t.c.onAccentSoft : t.c.textPrimary;
   return (
     <Pressable
       accessibilityRole="button"

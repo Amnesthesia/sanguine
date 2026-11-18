@@ -40,7 +40,7 @@ it('removes by retraction, reports through onChanged, and Undo puts it back', as
   const entries = visibleEntries(await dayEvents(store, today));
   const onChanged = vi.fn();
   render(<><LoggedEntries entries={entries} onChanged={onChanged} /><ToastHost /></>);
-  fireEvent.click(screen.getByLabelText('Remove: Cramps 2/3'));
+  fireEvent.click(screen.getByLabelText('Remove: Cramps (moderate)'));
   await waitFor(async () => expect((await dayState(db, today)).symptoms.cramps).toBeUndefined());
   await waitFor(() => expect(onChanged).toHaveBeenCalledTimes(1));
   fireEvent.click(await screen.findByRole('button', { name: 'Undo' }));

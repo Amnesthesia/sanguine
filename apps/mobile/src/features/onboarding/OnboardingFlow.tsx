@@ -123,7 +123,7 @@ export function OnboardingFlow() {
   const skip = () => { if (step === 2) setLastChoice(undefined); else setA({ ...a, lifeState: 'none' }); setStep(step + 1); };
   const next = () => (step === TOTAL_STEPS - 1 ? void finish() : setStep(step + 1));
 
-  const title = (key: string) => <Text variant="title" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 34 }}>{tr(key)}</Text>;
+  const title = (key: string) => <Text variant="title" accessibilityRole="header" style={{ fontSize: 28, lineHeight: 34, fontWeight: '700' }}>{tr(key)}</Text>;
   const needsMethod = a.lifeState === 'hormonal' || a.lifeState === 'postHormonal';
   const dateLabel = a.lifeState === 'postHormonal' ? 'onboarding.s4.whenStopped' : a.lifeState === 'postpartum' ? 'onboarding.s4.whenBirth' : a.lifeState === 'afterLoss' ? 'onboarding.s4.whenLoss' : 'onboarding.s4.whenStarted';
   const needsDate = a.lifeState === 'postHormonal' || a.lifeState === 'pregnant' || a.lifeState === 'postpartum' || a.lifeState === 'afterLoss';

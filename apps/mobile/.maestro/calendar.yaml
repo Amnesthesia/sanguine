@@ -38,8 +38,7 @@ name: Calendar - month grid, marks, glass day card and day sheet, month list, ba
 - assertVisible: ".*, period.*"
 - assertVisible: ".*predicted period, 80% range.*"
 - assertVisible: ".*likelihood of being in the fertile window.*"
-- assertVisible: "Fertile window likelihood"
-- assertVisible: "darker = more likely to be in the fertile window"
+- assertVisible: "Fertile window, estimate"
 # the legend names symptoms and other logs, and says what solid and dashed mean
 - assertVisible: "Symptoms"
 - assertVisible: "Other log"
@@ -192,7 +191,7 @@ name: Calendar - month grid, marks, glass day card and day sheet, month list, ba
     visible:
       id: screen-day
     timeout: 10000
-- assertVisible: "Bloating 2/3"
+- assertVisible: "Bloating \\(moderate\\)"
 - tapOn:
     id: day-back
 - extendedWaitUntil:
@@ -255,7 +254,7 @@ name: Calendar - month grid, marks, glass day card and day sheet, month list, ba
     timeout: 10000
 - assertVisible:
     id: cal-uncertain
-- assertNotVisible: "Fertile window likelihood"
+- assertNotVisible: "Fertile window, estimate"
 - assertNotVisible:
     id: cal-fertile-caption
 - assertVisible:

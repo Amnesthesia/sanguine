@@ -192,3 +192,31 @@ it('the Undo label and Back chevron use the glass text colour, which reads on gl
   expect(getComputedStyle(undo.firstElementChild!).color).toBe(hexToRgb(colors.light.textOnGlass));
 });
 const hexToRgb = (h: string) => `rgb(${[1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ')})`;
+
+const tintAlpha = () => Number(/rgba\([^)]*,\s*([\d.]+)\)/.exec(screen.getByTestId('glass-legible-tint').style.backgroundColor)?.[1]);
+it.each(['light', 'dark'] as const)('GlassSurface legible, %s: a tint layer of at least 0.9 alpha sits between the material and the content', async (scheme) => {
+  env.scheme = scheme;
+  render(<GlassSurface legible testID="l"><span data-testid="content">inside</span></GlassSurface>);
+  await settle();
+  expect(tintAlpha()).toBeGreaterThanOrEqual(0.9);
+  const tint = screen.getByTestId('glass-legible-tint');
+  expect(screen.getByTestId('glass-view').contains(tint)).toBe(true);
+  // painted before the content, so the content is drawn over it
+  expect(tint.compareDocumentPosition(screen.getByTestId('content')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+});
+it('a plain GlassSurface has no legibility tint; the toolbar has', async () => {
+  surface(); await settle();
+  expect(screen.queryByTestId('glass-legible-tint')).toBeNull();
+  cleanup();
+  render(<SubScreen title="Details" testID="d"><span>Body</span></SubScreen>);
+  await settle();
+  expect(screen.getByTestId('glass-legible-tint')).toBeTruthy();
+});
+it('the toolbar title is one line that shrinks to fit, and the Back control is a 44 pt circle', async () => {
+  render(<SubScreen title="Notifications and widgets" testID="d"><span>Body</span></SubScreen>);
+  await settle();
+  const title = screen.getByRole('heading', { name: 'Notifications and widgets' });
+  expect(getComputedStyle(title).whiteSpace).toBe('nowrap');
+  const back = getComputedStyle(screen.getByRole('button', { name: 'Back' }));
+  expect([back.width, back.height, back.borderTopLeftRadius]).toEqual(['44px', '44px', '22px']);
+});

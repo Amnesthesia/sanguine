@@ -5,6 +5,7 @@ import { usePeriodDays } from '@/features/calendar/useCalendarData';
 import { energyInsight, lowPhaseOf } from '@/features/insights/energyModel';
 import { GuidanceSections } from '@/features/guidance/sections/GuidanceSections';
 import { phaseOn, showSupplements } from '@/features/guidance/guidance';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -12,11 +13,13 @@ import { analyzeCycles } from '@sanguine/engine';
 import { effectivePrefs } from '@/data/prefs';
 import { CycleDial, type DialCentre } from '@/features/today/CycleDial';
 import { dialModel } from '@/features/today/dialModel';
-import { EstimateCard, FlagCard, HeadlineCard, HeroCard, HeroWash, PausedRing, RangeCard, SectionsSheet, useHeroGlass, useMsg } from '@/features/today/cards';
+import { EstimateCard, FlagCard, HeadlineCard, HeroCard, HeroWash, PausedRing, RangeCard, useHeroGlass, useMsg } from '@/features/today/cards';
+import { thisCycleHref } from '@/features/insights/ThisCycle';
 import { ovulationDrawable, shownFertileDays } from '@/features/today/fertileShown';
+import { useDevScroll } from '@/features/dev/devParams';
 import { QuickLogRow } from '@/features/today/QuickLogRow';
 import { buildToday, SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
-import { pregnancyModel } from '@/features/today/pregnancyModel';
+import { dueRangeText, pregnancyModel } from '@/features/today/pregnancyModel';
 import { answeredShortCycles, keepAsPeriod, notAPeriod, shortCycleQuestion } from '@/features/today/shortCycle';
 import { noteDay, symptomNote } from '@/features/today/symptomNote';
 import { useApp } from '@/state/app';
@@ -30,9 +33,11 @@ import { Text } from '@/ui/Text';
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
   const msg = useMsg();
+  const router = useRouter();
   const { prediction, history, settings, today, prefs, profile, db, store, version, refresh } = useApp();
   const periodDays = usePeriodDays(); // two small queries; the full calendar data (event scan, past ovulations) is not needed here
   const heroGlass = useHeroGlass();
+  const { scrollRef, anchor } = useDevScroll(); // dev only: `?scroll=estimates|guidance|footer` (tools/verify-screens)
   const muteFlag = useApp((s) => s.muteFlag);
   const [todayFlow, setTodayFlow] = useState<string | undefined>();
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads today's log after every write
@@ -116,18 +121,22 @@ export default function TodayScreen() {
     return { kicker, big, ...(pill ? { pill, pillTone: 'neutral' as const } : {}), ...(nextSub ? { sub: nextSub } : {}) };
   }, [prediction, model.dayOfCycle, model.state, model.confidence, showEstimate, includeUncertain, today, t, i18n.language]);
 
-  const [sheet, setSheet] = useState(false);
+  // Owner ruling 2026-11-18 (D-134): "Read more" opens Insights > This cycle, which replaced the sheet of D-122
+  const openReadMore = () => router.push(thisCycleHref());
   const shortDate = `${formatWeekday(today).slice(0, 3)} ${formatDay(today)}`;
   const next = prediction?.nextPeriod;
   const paused = model.state === 'suspended';
   // the headline is a hero card over the wash when it is about the next period; while the period is on, or with nothing to estimate, it is a plain card
   const nextAsHero = !paused && model.state !== 'inProgress' && model.state !== 'empty' && next !== undefined;
+  // the Log bar's second line: the cycle day, or the state that pauses the estimates (frames Today-Pregnant, Today-Suspended)
+  const pausedBy = typeof model.headline.params?.stateKey === 'string' ? t(model.headline.params.stateKey) : '';
+  const logBarSubtitle = paused ? pausedBy : model.state === 'empty' ? t('today.ring.noData') : model.dayOfCycle ? t('today.ring.dayLabel', { day: model.dayOfCycle }) : '';
   const hasHero = pregnantSince !== undefined || (!paused && model.state !== 'empty'); // the wash shows whenever a glass hero card renders
 
   return (
     <Screen
-      testID="screen-today" title={t('tabs.today')} bottomInset={96}
-      floating={<QuickLogRow title={shortDate} subtitle={model.dayOfCycle && !paused && model.state !== 'empty' ? t('today.ring.dayLabel', { day: model.dayOfCycle }) : model.state === 'empty' ? t('today.ring.noData') : ''} />}>
+      testID="screen-today" title={t('tabs.today')} bottomInset={96} scrollRef={scrollRef}
+      floating={<QuickLogRow title={shortDate} subtitle={logBarSubtitle} />}>
       {heroGlass && hasHero ? <HeroWash /> : null}
       <Text variant="caption" color="textOnGlass" style={{ marginTop: -16 }} testID="today-date" accessibilityElementsHidden importantForAccessibility="no">{shortDate}</Text>{/* hidden from screen readers: the quick-log pill carries the same date */}
       {paused ? <PausedRing /> : <CycleDial model={dial} centre={centre} />}
@@ -143,7 +152,7 @@ export default function TodayScreen() {
           {pregnancy ? (<>
             <EstimateTag onGlass={heroGlass} />
             <Text variant="heading" testID="pregnancy-week">{t('today.pregnancy.week', { week: pregnancy.week, day: pregnancy.day })}</Text>
-            <Text testID="pregnancy-due">{t('today.pregnancy.due', { range: formatRange(pregnancy.due.lo, pregnancy.due.hi) })}</Text>
+            <Text testID="pregnancy-due">{t('today.pregnancy.due', { range: dueRangeText(pregnancy.due, today) })}</Text>
             <Text variant="caption" color="textOnGlass">{t(pregnancy.from === 'due' ? 'today.pregnancy.fromDue' : 'today.pregnancy.fromPeriod')}</Text>
           </>) : <Text variant="bodySmall" color="textOnGlass" testID="pregnancy-none">{t('today.pregnancy.none')}</Text>}
         </HeroCard>
@@ -171,22 +180,17 @@ export default function TodayScreen() {
           ? <RangeCard testID="next-period-card" title={msg(model.headline)} {...(model.subtitle ? { line: msg(model.subtitle) } : {})} confidence={next.confidence} />
           : <RangeCard testID="next-period-card" title={t('today.nextPeriodLikely')} line={formatRange(next.i80.lo, next.i80.hi)} confidence={next.confidence} />
       ) : null}
-      {model.estimate ? <EstimateCard m={model.estimate} /> : null}
+      {model.estimate ? <View {...anchor('estimates')}><EstimateCard m={model.estimate} /></View> : null}
       {shownFlags.slice(0, 1).map((f) => <FlagCard key={f.code} f={f} onMute={(c) => void muteFlag(c)} />)}
       {guide ? (
-        <View style={{ gap: 12 }}>
-          <GuidanceSections compact day={guide} supplements={showSupplements(eff.teen)} onMore={() => setSheet(true)} />
+        <View style={{ gap: 12 }} {...anchor('guidance')}>
+          <GuidanceSections compact day={guide} supplements={showSupplements(eff.teen)} onMore={openReadMore} />
           {energyLow ? <Card><Text variant="bodySmall" testID="guidance-energy-low">{t('guidance.energyLow')}</Text></Card> : null}
         </View>
       ) : null}
-      <View style={{ paddingVertical: 8 }}>
+      <View style={{ paddingVertical: 8 }} {...anchor('footer')}>
         <Text variant="caption" color="textSecondary" style={{ textAlign: 'center' }} testID="today-footer">{t(model.footerKey)}</Text>
       </View>
-      {guide ? (
-        <SectionsSheet visible={sheet} onClose={() => setSheet(false)}>
-          <GuidanceSections compact={false} day={guide} supplements={showSupplements(eff.teen)} />
-        </SectionsSheet>
-      ) : null}
     </Screen>
   );
 }

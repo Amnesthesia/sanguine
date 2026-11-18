@@ -1,6 +1,7 @@
 // Pregnancy view on Today (P8-5, roadmap R3-2, D-081): gestational week and day, and the due date as a range, never one day (PLAN.md §4.1).
 // Counted from a due date the user entered, else from the last period start on or before the day the pregnancy was set. Pure.
 import { addDays, diffDays, type ISODate } from '@sanguine/engine';
+import { formatDay, formatDayYear, formatRange } from '@/ui/format';
 
 const TERM_DAYS = 280; // Naegele: the due date is 40 weeks after the last period start
 const DUE_LO = 37 * 7; // the due date as a range: term is 37 to 42 weeks (ACOG/WHO definition of term)
@@ -16,4 +17,12 @@ export function pregnancyModel(o: { since: ISODate; cycleStarts: ISODate[]; dueD
   const days = diffDays(o.today, lmp);
   if (days < 0 || days > MAX_DAYS) return undefined;
   return { week: Math.floor(days / 7), day: days % 7, from: o.dueDate ? 'due' : 'period', due: { lo: addDays(lmp, DUE_LO), hi: addDays(lmp, DUE_HI) } };
+}
+
+/** The due range as text: no year this year; the year once after the range when both ends share another year; a year on each end across new year. */
+export function dueRangeText(due: { lo: ISODate; hi: ISODate }, today: ISODate): string {
+  const year = today.slice(0, 4);
+  if (due.lo.slice(0, 4) === year && due.hi.slice(0, 4) === year) return formatRange(due.lo, due.hi);
+  if (due.lo.slice(0, 4) !== due.hi.slice(0, 4)) return `${formatDayYear(due.lo)} – ${formatDayYear(due.hi)}`;
+  return `${formatRange(due.lo, due.hi)}${formatDayYear(due.hi).slice(formatDay(due.hi).length)}`; // keeps the locale's comma
 }

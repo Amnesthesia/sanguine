@@ -151,6 +151,36 @@ describe('notifications', () => {
   });
 });
 
+describe('P8-32 details of the frames', () => {
+  it('appearance: only the middle day of the cycle-day preview carries the today ring', () => {
+    render(<AppearanceScreen />);
+    expect(screen.getByTestId('preview-day-2').style.boxShadow).toMatch(/0 0 0 4px/);
+    expect(screen.getByTestId('preview-day-1').style.boxShadow ?? '').toBe('');
+    expect(screen.getByTestId('preview-day-3').style.boxShadow ?? '').toBe('');
+  });
+  it('notifications: "Your reminders" and "Widgets" are 15 pt semibold headings, not 18 pt', () => {
+    render(<NotificationsScreen />);
+    for (const name of ['Your reminders', 'Widgets']) {
+      const h = screen.getByRole('heading', { name });
+      expect(h.style.fontSize, name).toBe('15px');
+      expect(h.style.fontWeight, name).toBe('600');
+    }
+  });
+  it('how: card headings are 17 pt, and the two sentences resting on a source carry its number', () => {
+    render(<HowScreen />);
+    expect(screen.getByRole('heading', { name: 'Where the period range comes from' }).style.fontSize).toBe('17px');
+    expect(screen.getByRole('heading', { name: 'Sources' }).style.fontSize).toBe('17px');
+    // the number follows "(Bull et al. 2019)" in the middle of the paragraph and the fertile-window sentence ends with source 2
+    expect(screen.getByLabelText('Source 1').previousSibling?.textContent ?? '').toMatch(/\(Bull et al\. 2019\)$/);
+    expect(screen.getByLabelText('Source 2').parentElement?.textContent ?? '').toMatch(/fertile window estimate\.²$/);
+    cleanup();
+    setup({}, { birthDate: '2011-06-01' });
+    render(<HowScreen />);
+    expect(screen.getByLabelText('Source 1')).toBeTruthy();
+    expect(screen.queryByLabelText('Source 2')).toBeNull();
+  });
+});
+
 describe('decorative views are hidden on both platforms', () => {
   const files = (dir: string): string[] => readdirSync(dir).flatMap((f) => { const p = join(dir, f); return statSync(p).isDirectory() ? files(p) : /\.tsx$/.test(p) && !/\.test\.tsx$/.test(p) ? [p] : []; });
   it('every accessibilityElementsHidden (iOS) comes with importantForAccessibility (Android) in the same tag', () => {

@@ -16,7 +16,10 @@ describe('describeEvent', () => {
     expect(describeEvent(ev('flow', { level: 'none', flow_kind: 'period' }), t, 'C')).toBe('Nothing logged');
   });
   it('symptoms use the catalogue label and intensity', () =>
-    expect(describeEvent(ev('symptom', { code: 'breast_tenderness', intensity: 2 }), t, 'C')).toBe('Breast tenderness 2/3'));
+    expect(describeEvent(ev('symptom', { code: 'breast_tenderness', intensity: 2 }), t, 'C')).toBe('Breast tenderness (moderate)'));
+  it('names each intensity in words', () => {
+    for (const [n, w] of [[1, 'mild'], [2, 'moderate'], [3, 'strong']] as const) expect(describeEvent(ev('symptom', { code: 'cramps', intensity: n }), t, 'C')).toBe(`Cramps (${w})`);
+  });
   it('temperature in the chosen unit with time and source', () => {
     const e = ev('biomarker', { type: 'bbt', value: { valueC: 36.42 }, source: 'oral', measured_at: '2026-10-10T06:40:00' });
     expect(describeEvent(e, t, 'C')).toBe('Temperature 36.42 °C · 06:40 · Oral');

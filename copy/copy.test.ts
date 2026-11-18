@@ -104,6 +104,40 @@ describe('placeholders', () => {
   });
 });
 
+describe('plain language (P8-26, D-132)', () => {
+  const all = files.flatMap((f) => strings(load(f)).map(([path, text]) => [`${f}:${path}`, text] as const));
+  it('no fractions or codes such as "2/3" in user-facing text', () =>
+    expect(all.filter(([, t]) => /\{\w+\}\s*\/\s*\d|(^|[\s(])\d\/\d([\s).,]|$)/.test(t)).map(([k]) => k)).toEqual([]));
+  it('"calendar" is not used as the name of an estimation method', () =>
+    expect(all.filter(([, t]) => /\bcalendar (only|estimate|method|basis)\b|\bovulation: calendar\b/i.test(t)).map(([k]) => k)).toEqual([]));
+  it('confidence uses one vocabulary: Confident, Fair estimate, Rough estimate', () =>
+    expect(all.filter(([, t]) => /\b(high|medium|low) confidence\b/i.test(t)).map(([k]) => k)).toEqual([]));
+  it('every confidence label is the How-screen word', () => {
+    const en = load('en-AU.json');
+    const how = en.settings.how.confidence as Record<'high' | 'medium' | 'low', { word: string }>;
+    for (const k of ['high', 'medium', 'low'] as const) {
+      const word = how[k].word.toLowerCase();
+      expect(en.confidence[k], `confidence.${k}`).toBe(word);
+      expect(en.calendar.list.confidence[k], `calendar.list.confidence.${k}`).toBe(word);
+      expect(String(en.estimates.how.confidence[k]).toLowerCase(), `estimates.how.confidence.${k}`).toBe(word);
+    }
+    expect(en.estimates.how.confidence.high).toBe('Confident');
+  });
+  it('the calendar legend names the estimates as the frames do', () => {
+    const l = load('en-AU.json').calendar.legend;
+    expect([l.predicted, l.fertile, l.ovulation]).toEqual(['Period, estimate', 'Fertile window, estimate', 'Ovulation, estimate']);
+  });
+  it('About describes the fertile window as a band, not an underline', () =>
+    expect(load('about.en-AU.json').howToRead).not.toMatch(/underline/i));
+  it('has one-day range sentences that name the date once, without "around"', () => {
+    const e = load('en-AU.json').estimates;
+    for (const [k, v] of [['periodEnd.lineOne', e.periodEnd.lineOne], ['nextPeriod.lineOne', e.nextPeriod.lineOne], ['ovulation.lineOne', e.ovulation.lineOne], ['ovulation.linePastOne', e.ovulation.linePastOne]] as const) {
+      expect(v, k).toMatch(/\{point\}/);
+      expect(v, k).not.toMatch(/around|\{range\}/);
+    }
+  });
+});
+
 describe('policies use the same word list (P0-10)', () => {
   // The two published policies (site/ and the app's About screen) are complete; the DPIA stays an internal draft.
   for (const [f, published] of [['privacy-policy.md', true], ['consumer-health-data-policy.md', true], ['dpia.md', false]] as const) {

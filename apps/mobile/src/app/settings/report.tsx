@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import { ageOn } from '@/data/age';
 import { effectivePrefs } from '@/data/prefs';
 import { CHOICE_OF } from '@/features/settings/lifeState';
-import { buildReport, DEFAULT_REPORT, type ReportOptions } from '@/features/report/report';
+import { buildReport, closedCycles, DEFAULT_REPORT, type ReportOptions } from '@/features/report/report';
 import { shareReportPdf } from '@/services/report';
 import { useApp } from '@/state/app';
 import { Button } from '@/ui/Button';
@@ -32,16 +32,16 @@ export default function ReportScreen() {
   const state = settings?.lifeStates.find((s) => s.kind !== 'none' && (s.until === undefined || s.until >= today));
   const age = profile.birthDate ? ageOn(profile.birthDate, today) : profile.birthYear ? Number(today.slice(0, 4)) - profile.birthYear : undefined;
   // the cycles the PDF will cover: the most recent closed ones, as buildReport picks them
-  const covered = (history?.cycles ?? []).filter((c) => c.length !== undefined).sort((a, b) => (a.start < b.start ? -1 : 1)).slice(-(count === 'all' ? Number.MAX_SAFE_INTEGER : Number(count)));
+  const covered = history && settings ? closedCycles(history, settings, count === 'all' ? Number.MAX_SAFE_INTEGER : Number(count)) : [];
   const first = covered[0];
   const lastCycle = covered[covered.length - 1];
   async function share() {
-    if (!history) return;
+    if (!history || !settings) return;
     setBusy(true);
     setMsg(undefined);
     try {
       const html = buildReport({
-        cycles: history.cycles, logs: history.logs, temperatures: history.temperatures, flags: prediction?.flags ?? [], today,
+        history, settings, flags: prediction?.flags ?? [], today,
         age, lifeStateKey: state && CHOICE_OF[state.kind] ? `settings.lifeState.options.${CHOICE_OF[state.kind]}` : undefined,
         engine: { version: ENGINE_VERSION, hash: ENGINE_BUILD_HASH.slice(0, 12) }, fertilityTools,
       }, { ...o, cycles: count === 'all' ? Number.MAX_SAFE_INTEGER : Number(count) }, (k, p) => String(t(k, p as never)));
@@ -70,7 +70,7 @@ export default function ReportScreen() {
       </View>
       <Text variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('report.alwaysIncluded')}</Text>
       {msg ? <View testID="report-message" accessibilityLiveRegion="polite"><CautionPanel>{msg}</CautionPanel></View> : null}
-      <Button testID="report-share" label={t('report.share')} disabled={busy || !history} onPress={() => void share()} />
+      <Button testID="report-share" label={t('report.share')} disabled={busy || !history || !settings} onPress={() => void share()} />
     </SubScreen>
   );
 }

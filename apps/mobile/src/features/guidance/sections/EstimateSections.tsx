@@ -1,7 +1,9 @@
-// Estimate sections (P8-22, D-120): when this period ends, the next period, and ovulation with the fertile window. Each is a card with a
-// confidence bar, a picture, and "How it was worked out" with numbered sources. Pure display of a Prediction: nothing is recomputed here.
+// Estimate sections (P8-22, D-120; Insights > This cycle since D-134): when this period ends, the next period, and ovulation with the fertile
+// window. Each is a card with a confidence bar, a picture, and "How it was worked out" citing numbered sources (listed by the page, estimateSources).
+// DayEstimateRows is the short form for one day (the calendar sheet and the day screen). Pure display of a Prediction: nothing is recomputed here.
 import { addDays, type Confidence, diffDays, type ISODate, type PastOvulation, type Prediction } from '@sanguine/engine';
-import type { ReactNode } from 'react';
+import type { TFunction } from 'i18next';
+import { Fragment, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { Circle, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
@@ -10,9 +12,10 @@ import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { CautionPanel } from '@/ui/CautionPanel';
 import { fertileAlpha } from '@/ui/fertileAlpha';
-import { formatDay, formatRange } from '@/ui/format';
+import { EstimateTag } from '@/ui/EstimateTag';
+import { formatDay, formatRange, formatWeekday } from '@/ui/format';
 import { Meter, confidenceLevel } from '@/ui/Meter';
-import { Cite, Sources } from '@/ui/Sources';
+import { Cite } from '@/ui/Sources';
 import { Text } from '@/ui/Text';
 import { Picture, useSvgText } from './HormoneCurve';
 
@@ -71,6 +74,7 @@ function LengthsPicture({ lengths, label }: { lengths: number[]; label: string }
 /** The days of the current period: the days she logged (solid) and the estimated rest (dashed), as on the calendar and the dial. */
 function BleedStrip({ start, periodDays, bleed, day, label }: { start: ISODate; periodDays: ReadonlySet<ISODate>; bleed: NonNullable<Prediction['currentBleed']>; day: ISODate; label: string }) {
   const t = useTheme();
+  const { t: tr } = useTranslation();
   const end = addDays(bleed.i80.hi, 1);
   const n = Math.min(10, diffDays(end, start) + 1);
   const cw = W / n;
@@ -78,8 +82,10 @@ function BleedStrip({ start, periodDays, bleed, day, label }: { start: ISODate; 
   const r = Math.min(cw / 2 - 2, 13 * (fs(1))); // the circles grow with the text but stay apart
   const f = Math.min(fs(12), r * 1.5); // two digits still fit inside the circle
   const cy = r + 3;
+  const wf = fs(10); // the weekday under each day, as the frame ("Sat", "Today")
+  const wy = cy + r + 4 + wf;
   return (
-    <Picture w={W} h={cy + r + 21} label={label}>
+    <Picture w={W} h={wy + wf * 0.4} label={label}>
       {Array.from({ length: n }, (_, i) => {
         const d = addDays(start, i);
         const logged = periodDays.has(d);
@@ -90,6 +96,7 @@ function BleedStrip({ start, periodDays, bleed, day, label }: { start: ISODate; 
             <Circle cx={cx} cy={cy} r={r} fill={logged ? t.c.period : 'none'} stroke={estimated ? t.c.period : 'none'} strokeWidth={1.5} strokeDasharray={estimated ? '3 2' : undefined} />
             {d === day ? <Circle cx={cx} cy={cy} r={r + 2.5} fill="none" stroke={t.c.textPrimary} strokeWidth={1.5} /> : null}
             <SvgText x={cx} y={cy + f * 0.35} fontSize={f} textAnchor="middle" fill={logged ? t.c.surface : t.c.textPrimary}>{dayNum(d)}</SvgText>
+            <SvgText x={cx} y={wy} fontSize={wf} textAnchor="middle" fontWeight={d === day ? '600' : '400'} fill={t.c.textSecondary}>{d === day ? tr('calendar.today') : formatWeekday(d).slice(0, 3)}</SvgText>
           </G>
         );
       })}
@@ -102,7 +109,7 @@ function PeriodEndCard({ p, day, periodLengths, periodDays }: { p: Prediction; d
   const bleed = p.currentBleed;
   if (!bleed) return null;
   const start = p.currentPhase ? addDays(p.asOf, -(p.currentPhase.dayOfCycle - 1)) : undefined;
-  const line = t('estimates.periodEnd.line', { range: formatRange(bleed.i80.lo, bleed.i80.hi), point: formatDay(bleed.point) });
+  const line = bleed.i80.lo === bleed.i80.hi ? t('estimates.periodEnd.lineOne', { point: formatDay(bleed.point) }) : t('estimates.periodEnd.line', { range: formatRange(bleed.i80.lo, bleed.i80.hi), point: formatDay(bleed.point) });
   const words = periodLengths.map((n) => t('estimates.how.days', { n }));
   const shown = list(words, t('estimates.how.and'));
   const recent = periodLengths.length > 1 ? t('estimates.how.periodEndLengths', { count: periodLengths.length, list: shown }) : periodLengths.length === 1 ? t('estimates.how.periodEndOne', { list: shown }) : t('estimates.how.periodEndNone');
@@ -124,60 +131,75 @@ function PeriodEndCard({ p, day, periodLengths, periodDays }: { p: Prediction; d
   );
 }
 
-/** The 95% range (dashed bar), the 80% range (darker bar) and the most likely day. */
-function RangeBar({ next }: { next: NonNullable<Prediction['nextPeriod']> }) {
+/** The 95% range (dashed bar), the 80% range (darker bar) and the most likely day; with `mark` (a future day on the day screen), the marker
+ *  stands on that day under the words "this day" instead (frame Day-Screen-Future). */
+function RangeBar({ next, mark }: { next: NonNullable<Prediction['nextPeriod']>; mark?: ISODate | undefined }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const lo = addDays(next.i95.lo, -1);
   const span = diffDays(addDays(next.i95.hi, 1), lo);
   const x = (d: ISODate) => 8 + (diffDays(d, lo) / span) * (W - 16);
-  const label = tr('estimates.nextPeriod.a11y', { lo80: formatDay(next.i80.lo), hi80: formatDay(next.i80.hi), lo95: formatDay(next.i95.lo), hi95: formatDay(next.i95.hi) });
-  const px = x(next.point) + (x(addDays(next.point, 1)) - x(next.point)) / 2;
+  const label = [tr('estimates.nextPeriod.a11y', { lo80: formatDay(next.i80.lo), hi80: formatDay(next.i80.hi), lo95: formatDay(next.i95.lo), hi95: formatDay(next.i95.hi) }), mark ? tr('estimates.nextPeriod.thisDayA11y', { day: formatDay(mark) }) : ''].filter(Boolean).join('. ');
+  const at = mark ?? next.point;
+  const px = x(at) + (x(addDays(at, 1)) - x(at)) / 2;
   const { fs, fit } = useSvgText();
   const f = fs(11);
-  const base = 43 + f; // under the bar, which stays the same size
+  const dy = mark ? f + 4 : 0; // room above the bar for "this day"
+  const base = 43 + f + dy; // under the bar, which stays the same size
   const tick = (d: ISODate, text: string, bold: boolean, at: number = x(d)) => (
     <SvgText key={`${d}-${text}`} x={fit(at, text, f)} y={base} fontSize={f} fontWeight={bold ? '600' : '400'} textAnchor="middle" fill={bold ? t.c.textPrimary : t.c.textSecondary}>{text}</SvgText>
   );
+  const thisDay = tr('estimates.nextPeriod.thisDay');
   return (
     <Picture w={W} h={base + f * 0.9} label={label}>
-      <Line x1={8} y1={22} x2={W - 8} y2={22} stroke={t.c.border} strokeWidth={1} />
-      <Rect x={x(next.i95.lo)} y={13} width={x(addDays(next.i95.hi, 1)) - x(next.i95.lo)} height={18} rx={9} fill={t.c.period} fillOpacity={0.14} stroke={t.c.period} strokeOpacity={0.45} strokeDasharray="3 3" />
-      <Rect x={x(next.i80.lo)} y={13} width={x(addDays(next.i80.hi, 1)) - x(next.i80.lo)} height={18} rx={9} fill={t.c.period} fillOpacity={0.42} />
-      <Rect x={px - 9} y={8} width={18} height={28} rx={9} fill={t.cardBg} stroke={t.c.period} strokeWidth={1.5} />
-      {tick(next.i95.lo, formatDay(next.i95.lo), false)}
+      {mark ? <SvgText x={fit(px, thisDay, f)} y={f} fontSize={f} fontWeight="600" textAnchor="middle" fill={t.c.onAccentSoft}>{thisDay}</SvgText> : null}
+      <G transform={`translate(0 ${dy})`}>
+        <Line x1={8} y1={22} x2={W - 8} y2={22} stroke={t.c.border} strokeWidth={1} />
+        <Rect x={x(next.i95.lo)} y={13} width={x(addDays(next.i95.hi, 1)) - x(next.i95.lo)} height={18} rx={9} fill={t.c.period} fillOpacity={0.14} stroke={t.c.period} strokeOpacity={0.45} strokeDasharray="3 3" />
+        <Rect x={x(next.i80.lo)} y={13} width={x(addDays(next.i80.hi, 1)) - x(next.i80.lo)} height={18} rx={9} fill={t.c.period} fillOpacity={0.42} />
+        <Rect x={px - 9} y={8} width={18} height={28} rx={9} fill={t.cardBg} stroke={mark ? t.c.onAccentSoft : t.c.period} strokeWidth={1.5} />
+      </G>
+      {tick(next.i95.lo, formatDay(next.i95.lo), mark === next.i95.lo)}
       {tick(next.i80.lo, dayNum(next.i80.lo), true)}
-      {next.point !== next.i80.lo && next.point !== next.i80.hi ? tick(next.point, dayNum(next.point), true, px) : null}
+      {!mark && next.point !== next.i80.lo && next.point !== next.i80.hi ? tick(next.point, dayNum(next.point), true, px) : null}
       {tick(next.i80.hi, dayNum(next.i80.hi), true)}
-      {tick(next.i95.hi, formatDay(next.i95.hi), false)}
+      {tick(next.i95.hi, formatDay(next.i95.hi), mark === next.i95.hi)}
     </Picture>
+  );
+}
+
+/** The two shades of the range bar in words. */
+function RangeLegend() {
+  const { t } = useTranslation();
+  const t2 = useTheme();
+  const key = (fill: string, dashed: boolean) => (
+    <View style={{ width: 14, height: 10, borderRadius: 5, marginTop: 3, backgroundColor: fill, borderWidth: dashed ? 1 : 0, borderStyle: 'dashed', borderColor: t2.c.period }} />
+  );
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+      <View style={{ flexDirection: 'row', gap: 6, flexGrow: 1, flexBasis: 140 }}>
+        {key(`${t2.c.period}6B`, false)}
+        <Text variant="caption" color="textSecondary" style={{ flex: 1 }}>{t('estimates.nextPeriod.legend80')}</Text>
+      </View>
+      <View style={{ flexDirection: 'row', gap: 6, flexGrow: 1, flexBasis: 140 }}>
+        {key(`${t2.c.period}24`, true)}
+        <Text variant="caption" color="textSecondary" style={{ flex: 1 }}>{t('estimates.nextPeriod.legend95')}</Text>
+      </View>
+    </View>
   );
 }
 
 function NextPeriodCard({ p }: { p: Prediction }) {
   const { t } = useTranslation();
-  const t2 = useTheme();
   const next = p.nextPeriod;
   if (!next) return null;
   const n = p.cycleLength.nCyclesUsed;
-  const key = (fill: string, dashed: boolean) => (
-    <View style={{ width: 14, height: 10, borderRadius: 5, marginTop: 3, backgroundColor: fill, borderWidth: dashed ? 1 : 0, borderStyle: 'dashed', borderColor: t2.c.period }} />
-  );
   return (
     <Card testID="estimate-next-period" style={{ gap: 12 }}>
       <CardHead title={t('estimates.nextPeriod.title')} confidence={next.confidence} />
-      <Text>{t('estimates.nextPeriod.line', { range: formatRange(next.i80.lo, next.i80.hi), point: formatDay(next.point) })}</Text>
+      <Text>{next.i80.lo === next.i80.hi ? t('estimates.nextPeriod.lineOne', { point: formatDay(next.point) }) : t('estimates.nextPeriod.line', { range: formatRange(next.i80.lo, next.i80.hi), point: formatDay(next.point) })}</Text>
       <RangeBar next={next} />
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-        <View style={{ flexDirection: 'row', gap: 6, flexGrow: 1, flexBasis: 140 }}>
-          {key(`${t2.c.period}6B`, false)}
-          <Text variant="caption" color="textSecondary" style={{ flex: 1 }}>{t('estimates.nextPeriod.legend80')}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', gap: 6, flexGrow: 1, flexBasis: 140 }}>
-          {key(`${t2.c.period}24`, true)}
-          <Text variant="caption" color="textSecondary" style={{ flex: 1 }}>{t('estimates.nextPeriod.legend95')}</Text>
-        </View>
-      </View>
+      <RangeLegend />
       <How>
         <Text variant="bodySmall">
           {n > 0 ? t('estimates.how.nextPeriod', { count: n, mean: Math.round(p.cycleLength.mean * 10) / 10 }) : t('estimates.how.nextPeriodNone')}
@@ -250,9 +272,10 @@ function OvulationCard({ p, day, past, includeUncertain, periodDays }: { p: Pred
   const uncertain = past ? wideRow(ov) : ovulationUncertain(p);
   const range = formatRange(ov.i80.lo, ov.i80.hi);
   const point = formatDay(ov.point);
+  const one = ov.i80.lo === ov.i80.hi; // a one-day range says the day once, not "14 Nov, around 14 Nov"
   const line = past
-    ? uncertain ? t('day.estimates.ovulationPastUncertain', { range, basis: t(`day.estimates.basis.${ov.basis}`) }) : t('estimates.ovulation.linePast', { range, point })
-    : uncertain ? t('day.estimates.ovulationUncertain', { range }) : t('estimates.ovulation.line', { range, point });
+    ? uncertain ? t('day.estimates.ovulationPastUncertain', { range, basis: t(`day.estimates.basis.${ov.basis}`) }) : t(one ? 'estimates.ovulation.linePastOne' : 'estimates.ovulation.linePast', { range, point })
+    : uncertain ? t('day.estimates.ovulationUncertain', { range }) : t(one ? 'estimates.ovulation.lineOne' : 'estimates.ovulation.line', { range, point });
   return (
     <Card testID="estimate-ovulation" style={{ gap: 12 }}>
       <CardHead title={t(wordsOnly ? 'estimates.ovulation.titleWords' : 'estimates.ovulation.title')} confidence={ov.confidence} />
@@ -279,7 +302,7 @@ const pastFor = (day: ISODate, cycleStarts: readonly ISODate[], pastOv: readonly
   return start ? pastOv.find((o) => o.cycleStart === start) : undefined;
 };
 
-export function EstimateSections({ prediction, day, pastOv, cycleStarts, periodDays, showEstimate, includeUncertain, periodLengths = [] }: {
+export interface EstimateProps {
   prediction: Prediction;
   /** The day the sheet or screen is about. */
   day: ISODate;
@@ -294,10 +317,11 @@ export function EstimateSections({ prediction, day, pastOv, cycleStarts, periodD
   includeUncertain: boolean;
   /** Days of her recent closed periods, oldest first, for the period-end card. */
   periodLengths?: number[];
-}) {
-  const { t } = useTranslation();
-  const t2 = useTheme();
-  if (prediction.suspended) return null;
+}
+
+/** Which cards show for the day: one rule for the cards and for the sources they cite. Undefined when none shows (or estimates are paused). */
+function shownCards({ prediction, day, pastOv, cycleStarts, showEstimate, includeUncertain }: EstimateProps) {
+  if (prediction.suspended) return undefined;
   // a day before the open cycle belongs to an earlier cycle: its own ovulation estimate if it has one, never the open cycle's live cards
   const openStart = prediction.currentPhase ? addDays(prediction.asOf, -(prediction.currentPhase.dayOfCycle - 1)) : undefined;
   const before = openStart !== undefined && day < openStart;
@@ -305,8 +329,23 @@ export function EstimateSections({ prediction, day, pastOv, cycleStarts, periodD
   const periodEnd = !before && Boolean(prediction.currentBleed);
   const nextPeriod = !before && Boolean(prediction.nextPeriod);
   const ovulation = showEstimate && (before ? past !== undefined && (includeUncertain || !wideRow(past)) : Boolean(prediction.ovulation));
-  if (!periodEnd && !nextPeriod && !ovulation) return null;
-  const fertileCited = ovulation && !before && ovulationDrawable(prediction, includeUncertain);
+  if (!periodEnd && !nextPeriod && !ovulation) return undefined;
+  return { past, periodEnd, nextPeriod, ovulation, fertileCited: ovulation && !before && ovulationDrawable(prediction, includeUncertain) };
+}
+
+/** The references the cards cite, in their Cite order (1 Munro, 2 Bull, 3 Wilcox only when the fertile window is drawn); none when no card shows. */
+export function estimateSources(p: EstimateProps, t: TFunction): string[] {
+  const s = shownCards(p);
+  return s ? [t('estimates.how.src1'), t('estimates.how.src2'), ...(s.fertileCited ? [t('estimates.how.src3')] : [])] : [];
+}
+
+export function EstimateSections(props: EstimateProps) {
+  const { prediction, day, includeUncertain, periodDays, periodLengths = [] } = props;
+  const { t } = useTranslation();
+  const t2 = useTheme();
+  const s = shownCards(props);
+  if (!s) return null;
+  const { past, periodEnd, nextPeriod, ovulation } = s;
   return (
     <View testID="estimate-sections" style={{ gap: 16 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
@@ -325,11 +364,67 @@ export function EstimateSections({ prediction, day, pastOv, cycleStarts, periodD
       {periodEnd ? <PeriodEndCard p={prediction} day={day} periodLengths={periodLengths} periodDays={periodDays} /> : null}
       {nextPeriod ? <NextPeriodCard p={prediction} /> : null}
       {ovulation ? <OvulationCard p={prediction} day={day} past={past} includeUncertain={includeUncertain} periodDays={periodDays} /> : null}
-      <View style={{ gap: 8 }}>
-        <Text variant="heading" accessibilityRole="header">{t('estimates.how.sources')}</Text>
-        <Sources items={[t('estimates.how.src1'), t('estimates.how.src2'), ...(fertileCited ? [t('estimates.how.src3')] : [])]} />
-        <Text variant="caption" color="textSecondary">{t('day.estimates.note')}</Text>
-      </View>
+      <Text variant="caption" color="textSecondary">{t('day.estimates.note')}</Text>
+    </View>
+  );
+}
+
+export type RowKind = 'period' | 'period95' | 'ovulation' | 'fertile';
+export interface EstimateRow { kind?: RowKind; text: string; confidence?: 'high' | 'medium' | 'low' }
+const ROW_KINDS: ReadonlyArray<[string, RowKind]> = [['day.estimates.period', 'period'], ['day.estimates.periodEnd', 'period'], ['day.estimates.period95', 'period95'], ['day.estimates.ovulation', 'ovulation'], ['day.estimates.fertile', 'fertile']];
+const SLOT = '\u0001';
+
+/**
+ * One line of calendarModel.dayEstimates split back into its mark, its words and its confidence, read against the same copy templates.
+ * ponytail: parsed from the strings because calendarModel (another task's file) returns words only; upgrade = dayEstimates returns these rows.
+ */
+export function estimateRow(line: string, t: TFunction): EstimateRow {
+  const confidence = (['high', 'medium', 'low'] as const).find((c) => line.endsWith(` · ${t(`confidence.${c}`)}`));
+  const text = confidence ? line.slice(0, line.length - ` · ${t(`confidence.${confidence}`)}`.length) : line;
+  const kind = ROW_KINDS.find(([key]) => text.startsWith(t(key, { range: SLOT, word: SLOT }).split(SLOT)[0] ?? SLOT))?.[1];
+  return { text, ...(kind ? { kind } : {}), ...(confidence ? { confidence } : {}) };
+}
+
+/** The row's mark, drawn as the grid draws it: dashed ring (period estimate), thin dotted ring (wider range), dotted ovulation ring, fertile band. */
+function RowMark({ kind }: { kind: RowKind | undefined }) {
+  const t = useTheme();
+  const ring = (color: string, width: number, style: 'dashed' | 'dotted') => <View style={{ width: 12, height: 12, borderRadius: 6, borderWidth: width, borderStyle: style, borderColor: color }} />;
+  const mark = kind === 'period' ? ring(t.c.period, 2, 'dashed') : kind === 'period95' ? ring(t.c.period, 1, 'dotted') : kind === 'ovulation' ? ring(t.c.ovulation, 2, 'dotted')
+    : kind === 'fertile' ? <View style={{ width: 14, height: 10, borderRadius: 5, backgroundColor: t.c.fertile, opacity: 0.5 }} /> : null;
+  return <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: 14, alignItems: 'center' }}>{mark}</View>;
+}
+
+/**
+ * "Estimates for this day" (frames Calendar-3-SheetExpanded, Day-Screen, Day-Screen-Future; D-134): one row per estimate covering the day with its
+ * mark, ESTIMATE tag and confidence meter. `lines` are calendarModel.dayEstimates (the gates already applied: teen mode, uncertain estimates).
+ * `bar`: a future day inside the next period's wider range also gets the range bar with "this day" (day screen only). `note`: the closing caveat.
+ */
+export function DayEstimateRows({ lines, future, bar, note = false }: { lines: string[]; future: boolean; bar?: { next: NonNullable<Prediction['nextPeriod']>; day: ISODate } | undefined; note?: boolean }) {
+  const { t } = useTranslation();
+  const t2 = useTheme();
+  if (!lines.length && !future) return null;
+  const rows = lines.map((l) => estimateRow(l, t));
+  const showBar = bar && bar.day >= bar.next.i95.lo && bar.day <= bar.next.i95.hi;
+  return (
+    <View testID="day-estimates" style={{ gap: 12 }}>
+      <Text variant="title" accessibilityRole="header">{t('day.estimates.title')}</Text>
+      <Card style={{ gap: 12 }}>
+        {rows.length ? rows.map((r, i) => (
+          <Fragment key={r.text}>
+            {i ? <View style={{ height: 1, backgroundColor: t2.c.border }} /> : null}
+            <View testID="day-estimate-row" style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <RowMark kind={r.kind} />
+              <View style={{ flex: 1, gap: 4 }}>
+                <EstimateTag />
+                <Text>{r.text}</Text>
+              </View>
+              {r.confidence ? <Meter level={confidenceLevel(r.confidence)} word={t(`estimates.how.confidence.${r.confidence}`)} /> : null}
+            </View>
+          </Fragment>
+        )) : <Text testID="day-no-estimate">{t('day.estimates.none')}</Text>}
+        {showBar && bar ? (<><RangeBar next={bar.next} mark={bar.day} /><RangeLegend /></>) : null}
+        {note ? <Text variant="caption" color="textSecondary">{t('day.estimates.note')}</Text> : null}
+      </Card>
     </View>
   );
 }

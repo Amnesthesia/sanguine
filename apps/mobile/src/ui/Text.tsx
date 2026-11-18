@@ -2,6 +2,7 @@ import { type ColorToken, type } from '@sanguine/ui-tokens';
 import { Text as RNText, type TextProps as RNTextProps } from 'react-native';
 import { useTheme } from '@/theme';
 import { capsSpacing, SERIF } from './fonts';
+import { useFontScale } from './useFontScale';
 
 export type Variant = keyof typeof type;
 export interface TextProps extends RNTextProps {
@@ -16,9 +17,13 @@ export interface TextProps extends RNTextProps {
 export function Text({ variant = 'body', color = 'textPrimary', tabular, caps, style, ...rest }: TextProps) {
   const t = useTheme();
   const s = type[variant];
+  // The key remounts the native text when the system text size changes, so it is measured again at the new size:
+  // left alone, a running app keeps the old line boxes (clipped glyphs going up, oversized cards coming back; device report X6).
+  const fontScale = useFontScale();
   return (
     <RNText
       {...rest}
+      key={fontScale}
       style={[
         { color: t.c[color], fontSize: s.size, lineHeight: s.line },
         // the brand face carries its own weight; setting fontWeight on top of it can pick a synthetic bold on Android

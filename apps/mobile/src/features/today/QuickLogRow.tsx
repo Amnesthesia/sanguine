@@ -28,7 +28,7 @@ export function QuickLogRow({ day, label: shown, accessibilityLabel, title, subt
     router.push(day ? { pathname: '/log', params: { day } } : '/log');
   };
   return (
-    <GlassSurface>
+    <GlassSurface legible>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, paddingLeft: title ? 16 : 10 }}>
         {title ? (
           <View testID="quick-log-text" style={{ flex: 1, minWidth: 0 }}>
@@ -36,7 +36,7 @@ export function QuickLogRow({ day, label: shown, accessibilityLabel, title, subt
             {subtitle ? <Text variant="caption" color="textOnGlass">{subtitle}</Text> : null}
           </View>
         ) : null}
-        <Button testID={testID} label={label} accessibilityLabel={accessibilityLabel ?? label} icon={<Plus color={t.scheme === 'dark' ? t.c.bg : t.c.surface} />} onPress={go} style={{ flexShrink: 0, flexGrow: title ? 0 : 1 }} />
+        <Button testID={testID} label={label} accessibilityLabel={accessibilityLabel ?? label} icon={<Plus color={t.c.onAccent} />} onPress={go} style={{ flexShrink: 0, flexGrow: title ? 0 : 1 }} />
       </View>
     </GlassSurface>
   );

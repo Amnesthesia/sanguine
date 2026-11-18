@@ -3,14 +3,17 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { contrast } from '../../../../../packages/ui-tokens/src/contrast';
 import { colors } from '@sanguine/ui-tokens';
-import { CycleDial, TRACK } from './CycleDial';
+import { CycleDial } from './CycleDial';
 import type { DialModel } from './dialModel';
 
 // react-native-svg ships Flow sources vitest cannot load; the drawing is checked on the simulator, this covers words and accessibility
-vi.mock('react-native-svg', () => { const n = () => null; return { default: n, Circle: n, Defs: n, G: n, Line: n, Path: n, RadialGradient: n, Stop: n }; });
+vi.mock('react-native-svg', () => { const n = () => null; const kids = ({ children }: { children?: React.ReactNode }) => <>{children}</>; return { default: kids, Circle: n, Defs: n, G: n, Line: () => <i data-testid="dial-tick" />, Path: n, RadialGradient: n, Stop: n }; });
+const env = vi.hoisted(() => ({ scheme: 'light' as 'light' | 'dark' }));
+vi.mock('@/theme', async (orig) => { const m = await orig<typeof import('@/theme')>(); return { ...m, useTheme: () => m.buildTheme(env.scheme, 'ios') }; });
 const font = vi.hoisted(() => ({ scale: 1 }));
 vi.mock('@/ui/useFontScale', () => ({ LARGE: 1.3, useFontScale: () => font.scale }));
-afterEach(() => { cleanup(); font.scale = 1; });
+afterEach(() => { cleanup(); font.scale = 1; env.scheme = 'light'; });
+const rgb = (hex: string) => `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`;
 const centre = { kicker: 'CYCLE DAY', big: '3', pill: 'Period', sub: 'Likely ends 3–5 Nov' };
 const model: DialModel = {
   days: 31, todayDay: 3, ovulationDay: 15,
@@ -51,6 +54,22 @@ describe('CycleDial', () => {
     expect(screen.getByTestId('cycle-dial').getAttribute('aria-label')).toBe('CYCLE DAY. No cycle data yet'); // the dash placeholder is not spoken
     expect(screen.queryByText('Period')).toBeNull();
   });
+  it('draws the day ticks on the empty track too (frame Today-Empty: four weeks, a longer one every seventh)', () => {
+    render(<CycleDial model={{ days: 0, arcs: [] }} centre={{ kicker: 'CYCLE DAY', big: '–', sub: 'No cycle data yet' }} />);
+    expect(screen.getAllByTestId('dial-tick')).toHaveLength(28);
+    cleanup();
+    render(<CycleDial model={model} centre={centre} />);
+    expect(screen.getAllByTestId('dial-tick')).toHaveLength(31);
+  });
+  it('the legend swatch for an estimate is the estimateSwatch token, in light and in dark', () => {
+    for (const scheme of ['light', 'dark'] as const) {
+      env.scheme = scheme;
+      render(<CycleDial model={model} centre={centre} />);
+      const swatch = screen.getByText('Estimate').previousElementSibling as HTMLElement;
+      expect(getComputedStyle(swatch).backgroundColor).toBe(rgb(colors[scheme].estimateSwatch));
+      cleanup();
+    }
+  });
   it('speaks a one-day range as one day, and each fertile run on its own', () => {
     const m: DialModel = {
       days: 31, todayDay: 3,
@@ -77,7 +96,7 @@ describe('CycleDial', () => {
 
 describe('dial edge contrast (D-093)', () => {
   // the thin solid rim of each estimate sits on the frames' track colour; it needs 3:1 as non-text
-  const track = TRACK;
+  const track = { light: colors.light.dialTrack, dark: colors.dark.dialTrack };
   for (const scheme of ['light', 'dark'] as const) {
     it(`fertile rim on the track >= 3 in ${scheme}`, () => expect(contrast(colors[scheme].fertile, track[scheme])).toBeGreaterThanOrEqual(3));
   }

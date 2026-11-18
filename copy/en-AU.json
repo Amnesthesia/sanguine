@@ -298,7 +298,8 @@
       },
       "fertile": "Fertile window: {word} likelihood",
       "none": "No estimate covers this day.",
-      "note": "Estimates are ranges worked out from your own logs, not promises."
+      "note": "Estimates are ranges worked out from your own logs, not promises.",
+      "title": "Estimates for this day"
     },
     "notAPeriod": "Not a period",
     "markSpotting": "Mark as spotting",
@@ -326,7 +327,7 @@
         "on_contraception": " · other bleeding",
         "post_pregnancy": " · after pregnancy"
       },
-      "symptom": "{name} {n}/3",
+      "symptom": "{name} ({level})",
       "lh": "Ovulation test: {result}",
       "mucus": "Cervical mucus: {quality}",
       "mucusAmount": "Cervical mucus: {quality}, {amount}",
@@ -350,14 +351,15 @@
     "legend": {
       "cycleDay": "Day of cycle",
       "period": "Period",
-      "predicted": "Predicted period",
-      "fertile": "Fertile window likelihood",
-      "ovulation": "Ovulation estimate",
+      "predicted": "Period, estimate",
+      "predicted95": "Period, wider range",
+      "fertile": "Fertile window, estimate",
+      "ovulation": "Ovulation, estimate",
       "symptoms": "Symptoms",
       "other": "Other log",
       "moon": "Moon phase"
     },
-    "legendRule": "Solid means you logged it. Dashed, dotted or glowing means it is an estimate.",
+    "legendRule": "Solid is logged. Dashed, dotted or glowing is an estimate.",
     "sheet": {
       "open": "Open the day sheet",
       "showDetails": "Show details",
@@ -394,13 +396,13 @@
     "edit": "Log this day",
     "futureNote": "You can log this day once it arrives.",
     "weekdays": [
-      "Mon",
-      "Tue",
-      "Wed",
-      "Thu",
-      "Fri",
-      "Sat",
-      "Sun"
+      "M",
+      "T",
+      "W",
+      "T",
+      "F",
+      "S",
+      "S"
     ],
     "ovulationUncertainCaption": "Ovulation estimate uncertain",
     "legendLogged": "Logged",
@@ -414,7 +416,7 @@
       "ovulationUncertain": "Ovulation estimate uncertain, range {range}",
       "nextPeriod": "Next period likely",
       "atMost": "at most {range}",
-      "confidence": { "high": "high confidence", "medium": "medium confidence", "low": "low confidence" },
+      "confidence": { "high": "confident", "medium": "fair estimate", "low": "rough estimate" },
       "rowRange": "{from} to {to}",
       "empty": "Nothing logged or estimated this month."
     }
@@ -501,7 +503,15 @@
     "segments": {
       "history": "History",
       "charts": "Charts",
-      "accuracy": "Accuracy"
+      "accuracy": "Accuracy",
+      "thisCycle": "This cycle"
+    },
+    "thisCycle": {
+      "heading": "This cycle, from {start} · day {day}",
+      "intro": "What the estimates for this cycle mean, how they were worked out, and food and movement for where you are in it.",
+      "empty": "Log a period to see the estimates for this cycle and what they mean.",
+      "more": "More about this cycle",
+      "moreA11y": "More about this cycle: estimates explained, food and movement, sources. Opens Insights, This cycle"
     },
     "empty": "Insights appear after two complete cycles.",
     "row": "{start} · {length} days · {bleed} bleed days",
@@ -647,7 +657,7 @@
       "pregnancyEnded": "If the pregnancy has ended, choose \"Recently gave birth\" or \"After a pregnancy loss\".",
       "effect": {
         "paused": "Estimates are paused while this is set. Your logs are kept.",
-        "iud": "Period estimates continue from periods you log, with low confidence. A hormonal IUD can change or stop bleeding. Ovulation estimates and cycle-pattern notices are paused.",
+        "iud": "Period estimates continue from periods you log, as a rough estimate. A hormonal IUD can change or stop bleeding. Ovulation estimates and cycle-pattern notices are paused.",
         "warmup": "Estimates use general starting ranges for your first three cycles.",
         "wider": "Ranges are wider while this is set."
       }
@@ -1242,20 +1252,26 @@
     "legendEstimate": "estimate",
     "periodEnd": {
       "title": "When this period ends",
-      "line": "Most likely ends {range}, around {point}."
+      "line": "Most likely ends {range}, around {point}.",
+      "lineOne": "Most likely ends {point}."
     },
     "nextPeriod": {
       "title": "Next period",
       "line": "Most likely starts {range}, around {point}.",
+      "lineOne": "Most likely starts {point}.",
       "legend80": "8 in 10 chance it starts here",
       "legend95": "About 19 in 20 within the whole bar",
-      "a11y": "8 in 10 chance it starts between {lo80} and {hi80}; about 19 in 20 between {lo95} and {hi95}"
+      "a11y": "8 in 10 chance it starts between {lo80} and {hi80}; about 19 in 20 between {lo95} and {hi95}",
+      "thisDay": "this day",
+      "thisDayA11y": "This day, {day}, is marked on the bar."
     },
     "ovulation": {
       "title": "Ovulation and fertile window",
       "titleWords": "Ovulation",
       "line": "Ovulation most likely {range}, around {point}.",
       "linePast": "Ovulation was most likely {range}, around {point}.",
+      "lineOne": "Ovulation most likely {point}.",
+      "linePastOne": "Ovulation was most likely {point}.",
       "curveLabel": "ovulation",
       "stripStart": "This cycle from day 1",
       "stripOvulation": "ovulation estimate days {lo} to {hi}, most likely day {point}",
@@ -1265,9 +1281,9 @@
     "how": {
       "label": "HOW IT WAS WORKED OUT",
       "confidence": {
-        "high": "High confidence",
-        "medium": "Medium confidence",
-        "low": "Low confidence"
+        "high": "Confident",
+        "medium": "Fair estimate",
+        "low": "Rough estimate"
       },
       "days": "{n} days",
       "and": "and",
@@ -1281,9 +1297,9 @@
       "nextPeriodNone": "You have no completed cycles yet, so this rests on what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long.",
       "nextPeriod": "Your own cycles ({count} used) are combined with what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long. Together they point to a cycle of about {mean} days for you.",
       "nextPeriodFew": "With only {count} of your cycles, the study still carries much of the weight. After about six regular cycles your own pattern takes over and confidence can reach high.",
-      "calendarOnly": "Calendar only: no LH tests or temperatures this cycle",
+      "calendarOnly": "Worked out from your period dates only: no ovulation tests or temperatures this cycle",
       "ovulationCalendar": "The phase after ovulation lasts about 12.4 days on average (give or take 2.4), so ovulation is placed that far before your expected next period.",
-      "ovulationCalendarWide": "Cycles differ mostly in the phase before ovulation, so a calendar estimate can be several days off. Positive LH tests or a temperature rise would narrow it.",
+      "ovulationCalendarWide": "Cycles differ mostly in the phase before ovulation, so an estimate from period dates alone can be several days off. Positive ovulation tests or a temperature rise would narrow it.",
       "ovulationPast": "This cycle has ended, so the estimate uses its known length instead of a forecast.",
       "fertile": "The fertile window is the 6 days ending on ovulation day.",
       "fertileWide": "Because ovulation itself is uncertain, the green band spreads wider, darker on the days most likely to be in the window.",

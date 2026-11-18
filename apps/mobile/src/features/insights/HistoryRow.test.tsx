@@ -76,7 +76,7 @@ describe('LengthSummaryCard', () => {
     render(<LengthSummaryCard s={summary} />);
     expect(screen.getByText('24\u201345 days')).toBeTruthy();
     expect(screen.getByText('24, 38, 31, 45, 27, 36 days \u00b7 21-day spread.')).toBeTruthy();
-    expect(screen.getByText('Low confidence')).toBeTruthy();
+    expect(screen.getByText('Rough estimate')).toBeTruthy();
     // low confidence is one filled bar out of three: the filled one is darker than the other two
     const bars = screen.getAllByTestId('meter-bar').map((b) => getComputedStyle(b).backgroundColor);
     expect(bars).toHaveLength(3);

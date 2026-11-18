@@ -4,22 +4,21 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import { effectivePrefs } from '@/data/prefs';
-import { buildMonth, calendarLegend, cycleDayOf, dayEstimates, type LegendKind, monthOf, monthRows, shiftMonth } from '@/features/calendar/calendarModel';
+import { buildMonth, countedStarts, cycleDayOf, cycleHeadlines, dayEstimates, type LegendKind, legendKinds, monthOf, monthRows, shiftMonth } from '@/features/calendar/calendarModel';
 import { weekdayLabels } from '@/i18n/locale';
 import { deviceRegion, deviceWeekStart } from '@/services/locale';
 import { lunarAligned, moonPhaseDays, southernRegion } from '@/features/calendar/moon';
 import { MoonGlyph } from '@/features/calendar/MoonGlyph';
-import { DayCellView } from '@/features/calendar/DayCellView';
+import { DayCellView, ovulationGlow } from '@/features/calendar/DayCellView';
 import { type Detent, DaySheet } from '@/features/calendar/DaySheet';
+import { useDevParams, useDevScroll } from '@/features/dev/devParams';
 import { MonthList } from '@/features/calendar/MonthList';
+import { SheetDetail } from '@/features/calendar/SheetDetail';
 import { SwipeMonth } from '@/features/calendar/SwipeMonth';
 import { useCalendarData } from '@/features/calendar/useCalendarData';
 import { dayEvents, type DayEvent } from '@/features/logging/actions';
 import { visibleEntries } from '@/features/logging/removeEntry';
 import { FlagCard } from '@/features/today/cards';
-import { EstimateSections } from '@/features/guidance/sections/EstimateSections';
-import { GuidanceSections } from '@/features/guidance/sections/GuidanceSections';
-import { phaseOn, showSupplements } from '@/features/guidance/guidance';
 import { buildToday, SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
@@ -27,15 +26,17 @@ import { GlassSurface } from '@/ui/GlassBar';
 import { Screen } from '@/ui/Screen';
 import { Text } from '@/ui/Text';
 
-/** The legend swatch of a mark, drawn like the grid: solid is logged, dashed or glowing is an estimate. */
+/** The legend swatch of a mark, drawn like the grid: solid is logged, dashed, dotted or glowing is an estimate. Sizes as frame Calendar-1-Closed. */
 function Swatch({ kind, southern }: { kind: LegendKind; southern: boolean }) {
   const t = useTheme();
-  if (kind === 'cycleDay') return <Text variant="caption" tabular style={{ fontSize: 10, lineHeight: 14, fontWeight: '600', color: t.c.textSecondary }}>1</Text>;
+  if (kind === 'cycleDay') return <Text variant="caption" tabular style={{ fontSize: 10, lineHeight: 14, fontWeight: '600', color: t.c.textSecondary }}>12</Text>;
   if (kind === 'moon') return <MoonGlyph phase="first" southern={southern} size={14} color={t.c.textSecondary} />;
-  if (kind === 'period') return <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: t.c.period }} />;
-  if (kind === 'predicted') return <View style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 1.5, borderStyle: 'dashed', borderColor: t.c.period }} />;
-  if (kind === 'fertile') return <View style={{ width: 16, height: 10, borderRadius: 5, overflow: 'hidden' }}><View style={{ flex: 1, backgroundColor: t.c.fertile, opacity: 0.35 }} /><View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1.5, backgroundColor: t.c.fertile }} /></View>;
-  if (kind === 'ovulation') return <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: t.c.bg, boxShadow: `0 0 0 1px ${t.c.ovulation}4D, 0 0 5px 1px ${t.c.ovulation}73` }} />;
+  if (kind === 'period') return <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: t.c.period }} />;
+  if (kind === 'predicted') return <View style={{ width: 16, height: 16, borderRadius: 8, borderWidth: 2, borderStyle: 'dashed', borderColor: t.c.period }} />;
+  if (kind === 'predicted95') return <View style={{ width: 16, height: 16, borderRadius: 8, borderWidth: 1, borderStyle: 'dotted', borderColor: t.c.period }} />;
+  // the band's solid lower edge is kept (the frame's swatch has none): it is the grid's 3:1 mark for the fertile window (D-093)
+  if (kind === 'fertile') return <View style={{ width: 22, height: 12, borderRadius: 6, overflow: 'hidden' }}><View style={{ flex: 1, backgroundColor: t.c.fertile, opacity: 0.35 }} /><View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 1.5, backgroundColor: t.c.fertile }} /></View>;
+  if (kind === 'ovulation') { const ov = ovulationGlow(t, '7px 2px'); return <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: ov.backgroundColor, boxShadow: ov.shadows.join(', ') }} />; }
   return <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: kind === 'symptoms' ? t.c.accent : t.c.textSecondary }} />;
 }
 
@@ -49,6 +50,13 @@ export default function CalendarScreen() {
   const [month, setMonth] = useState(monthOf(today));
   const [selected, setSelected] = useState<ISODate>(today);
   const [detent, setDetent] = useState<Detent>('closed');
+  // dev only (tools/verify-screens): `?day=&sheet=` opens a day and a detent from a link; a new value is applied, the user's own taps are not undone
+  const dev = useDevParams();
+  const { scrollRef, anchor } = useDevScroll();
+  useEffect(() => {
+    if (dev.day) { setSelected(dev.day); setMonth(monthOf(dev.day)); }
+    if (dev.sheet) setDetent(dev.sheet);
+  }, [dev.day, dev.sheet]);
   const [sheetH, setSheetH] = useState(0);
   const [events, setEvents] = useState<DayEvent[]>([]);
 
@@ -78,17 +86,19 @@ export default function CalendarScreen() {
   }, [store, selected, version]);
 
   const isFuture = selected > today;
-  const flag = useMemo(() => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate: false, todayFlow: undefined }).flags.find((f) => !f.insightOnly), [prediction, history, today]);
+  const todayModel = useMemo(() => buildToday({ prediction, hasCycles: (history?.cycles.length ?? 0) > 0, today, showEstimate: false, todayFlow: undefined }), [prediction, history, today]);
+  const flag = todayModel.flags.find((f) => !f.insightOnly);
+  // estimates paused (pregnancy, suspended): the bar names the state where the cycle day would be, and no day counts a cycle (fix plan C5)
+  const pausedKey = todayModel.state === 'suspended' ? todayModel.headline.params?.stateKey : undefined;
   // what the marks on the selected day mean, in words (D-104); a future day with none says so
-  const estimates = useMemo(() => dayEstimates(selected, { prediction, pastOv, showEstimate, includeUncertain, period: periodDays.has(selected), today }), [selected, prediction, pastOv, showEstimate, includeUncertain, periodDays, today]);
+  const estimates = useMemo(() => {
+    const input = { prediction, pastOv, showEstimate, includeUncertain, today };
+    const own = dayEstimates(selected, { ...input, period: periodDays.has(selected) });
+    // the open cycle's two headline estimates come first (frames), without repeating a line the day already has
+    const heads = showEstimate ? cycleHeadlines(selected, input).filter((l) => !own.includes(l)) : [];
+    return [...heads, ...own];
+  }, [selected, prediction, pastOv, showEstimate, includeUncertain, periodDays, today]);
   const estimateLines = estimates.length || !isFuture ? estimates : [tr('day.estimates.none')];
-  // food and movement notes for the selected day: same call and inputs as the day screen, so both show the same phase
-  const guide = useMemo(
-    () => (prefs.cycleGuidance ? phaseOn({ date: selected, today, prediction, cycles: records, showEstimate }) : undefined),
-    [prefs.cycleGuidance, selected, today, prediction, records, showEstimate],
-  );
-  // her recent closed periods, oldest first, for the period-end card
-  const periodLengths = useMemo(() => records.filter((r) => r.nextStart && r.bleedDays).map((r) => r.bleedDays as number).slice(-6), [records]);
   const goToday = () => { setMonth(monthOf(today)); setSelected(today); };
   const select = (d: ISODate) => { setSelected(d); setMonth(monthOf(d)); };
 
@@ -96,17 +106,12 @@ export default function CalendarScreen() {
   const selectedCell = cells.find((c) => c.date === selected);
   const sheet = (
     <DaySheet
-      date={selected} today={today} cell={selectedCell} cycleDay={cycleDayOf(cycleStarts, selected)} period={periodDays.has(selected)}
+      date={selected} today={today} cell={selectedCell} cycleDay={cycleDayOf(countedStarts({ prediction, cycleStarts }), selected)} paused={pausedKey ? tr(String(pausedKey)) : undefined} period={periodDays.has(selected)}
       detent={detent} onDetent={setDetent} onInset={setSheetH} isFuture={isFuture}
       entries={events} onChanged={refresh} estimates={estimateLines}
       onLog={() => router.push({ pathname: '/log', params: { day: selected } })}
       onDetails={() => router.push({ pathname: '/day/[date]', params: { date: selected } })}
-      detail={() => (
-        <>
-          {prediction ? <EstimateSections prediction={prediction} day={selected} pastOv={pastOv} cycleStarts={cycleStarts} periodDays={periodDays} showEstimate={showEstimate} includeUncertain={includeUncertain} periodLengths={periodLengths} /> : null}
-          {guide ? <GuidanceSections day={guide} supplements={showSupplements(eff.teen)} compact={false} /> : null}
-        </>
-      )}
+      detail={() => <SheetDetail day={selected} pastOv={pastOv} cycleStarts={cycleStarts} periodDays={periodDays} showEstimate={showEstimate} includeUncertain={includeUncertain} teen={eff.teen} records={records} />}
     />
   );
 
@@ -115,9 +120,10 @@ export default function CalendarScreen() {
       <Text accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ color: t.c.textOnGlass, fontSize: 22, lineHeight: 26 }}>{glyph}</Text>
     </Pressable>
   );
-  // the navigation layer: month, Today as a secondary glass pill (never filled), the weekday row; everything on it is textOnGlass (accent fails on glass)
+  // the navigation layer: month, Today as a secondary glass pill (never filled), the weekday row; everything on it is textOnGlass (accent fails on glass).
+  // Legible glass: the grid scrolls beneath it, and its numbers must not read through the month title (D-130, fix plan X1)
   const toolbar = (
-    <GlassSurface>
+    <GlassSurface legible>
       <View style={{ padding: 8, gap: 4 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
           {circle('cal-prev', tr('calendar.prevMonth'), '‹', -1)}
@@ -140,18 +146,21 @@ export default function CalendarScreen() {
           </View>
           {circle('cal-next', tr('calendar.nextMonth'), '›', 1)}
         </View>
-        <View style={{ flexDirection: 'row', paddingHorizontal: 6 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-          {weekdayLabels(tr('calendar.weekdays', { returnObjects: true }) as unknown as string[], weekStart).map((w) => <Text key={w} variant="caption" style={{ width: `${100 / 7}%`, textAlign: 'center', color: t.c.textOnGlass, fontWeight: '500' }}>{w}</Text>)}
+        {/* single letters as the frame (M T W T F S S); hidden from screen readers, each cell's label names its weekday */}
+        <View testID="cal-weekdays" style={{ flexDirection: 'row', paddingHorizontal: 6 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          {/* the seven weekday initials repeat (T, S), so the position is the identity */}
+          {weekdayLabels(tr('calendar.weekdays', { returnObjects: true }) as unknown as string[], weekStart).map((w, k) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: M T W T F S S repeat; the position is the identity
+            <Text key={k} variant="caption" style={{ width: `${100 / 7}%`, textAlign: 'center', color: t.c.textOnGlass, fontWeight: '500' }}>{w}</Text>
+          ))}
         </View>
       </View>
     </GlassSurface>
   );
 
-  // an uncertain estimate that is not drawn leaves no marker and no band, so the legend names neither (U-18, D-098, D-106), unless a past
-  // cycle's estimate is drawn this month (P8-23); the numbers' entry goes with them
-  const drawnFertile = cells.some((c) => c.fertile !== undefined);
-  const drawn = (k: LegendKind) => (k === 'fertile' ? drawnFertile : cells.some((c) => c.ovulation !== undefined));
-  const legend = [...calendarLegend(showEstimate), ...(moon ? (['moon'] as const) : [])].filter((k) => !(model.ovulationHidden && (k === 'ovulation' || k === 'fertile') && !drawn(k)) && !(k === 'cycleDay' && !prefs.calendarCycleDay));
+  // the legend names only what the grid draws (D-118): an uncertain estimate that is not drawn, a paused month or the cycle-day setting off
+  // leave their entries out (U-18, D-098, D-106; fix plan C3, C5)
+  const legend = legendKinds(cells, { showEstimate, cycleDays: prefs.calendarCycleDay });
   const onDay = (c: (typeof cells)[number]) => {
     if (c.date === selected) setDetent((d) => (d === 'closed' ? 'small' : d)); // the bar opens to the sheet
     else select(c.date);
@@ -163,7 +172,7 @@ export default function CalendarScreen() {
       <View style={{ flex: 1 }} aria-hidden={large} accessibilityElementsHidden={large} importantForAccessibility={large ? 'no-hide-descendants' : 'auto'}>
         <Screen
           // the sheet floats above the tab bar (12 pt gap); the content is padded by its settled height so the last row scrolls clear of it
-          testID="screen-calendar" chrome={toolbar} bottomInset={24 + 12 + sheetH}>
+          testID="screen-calendar" chrome={toolbar} scrollRef={scrollRef} bottomInset={24 + 12 + sheetH}>
           <SwipeMonth month={month} onSwipe={(d) => setMonth((m) => shiftMonth(m, d))}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 4 }} testID="cal-grid">
               {cells.map((c, i) => (
@@ -176,7 +185,7 @@ export default function CalendarScreen() {
           </SwipeMonth>
           {flag ? <FlagCard f={flag} onMute={(c) => void muteFlag(c)} /> : null}
           <View style={{ gap: 8 }}>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 10, columnGap: 14 }}>
               {legend.map((k) => (
                 <View key={k} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 1 }}>
                   <Swatch kind={k} southern={southern} />
@@ -186,10 +195,9 @@ export default function CalendarScreen() {
             </View>
             <Text variant="caption" color="textSecondary" testID="cal-legend-rule">{tr('calendar.legendRule')}</Text>
             {model.ovulationUncertain ? <Text variant="caption" color="textSecondary" testID="cal-uncertain">{tr('calendar.ovulationUncertainCaption')}</Text> : null}
-            {showEstimate && (!model.ovulationHidden || drawnFertile) ? <Text variant="caption" color="textSecondary" testID="cal-fertile-caption">{tr('today.legendFertile')}</Text> : null}
             {moon ? <Text variant="caption" color="textSecondary" testID="cal-moon-note">{tr('calendar.moonNote')}</Text> : null}
           </View>
-          <MonthList title={model.title} rows={rows} periodDays={periodDays} selected={selected} today={today} onSelect={select} />
+          <View {...anchor('list')}><MonthList title={model.monthName} rows={rows} periodDays={periodDays} selected={selected} today={today} onSelect={select} /></View>
         </Screen>
       </View>
       {/* the sheet sits over the screen at every detent, so a drag moves one sheet from the bar to the full detail */}

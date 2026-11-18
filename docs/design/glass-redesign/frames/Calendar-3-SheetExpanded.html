@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Calendar option B: day sheet, dragged up</title>
+<title>Calendar 3: day sheet at its large detent</title>
 <style>
 body{margin:0}
 a{color:#A3354F}a:hover{color:#BC4560}
@@ -12,320 +12,64 @@ a{color:#A3354F}a:hover{color:#BC4560}
 <body>
 
 
-<div style="width: 390px; height: 3000px; position: relative; box-sizing: border-box; background: #8E8387; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
+<div style="width: 390px; height: 1000px; position: relative; box-sizing: border-box; background: #8E8387; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
   <!-- the calendar behind, dimmed while the sheet is at its large detent -->
   <div aria-hidden="true" style="height: 52px; background: linear-gradient(#F4EEEF, #D8CFD2)"></div>
 
-  <section role="dialog" aria-label="Monday 2 November, details" style="position: absolute; top: 40px; left: 0; right: 0; bottom: 0; border-radius: 34px 34px 0 0; background: rgba(255,255,255,0.97); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); box-shadow: 0 -6px 30px rgba(31,26,28,0.22), inset 0 1px 0 rgba(255,255,255,0.95); padding: 8px 16px 120px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
-    <button type="button" aria-label="Collapse the day sheet" style="align-self: center; width: 60px; height: 20px; border: 0; background: none; display: flex; align-items: center; justify-content: center; padding: 0"><span style="width: 36px; height: 5px; border-radius: 3px; background: rgba(31,26,28,0.22)"></span></button>
+  <section role="dialog" aria-label="Monday 2 November, details" style="position: absolute; top: 40px; left: 0; right: 0; bottom: 0; border-radius: 34px 34px 0 0; background: rgba(255,255,255,0.97); backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); box-shadow: 0 -6px 30px rgba(31,26,28,0.22), inset 0 1px 0 rgba(255,255,255,0.95); padding: 8px 16px 110px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+    <button type="button" aria-label="Hide the details" style="align-self: center; width: 60px; height: 20px; border: 0; background: none; display: flex; align-items: center; justify-content: center; padding: 0"><span style="width: 36px; height: 5px; border-radius: 3px; background: rgba(31,26,28,0.22)"></span></button>
 
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
       <span style="display: flex; flex-direction: column; gap: 2px">
         <span style="font-size: 22px; font-weight: 700">Monday 2 November</span>
         <span style="font-size: 13px; color: #4A4246">Today · Day 3 · Period</span>
       </span>
-      <button type="button" aria-label="Close" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid rgba(31,26,28,0.06); background: rgba(255,255,255,0.8); color: #4A4246; font-size: 15px">✕</button>
+      <button type="button" aria-label="Hide the details" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid rgba(31,26,28,0.06); background: rgba(255,255,255,0.8); color: #4A4246; font-size: 15px">✕</button>
     </div>
     <div style="display: flex; flex-wrap: wrap; gap: 8px">
-      <span style="display: inline-flex; align-items: center; gap: 6px; padding-left: 10px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E4E4E6; font-size: 14px"><svg width="9" height="10" viewBox="0 0 10 11" aria-hidden="true"><path d="M5 1C5 1 1 5.5 1 7.4A4 4 0 0 0 9 7.4C9 5.5 5 1 5 1Z" fill="#B8324A"></path></svg>Flow: medium<button type="button" aria-label="Remove: Flow medium" style="width: 36px; height: 36px; border: 0; background: none; color: #6B6165; font-size: 13px">✕</button></span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; padding-left: 10px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E4E4E6; font-size: 14px"><svg width="9" height="10" viewBox="0 0 10 11" aria-hidden="true"><path d="M5 1C5 1 1 5.5 1 7.4A4 4 0 0 0 9 7.4C9 5.5 5 1 5 1Z" fill="#B8324A"></path></svg>Medium flow<button type="button" aria-label="Remove: Medium flow" style="width: 36px; height: 36px; border: 0; background: none; color: #6B6165; font-size: 13px">✕</button></span>
       <span style="display: inline-flex; align-items: center; gap: 6px; padding-left: 10px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E4E4E6; font-size: 14px"><span style="width: 6px; height: 6px; border-radius: 3px; background: #BC4560"></span>Cramps (mild)<button type="button" aria-label="Remove: Cramps mild" style="width: 36px; height: 36px; border: 0; background: none; color: #6B6165; font-size: 13px">✕</button></span>
       <span style="display: inline-flex; align-items: center; gap: 6px; padding-left: 10px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E4E4E6; font-size: 14px"><span style="width: 6px; height: 6px; border-radius: 3px; background: #6B6165"></span>Energy: low<button type="button" aria-label="Remove: Energy low" style="width: 36px; height: 36px; border: 0; background: none; color: #6B6165; font-size: 13px">✕</button></span>
     </div>
 
-    <!-- ===================== ESTIMATES ===================== -->
-    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px">
-      <h2 style="margin: 0; font-size: 22px; font-weight: 700">Estimates</h2>
-      <span style="font-size: 12px; color: #4A4246; display: flex; align-items: center; gap: 10px"><span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #B8324A"></span>logged</span><span style="display: flex; align-items: center; gap: 4px"><span style="width: 10px; height: 10px; box-sizing: border-box; border-radius: 5px; border: 1.5px dashed #B8324A"></span>estimate</span></span>
-    </div>
-
-    <!-- period end -->
+    <!-- large detent, slimmed (owner, 2026-11-18): the day's estimate lines, a compact hormone curve and a short phase line.
+         The explanations (estimate cards with "How it was worked out", the full curve, food and movement, the evidence key, sources) live in Insights, This cycle. -->
+    <h2 style="margin: 8px 0 0 0; font-size: 22px; font-weight: 700">Estimates for this day</h2>
     <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 12px">
-      <div style="display: flex; align-items: center; justify-content: space-between">
-        <h3 style="margin: 0; font-size: 17px; font-weight: 600">When this period ends</h3>
-        <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Low confidence</span>
-      </div>
-      <div style="display: flex; justify-content: space-between" aria-hidden="true">
-        
-          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #6B6165"><span style="width:32px;height:32px;box-sizing:border-box;border-radius:16px;font-size:13px;display:flex;align-items:center;justify-content:center;background:#B8324A;color:#FFFFFF;">31</span>Sat</span>
-        
-          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #6B6165"><span style="width:32px;height:32px;box-sizing:border-box;border-radius:16px;font-size:13px;display:flex;align-items:center;justify-content:center;background:#B8324A;color:#FFFFFF;">1</span>Sun</span>
-        
-          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #6B6165"><span style="width:32px;height:32px;box-sizing:border-box;border-radius:16px;font-size:13px;display:flex;align-items:center;justify-content:center;background:#B8324A;color:#FFFFFF;font-weight:700;box-shadow:0 0 0 2px #FFFFFF, 0 0 0 3.5px #BC4560;">2</span>Today</span>
-        
-          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #6B6165"><span style="width:32px;height:32px;box-sizing:border-box;border-radius:16px;font-size:13px;display:flex;align-items:center;justify-content:center;border:1.5px dashed #B8324A;color:#1F1A1C;">3</span>Tue</span>
-        
-          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #6B6165"><span style="width:32px;height:32px;box-sizing:border-box;border-radius:16px;font-size:13px;display:flex;align-items:center;justify-content:center;border:1.5px dashed #B8324A;color:#1F1A1C;">4</span>Wed</span>
-        
-          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #6B6165"><span style="width:32px;height:32px;box-sizing:border-box;border-radius:16px;font-size:13px;display:flex;align-items:center;justify-content:center;border:1px dashed #D9A0AB;color:#1F1A1C;">5</span>Thu</span>
-        
-          <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #6B6165"><span style="width:32px;height:32px;box-sizing:border-box;border-radius:16px;font-size:13px;display:flex;align-items:center;justify-content:center;color:#1F1A1C;">6</span>Fri</span>
-        
-      </div>
-      <p style="margin: 0; font-size: 15px; line-height: 21px">Most likely ends <strong>3–5 Nov</strong>, on day 4 or 5.</p>
-      <div style="border-radius: 16px; background: #F3F3F4; padding: 12px; display: flex; flex-direction: column; gap: 8px">
-        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.4px; color: #4A4246">HOW IT WAS WORKED OUT</span>
-        <span style="font-size: 14px; line-height: 20px">Your last two periods lasted <strong>5 days</strong> (September) and <strong>4 days</strong> (October). Two periods are not much to go on, so the range is wide. It narrows as you log more.</span>
-        <!-- her lengths on the typical range -->
-        <div aria-label="Typical period length is up to 8 days; yours were 4 and 5 days" role="img" style="position: relative; height: 46px; margin-top: 4px">
-          <div style="position: absolute; left: 0; right: 0; top: 14px; height: 8px; border-radius: 4px; background: #E4E4E6"></div>
-          <div style="position: absolute; left: 0; width: 80%; top: 14px; height: 8px; border-radius: 4px; background: rgba(184,50,74,0.22)"></div>
-          <div style="position: absolute; left: calc(40% - 7px); top: 11px; width: 14px; height: 14px; border-radius: 7px; background: #B8324A; border: 2px solid #FFFFFF; box-sizing: border-box"></div>
-          <div style="position: absolute; left: calc(50% - 7px); top: 11px; width: 14px; height: 14px; border-radius: 7px; background: #B8324A; border: 2px solid #FFFFFF; box-sizing: border-box"></div>
-          <span style="position: absolute; left: 0; top: 28px; font-size: 11px; color: #6B6165">0 days</span>
-          <span style="position: absolute; left: calc(45% - 22px); top: 0; font-size: 11px; color: #1F1A1C; font-weight: 600; transform: translateY(-4px)">yours</span>
-          <span style="position: absolute; left: calc(80% - 30px); top: 28px; font-size: 11px; color: #6B6165">8 days</span>
-          <span style="position: absolute; right: 0; top: 28px; font-size: 11px; color: #6B6165">10</span>
-        </div>
-        <span style="font-size: 12px; line-height: 17px; color: #4A4246">Shaded: periods up to 8 days long are within the typical range used by gynaecologists worldwide.<sup>1</sup></span>
-      </div>
+      <div style="display: flex; align-items: center; gap: 10px"><span style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 6px; border: 2px dashed #B8324A; flex-shrink: 0" aria-hidden="true"></span><span style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0"><span style="display: flex"><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: #3F6F88; border: 1px solid rgba(63,111,136,0.45); border-radius: 9px; padding: 0 6px; flex-shrink: 0">ESTIMATE</span></span><span style="font-size: 15px; line-height: 21px">Period likely ends 3–5 Nov</span></span><span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246; flex-shrink: 0"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Rough estimate</span></div>
+      <div style="height: 1px; background: #E4E4E6"></div>
+      <div style="display: flex; align-items: center; gap: 10px"><span style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 6px; border: 2px dashed #B8324A; flex-shrink: 0" aria-hidden="true"></span><span style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0"><span style="display: flex"><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: #3F6F88; border: 1px solid rgba(63,111,136,0.45); border-radius: 9px; padding: 0 6px; flex-shrink: 0">ESTIMATE</span></span><span style="font-size: 15px; line-height: 21px">Next period likely 26–30 Nov</span></span><span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246; flex-shrink: 0"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Fair estimate</span></div>
     </article>
 
-    <!-- next period -->
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 12px">
-      <div style="display: flex; align-items: center; justify-content: space-between">
-        <h3 style="margin: 0; font-size: 17px; font-weight: 600">Next period</h3>
-        <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Medium confidence</span>
-      </div>
-      <p style="margin: 0; font-size: 15px; line-height: 21px">Most likely starts <strong>26–30 Nov</strong>, around 28 Nov.</p>
-      <div role="img" aria-label="8 in 10 chance it starts between 26 and 30 November; about 19 in 20 between 24 November and 2 December" style="position: relative; height: 64px">
-        <div style="position: absolute; left: 0; right: 0; top: 22px; height: 1px; background: #E4E4E6"></div>
-        <div style="position: absolute; left: 50px; width: 225px; top: 14px; height: 18px; border-radius: 9px; background: rgba(184,50,74,0.14); border: 1px dashed rgba(184,50,74,0.45); box-sizing: border-box"></div>
-        <div style="position: absolute; left: 100px; width: 125px; top: 14px; height: 18px; border-radius: 9px; background: rgba(184,50,74,0.42)"></div>
-        <div style="position: absolute; left: 153px; top: 9px; width: 18px; height: 28px; border-radius: 9px; background: #FFFFFF; box-shadow: 0 0 0 1.5px #B8324A, 0 2px 6px rgba(31,26,28,0.15)"></div>
-        <span style="position: absolute; left: 32px; top: 40px; font-size: 11px; color: #6B6165">24 Nov</span>
-        <span style="position: absolute; left: 86px; top: 40px; font-size: 11px; color: #1F1A1C; font-weight: 600">26</span>
-        <span style="position: absolute; left: 152px; top: 40px; font-size: 11px; color: #1F1A1C; font-weight: 600">28</span>
-        <span style="position: absolute; left: 217px; top: 40px; font-size: 11px; color: #1F1A1C; font-weight: 600">30</span>
-        <span style="position: absolute; left: 258px; top: 40px; font-size: 11px; color: #6B6165">2 Dec</span>
-      </div>
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; line-height: 16px; color: #4A4246">
-        <span style="display: flex; gap: 6px; align-items: flex-start"><span style="width: 14px; height: 10px; border-radius: 5px; background: rgba(184,50,74,0.42); flex-shrink: 0; margin-top: 3px"></span>8 in 10 chance it starts here</span>
-        <span style="display: flex; gap: 6px; align-items: flex-start"><span style="width: 14px; height: 10px; box-sizing: border-box; border-radius: 5px; background: rgba(184,50,74,0.14); border: 1px dashed rgba(184,50,74,0.45); flex-shrink: 0; margin-top: 3px"></span>About 19 in 20 within the whole bar</span>
-      </div>
-      <div style="border-radius: 16px; background: #F3F3F4; padding: 12px; display: flex; flex-direction: column; gap: 6px">
-        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.4px; color: #4A4246">HOW IT WAS WORKED OUT</span>
-        <span style="font-size: 14px; line-height: 20px">Your own cycles (28 and 28 days) are combined with what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long.<sup>2</sup> With only two of your cycles, the study still carries much of the weight. After about six regular cycles your own pattern takes over and confidence can reach high.</span>
-      </div>
-    </article>
-
-    <!-- ovulation -->
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 12px">
-      <div style="display: flex; align-items: center; justify-content: space-between">
-        <h3 style="margin: 0; font-size: 17px; font-weight: 600">Ovulation and fertile window</h3>
-        <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Medium confidence</span>
-      </div>
-      <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; background: rgba(185,116,30,0.12); color: #8A5512; font-size: 12px; font-weight: 600"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="#8A5512" stroke-width="1.4"></circle><path d="M6 3.3V6.6M6 8.4V8.6" stroke="#8A5512" stroke-width="1.5" stroke-linecap="round"></path></svg>Calendar only: no LH tests or temperatures this cycle</span>
-      <p style="margin: 0; font-size: 15px; line-height: 21px">Ovulation most likely <strong>10–18 Nov</strong>, around 14 Nov (day 15).</p>
-      <!-- this cycle as a strip of days -->
-      <div role="img" aria-label="This cycle: period on days 1 to 3, estimated to day 5; fertile window estimate from day 7 to day 21; ovulation estimate days 11 to 19, most likely day 15; next period likely days 27 to 31" style="display: flex; flex-direction: column; gap: 4px">
-        <div style="position: relative; height: 16px">
-          <div style="position: absolute; left: calc(10 * 100% / 32); width: calc(9 * 100% / 32); top: 7px; height: 0; border-top: 2px dotted #3F6F88"></div>
-          <div style="position: absolute; left: calc(14 * 100% / 32 - 1px); top: 0; width: 12px; height: 12px; border-radius: 6px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(63,111,136,0.3), 0 0 8px 2px rgba(63,111,136,0.45)"></div>
-        </div>
-        <div style="display: flex; gap: 1px">
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#B8324A;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#B8324A;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#B8324A;box-shadow:0 0 0 1.5px #FFFFFF, 0 0 0 3px #BC4560;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;border:1.5px dashed #B8324A;background:#FFFFFF;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;border:1.5px dashed #B8324A;background:#FFFFFF;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#F3F3F4;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.28);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.34);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.40);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.46);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.51);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.54);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.56);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.54);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.52);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.47);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.42);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.36);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.30);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.25);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:rgba(92,138,110,0.21);"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#F3F3F4;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#F3F3F4;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#F3F3F4;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#F3F3F4;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#F3F3F4;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;border:1.5px dashed #B8324A;background:#FFFFFF;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;border:1.5px dashed #B8324A;background:#FFFFFF;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;border:1.5px dashed #B8324A;background:#FFFFFF;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;border:1.5px dashed #B8324A;background:#FFFFFF;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;border:1.5px dashed #B8324A;background:#FFFFFF;"></span>
-          
-            <span style="flex:1;height:22px;border-radius:4px;box-sizing:border-box;background:#F3F3F4;"></span>
-          
-        </div>
-        <div style="position: relative; height: 14px; font-size: 10px; color: #6B6165">
-          <span style="position: absolute; left: 0">Day 1</span>
-          <span style="position: absolute; left: calc(2 * 100% / 32); color: #BC4560; font-weight: 600">▲ today</span>
-          <span style="position: absolute; left: calc(14 * 100% / 32 - 4px)">15</span>
-          <span style="position: absolute; left: calc(26 * 100% / 32 - 4px)">27</span>
-          <span style="position: absolute; right: 0">32</span>
-        </div>
-      </div>
-      <div style="border-radius: 16px; background: #F3F3F4; padding: 12px; display: flex; flex-direction: column; gap: 6px">
-        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.4px; color: #4A4246">HOW IT WAS WORKED OUT</span>
-        <span style="font-size: 14px; line-height: 20px">The phase after ovulation lasts about 12.4 days on average (give or take 2.4), so ovulation is placed that far before your expected next period.<sup>2</sup> Cycles differ mostly in the phase <em>before</em> ovulation, so a calendar estimate can be several days off.<sup>2</sup> Positive LH tests or a temperature rise would narrow it.</span>
-        <span style="font-size: 14px; line-height: 20px">The fertile window is the 6 days ending on ovulation day.<sup>3</sup> Because ovulation itself is uncertain, the green band spreads wider, darker on the days most likely to be in the window.</span>
-      </div>
-      <p style="margin: 0; font-size: 12px; line-height: 17px; color: #4A4246; border-top: 1px solid #E4E4E6; padding-top: 10px">[Fixed regulatory wording from PLAN §2.3 goes here, unchanged.]</p>
-    </article>
-
-    <!-- ===================== FOOD AND MOVEMENT ===================== -->
-    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px">
-      <h2 style="margin: 0; font-size: 22px; font-weight: 700">Food and movement</h2>
-      <span style="font-size: 12px; color: #4A4246">Period</span>
-    </div>
-
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 10px">
-      <h3 style="margin: 0; font-size: 17px; font-weight: 600">What is changing</h3>
-      <svg width="326" height="132" viewBox="0 0 326 132" role="img" aria-label="Illustration of a typical cycle: estrogen rises before ovulation and again a little after; progesterone rises after ovulation; both fall before the next period. Today is day 3.">
-        <rect x="0" y="6" width="48" height="104" rx="6" fill="rgba(184,50,74,0.10)"></rect>
-        <text x="4" y="20" font-size="10" fill="#B8324A" font-family="-apple-system, sans-serif">period</text>
-        <line x1="0" y1="110" x2="326" y2="110" stroke="#E4E4E6" stroke-width="1"></line>
-        <path d="M0,96 C40,96 80,86 110,62 S135,20 146,22 S166,64 186,68 S226,48 242,50 S292,82 326,94" fill="none" stroke="#BC4560" stroke-width="2.4" stroke-linecap="round"></path>
-        <path d="M0,102 L150,102 C176,102 196,42 240,40 S300,84 326,102" fill="none" stroke="#6B6165" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="1 0"></path>
-        <text x="118" y="16" font-size="11" font-weight="600" fill="#BC4560" font-family="-apple-system, sans-serif">Estrogen</text>
-        <text x="226" y="32" font-size="11" font-weight="600" fill="#4A4246" font-family="-apple-system, sans-serif">Progesterone</text>
-        <line x1="24" y1="6" x2="24" y2="110" stroke="#1F1A1C" stroke-width="1.5" stroke-dasharray="3 3"></line>
-        <circle cx="24" cy="96" r="4" fill="#1F1A1C"></circle>
-        <text x="0" y="126" font-size="10" fill="#6B6165" font-family="-apple-system, sans-serif">Day 1</text>
-        <text x="30" y="126" font-size="10" font-weight="600" fill="#1F1A1C" font-family="-apple-system, sans-serif">you are here</text>
-        <text x="140" y="126" font-size="10" fill="#6B6165" font-family="-apple-system, sans-serif">ovulation</text>
-        <text x="300" y="126" font-size="10" fill="#6B6165" font-family="-apple-system, sans-serif">Day 28</text>
+    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between"><h3 style="margin: 0; font-size: 17px; font-weight: 600">What is changing</h3><span style="font-size: 12px; color: #4A4246">Period</span></div>
+      <svg width="326" height="96" viewBox="0 0 326 96" role="img" aria-label="A typical cycle, drawn to explain: estrogen rises before ovulation; progesterone rises after it; both fall before the next period. You are here: day 3.">
+        <g transform="scale(1,0.66)">
+          <rect x="0" y="6" width="48" height="104" rx="6" fill="rgba(184,50,74,0.10)"></rect>
+          <line x1="0" y1="110" x2="326" y2="110" stroke="#E4E4E6" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+          <path d="M0,96 C40,96 80,86 110,62 S135,20 146,22 S166,64 186,68 S226,48 242,50 S292,82 326,94" fill="none" stroke="#BC4560" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+          <path d="M0,102 L150,102 C176,102 196,42 240,40 S300,84 326,102" fill="none" stroke="#6B6165" stroke-width="2.2" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+          <line x1="24" y1="6" x2="24" y2="110" stroke="#1F1A1C" stroke-width="1.5" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"></line>
+        </g>
+        <circle cx="24" cy="63" r="4" fill="#1F1A1C"></circle>
+        <text x="118" y="12" font-size="11" font-weight="600" fill="#BC4560" font-family="-apple-system, sans-serif">Estrogen</text>
+        <text x="236" y="22" font-size="11" font-weight="600" fill="#4A4246" font-family="-apple-system, sans-serif">Progesterone</text>
+        <text x="0" y="90" font-size="10" fill="#6B6165" font-family="-apple-system, sans-serif">Day 1</text>
+        <text x="30" y="90" font-size="10" font-weight="600" fill="#1F1A1C" font-family="-apple-system, sans-serif">you are here</text>
+        <text x="140" y="90" font-size="10" fill="#6B6165" font-family="-apple-system, sans-serif">ovulation</text>
+        <text x="292" y="90" font-size="10" fill="#6B6165" font-family="-apple-system, sans-serif">Day 28</text>
       </svg>
       <span style="font-size: 12px; color: #6B6165">A typical cycle, drawn to explain. Not your own hormone levels.</span>
-      <p style="margin: 0; font-size: 14px; line-height: 20px">Estrogen and progesterone are at their lowest, and bleeding carries iron out of the body. In a study that tracked 397 substances in the blood and urine of 34 women across the cycle, amino acids and vitamin D were higher during the period than in the second half of the cycle.<sup>4</sup></p>
+      <p style="margin: 0; font-size: 14px; line-height: 20px">Estrogen and progesterone are at their lowest, and bleeding carries iron out of the body.</p>
     </article>
 
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 10px">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-        <span style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 18px; background: #F4DCE0; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 8H14A6 6 0 0 1 2 8Z M5 5C5 3.5 6 3 6 2M8 5C8 3.5 9 3 9 2M11 5C11 3.5 12 3 12 2" fill="none" stroke="#A3354F" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><h3 style="margin: 0; font-size: 17px; font-weight: 600">Iron, with vitamin C</h3></span>
-        <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246; flex-shrink: 0"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span></span>Strong</span>
-      </div>
-      <p style="margin: 0; font-size: 14px; line-height: 20px">Iron-rich foods such as red meat, chicken, fish, lentils, tofu or leafy greens, with vitamin C from citrus, capsicum or tomato in the same meal.</p>
-      <div style="display: flex; flex-wrap: wrap; gap: 6px">
-        <span style="padding: 6px 12px; border-radius: 16px; background: #F3F3F4; font-size: 13px">Beef and broccoli stir-fry</span>
-        <span style="padding: 6px 12px; border-radius: 16px; background: #F3F3F4; font-size: 13px">Lentil dahl with lemon</span>
-        <span style="padding: 6px 12px; border-radius: 16px; background: #F3F3F4; font-size: 13px">Spinach and chickpea curry</span>
-      </div>
-      <div style="display: flex; gap: 12px; align-items: center; border-radius: 16px; background: #F3F3F4; padding: 12px">
-        <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 6px; width: 110px; flex-shrink: 0">
-          <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4A4246"><span style="height: 10px; width: 100%; border-radius: 5px; background: #BC4560"></span>18</span>
-          <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #4A4246"><span style="height: 10px; width: 44%; border-radius: 5px; background: #6B6165"></span>8</span>
-        </div>
-        <span style="font-size: 13px; line-height: 18px">Monthly bleeding is why women aged 19 to 50 need <strong>18 mg</strong> of iron a day, against <strong>8 mg</strong> for men.<sup>5</sup> Vitamin C in the same meal helps the body absorb iron from plant foods.</span>
-      </div>
-    </article>
-
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 10px">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-        <span style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 18px; background: #F3F3F4; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10C5 5 11 5 15 10C11 15 5 15 2 10ZM15 10L18 7M15 10L18 13" fill="none" stroke="#4A4246" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><h3 style="margin: 0; font-size: 17px; font-weight: 600">Omega-3 from food</h3></span>
-        <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246; flex-shrink: 0"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Early</span>
-      </div>
-      <p style="margin: 0; font-size: 14px; line-height: 20px">Oily fish such as salmon, sardines or mackerel, or walnuts, chia and linseed.</p>
-      <p style="margin: 0; font-size: 13px; line-height: 18px; color: #4A4246; border-radius: 16px; background: #F3F3F4; padding: 12px">Why it is only early: the period-pain trials used omega-3 <em>supplements</em> (below). Whether eating it as food eases pain has not been tested. Fish twice a week fits general heart-health advice either way.</p>
-    </article>
-
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 10px">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-        <span style="display: flex; align-items: center; gap: 10px"><span style="width: 36px; height: 36px; border-radius: 18px; background: #F3F3F4; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 10C3.5 6 5.5 6 7.5 9S11.5 12 14.5 7" fill="none" stroke="#4A4246" stroke-width="1.4" stroke-linecap="round"></path></svg></span><h3 style="margin: 0; font-size: 17px; font-weight: 600">Movement that feels good</h3></span>
-        <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246; flex-shrink: 0"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span></span>Strong</span>
-      </div>
-      <p style="margin: 0; font-size: 14px; line-height: 20px">A walk, a swim, yoga or your usual training can lift your mood and energy. Rest is fine too.</p>
-      <div style="display: flex; flex-direction: column; gap: 8px; border-radius: 16px; background: #F3F3F4; padding: 12px; font-size: 13px; line-height: 18px">
-        <span style="display: flex; gap: 10px"><strong style="width: 70px; flex-shrink: 0; font-size: 12px">1,000+ trials</strong><span>Reviews find exercise improves mood and energy.<sup>6</sup></span></span>
-        <span style="display: flex; gap: 10px"><strong style="width: 70px; flex-shrink: 0; font-size: 12px">One session</strong><span>On average, a single session lifts mood.<sup>7</sup></span></span>
-        <span style="display: flex; gap: 10px"><strong style="width: 70px; flex-shrink: 0; font-size: 12px">Smaller trials</strong><span>Regular exercise also eased period pain.<sup>8</sup></span></span>
-      </div>
-    </article>
-
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 12px">
-      <h3 style="margin: 0; font-size: 17px; font-weight: 600">Supplements with some research</h3>
-      <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 10px; border-bottom: 1px solid #E4E4E6">
-        <span style="display: flex; justify-content: space-between; align-items: center"><strong style="font-size: 15px">Ginger</strong><span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Some</span></span>
-        <span style="font-size: 13px; line-height: 18px; color: #4A4246">750 to 2,000 mg of ginger powder a day, in the first 3 to 4 days of the period. A 2024 review of 24 studies found less pain than with a placebo, and no clear difference from anti-inflammatory pain relievers. The trials were small and their results varied.<sup>9</sup></span>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 10px; border-bottom: 1px solid #E4E4E6">
-        <span style="display: flex; justify-content: space-between; align-items: center"><strong style="font-size: 15px">Omega-3 (fish oil)</strong><span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Some</span></span>
-        <span style="font-size: 13px; line-height: 18px; color: #4A4246">300 to 1,800 mg a day for 2 to 3 months. A 2024 review of 12 studies with 881 women found less period pain. Reviews disagree on how large the effect is.<sup>9</sup></span>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 4px">
-        <span style="display: flex; justify-content: space-between; align-items: center"><strong style="font-size: 15px">Zinc</strong><span style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #4A4246"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Some</span></span>
-        <span style="font-size: 13px; line-height: 18px; color: #4A4246">In 6 small trials with 739 women, zinc eased period pain; doses varied widely. More than 40 mg a day over a long time can lower copper levels.<sup>10</sup></span>
-      </div>
-      <div style="display: flex; gap: 10px; border-radius: 16px; background: rgba(185,116,30,0.10); padding: 12px">
-        <svg width="18" height="18" viewBox="0 0 12 12" style="flex-shrink: 0" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="#8A5512" stroke-width="1.2"></circle><path d="M6 3.3V6.6M6 8.4V8.6" stroke="#8A5512" stroke-width="1.3" stroke-linecap="round"></path></svg>
-        <span style="font-size: 13px; line-height: 18px; color: #5E3A0C">Supplements are not tested like medicines and can interact with them. A pharmacist or doctor can check one with you before you start, especially if you take other medicines.</span>
-      </div>
-    </article>
-
-    <!-- evidence key -->
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 10px">
-      <h3 style="margin: 0; font-size: 17px; font-weight: 600">How to read the evidence bars</h3>
-      <span style="display: flex; gap: 10px; font-size: 13px; line-height: 18px"><span style="display: flex; gap: 2px; padding-top: 3px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span></span><span><strong>Strong:</strong> large reviews or national guidelines agree.</span></span>
-      <span style="display: flex; gap: 10px; font-size: 13px; line-height: 18px"><span style="display: flex; gap: 2px; padding-top: 3px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span><span><strong>Some:</strong> several small trials point the same way, but results vary.</span></span>
-      <span style="display: flex; gap: 10px; font-size: 13px; line-height: 18px"><span style="display: flex; gap: 2px; padding-top: 3px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span><span><strong>Early:</strong> one study, lab work, or a plausible link that has not been tested in people.</span></span>
-      <span style="display: flex; gap: 10px; font-size: 13px; line-height: 18px"><span style="display: flex; gap: 2px; padding-top: 3px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span><span><strong>General:</strong> good advice on any day, not specific to this part of the cycle.</span></span>
-      <span style="font-size: 12px; line-height: 17px; color: #6B6165">Estimates use the same bars for confidence: how sure the app is about a date, from your own data.</span>
-    </article>
-
-    <!-- sources -->
-    <article style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 8px">
-      <h3 style="margin: 0; font-size: 17px; font-weight: 600">Sources</h3>
-      <ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 17px; color: #4A4246">
-        <li>Munro and others 2018, International Journal of Gynecology and Obstetrics (FIGO normal bleeding ranges).</li>
-        <li>Bull and others 2019, npj Digital Medicine (612,613 cycles, 124,648 users).</li>
-        <li>Wilcox and others 1995, New England Journal of Medicine (221 women).</li>
-        <li>Draper and others 2018, Scientific Reports (34 women, 397 substances).</li>
-        <li>NHMRC Nutrient Reference Values: iron.</li>
-        <li>Singh and others 2023, British Journal of Sports Medicine.</li>
-        <li>Weinstein and others 2024, Psychosomatic Medicine.</li>
-        <li>Armour and others 2019, Cochrane review of exercise for period pain.</li>
-        <li>Daily and others 2015, Pain Medicine (ginger); 2024 reviews of ginger and of omega-3 for period pain.</li>
-        <li>Hsu and others 2024, Nutrients (zinc).</li>
-      </ol>
-      <p style="margin: 6px 0 0 0; font-size: 12px; line-height: 17px; color: #6B6165">Research on eating and training by cycle phase is young, and how you feel is a better guide than the calendar. This is general information, not medical advice.</p>
-    </article>
+    <a href="#" aria-label="More about this cycle: estimates explained, food and movement, sources. Opens Insights, This cycle" style="align-self: center; min-height: 44px; padding: 0 18px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.07), 0 1px 3px rgba(31,26,28,0.05); color: #1F1A1C; text-decoration: none; font-size: 15px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px">More about this cycle<span aria-hidden="true">›</span></a>
   </section>
 
-  <!-- primary action pinned to the bottom of the sheet -->
-  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 16px 28px 16px; background: linear-gradient(rgba(250,249,250,0), rgba(250,249,250,0.96) 35%); display: flex; gap: 10px">
-    <button type="button" style="flex: 1; min-height: 52px; border-radius: 26px; border: 0; background: rgba(188,69,96,0.96); color: #FFFFFF; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 16px rgba(188,69,96,0.32)"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2V14M2 8H14" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>Log this day</button>
+  <!-- footer pinned to the bottom of the sheet: the one filled control (Log this day) and the secondary Open day (the full day screen) -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 16px 28px 16px; background: rgba(250,249,250,0.97); border-top: 1px solid #E4E4E6; display: flex; gap: 10px">
+    <button type="button" style="flex: 1; min-height: 52px; padding: 0 20px; border-radius: 26px; border: 0; background: #BC4560; color: #FFFFFF; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 6px 16px rgba(31,26,28,0.18)"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2V14M2 8H14" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>Log this day</button>
+    <a href="#" aria-label="Open the full day screen: Monday 2 November" style="min-height: 52px; padding: 0 20px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.07), 0 1px 3px rgba(31,26,28,0.05); color: #1F1A1C; text-decoration: none; font-size: 15px; font-weight: 600; display: flex; align-items: center">Open day</a>
   </div>
 </div>
 

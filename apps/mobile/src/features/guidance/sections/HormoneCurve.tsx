@@ -42,7 +42,8 @@ export function useSvgText() {
 /** x of the middle of each phase on the 326-wide curve. */
 const MARK_X: Record<GuidePhase, number | undefined> = { menstrual: 24, follicular: 85, ovulatory: 146, luteal: 215, premenstrual: 290, general: undefined };
 
-export function HormoneCurve({ day }: { day: GuideDay }) {
+/** `compact` (the day sheet, frame Calendar-3-SheetExpanded): the same drawing two thirds as tall, without the "period" label. */
+export function HormoneCurve({ day, compact = false }: { day: GuideDay; compact?: boolean }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const { scale, fs } = useSvgText();
@@ -55,23 +56,25 @@ export function HormoneCurve({ day }: { day: GuideDay }) {
   // the curves sit below the top labels and above the bottom ones; both rows grow with the text. At large sizes the marker label gets a row of its own.
   const top = mid - 11; // the curves move down by what the top labels grew
   const large = scale > 1.3;
-  const axis = 110 + top; // the baseline the curves rest on
+  const k = compact ? 0.66 : 1; // vertical scale of the drawing between y 6 and the axis
+  const axis = 6 + 104 * k + top; // the baseline the curves rest on (110 + top at full size)
   const row1 = axis + 6 + small;
   const row2 = large ? row1 + small * 1.2 : row1;
   const H = row2 + small * 0.6 + 2;
   const fill = { fill: t.c.textSecondary } as const;
   return (
-    <View testID="hormone-curve" style={{ gap: 6 }}>
+    <View testID={compact ? 'hormone-curve-compact' : 'hormone-curve'} style={{ gap: 6 }}>
       <Picture w={W} h={H} label={label}>
         <Rect x={0} y={6} width={48} height={axis - 6} rx={6} fill={t.c.period} fillOpacity={0.1} />
-        <SvgText x={4} y={10 + small} fontSize={small} fill={t.c.period}>{tr('guidance.curve.period')}</SvgText>
+        {compact ? null : <SvgText x={4} y={10 + small} fontSize={small} fill={t.c.period}>{tr('guidance.curve.period')}</SvgText>}
         <Line x1={0} y1={axis} x2={W} y2={axis} stroke={t.c.border} strokeWidth={1} />
-        <G transform={`translate(0 ${top})`}>
-          <Path d="M0,96 C40,96 80,86 110,62 S135,20 146,22 S166,64 186,68 S226,48 242,50 S292,82 326,94" fill="none" stroke={t.c.accent} strokeWidth={2.4} strokeLinecap="round" />
-          <Path d="M0,102 L150,102 C176,102 196,42 240,40 S300,84 326,102" fill="none" stroke={t.c.textSecondary} strokeWidth={2.4} strokeLinecap="round" />
+        {/* y → top + 6 + (y − 6)·k; the strokes keep their width when squashed */}
+        <G transform={`translate(0 ${top + 6 - 6 * k}) scale(1 ${k})`}>
+          <Path d="M0,96 C40,96 80,86 110,62 S135,20 146,22 S166,64 186,68 S226,48 242,50 S292,82 326,94" fill="none" stroke={t.c.accent} strokeWidth={2.4} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          <Path d="M0,102 L150,102 C176,102 196,42 240,40 S300,84 326,102" fill="none" stroke={t.c.textSecondary} strokeWidth={2.4} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         </G>
-        <SvgText x={118} y={16 + top} fontSize={mid} fontWeight="600" fill={t.c.accent}>{tr('guidance.curve.estrogen')}</SvgText>
-        <SvgText x={large ? W : 226} y={32 + top} textAnchor={large ? 'end' : 'start'} fontSize={mid} fontWeight="600" {...fill}>{tr('guidance.curve.progesterone')}</SvgText>
+        <SvgText x={118} y={(compact ? 12 : 16) + top} fontSize={mid} fontWeight="600" fill={t.c.accent}>{tr('guidance.curve.estrogen')}</SvgText>
+        <SvgText x={large ? W : compact ? 236 : 226} y={(compact ? 22 : 32) + top} textAnchor={large ? 'end' : 'start'} fontSize={mid} fontWeight="600" {...fill}>{tr('guidance.curve.progesterone')}</SvgText>
         {x === undefined ? null : (
           <>
             <Line x1={x} y1={6} x2={x} y2={axis} stroke={t.c.textPrimary} strokeWidth={1.5} strokeDasharray="3 3" />

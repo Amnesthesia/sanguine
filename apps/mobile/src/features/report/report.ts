@@ -1,17 +1,23 @@
 // Report for a doctor (P8-6, roadmap R2-1, D-084): an HTML page the phone prints to PDF and the user sends with the share sheet.
 // Pure: the strings come from the copy files through `t`. Facts from the user's own logs, the fixed flag wording (§4.10), the intended
 // purpose (§2.3) and the engine version; no condition is named, nothing is scored, and the ovulation column is opt-in and absent under 18.
-import { addDays, type CycleRecord, type DailyLog, diffDays, type HealthFlag, type ISODate, type TemperatureReading } from '@sanguine/engine';
+import { addDays, analyzeCycles, type CycleRecord, type EngineSettings, diffDays, type HealthFlag, type History, type ISODate } from '@sanguine/engine';
 import { formatDayYear } from '@/ui/format';
 
 export interface ReportOptions { cycles: number; symptoms: boolean; temperatures: boolean; flags: boolean; ovulation: boolean }
 export const DEFAULT_REPORT: ReportOptions = { cycles: 6, symptoms: true, temperatures: true, flags: true, ovulation: false };
+/** `history.cycles` are raw records without `length`, `nextStart` or ovulation; the analysed records carry them (S7, P8-34). */
 export interface ReportInput {
-  cycles: CycleRecord[]; logs: DailyLog[]; temperatures: TemperatureReading[]; flags: HealthFlag[];
+  history: History; settings: EngineSettings; flags: HealthFlag[];
   today: ISODate; age: number | undefined; lifeStateKey: string | undefined;
   engine: { version: string; hash: string }; fertilityTools: boolean;
 }
 type T = (key: string, params?: Record<string, unknown>) => string;
+
+/** The last `count` closed cycles (those with a length), oldest first, from the analysed records. The report and its screen both use this. */
+export function closedCycles(history: History, settings: EngineSettings, count: number): CycleRecord[] {
+  return analyzeCycles(history, settings).map((c) => c.record).filter((c) => c.length !== undefined).sort((a, b) => (a.start < b.start ? -1 : 1)).slice(-count);
+}
 
 const FLOW_ORDER = ['spotting', 'light', 'medium', 'heavy'] as const;
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -27,15 +33,16 @@ function lengthChart(lengths: number[]): string {
 }
 
 export function buildReport(i: ReportInput, o: ReportOptions, t: T): string {
-  const closed = [...i.cycles].filter((c) => c.length !== undefined).sort((a, b) => (a.start < b.start ? -1 : 1)).slice(-o.cycles);
+  const { logs, temperatures } = i.history;
+  const closed = closedCycles(i.history, i.settings, o.cycles);
   const ovulation = o.ovulation && i.fertilityTools;
-  const temps = o.temperatures && i.temperatures.length > 0;
+  const temps = o.temperatures && temperatures.length > 0;
   const inCycle = (c: CycleRecord, d: ISODate) => d >= c.start && diffDays(d, c.start) < (c.length as number);
   const rows = closed.map((c) => {
-    const days = i.logs.filter((l) => inCycle(c, l.date));
+    const days = logs.filter((l) => inCycle(c, l.date));
     const heaviest = days.reduce<number>((m, l) => Math.max(m, l.flow && l.flow !== 'none' ? FLOW_ORDER.indexOf(l.flow) : -1), -1);
     const cells = [formatDayYear(c.start), String(c.length), c.bleedDays === undefined ? '' : String(c.bleedDays), heaviest < 0 ? '' : t(`log.flowLevels.${FLOW_ORDER[heaviest]}`)];
-    if (temps) cells.push(String(i.temperatures.filter((r) => inCycle(c, r.date)).length));
+    if (temps) cells.push(String(temperatures.filter((r) => inCycle(c, r.date)).length));
     if (ovulation) cells.push(c.ovulation ? t('report.ovulationAround', { date: formatDayYear(c.ovulation.point), basis: t(`report.basis.${c.ovulation.basis}`) }) : '');
     cells.push(c.quality === 'valid' ? '' : t(`insights.quality.${c.quality}`));
     return `<tr>${cells.map((x) => `<td>${esc(x)}</td>`).join('')}</tr>`;
@@ -59,7 +66,7 @@ export function buildReport(i: ReportInput, o: ReportOptions, t: T): string {
     parts.push(`<table><tr>${head.map((h) => `<th>${esc(h)}</th>`).join('')}</tr>${rows.join('')}</table>`);
     if (o.symptoms) {
       const count = new Map<string, number>();
-      for (const l of i.logs) if (closed.some((c) => inCycle(c, l.date))) for (const s of l.symptoms ?? []) count.set(s.code, (count.get(s.code) ?? 0) + 1);
+      for (const l of logs) if (closed.some((c) => inCycle(c, l.date))) for (const s of l.symptoms ?? []) count.set(s.code, (count.get(s.code) ?? 0) + 1);
       const top = [...count].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).slice(0, 12);
       parts.push(`<h2>${esc(t('report.symptomsTitle'))}</h2>`);
       parts.push(top.length ? `<table><tr><th>${esc(t('report.colSymptom'))}</th><th>${esc(t('report.colDays'))}</th></tr>${top.map(([code, n]) => `<tr><td>${esc(t(`symptom.${code}`, { defaultValue: code }))}</td><td>${n}</td></tr>`).join('')}</table>` : `<p>${esc(t('report.noSymptoms'))}</p>`);

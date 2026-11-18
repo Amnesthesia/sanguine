@@ -18,11 +18,10 @@ const R = 120;
 const CAP_DEG = (STROKE / 2 / R) * (180 / Math.PI); // round caps stick out by half the stroke, so arcs are inset to keep their nominal extent
 const OVERLAP_DEG = 0.6; // butt-capped slices overlap a hair so no seam shows
 const TICK_OUTER = 107;
-const ESTIMATE_ALPHA = 0.3;
+const ESTIMATE_ALPHA = 0.3; // the light estimate band; dark draws the solid estimateSwatch token (3:1 on black, frames Today-Dark)
+const EMPTY_TICKS = 28; // the empty track still draws four weeks of ticks (frame Today-Empty)
 const RIM_R = R + STROKE / 2 - 0.75; // a thin solid edge on the outer rim of every estimate, so its extent does not rest on colour grading alone (>= 3:1 on the track, D-093)
 const RIM = 1.5;
-// The frames' dial track (Today-*.html). packages/ui-tokens is frozen for this work, so it is a local constant; move it to the tokens as `dialTrack` when they open.
-export const TRACK = { light: '#ECE7E9', dark: '#2A2628' } as const;
 // The knob's drop shadow is dark in both themes; textPrimary is near-white in dark and would make a halo. Same ink as the card shadows in tokens.elevation.
 const SHADOW = colors.light.textPrimary;
 
@@ -45,7 +44,9 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
   const stacked = useFontScale() > LARGE; // at large text the words leave the dial and stack beneath it
   const { days, arcs } = model;
   const deg = (boundary: number) => (boundary / days) * 360;
-  const track = TRACK[t.scheme];
+  const track = t.c.dialTrack;
+  const estimateStroke = t.scheme === 'dark' ? { stroke: t.c.estimateSwatch } : { stroke: t.c.period, strokeOpacity: ESTIMATE_ALPHA };
+  const tickDays = days > 0 ? days : EMPTY_TICKS;
   const roundedArc = (a: DialArc, r = R) => {
     const from = deg(a.from - 1) + CAP_DEG, to = deg(a.to) - CAP_DEG;
     return to > from ? arcPath(C, C, r, from, to) : arcPath(C, C, r, (from + to) / 2 - 0.3, (from + to) / 2 + 0.3);
@@ -76,7 +77,7 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
 
   const legend = [
     logged.length ? { key: 'period', swatch: { backgroundColor: t.c.period } } : null,
-    estimates.length ? { key: 'estimate', swatch: { backgroundColor: over(t.c.period, ESTIMATE_ALPHA, t.c.bg) } } : null,
+    estimates.length ? { key: 'estimate', swatch: { backgroundColor: t.c.estimateSwatch } } : null,
     runs.length ? { key: 'fertile', swatch: { backgroundColor: over(t.c.fertile, 0.6, t.c.bg) } } : null,
     model.ovulationDay ? { key: 'ovulation', swatch: { borderWidth: 2, borderColor: t.c.ovulation } } : null,
   ].filter((x): x is NonNullable<typeof x> => x !== null);
@@ -104,12 +105,12 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
             </Defs>
             <Circle cx={C} cy={C} r={90} fill="url(#dialCentre)" />
             <Circle cx={C} cy={C} r={R} stroke={track} strokeWidth={STROKE} fill="none" />
-            {days > 0 ? Array.from({ length: days }, (_, d) => {
+            {Array.from({ length: tickDays }, (_, d) => {
               const major = d % 7 === 0;
-              const a = pt(deg(d), TICK_OUTER), b = pt(deg(d), TICK_OUTER - (major ? 6 : 3));
+              const a = pt((d / tickDays) * 360, TICK_OUTER), b = pt((d / tickDays) * 360, TICK_OUTER - (major ? 6 : 3));
               // biome-ignore lint/suspicious/noArrayIndexKey: a tick's day number is its identity
               return <Line key={d} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={t.c.textOnGlass} strokeOpacity={major ? 0.55 : 0.25} strokeWidth={major ? 1.6 : 1.2} strokeLinecap="round" />;
-            }) : null}
+            })}
             {runs.map((run) => {
               const first = run[0]!, last = run[run.length - 1]!;
               const start = deg(first.from - 1) + CAP_DEG, end = deg(last.to) - CAP_DEG;
@@ -128,7 +129,7 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
             })}
             {estimates.map((a) => (
               <G key={`e${a.from}`}>
-                <Path d={roundedArc(a)} stroke={t.c.period} strokeOpacity={ESTIMATE_ALPHA} strokeWidth={STROKE} strokeLinecap="round" fill="none" />
+                <Path d={roundedArc(a)} {...estimateStroke} strokeWidth={STROKE} strokeLinecap="round" fill="none" />
                 <Path d={roundedArc(a, RIM_R)} stroke={t.c.period} strokeWidth={RIM} strokeDasharray="3 3" fill="none" />
               </G>
             ))}

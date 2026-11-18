@@ -12,7 +12,9 @@ import { setEnergy } from '@/features/logging/actions';
 
 const app = vi.hoisted(() => ({ state: {} as Record<string, unknown> }));
 vi.mock('@/state/app', () => ({ useApp: () => app.state }));
-vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn() }) }));
+vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn() }), useLocalSearchParams: () => ({}) }));
+// This cycle has its own test (ThisCycle.test.tsx); here only which segment shows matters
+vi.mock('@/features/insights/ThisCycle', () => ({ ThisCycle: () => <div data-testid="this-cycle" /> }));
 vi.mock('@/ui/Screen', () => ({ Screen: ({ children, chrome }: { children: ReactNode; chrome?: ReactNode }) => <div>{chrome}{children}</div> }));
 vi.mock('@/ui/GlassBar', () => ({ GlassBar: ({ title, below }: { title: string; below?: ReactNode }) => <header><h1>{title}</h1>{below}</header> }));
 vi.mock('@/ui/Segmented', () => ({ Segmented: ({ onChange }: { onChange: (v: string) => void }) => <button type="button" onClick={() => onChange('charts')}>Charts</button> }));

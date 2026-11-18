@@ -47,3 +47,20 @@ describe('SymptomGrid tap steps the strength (D-097)', () => {
     expect(got).toEqual([0]);
   });
 });
+
+describe('SymptomGrid shape (frames: two-column pills, name left, dots right)', () => {
+  it('draws every option as a pill', () => {
+    render(<SymptomGrid codes={['cramps', 'headache']} values={{ cramps: 1 }} onSet={() => {}} />);
+    for (const name of ['Cramps, mild, 1 of 3', 'Headache']) {
+      const pill = screen.getByRole('checkbox', { name });
+      expect(pill.style.borderTopLeftRadius).toBe('999px');
+      expect(pill.style.flexDirection).toBe('row'); // name on the left, dots on the right
+    }
+  });
+  it('shows three intensity dots on each pill, whatever the strength', () => {
+    render(<SymptomGrid codes={['cramps', 'headache']} values={{ cramps: 2 }} onSet={() => {}} />);
+    for (const name of ['Cramps, moderate, 2 of 3', 'Headache']) {
+      expect(screen.getByRole('checkbox', { name }).querySelectorAll('[data-testid="intensity-dot"]')).toHaveLength(3);
+    }
+  });
+});
