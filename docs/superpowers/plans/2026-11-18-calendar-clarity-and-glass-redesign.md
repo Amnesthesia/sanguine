@@ -8,7 +8,7 @@
 
 **Tech Stack:** Expo SDK 57, React Native, expo-router native tabs, `expo-glass-effect` (`GlassView`), `@expo/ui`, react-native-svg, zustand, i18next, vitest + React Testing Library (react-native-web), Maestro (iOS simulator only).
 
-**Specs:** `docs/superpowers/specs/2026-11-18-calendar-clarity-design.md` (behaviour) and `docs/superpowers/specs/2026-11-18-glass-redesign-design.md` (visual system and screens), with exact mockup values in `docs/superpowers/specs/2026-11-18-glass-design-language.md`. Mockups: the design canvas "Sanguine glass redesign" (claude.ai artifact `4GnPfVGn2f1JqPVfh3kiWH`); each UI task names its artboards.
+**Specs:** `docs/superpowers/specs/2026-11-18-calendar-clarity-design.md` (behaviour) and `docs/superpowers/specs/2026-11-18-glass-redesign-design.md` (visual system and screens), with exact mockup values in `docs/superpowers/specs/2026-11-18-glass-design-language.md`. Mockups: `docs/design/glass-redesign/index.html` (one file per screen in `docs/design/glass-redesign/frames/`); each UI task names its frames.
 
 ## Global Constraints
 
@@ -158,7 +158,7 @@ Shared files have one owner: `copy/en-AU.json` additions go through each task's 
 - Produces: `<LoggedChip label mark="flow"|"symptom"|"other" onRemove />` (accessibility label `Remove: <label>`); `<Meter level={0|1|2|3} word={string} />` with `confidenceLevel(c: Confidence): 0|1|2|3` and `evidenceLevel(e: Evidence): 0|1|2|3`; `<EstimateTag />`; `<CautionPanel>…</CautionPanel>`; `<Sources items={string[]} />` plus `<Cite n={number} />`.
 
 - [ ] **Step 1: Write the failing tests** in `kit.test.tsx`: LoggedChip's remove button label and callback; Meter renders `level` filled bars and the word; Chips selected state has `accessibilityState.selected` and no filled background; Button `primary` is the only kind with the accent fill.
-- [ ] **Step 2–4:** Run → FAIL; implement to the components board (`Main` artboard); run → PASS; `npx vitest related apps/mobile/src/ui` green.
+- [ ] **Step 2–4:** Run → FAIL; implement to `docs/design/glass-redesign/frames/Design-Language.html`; run → PASS; `npx vitest related apps/mobile/src/ui` green.
 - [ ] **Step 5: Commit** `P8-21 UI kit: cards, buttons, chips, meter, estimate tag, caution panel, sources (D-116)`.
 
 ### Task 8: UI kit, glass chrome (P8-21, D-117)
@@ -190,20 +190,20 @@ Shared files have one owner: `copy/en-AU.json` additions go through each task's 
 
 **Files:** `apps/mobile/src/app/(tabs)/calendar.tsx`, `features/calendar/DayCellView.tsx`, create `features/calendar/DaySheet.tsx`, `features/calendar/MonthList.tsx`; test `features/calendar/calendarScreen.test.tsx`; flow `.maestro/calendar.yaml`.
 
-**Artboards:** Calendar 1–3, Calendar dark.
+**Frames:** `Calendar-1-Closed`, `Calendar-2-SheetOpen`, `Calendar-3-SheetExpanded`, `Calendar-Dark`.
 
 **Interfaces:** Consumes `EstimateSections` and `GuidanceSections` from Task 11 for the sheet's large detent, and `visibleEntries`/`removeEntry`/`undoRemoval` from Task 4.
 
 - [ ] **Step 1: Write the failing tests:** tapping a selected day opens the sheet; dragging to the large detent shows the estimate and guidance sections; ✕ on a chip calls `removeEntry` and shows the Undo toast; Undo calls `undoRemoval`; Log is the only filled control; cycle-day numbers hidden when `calendarCycleDay` is false; month-list row tap selects its day.
 - [ ] **Step 2–4:** Run → FAIL; implement the cell (36 pt circle; period solid; estimate dashed ring; ovulation point white disc with blue glow; fertile graded band with 1.5 pt lower edge; cycle-day number semibold up to today), the glass day card (closed detent) with round Log, the day sheet (small detent: chips, estimate lines, "Show details", Log this day, Details), the month list; toolbar "Today" is a secondary glass pill; run → PASS.
-- [ ] **Step 5: Verify:** typecheck; `run.sh ios calendar.yaml`; screenshots light, dark and 150% to `docs/screenshots/P8-22-calendar/`; compare with the artboards.
+- [ ] **Step 5: Verify:** typecheck; `run.sh ios calendar.yaml`; screenshots light, dark and 150% to `docs/screenshots/P8-22-calendar/`; compare with the frames.
 - [ ] **Step 6: Commit** `P8-22 Calendar: calm circles, glass day card and day sheet, month list, remove with Undo (D-118, D-119)`.
 
 ### Task 11: Estimate and guidance sections (P8-22, D-120)
 
 **Files:** create `apps/mobile/src/features/guidance/sections/EstimateSections.tsx`, `GuidanceSections.tsx`, `HormoneCurve.tsx`; test `sections.test.tsx`; copy keys under `estimates.how.*`, `guidance.evidenceKey.*`.
 
-**Artboard:** Calendar 3 (dragged up).
+**Frame:** `Calendar-3-SheetExpanded`.
 
 **Interfaces:**
 - Produces: `<EstimateSections prediction day pastOv showEstimate />` (period end, next period, ovulation and fertile cards with pictures, meters and "How it was worked out") and `<GuidanceSections day={GuideDay} supplements={boolean} compact={boolean} />` (`GuideDay` from `features/guidance/guidance.ts`, keeping its `expected` wording) (compact = two tiles + "Read more").
@@ -227,7 +227,7 @@ Shared files have one owner: `copy/en-AU.json` additions go through each task's 
 
 **Files:** `apps/mobile/src/app/(tabs)/today.tsx`, `features/today/cards.tsx`, `features/today/QuickLogRow.tsx`, test `features/today/todayScreen.test.tsx`, flow `.maestro/today.yaml`.
 
-**Artboards:** Today period, typical, irregular, empty, suspended, pregnant, dark.
+**Frames (in `docs/design/glass-redesign/frames/`):** Today period, typical, irregular, empty, suspended, pregnant, dark.
 
 - [ ] **Step 1: Write the failing tests:** compact food and movement shows two tiles and "Read more" opens the sections sheet; logged chips remove with Undo; estimate cards show the meter and estimate tag; empty and suspended states keep their copy.
 - [ ] **Step 2–4:** Run → FAIL; implement (hero wash behind dial and estimate cards, those cards in glass; other cards white); run → PASS.
@@ -238,7 +238,7 @@ Shared files have one owner: `copy/en-AU.json` additions go through each task's 
 
 **Files:** `apps/mobile/src/features/logging/LogSheet.tsx`, create `features/logging/EnergySlider.tsx`, tests `LogSheet.test.tsx` (extend), `EnergySlider.test.tsx`, flow `.maestro/logging.yaml`.
 
-**Artboards:** log sheet empty, filled, More, contraception, same-period question.
+**Frames (in `docs/design/glass-redesign/frames/`):** log sheet empty, filled, More, contraception, same-period question.
 
 **Interfaces:** `<EnergySlider value={0|1|2|3|4|5} onChange={(v: 0|1|2|3|4|5) => void} />` (role `adjustable`, value text "Very low"…"High" or "Not logged"; "Clear" sets 0).
 
@@ -259,7 +259,7 @@ Shared files have one owner: `copy/en-AU.json` additions go through each task's 
 
 **Files:** `apps/mobile/src/app/(tabs)/insights.tsx`, `features/insights/HistoryRow.tsx`, `features/insights/charts.tsx`, `apps/mobile/src/app/cycle/[id].tsx`, tests extend `HistoryRow.test.tsx`, `energyScreen.test.tsx`; flow `.maestro/insights.yaml`.
 
-**Artboards:** Insights history, charts, accuracy, irregular, empty, pattern; cycle detail.
+**Frames (in `docs/design/glass-redesign/frames/`):** Insights history, charts, accuracy, irregular, empty, pattern; cycle detail.
 
 - [ ] **Steps:** tests for the excluded-cycle row action and meters; implement on the kit; `run.sh ios insights.yaml`; screenshots; commit `P8-22 Insights and cycle detail on the glass kit`.
 
@@ -267,7 +267,7 @@ Shared files have one owner: `copy/en-AU.json` additions go through each task's 
 
 **Files:** `apps/mobile/src/app/(tabs)/settings.tsx`, `app/settings/tracking.tsx`, `appearance.tsx`, `notifications.tsx`, `lifestate.tsx`, `about.tsx`, `how.tsx`; `ui/SettingsRow.tsx` is T7's: request a `leadingIcon` prop there if missing; flow `.maestro/settings.yaml`.
 
-**Artboards:** Settings root, tracking, appearance, notifications, life state, about, how.
+**Frames (in `docs/design/glass-redesign/frames/`):** Settings root, tracking, appearance, notifications, life state, about, how.
 
 - [ ] **Steps:** tests that the two new switches exist where the spec puts them ("Show uncertain estimates" hidden while the ovulation estimate is off; "Cycle day on calendar" in Appearance); round rose-tinted icons; implement; `run.sh ios settings.yaml`; screenshots; commit `P8-22 Settings on the glass kit, two new switches (D-124)`.
 
@@ -287,7 +287,7 @@ Shared files have one owner: `copy/en-AU.json` additions go through each task's 
 
 **Files:** `apps/mobile/src/services/widgets.ts`, the widget target views, `features/notifications/plan.ts` (copy only).
 
-- [ ] **Steps:** restyle widgets to the artboard (discreet default unchanged); no new data in notifications; verify on the simulator home screen; commit `P8-22 Widgets restyled`.
+- [ ] **Steps:** restyle widgets to `frames/Widgets-Notifications.html` (discreet default unchanged); no new data in notifications; verify on the simulator home screen; commit `P8-22 Widgets restyled`.
 
 ### Task 21: Records, flows and the full run (P8-20, P8-22)
 

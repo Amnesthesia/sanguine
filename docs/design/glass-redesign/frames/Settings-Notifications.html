@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings: notifications and widgets</title>
+<style>
+body{margin:0}
+a{color:#BC4560}a:hover{color:#A3354F}
+</style>
+</head>
+<body>
+
+
+<div style="width: 390px; height: 1700px; position: relative; box-sizing: border-box; background: #FFFFFF; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
+
+  <!-- content layer: opaque. Defaults (D-090): reminders on, late reminder on, discreet text, the owner's three rules. -->
+  <div style="padding: 70px 16px 40px 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <div style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); display: flex; flex-direction: column; overflow: hidden">
+      <!-- Android shows "Reminders on Android arrive in a later update." here, with the switch disabled -->
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-bottom: 1px solid #E4E4E6">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Reminders</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Local reminders on this phone at 9:00. Nothing is sent anywhere.</span></span>
+        <button type="button" role="switch" aria-checked="true" aria-label="Reminders" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #BC4560; display: flex; justify-content: flex-end; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+      <!-- disabled (dimmed) while Reminders is off -->
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-bottom: 1px solid #E4E4E6">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">When a period is later than likely</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">One reminder the morning after the likely range ends, if no period has been logged.</span></span>
+        <button type="button" role="switch" aria-checked="true" aria-label="When a period is later than likely" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #BC4560; display: flex; justify-content: flex-end; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 12px 16px 16px 16px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Show details in notifications</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Notifications will read “Sanguine: a reminder”.</span></span>
+          <button type="button" role="switch" aria-checked="false" aria-label="Show details in notifications" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #E4E4E6; box-shadow: inset 0 0 0 1px rgba(31,26,28,0.06); display: flex; justify-content: flex-start; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+        </div>
+        <!-- discreet vs descriptive: the two notifications side by side, the current one outlined. A drawing, not a control. -->
+        <div role="img" aria-label="Off, the notification reads: Sanguine, a reminder. On, it reads: Sanguine, Ovulation estimate: likely in 3 to 8 days." style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <span style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 600; color: #A3354F">Off</span>
+            <span style="border-radius: 18px; background: #FFFFFF; padding: 10px; display: flex; gap: 8px; box-shadow: 0 0 0 1.5px #BC4560">
+              <span style="width: 26px; height: 26px; border-radius: 8px; background: #F5E8E2; flex-shrink: 0"></span>
+              <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><span style="font-size: 13px; font-weight: 600">Sanguine</span><span style="font-size: 12px; line-height: 16px; color: #4A4246">A reminder</span></span>
+            </span>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 6px">
+            <span style="font-size: 12px; font-weight: 600; color: #6B6165">On</span>
+            <span style="border-radius: 18px; background: #FFFFFF; padding: 10px; display: flex; gap: 8px; box-shadow: 0 0 0 1px #E4E4E6">
+              <span style="width: 26px; height: 26px; border-radius: 8px; background: #F5E8E2; flex-shrink: 0"></span>
+              <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><span style="font-size: 13px; font-weight: 600">Sanguine</span><span style="font-size: 12px; line-height: 16px; color: #4A4246">Ovulation estimate: likely in 3–8 days</span></span>
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <!-- while Reminders is on. Without a prediction: "No reminder is due yet. Reminders follow your estimates once you log a period."
+         After the permission is refused: "Notifications are turned off for Sanguine in your phone's settings." (caution panel, here) -->
+    <p style="margin: 0 4px; font-size: 13px; line-height: 18px; color: #6B6165; display: flex; align-items: center; gap: 6px"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11A6 6 0 0 1 18 11V16.5L19.5 18H4.5Z" fill="none" stroke="#6B6165" stroke-width="2" stroke-linejoin="round"></path></svg>Next reminder: 7 Nov</p>
+
+    <!-- your reminders: each rule a row with a Remove pill. Ovulation and fertile-window rules are hidden while the ovulation
+         estimate is hidden (and under 18 until unlocked). Empty: "No reminders yet. Add one below." -->
+    <h2 style="margin: 8px 0 0 4px; font-size: 15px; line-height: 20px; font-weight: 600">Your reminders</h2>
+    <div style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); display: flex; flex-direction: column; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 8px 6px 16px; border-bottom: 1px solid #E4E4E6">
+        <span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 6px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(63,111,136,0.3), 0 0 6px 2px rgba(63,111,136,0.42); flex-shrink: 0"></span>
+        <span style="flex: 1; font-size: 17px; line-height: 22px">3 days before the ovulation estimate</span>
+        <button type="button" aria-label="Remove: 3 days before the ovulation estimate" style="min-height: 44px; padding: 0 14px; border-radius: 22px; border: 0; background: none; color: #A3354F; font-size: 15px; font-weight: 600">Remove</button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 8px 6px 16px; border-bottom: 1px solid #E4E4E6">
+        <span aria-hidden="true" style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 6px; border: 1.5px dashed #B8324A; flex-shrink: 0"></span>
+        <span style="flex: 1; font-size: 17px; line-height: 22px">3 days before the period</span>
+        <button type="button" aria-label="Remove: 3 days before the period" style="min-height: 44px; padding: 0 14px; border-radius: 22px; border: 0; background: none; color: #A3354F; font-size: 15px; font-weight: 600">Remove</button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 6px 8px 6px 16px">
+        <span aria-hidden="true" style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 6px; border: 1.5px dashed #B8324A; flex-shrink: 0"></span>
+        <span style="flex: 1; font-size: 17px; line-height: 22px">1 day before the period</span>
+        <button type="button" aria-label="Remove: 1 day before the period" style="min-height: 44px; padding: 0 14px; border-radius: 22px; border: 0; background: none; color: #A3354F; font-size: 15px; font-weight: 600">Remove</button>
+      </div>
+    </div>
+
+    <!-- add a rule: "Notify me N days before the likely start of <event>". Up to 8 rules. -->
+    <section aria-labelledby="add-h" style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <h2 id="add-h" style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600">Notify me</h2>
+      <div role="radiogroup" aria-label="How many days before" style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">On the day</button>
+        <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">1 day</button>
+        <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">2 days</button>
+        <button type="button" role="radio" aria-checked="true" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid #BC4560; background: #F4DCE0; color: #A3354F; font-size: 15px; font-weight: 600">3 days</button>
+        <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">5 days</button>
+        <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">7 days</button>
+      </div>
+      <span style="font-size: 13px; line-height: 18px; color: #6B6165">before the likely start of</span>
+      <div role="radiogroup" aria-label="Which estimate" style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button type="button" role="radio" aria-checked="true" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid #BC4560; background: #F4DCE0; color: #A3354F; font-size: 15px; font-weight: 600">Period</button>
+        <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">Ovulation</button>
+        <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">Fertile window</button>
+      </div>
+      <button type="button" style="min-height: 48px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); color: #1F1A1C; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2V14M2 8H14" stroke="#BC4560" stroke-width="2.2" stroke-linecap="round"></path></svg>Add notification</button>
+      <!-- after Add, when it cannot be added: "That reminder is already in the list." or "Up to 8 reminders." (polite live region) -->
+    </section>
+
+    <!-- widgets and home-screen shortcuts -->
+    <h2 style="margin: 8px 0 0 4px; font-size: 15px; line-height: 20px; font-weight: 600">Widgets</h2>
+    <div style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); display: flex; flex-direction: column; overflow: hidden">
+      <!-- while the discreet icon is on: disabled, off, "Off while the discreet icon is on: the titles would show under it." -->
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-bottom: 1px solid #E4E4E6">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Home screen shortcuts</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Hold the app icon for Log period and Log temperature. The titles show under the icon.</span></span>
+        <button type="button" role="switch" aria-checked="false" aria-label="Home screen shortcuts" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #E4E4E6; box-shadow: inset 0 0 0 1px rgba(31,26,28,0.06); display: flex; justify-content: flex-start; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+      <!-- Android: a plain row "Widgets are available on iPhone for now." instead -->
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Show details in widgets</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Off: widgets show only the day of your cycle.</span></span>
+        <button type="button" role="switch" aria-checked="false" aria-label="Show details in widgets" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #E4E4E6; box-shadow: inset 0 0 0 1px rgba(31,26,28,0.06); display: flex; justify-content: flex-start; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- navigation layer: glass toolbar (D-096) -->
+  <header style="position: absolute; top: 10px; left: 10px; right: 10px; border-radius: 30px; padding: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 10px 30px rgba(31,26,28,0.14), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(255,255,255,0.35); display: flex; align-items: center; gap: 6px">
+    <button type="button" aria-label="Back" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.5); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(31,26,28,0.08); color: #1F1A1C; font-size: 22px">‹</button>
+    <h1 style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600; flex: 1; text-align: center">Notifications and widgets</h1>
+    <span aria-hidden="true" style="width: 44px; height: 44px; flex-shrink: 0"></span>
+  </header>
+</div>
+
+</body>
+</html>

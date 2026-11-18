@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings: tracking options</title>
+<style>
+body{margin:0}
+a{color:#BC4560}a:hover{color:#A3354F}
+</style>
+</head>
+<body>
+
+
+<div style="width: 390px; height: 1600px; position: relative; box-sizing: border-box; background: #FFFFFF; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
+
+  <!-- content layer: opaque, scrolled a little so the first card passes under the glass toolbar -->
+  <div style="padding: 66px 16px 40px 16px; display: flex; flex-direction: column; gap: 12px">
+
+    <!-- symptoms: the catalogue order of copy/symptoms.json; toggle chips instead of 40 switch rows (same function: show or hide
+         each symptom in the logging sheet). Default: the 8 default-visible ones. -->
+    <section aria-labelledby="sym-h" style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+        <h2 id="sym-h" style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600">Symptoms shown in the log</h2>
+        <span style="font-size: 13px; color: #6B6165; flex-shrink: 0">8 symptoms</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        
+          <button type="button" aria-pressed="true" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid #BC4560;background:#F4DCE0;color:#A3354F;font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Cramps</button>
+        
+          <button type="button" aria-pressed="true" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid #BC4560;background:#F4DCE0;color:#A3354F;font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Headache</button>
+        
+          <button type="button" aria-pressed="true" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid #BC4560;background:#F4DCE0;color:#A3354F;font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Bloating</button>
+        
+          <button type="button" aria-pressed="true" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid #BC4560;background:#F4DCE0;color:#A3354F;font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Breast tenderness</button>
+        
+          <button type="button" aria-pressed="true" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid #BC4560;background:#F4DCE0;color:#A3354F;font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Mood low</button>
+        
+          <button type="button" aria-pressed="true" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid #BC4560;background:#F4DCE0;color:#A3354F;font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Acne</button>
+        
+          <button type="button" aria-pressed="true" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid #BC4560;background:#F4DCE0;color:#A3354F;font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Fatigue</button>
+        
+          <button type="button" aria-pressed="true" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid #BC4560;background:#F4DCE0;color:#A3354F;font-weight:600;">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6.3L4.8 9L10 3" fill="none" stroke="#A3354F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>Mid-cycle spotting</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Mid-cycle pain</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Back pain</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Joint pain</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Pelvic pain</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Other pain</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Nausea</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Dizziness</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Irritability</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Anxiety</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Mood swings</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Stressed</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Sensitive</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Self-critical</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Numb</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Unfocused</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Happy</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Calm</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Confident</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Energetic</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Excited</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Trouble sleeping</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Increased appetite</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Food cravings</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Diarrhoea</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Constipation</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Hot flushes</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Night sweats</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Oily skin</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Puffiness</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Sensitive to smells</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            Low sex drive</button>
+        
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:22px;font-size:15px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;border:1.5px solid transparent;background:#F3F3F4;color:#1F1A1C;">
+            High sex drive</button>
+        
+      </div>
+    </section>
+
+    <!-- temperature -->
+    <section aria-label="Temperature" style="border-radius: 24px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 4px 16px; display: flex; flex-direction: column">
+      <div role="radiogroup" aria-labelledby="unit-h" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; border-bottom: 1px solid #E4E4E6">
+        <h2 id="unit-h" style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 400">Temperature unit</h2>
+        <span style="display: flex; gap: 8px">
+          <button type="button" role="radio" aria-checked="true" style="min-width: 56px; min-height: 44px; border-radius: 22px; border: 1.5px solid #BC4560; background: #F4DCE0; color: #A3354F; font-size: 15px; font-weight: 600">°C</button>
+          <button type="button" role="radio" aria-checked="false" style="min-width: 56px; min-height: 44px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">°F</button>
+        </span>
+      </div>
+      <div role="radiogroup" aria-labelledby="src-h" style="display: flex; flex-direction: column; gap: 10px; padding: 14px 0 16px 0">
+        <h2 id="src-h" style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 400">Usual temperature source</h2>
+        <span style="display: flex; flex-wrap: wrap; gap: 8px">
+          <button type="button" role="radio" aria-checked="true" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid #BC4560; background: #F4DCE0; color: #A3354F; font-size: 15px; font-weight: 600">Oral</button>
+          <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">Vaginal</button>
+          <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">Wrist</button>
+          <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">Finger</button>
+          <button type="button" role="radio" aria-checked="false" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 15px">Other</button>
+        </span>
+      </div>
+    </section>
+
+    <!-- switches: grouped list on surface2 -->
+    <div style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); display: flex; flex-direction: column; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-bottom: 1px solid #E4E4E6">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Show what you logged around this day</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">On Today, a note of symptoms you logged around the same day in past cycles.</span></span>
+        <button type="button" role="switch" aria-checked="true" aria-label="Show what you logged around this day" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #BC4560; display: flex; justify-content: flex-end; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-bottom: 1px solid #E4E4E6">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Show food and movement notes</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">On Today and the day screen, notes on food, exercise and supplements for each part of the cycle, with the research behind them and how strong it is.</span></span>
+        <button type="button" role="switch" aria-checked="true" aria-label="Show food and movement notes" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #BC4560; display: flex; justify-content: flex-end; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-bottom: 1px solid #E4E4E6">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Log sexual activity</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Optional and off by default.</span></span>
+        <button type="button" role="switch" aria-checked="false" aria-label="Log sexual activity" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #E4E4E6; box-shadow: inset 0 0 0 1px rgba(31,26,28,0.06); display: flex; justify-content: flex-start; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+      <!-- ovulation estimate. Under 18 (teen mode) the description reads "Hidden by default for under 18s. You can turn it on here."
+           and the switch starts off; turning it on unlocks the estimate (teenUnlockEstimate). -->
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; border-bottom: 1px solid #E4E4E6">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Show ovulation estimate</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Turn off to hide ovulation and fertile window estimates.</span></span>
+        <button type="button" role="switch" aria-checked="true" aria-label="Show ovulation estimate" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #BC4560; display: flex; justify-content: flex-end; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+      <!-- new (Calendar redesign): a child of the ovulation estimate switch, indented, hidden while that switch is off. Off by default. -->
+      <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px 14px 34px; position: relative">
+        <span aria-hidden="true" style="position: absolute; left: 18px; top: 0; width: 8px; border-left: 1.5px solid #D2CDD0; border-bottom: 1.5px solid #D2CDD0; border-bottom-left-radius: 6px; height: 22px"></span>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; line-height: 22px">Show uncertain estimates</span><span style="font-size: 13px; line-height: 18px; color: #6B6165">Draw ovulation and fertile estimates even when your data is too irregular for a confident range. They are marked uncertain.</span></span>
+        <button type="button" role="switch" aria-checked="false" aria-label="Show uncertain estimates" style="width: 51px; height: 31px; flex-shrink: 0; border-radius: 16px; border: 0; padding: 2px; box-sizing: border-box; background: #E4E4E6; box-shadow: inset 0 0 0 1px rgba(31,26,28,0.06); display: flex; justify-content: flex-start; align-items: center"><span style="width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 5px rgba(31,26,28,0.22), 0 0 0 0.5px rgba(31,26,28,0.06)"></span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- navigation layer: glass toolbar with the round back button and the title (D-096) -->
+  <header style="position: absolute; top: 10px; left: 10px; right: 10px; border-radius: 30px; padding: 8px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 10px 30px rgba(31,26,28,0.14), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(255,255,255,0.35); display: flex; align-items: center; gap: 6px">
+    <button type="button" aria-label="Back" style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 22px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.5); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(31,26,28,0.08); color: #1F1A1C; font-size: 22px">‹</button>
+    <h1 style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600; flex: 1; text-align: center">Tracking options</h1>
+    <span aria-hidden="true" style="width: 44px; height: 44px; flex-shrink: 0"></span>
+  </header>
+</div>
+
+</body>
+</html>

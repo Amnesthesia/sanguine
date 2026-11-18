@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sanguine glass design language</title>
+<style>
+body{margin:0}
+a{color:#A3354F}a:hover{color:#BC4560}
+</style>
+</head>
+<body>
+
+
+<div style="width: 1180px; height: 1720px; box-sizing: border-box; padding: 48px; background: #FFFFFF; color: #1F1A1C; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; display: flex; flex-direction: column; gap: 32px">
+  <header style="display: flex; flex-direction: column; gap: 8px">
+    <h1 style="margin: 0; font-size: 40px; line-height: 46px; font-weight: 700">Sanguine · glass design language</h1>
+    <p style="margin: 0; font-size: 16px; line-height: 23px; color: #4A4246; max-width: 860px">Glass for navigation (toolbars, tab bar, sheets, floating controls); opaque content underneath. Solid means you logged it; dashed or soft-glow means it is an estimate. One filled control per screen. Everything round.</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+
+    <!-- colour -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Colour · light / dark</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: #4A4246">
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #BC4560"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #D4607A"></span>accent</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #B8324A"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #D9607A"></span>period</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #F4DCE0"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #3A1F27"></span>accentSoft</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #D9A0AB"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #7A4654"></span>periodPredicted</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #5C8A6E"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #7FAF93"></span>fertile</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #3F6F88"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #7FA7C2"></span>ovulation</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #B9741E"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #D9A054"></span>caution</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #F3F3F4; box-shadow: inset 0 0 0 1px #E4E4E6"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #2C2C2E"></span>surface2</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #1F1A1C"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #F4EEEF; box-shadow: inset 0 0 0 1px #E4E4E6"></span>textPrimary</span>
+        <span style="display: flex; align-items: center; gap: 8px"><span style="width: 22px; height: 22px; border-radius: 11px; background: #4A4246"></span><span style="width: 22px; height: 22px; border-radius: 11px; background: #B3A8AC"></span>text on glass</span>
+      </div>
+      <p style="margin: 0; font-size: 12px; line-height: 17px; color: #6B6165">Text 4.5:1 against the worst content scrolled under glass. Splash and About band keep the client's blush, plum and ink only there.</p>
+    </section>
+
+    <!-- materials -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Materials</h2>
+      <div style="position: relative; height: 196px; border-radius: 18px; overflow: hidden; background: #FFFFFF">
+        <div aria-hidden="true" style="position: absolute; inset: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; padding: 10px">
+          <span style="height: 34px; border-radius: 17px; background: #B8324A"></span><span style="height: 34px; border-radius: 17px; background: #B8324A"></span><span style="height: 34px; border-radius: 17px; border: 1.5px dashed #B8324A; box-sizing: border-box"></span><span style="height: 34px; border-radius: 17px; background: rgba(92,138,110,0.3)"></span><span style="height: 34px; border-radius: 17px; background: rgba(92,138,110,0.45)"></span><span style="height: 34px; border-radius: 17px; background: rgba(92,138,110,0.35)"></span><span style="height: 34px; border-radius: 17px; background: #F3F3F4"></span>
+          <span style="height: 34px; border-radius: 17px; background: #F3F3F4"></span><span style="height: 34px; border-radius: 17px; background: rgba(92,138,110,0.4)"></span><span style="height: 34px; border-radius: 17px; background: #FFFFFF; box-shadow: 0 0 10px 2px rgba(63,111,136,0.42)"></span><span style="height: 34px; border-radius: 17px; background: #F3F3F4"></span><span style="height: 34px; border-radius: 17px; background: #B8324A"></span><span style="height: 34px; border-radius: 17px; background: #F3F3F4"></span><span style="height: 34px; border-radius: 17px; background: #F3F3F4"></span>
+        </div>
+        <div style="position: absolute; left: 10px; right: 10px; top: 58px; height: 52px; border-radius: 26px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 1px 2px rgba(31,26,28,0.06), 0 14px 36px rgba(31,26,28,0.16), inset 0 1px 0 rgba(255,255,255,0.95); display: flex; align-items: center; padding: 0 16px; font-size: 14px; font-weight: 600">Regular glass</div>
+        <div style="position: absolute; left: 10px; top: 124px; height: 52px; padding: 0 22px; border-radius: 26px; background: rgba(188,69,96,0.96); color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 16px rgba(188,69,96,0.32); display: flex; align-items: center; font-size: 14px; font-weight: 600">Tinted glass</div>
+        <div style="position: absolute; right: 10px; top: 124px; height: 52px; padding: 0 18px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E4E4E6; display: flex; align-items: center; font-size: 14px">Opaque card</div>
+      </div>
+      <p style="margin: 0; font-size: 12px; line-height: 17px; color: #6B6165">Glass: blur 18 with saturation 200%, so what scrolls under it stays visible but soft; a thin white tint brighter at the top edge (specular), a light rim, tight + soft shadow. In the app this is the system material (expo-glass-effect), which also adapts text vibrancy. Content cards never glass.</p>
+    </section>
+
+    <!-- type and geometry -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Type and geometry</h2>
+      <span style="font-size: 34px; line-height: 41px; font-weight: 700">Large title</span>
+      <span style="font-size: 22px; font-weight: 700">Section heading</span>
+      <span style="font-size: 17px; font-weight: 600">Card heading · toolbar title</span>
+      <span style="font-size: 15px; line-height: 21px">Body 15/21, system font</span>
+      <span style="font-size: 13px; color: #4A4246">Secondary 13/18</span>
+      <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: #4A4246">TINY LABEL 11</span>
+      <div style="display: flex; gap: 10px; align-items: flex-end; margin-top: 6px; font-size: 11px; color: #6B6165">
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="width: 44px; height: 44px; border-radius: 34px 34px 0 0; border: 1.5px solid #1F1A1C; border-bottom: 0; box-sizing: border-box"></span>sheet 34</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid #1F1A1C; box-sizing: border-box"></span>tab 31</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="width: 44px; height: 44px; border-radius: 16px; border: 1.5px solid #1F1A1C; box-sizing: border-box"></span>float 28</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid #1F1A1C; box-sizing: border-box"></span>card 24</span>
+      </div>
+      <p style="margin: 0; font-size: 12px; line-height: 17px; color: #6B6165">Gutter 16. Glass inset 10 from edges, 8 above the tab bar. Rhythm 8/12/16/24. Targets 44+.</p>
+    </section>
+
+    <!-- buttons -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Buttons</h2>
+      <button type="button" style="min-height: 52px; border-radius: 26px; border: 0; background: rgba(188,69,96,0.96); color: #FFFFFF; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 16px rgba(188,69,96,0.32)"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2V14M2 8H14" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg>Primary · one per screen</button>
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+        <button type="button" aria-label="Log" style="width: 52px; height: 52px; border-radius: 26px; border: 0; background: rgba(188,69,96,0.96); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 14px rgba(188,69,96,0.35)"><svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5V13.5M2.5 8H13.5" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"></path></svg></button>
+        <button type="button" style="min-height: 44px; padding: 0 18px; border-radius: 22px; background: rgba(255,255,255,0.7); border: 1px solid rgba(31,26,28,0.1); color: #1F1A1C; font-size: 15px">Secondary</button>
+        <button type="button" aria-label="Close" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid rgba(31,26,28,0.08); background: rgba(255,255,255,0.8); color: #4A4246; font-size: 15px">✕</button>
+        <button type="button" style="min-height: 44px; padding: 0 12px; border-radius: 22px; border: 0; background: none; color: #A3354F; font-size: 15px; font-weight: 600">Text</button>
+        <button type="button" style="min-height: 44px; padding: 0 12px; border-radius: 22px; border: 0; background: none; color: #B8324A; font-size: 15px">Delete everything</button>
+      </div>
+    </section>
+
+    <!-- chips and controls -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Chips and controls</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding-left: 10px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E4E4E6; font-size: 14px"><svg width="9" height="10" viewBox="0 0 10 11" aria-hidden="true"><path d="M5 1C5 1 1 5.5 1 7.4A4 4 0 0 0 9 7.4C9 5.5 5 1 5 1Z" fill="#B8324A"></path></svg>Flow: medium<button type="button" aria-label="Remove: Flow medium" style="width: 36px; height: 36px; border: 0; background: none; color: #6B6165; font-size: 13px">✕</button></span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding-left: 10px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E4E4E6; font-size: 14px"><span style="width: 6px; height: 6px; border-radius: 3px; background: #BC4560"></span>Cramps (mild)<button type="button" aria-label="Remove: Cramps mild" style="width: 36px; height: 36px; border: 0; background: none; color: #6B6165; font-size: 13px">✕</button></span>
+      </div>
+      <span style="font-size: 12px; color: #6B6165">Logged entries: quiet, removable. Selectable options: off / on (tint, never filled):</span>
+      <div style="display: flex; gap: 8px">
+        <button type="button" aria-pressed="false" style="min-height: 40px; padding: 0 16px; border-radius: 20px; border: 1.5px solid transparent; background: #F3F3F4; color: #1F1A1C; font-size: 14px">Headache</button>
+        <button type="button" aria-pressed="true" style="min-height: 40px; padding: 0 16px; border-radius: 20px; border: 1.5px solid #BC4560; background: #F4DCE0; color: #A3354F; font-size: 14px; font-weight: 600">Cramps · mild</button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 16px">
+        <button type="button" role="switch" aria-checked="true" aria-label="On" style="width: 51px; height: 31px; border-radius: 16px; border: 0; background: #BC4560; position: relative; padding: 0"><span style="position: absolute; right: 2px; top: 2px; width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0,0,0,0.2)"></span></button>
+        <button type="button" role="switch" aria-checked="false" aria-label="Off" style="width: 51px; height: 31px; border-radius: 16px; border: 0; background: #E4E4E6; position: relative; padding: 0"><span style="position: absolute; left: 2px; top: 2px; width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0,0,0,0.2)"></span></button>
+        <div role="tablist" aria-label="View" style="flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 3px; border-radius: 20px; background: rgba(120,110,114,0.12)">
+          <button type="button" role="tab" aria-selected="true" style="min-height: 34px; border: 0; border-radius: 17px; background: #FFFFFF; box-shadow: 0 1px 4px rgba(31,26,28,0.14); font-size: 13px; font-weight: 600">History</button>
+          <button type="button" role="tab" aria-selected="false" style="min-height: 34px; border: 0; border-radius: 17px; background: none; font-size: 13px">Charts</button>
+          <button type="button" role="tab" aria-selected="false" style="min-height: 34px; border: 0; border-radius: 17px; background: none; font-size: 13px">Accuracy</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- certainty -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Certainty, said plainly</h2>
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 13px"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span></span>High confidence · Strong evidence</span>
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 13px"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Medium confidence · Some evidence</span>
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 13px"><span style="display: flex; gap: 2px" aria-hidden="true"><span style="width: 4px; height: 11px; border-radius: 2px; background: #1F1A1C"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span><span style="width: 4px; height: 11px; border-radius: 2px; background: #E4E4E6"></span></span>Low confidence · Early evidence</span>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: #3F6F88; border: 1px solid rgba(63,111,136,0.45); border-radius: 9px; padding: 1px 7px">ESTIMATE</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; background: rgba(185,116,30,0.12); color: #8A5512; font-size: 12px; font-weight: 600">Calendar only</span>
+      </div>
+      <div style="display: flex; gap: 10px; border-radius: 16px; background: rgba(185,116,30,0.10); padding: 12px">
+        <svg width="18" height="18" viewBox="0 0 12 12" style="flex-shrink: 0" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="#8A5512" stroke-width="1.2"></circle><path d="M6 3.3V6.6M6 8.4V8.6" stroke="#8A5512" stroke-width="1.3" stroke-linecap="round"></path></svg>
+        <span style="font-size: 13px; line-height: 18px; color: #5E3A0C">Caution panel: thin data, supplements, anything to check with a doctor.</span>
+      </div>
+    </section>
+
+    <!-- calendar marks -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Day marks</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 8px; font-size: 11px; color: #4A4246; text-align: center">
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 10px; font-weight: 600">3</span><span style="width: 36px; height: 36px; border-radius: 18px; background: #B8324A; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 15px">2</span>period</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 10px">5</span><span style="width: 36px; height: 36px; box-sizing: border-box; border-radius: 18px; border: 1.5px dashed #B8324A; display: flex; align-items: center; justify-content: center; font-size: 15px">4</span>estimate</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 10px">15</span><span style="width: 36px; height: 36px; border-radius: 18px; background: #FFFFFF; color: #3F6F88; font-weight: 600; box-shadow: 0 0 0 1.5px rgba(63,111,136,0.28), 0 0 14px 3px rgba(63,111,136,0.42); display: flex; align-items: center; justify-content: center; font-size: 15px">14</span>ovulation</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 10px">12</span><span style="width: 100%; height: 38px; border-radius: 19px; background: rgba(92,138,110,0.36); display: flex; align-items: center; justify-content: center; font-size: 15px">11</span>fertile</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 10px; font-weight: 600">3</span><span style="width: 36px; height: 36px; border-radius: 18px; background: #B8324A; color: #FFFFFF; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #BC4560">2</span>today</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 10px">20</span><span style="width: 36px; height: 36px; border-radius: 18px; background: #F4DCE0; display: flex; align-items: center; justify-content: center; font-size: 15px">19</span>selected</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 10px">9</span><span style="width: 36px; height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px">8<span style="display: flex; gap: 3px"><span style="width: 5px; height: 5px; border-radius: 3px; background: #BC4560"></span></span></span>symptoms</span>
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 10px">10</span><span style="width: 36px; height: 36px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px">9<span style="width: 14px; height: 0; border-top: 2px dotted #3F6F88; margin-top: 2px"></span></span>ov. range</span>
+      </div>
+      <p style="margin: 0; font-size: 12px; line-height: 17px; color: #6B6165">Small number above the date = cycle day (semibold up to today). Solid = logged; dashed or glow = estimate.</p>
+    </section>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+    <!-- navigation pieces on content -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Navigation chrome</h2>
+      <div style="position: relative; height: 330px; border-radius: 18px; overflow: hidden; background: #FFFFFF; box-shadow: inset 0 0 0 1px #E4E4E6">
+        <div aria-hidden="true" style="position: absolute; inset: 0; padding: 64px 16px 0 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="height: 64px; border-radius: 22px; background: #F3F3F4"></div>
+          <div style="height: 64px; border-radius: 22px; background: #F3F3F4"></div>
+          <div style="height: 64px; border-radius: 22px; background: #F4DCE0"></div>
+          <div style="height: 64px; border-radius: 22px; background: #F3F3F4"></div>
+        </div>
+        <div style="position: absolute; top: 10px; left: 10px; right: 10px; height: 60px; border-radius: 30px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 10px 30px rgba(31,26,28,0.14), inset 0 1px 0 rgba(255,255,255,0.95); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; box-sizing: border-box">
+          <button type="button" aria-label="Back" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.6); background: rgba(255,255,255,0.5); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(31,26,28,0.08); font-size: 22px">‹</button>
+          <span style="font-size: 17px; font-weight: 600">Glass toolbar</span>
+          <button type="button" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 0; background: rgba(188,69,96,0.96); color: #FFFFFF; font-size: 15px; font-weight: 600; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 3px 10px rgba(188,69,96,0.3)">Done</button>
+        </div>
+        <div role="status" style="position: absolute; top: 80px; left: 30px; right: 30px; height: 48px; border-radius: 24px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 8px 22px rgba(31,26,28,0.16); display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 18px; font-size: 14px">Removed: Cramps (mild)<button type="button" style="min-height: 40px; padding: 0 14px; border-radius: 20px; border: 0; background: none; color: #A3354F; font-weight: 600; font-size: 15px">Undo</button></div>
+        <nav aria-label="Tabs" style="position: absolute; left: 10px; right: 10px; bottom: 10px; height: 62px; border-radius: 31px; background: linear-gradient(180deg, rgba(255,255,255,0.50) 0%, rgba(255,255,255,0.22) 42%, rgba(255,255,255,0.30) 100%); backdrop-filter: blur(18px) saturate(200%) brightness(1.04); -webkit-backdrop-filter: blur(18px) saturate(200%) brightness(1.04); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 8px 26px rgba(31,26,28,0.16), inset 0 1px 0 rgba(255,255,255,0.95); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; padding: 0 6px; box-sizing: border-box; font-size: 10px; text-align: center">
+          <a href="#" style="text-decoration: none; color: #4A4246; display: flex; flex-direction: column; align-items: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C12 3 5.5 10.5 5.5 14.5A6.5 6.5 0 0 0 18.5 14.5C18.5 10.5 12 3 12 3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path></svg>Today</a>
+          <a href="#" aria-current="page" style="text-decoration: none; color: #A3354F; font-weight: 600; height: 52px; border-radius: 26px; background: rgba(188,69,96,0.14); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"></rect><path d="M3.5 10H20.5M8 3V7M16 3V7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>Calendar</a>
+          <a href="#" style="text-decoration: none; color: #4A4246; display: flex; flex-direction: column; align-items: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18L9 12.5L13 16L20.5 7.5M15.5 7.5H20.5V12.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>Insights</a>
+          <a href="#" style="text-decoration: none; color: #4A4246; display: flex; flex-direction: column; align-items: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"></circle><circle cx="12" cy="12" r="6.6" fill="none" stroke="currentColor" stroke-width="1.7"></circle><path d="M12 2.8V5.3M12 18.7V21.2M2.8 12H5.3M18.7 12H21.2M5.5 5.5L7.3 7.3M16.7 16.7L18.5 18.5M5.5 18.5L7.3 16.7M16.7 7.3L18.5 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>Settings</a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- lists -->
+    <section style="border-radius: 24px; border: 1px solid #E4E4E6; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 600">Surfaces: white page, soft-elevation cards</h2>
+      <div style="border-radius: 26px; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(31,26,28,0.04), 0 2px 6px rgba(31,26,28,0.04), 0 12px 32px rgba(31,26,28,0.08); padding: 0 16px">
+        <a href="#" style="display: flex; align-items: center; justify-content: space-between; min-height: 52px; border-bottom: 1px solid #E4E4E6; text-decoration: none; color: #1F1A1C; font-size: 16px">Life state<span style="display: flex; gap: 8px; align-items: center; color: #6B6165; font-size: 15px">None<span aria-hidden="true">›</span></span></a>
+        <div style="display: flex; align-items: center; justify-content: space-between; min-height: 64px; border-bottom: 1px solid #E4E4E6; gap: 12px"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px">Show uncertain estimates</span><span style="font-size: 13px; color: #6B6165">Marked uncertain when drawn</span></span><button type="button" role="switch" aria-checked="false" aria-label="Show uncertain estimates" style="width: 51px; height: 31px; border-radius: 16px; border: 0; background: #E4E4E6; position: relative; padding: 0; flex-shrink: 0"><span style="position: absolute; left: 2px; top: 2px; width: 27px; height: 27px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 2px 4px rgba(0,0,0,0.2)"></span></button></div>
+        <a href="#" style="display: flex; align-items: center; min-height: 52px; text-decoration: none; color: #B8324A; font-size: 16px">Delete everything</a>
+      </div>
+      <p style="margin: 0; font-size: 12px; line-height: 17px; color: #6B6165">White page throughout. Cards are white with a hairline ring and a soft two-step shadow (radius 26), no border. Glass only where a faint rose, blue and green wash sits behind it: the Today hero (dial and estimate cards), plus toolbars, sheets and the tab bar. Grey fills only inside cards. Round rose-tinted icons on Settings; switches in accent.</p>
+    </section>
+  </div>
+</div>
+
+</body>
+</html>

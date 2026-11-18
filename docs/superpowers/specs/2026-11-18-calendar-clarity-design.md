@@ -52,7 +52,7 @@ Plus two settings the owner asked for: turn the cycle-day badges off, and show u
 - B. A month list under the grid, grid unchanged apart from past ovulation. Readable and accessible, but symptoms are not on the grid itself.
 - C. Both, kept light: the grid adds past ovulation and one symptom dot; a month list carries the detail.
 
-After C was agreed, five whole-screen layouts were mocked up (canvas "Calendar layout options", 2026-11-18): A (today's grid plus a month list), B (calm circles plus a day panel), C (vertically scrolling months plus a day sheet), D (a Month / Cycles switch with one row per cycle), E (a week strip plus a day-by-day agenda). **The owner chose B, and asked for it to be "more liquid glass".** B keeps approach C's split (light marks on the grid, detail below it) with a calmer cell. D's per-cycle comparison and E's agenda were not taken up.
+After C was agreed, five whole-screen layouts were mocked up (2026-11-18; the chosen layout is in `docs/design/glass-redesign/frames/Calendar-1-Closed.html` to `Calendar-3-SheetExpanded.html`): A (today's grid plus a month list), B (calm circles plus a day panel), C (vertically scrolling months plus a day sheet), D (a Month / Cycles switch with one row per cycle), E (a week strip plus a day-by-day agenda). **The owner chose B, and asked for it to be "more liquid glass".** B keeps approach C's split (light marks on the grid, detail below it) with a calmer cell. D's per-cycle comparison and E's agenda were not taken up.
 
 ## The design
 
@@ -70,7 +70,7 @@ Glass stays in the navigation layer only, as PLAN §9.1 requires: toolbar, sheet
 
 ### The expanded sheet (large detent)
 
-Owner: the estimate and the food and movement sections must not be text blurbs. They must be designed sections with details and graphics, pedagogical, clear and to the point, scientifically accurate with citations, and clear when something is guesswork, uncertain or thinly evidenced. Mockup: canvas artboard "B · 3. drag the sheet up".
+Owner: the estimate and the food and movement sections must not be text blurbs. They must be designed sections with details and graphics, pedagogical, clear and to the point, scientifically accurate with citations, and clear when something is guesswork, uncertain or thinly evidenced. Mockup: `docs/design/glass-redesign/frames/Calendar-3-SheetExpanded.html`.
 
 - **One meter for certainty.** A three-bar meter is used everywhere: as confidence on estimates (engine grade high, medium, low) and as the evidence grade on food, movement and supplements (Strong, Some, Early; General shows no filled bar). A small "How to read the bars" card explains it. The four grade definitions are new copy, approved by the owner (2026-11-18): Strong = large reviews or national guidelines agree; Some = several small trials point the same way, results vary; Early = one study, lab work, or a plausible link not tested in people; General = good advice on any day, not specific to this phase.
 - **Estimates**, one card each, each with a picture, the plain answer, the meter, and a "How it was worked out" panel in her own numbers:

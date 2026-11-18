@@ -1,8 +1,8 @@
 # Sanguine glass redesign: design language (mockup reference)
 
-Exact values behind the mockups on the design canvas "Sanguine glass redesign" (claude.ai artifact 4GnPfVGn2f1JqPVfh3kiWH). Companion to `2026-11-18-glass-redesign-design.md`; where the two differ, the design spec wins. The section "Artboard file rules" applies to the mockup files only, not to app code.
+Exact values behind the mockups in `docs/design/glass-redesign/index.html` (one HTML file per screen in `docs/design/glass-redesign/frames/`). Companion to `2026-11-18-glass-redesign-design.md`; where the two differ, the design spec wins.
 The owner chose calendar layout B (artboards
-`project/B-Circles.dc.html`, `project/B-SheetOpen.dc.html`, `project/B-DaySheet.dc.html`) and asked for the whole app in
+`frames/Calendar-1-Closed.html`, `frames/Calendar-2-SheetOpen.html`, `frames/Calendar-3-SheetExpanded.html`) and asked for the whole app in
 the same glass style. Copy those three files' patterns exactly (paste their inline styles); do not invent a new look.
 
 ## Frame and type
@@ -38,7 +38,7 @@ rgba(185,116,30,0.10), text #5E3A0C, icon #8A5512. Text must reach 4.5:1 (3:1 fo
   rgba(255,255,255,0.45), 0 6px 16px rgba(188,69,96,0.32)`.
 - A sheet at its large detent: `rgba(250,249,250,0.94)` with blur; its cards inside are opaque white.
 
-- Surfaces (owner, after comparing four options on the canvas frame "Card surface options on a white page"; picked A with B on hero places): the page stays white. Cards are white with a hairline ring (rgba(31,26,28,0.04)) and a soft two-step shadow (0 2px 6px and 0 12px 32px, low opacity), radius 26, no border. Glass appears on content only where a faint rose, blue and green wash sits behind it, so the blur has something to show: the Today hero (dial and estimate cards); everywhere else glass stays in the navigation layer (toolbars, sheets, tab bar, floating controls). Grey (`surface2`) fills only inside cards. Sheets at their large detent (log sheet, expanded day sheet) are near-white (97%) with the same soft-elevation cards (owner). Settings rows carry round icons in one soft rose tint (accentSoft circle, onAccentSoft glyph), the same circle shape as every other control; owner: multicoloured square tiles were too colourful and did not match the app.
+- Surfaces (owner, after comparing four options in `frames/Surface-Options.html`; picked A with B on hero places): the page stays white. Cards are white with a hairline ring (rgba(31,26,28,0.04)) and a soft two-step shadow (0 2px 6px and 0 12px 32px, low opacity), radius 26, no border. Glass appears on content only where a faint rose, blue and green wash sits behind it, so the blur has something to show: the Today hero (dial and estimate cards); everywhere else glass stays in the navigation layer (toolbars, sheets, tab bar, floating controls). Grey (`surface2`) fills only inside cards. Sheets at their large detent (log sheet, expanded day sheet) are near-white (97%) with the same soft-elevation cards (owner). Settings rows carry round icons in one soft rose tint (accentSoft circle, onAccentSoft glyph), the same circle shape as every other control; owner: multicoloured square tiles were too colourful and did not match the app.
 
 ## Geometry
 - Glass elements inset 10 px from the screen edges; tab bar 370×62, radius 31; floating cards radius 28; sheets radius 34;
@@ -49,7 +49,7 @@ rgba(185,116,30,0.10), text #5E3A0C, icon #8A5512. Text must reach 4.5:1 (3:1 fo
 ## Components (copy from the B files)
 - **Tab bar**: glass capsule, 4 items with icons (drop = Today, calendar = Calendar, rising line = Insights, gear =
   Settings; inline stroke SVG, 22 px, stroke 1.7), label 10 px; the current tab has a tinted pill rgba(188,69,96,0.14)
-  and colour #A3354F. Copy it from B-Circles.dc.html.
+  and colour #A3354F. Copy it from `frames/Calendar-1-Closed.html`.
 - **Glass toolbar** (pushed screens and Calendar): floating capsule at top 10 px, round glass back button 44 px with ‹,
   title centred 17 semibold, optional round trailing button or tinted "Today"/"Done" pill.
 - **Primary action**: exactly one filled (tinted) control per screen or sheet. Filled rose pill (52 px tall, plus icon
@@ -81,16 +81,4 @@ rgba(185,116,30,0.10), text #5E3A0C, icon #8A5512. Text must reach 4.5:1 (3:1 fo
 - Sample data (keep it consistent): periods started 5 Sep, 3 Oct, 31 Oct 2026 (cycles 28, 28 days; periods 5 and 4
   days); today Monday 2 November 2026, cycle day 3, medium flow, cramps mild, energy low; next period likely
   26–30 Nov (at most 24 Nov – 2 Dec), medium confidence; ovulation estimate 10–18 Nov, most likely 14 Nov, calendar
-  basis; BBT 36.42 °C logged on 27 Oct. Other states may use another "today" (say so in the artboard title).
-
-## Artboard file rules (Design canvas)
-- One self-contained `.dc.html` per artboard, exactly the skeleton of the B files: `<!doctype html>`, `<html lang="en">`,
-  head with `<meta charset="utf-8">`, a `<title>`, and EXACTLY `<script src="./support.js"></script>`; body with `<x-dc>`,
-  `<helmet><style>body{margin:0}</style></helmet>`, the root div, then the `<script type="text/x-dc" data-dc-script
-  data-props='{"$preview":{"width":390,"height":H}}'>` block with `class Component extends DCLogic { renderVals() {...} }`.
-- Close every element, quote every attribute; inline styles; no external images, fonts or network; icons as inline
-  stroke SVG with aria-hidden; real `<button>`/`<a href="#">`; `aria-label` on icon-only buttons.
-- Holes `{{x}}` are dotted lookups into renderVals() only; loops `<sc-for list="{{items}}" as="it"
-  hint-placeholder-count="N">`; conditionals `<sc-if value="{{flag}}" hint-placeholder-val="{{true}}">`.
-  Static markup is fine and preferred for mockups; use loops only for grids.
-- File names: `<Area>-<State>.dc.html`, letters, digits and hyphens only.
+  basis; BBT 36.42 °C logged on 27 Oct. Other states may use another "today" (say so in the frame title).

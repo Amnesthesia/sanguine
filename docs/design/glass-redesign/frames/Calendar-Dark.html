@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendar, dark mode</title>
+<style>
+body{margin:0}
+a{color:#D4607A}a:hover{color:#E8869A}
+</style>
+</head>
+<body>
+
+
+<div style="width: 390px; height: 1100px; position: relative; box-sizing: border-box; background: #000000; color: #F4EEEF; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; overflow: hidden">
+
+  <!-- content layer: opaque; shown scrolled a little, so the first week sits under the glass toolbar -->
+  <div style="padding: 70px 16px 0 16px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 4px">
+      
+        <button type="button" aria-label="2026-10-26, cycle day 24" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:600;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">26</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-10-27, cycle day 25" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:600;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">27</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            <span style="width: 5px; height: 5px; border-radius: 3px; background: #B3A8AC"></span>
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-10-28, cycle day 26" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:600;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">28</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            <span style="width: 5px; height: 5px; border-radius: 3px; background: #D4607A"></span>
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-10-29, cycle day 27" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:600;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">29</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-10-30, cycle day 28" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:600;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">30</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-10-31, cycle day 1, period" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:600;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;background:#D9607A;color:#1A0A0F;">31</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-01, cycle day 2, period" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:600;font-variant-numeric:tabular-nums">2</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;background:#D9607A;color:#1A0A0F;">1</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-02, cycle day 3, period" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:600;font-variant-numeric:tabular-nums">3</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;background:#D9607A;color:#1A0A0F;font-weight:700;box-shadow:0 0 0 2px #000000, 0 0 0 4px #D4607A;">2</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-03, cycle day 4, period, estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">4</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;border:1.5px dashed #D9607A;color:#F4EEEF;background:#000000;">3</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-04, cycle day 5, period, estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">5</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;border:1.5px dashed #D9607A;color:#F4EEEF;background:#000000;">4</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-05, cycle day 6, period, estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">6</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;border:1.5px dashed #D9607A;color:#F4EEEF;background:#000000;">5</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-06, cycle day 7, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">7</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.21);border-radius:19px 0px 0px 19px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">6</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-07, cycle day 8, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">8</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.25);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">7</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-08, cycle day 9, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">9</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.29);border-radius:0px 19px 19px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">8</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-09, cycle day 10, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">10</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.33);border-radius:19px 0px 0px 19px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">9</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-10, cycle day 11, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">11</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.37);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">10</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            <span style="width: 14px; height: 0; border-top: 2px dotted #7FA7C2"></span>
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-11, cycle day 12, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">12</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.39);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">11</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            <span style="width: 14px; height: 0; border-top: 2px dotted #7FA7C2"></span>
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-12, cycle day 13, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">13</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.40);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">12</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            <span style="width: 14px; height: 0; border-top: 2px dotted #7FA7C2"></span>
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-13, cycle day 14, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">14</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.39);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">13</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            <span style="width: 14px; height: 0; border-top: 2px dotted #7FA7C2"></span>
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-14, cycle day 15, fertile window estimate, ovulation estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">15</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.38);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;background:#000000;color:#7FA7C2;font-weight:600;box-shadow:0 0 0 1.5px rgba(127,167,194,0.28), 0 0 14px 3px rgba(127,167,194,0.42);">14</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-15, cycle day 16, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">16</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.34);border-radius:0px 19px 19px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">15</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            <span style="width: 14px; height: 0; border-top: 2px dotted #7FA7C2"></span>
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-16, cycle day 17, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">17</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.30);border-radius:19px 0px 0px 19px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">16</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            <span style="width: 14px; height: 0; border-top: 2px dotted #7FA7C2"></span>
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-17, cycle day 18, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">18</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.27);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">17</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            <span style="width: 14px; height: 0; border-top: 2px dotted #7FA7C2"></span>
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-18, cycle day 19, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">19</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.22);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">18</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            <span style="width: 14px; height: 0; border-top: 2px dotted #7FA7C2"></span>
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-19, cycle day 20, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">20</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.19);border-radius:0px 0px 0px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">19</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-20, cycle day 21, fertile window estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">21</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:rgba(127,175,147,0.16);border-radius:0px 19px 19px 0px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">20</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-21, cycle day 22" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">22</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">21</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-22, cycle day 23" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">23</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">22</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-23, cycle day 24" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">24</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">23</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-24, cycle day 25" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">25</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">24</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-25, cycle day 26" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">26</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">25</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-26, cycle day 27, period, estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">27</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;border:1.5px dashed #D9607A;color:#F4EEEF;background:#000000;">26</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-27, cycle day 28, period, estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">28</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;border:1.5px dashed #D9607A;color:#F4EEEF;background:#000000;">27</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-28, cycle day 29, period, estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">29</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;border:1.5px dashed #D9607A;color:#F4EEEF;background:#000000;">28</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-29, cycle day 30, period, estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">30</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;border:1.5px dashed #D9607A;color:#F4EEEF;background:#000000;">29</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-11-30, cycle day 31, period, estimate" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:1">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums">31</span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;border:1.5px dashed #D9607A;color:#F4EEEF;background:#000000;">30</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-12-01, cycle day 32" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">1</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-12-02, cycle day 33" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">2</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-12-03, cycle day 34" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">3</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-12-04, cycle day 35" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">4</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-12-05, cycle day 36" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">5</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+        <button type="button" aria-label="2026-12-06, cycle day 37" style="display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;padding:2px 0;margin:0;border:0;background:none;font:inherit;opacity:0.4">
+          <span style="height:13px;font-size:10px;line-height:13px;color:#B3A8AC;font-weight:400;font-variant-numeric:tabular-nums"></span>
+          <span style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;">
+            <span style="width:36px;height:36px;box-sizing:border-box;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:15px;font-variant-numeric:tabular-nums;color:#F4EEEF;">6</span>
+          </span>
+          <span style="display: flex; gap: 3px; height: 6px; align-items: center; justify-content: center">
+            
+            
+            
+          </span>
+        </button>
+      
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 12px; color: #B3A8AC">
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 16px; height: 16px; border-radius: 8px; background: #D9607A"></span>Period</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 16px; height: 16px; box-sizing: border-box; border-radius: 8px; border: 1.5px dashed #D9607A"></span>Period, estimate</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 22px; height: 12px; border-radius: 6px; background: rgba(127,175,147,0.35)"></span>Fertile window, estimate</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 16px; height: 16px; border-radius: 8px; background: #000000; box-shadow: 0 0 0 1px rgba(127,167,194,0.28), 0 0 7px 2px rgba(127,167,194,0.42)"></span>Ovulation, estimate</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="font-size: 10px; font-weight: 600">12</span>Day of cycle</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 6px; height: 6px; border-radius: 3px; background: #D4607A"></span>Symptoms</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 6px; height: 6px; border-radius: 3px; background: #B3A8AC"></span>Other log</span>
+    </div>
+
+    <!-- month list, as in option A; the heading names the month, so dates in the list carry no month name -->
+    <section aria-label="November" style="display: flex; flex-direction: column">
+      <h3 style="margin: 4px 0 8px 0; font-size: 17px; font-weight: 600">November</h3>
+      <a href="#" aria-label="1 November: period day 2, cramps strong, headache mild" style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #3A3A3C; text-decoration: none; color: #F4EEEF"><span style="width: 48px; flex-shrink: 0; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums">1</span><span style="font-size: 14px; line-height: 19px"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 4px; background: #D9607A; margin-right: 6px"></span>Period day 2 · Cramps (strong) · Headache (mild)</span></a>
+      <a href="#" aria-label="2 November, today: period day 3, cramps mild, energy low" style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #3A3A3C; text-decoration: none; color: #F4EEEF"><span style="width: 48px; flex-shrink: 0; display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 700; color: #D4607A; font-variant-numeric: tabular-nums">2</span><span style="font-size: 11px; font-weight: 600; color: #D4607A">Today</span></span><span style="font-size: 14px; line-height: 19px"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 4px; background: #D9607A; margin-right: 6px"></span>Period day 3 · Cramps (mild) · Energy low</span></a>
+      <a href="#" aria-label="3 to 5 November: period likely ends, estimate" style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #3A3A3C; text-decoration: none; color: #F4EEEF"><span style="width: 48px; flex-shrink: 0; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums">3–5</span><span style="font-size: 14px; line-height: 19px; color: #B3A8AC"><span style="display: inline-block; width: 8px; height: 8px; box-sizing: border-box; border-radius: 4px; border: 1px dashed #D9607A; margin-right: 6px"></span>Period likely ends · estimate from your usual length</span></a>
+      <a href="#" aria-label="6 to 20 November: fertile window, estimate, most likely 10 to 15" style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #3A3A3C; text-decoration: none; color: #F4EEEF"><span style="width: 48px; flex-shrink: 0; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums">6–20</span><span style="font-size: 14px; line-height: 19px; color: #B3A8AC"><span style="display: inline-block; width: 10px; height: 6px; border-radius: 3px; background: rgba(127,175,147,0.5); margin-right: 6px"></span>Fertile window, estimate · most likely 10–15</span></a>
+      <a href="#" aria-label="14 November: ovulation estimate, range 10 to 18, medium confidence" style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #3A3A3C; text-decoration: none; color: #F4EEEF"><span style="width: 48px; flex-shrink: 0; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums">14</span><span style="font-size: 14px; line-height: 19px; color: #B3A8AC"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 4px; background: #000000; box-shadow: 0 0 0 1px rgba(127,167,194,0.3), 0 0 5px 1px rgba(127,167,194,0.45); margin-right: 6px"></span>Ovulation estimate, range 10–18 · medium confidence</span></a>
+      <a href="#" aria-label="26 to 30 November: next period likely, at most 24 November to 2 December, medium confidence" style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #3A3A3C; border-bottom: 1px solid #3A3A3C; text-decoration: none; color: #F4EEEF"><span style="width: 48px; flex-shrink: 0; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums">26–30</span><span style="font-size: 14px; line-height: 19px; color: #B3A8AC"><span style="display: inline-block; width: 8px; height: 8px; box-sizing: border-box; border-radius: 4px; border: 1px dashed #D9607A; margin-right: 6px"></span>Next period likely · at most 24 Nov – 2 Dec · medium confidence</span></a>
+    </section>
+  </div>
+
+  <!-- navigation layer: glass toolbar -->
+  <header style="position: absolute; top: 10px; left: 10px; right: 10px; border-radius: 30px; padding: 8px; background: linear-gradient(180deg, rgba(70,62,66,0.55) 0%, rgba(30,26,28,0.38) 42%, rgba(40,35,38,0.45) 100%); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 4px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px">
+      <button type="button" aria-label="Previous month" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.12); background: rgba(44,40,42,0.5); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 6px rgba(0,0,0,0.20); color: #F4EEEF; font-size: 22px">‹</button>
+      <h1 style="margin: 0; font-size: 17px; line-height: 22px; font-weight: 600; flex: 1; text-align: center">November 2026</h1>
+      <button type="button" aria-label="Go to today" style="min-height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.08); color: #E8869A; font-size: 14px; font-weight: 600; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 6px rgba(31,26,28,0.08)">Today</button>
+      <button type="button" aria-label="Next month" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.12); background: rgba(44,40,42,0.5); box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 6px rgba(0,0,0,0.20); color: #F4EEEF; font-size: 22px">›</button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); font-size: 12px; font-weight: 500; color: #CFC6CA; text-align: center; padding: 2px 6px 4px 6px" aria-hidden="true">
+      <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+    </div>
+  </header>
+
+  <!-- navigation layer: the day sheet at its closed detent (a glass day card) and the glass tab bar -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0 10px 12px 10px">
+    <!-- sheet closed: the day sheet's lowest detent. A floating glass card over the scrolling content, not a content card,
+         so glass stays in the navigation layer (PLAN §9.1). Tap or drag it up to open the sheet; Log is the one filled control. -->
+    <div style="align-self: stretch; position: relative; border-radius: 28px; padding: 6px 8px 12px 16px; background: linear-gradient(180deg, rgba(70,62,66,0.55) 0%, rgba(30,26,28,0.38) 42%, rgba(40,35,38,0.45) 100%); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 1px 2px rgba(0,0,0,0.15), 0 14px 36px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.10); display: flex; flex-direction: column; gap: 10px">
+      <span aria-hidden="true" style="align-self: center; width: 36px; height: 5px; border-radius: 3px; background: rgba(0,0,0,0.50); margin-right: 8px"></span>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <button type="button" aria-label="Monday 2 November, today, day 3, period. Logged: flow medium, cramps mild, energy low. Estimates: period likely ends 3 to 5 November, low confidence; next period likely 26 to 30 November, medium confidence. Opens the day sheet." style="flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; font: inherit; color: inherit; display: flex; align-items: center; gap: 12px; cursor: pointer">
+          <span aria-hidden="true" style="width: 46px; height: 46px; border-radius: 23px; background: #D9607A; color: #1A0A0F; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(255,255,255,0.12), 0 0 0 3.5px #D4607A"><span style="font-size: 18px; font-weight: 700; line-height: 20px">2</span><span style="font-size: 8px; font-weight: 600; letter-spacing: 0.4px; line-height: 10px">MON</span></span>
+          <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+            <span style="font-size: 17px; font-weight: 600; color: #F4EEEF">Today, 2 November</span>
+            <span style="font-size: 13px; color: #CFC6CA">Day 3 of your cycle · Period</span>
+          </span>
+        </button>
+        <button type="button" aria-label="Log 2 November" style="width: 52px; height: 52px; flex-shrink: 0; border-radius: 26px; border: 0; background: rgba(212,96,122,0.96); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 6px 14px rgba(212,96,122,0.35); cursor: pointer"><svg width="20" height="20" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5V13.5M2.5 8H13.5" stroke="#1A0A0F" stroke-width="2.2" stroke-linecap="round"></path></svg></button>
+      </div>
+      <div aria-hidden="true" style="display: flex; flex-wrap: wrap; gap: 6px; padding-right: 8px">
+        <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 14px; background: rgba(44,40,42,0.7); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.20); font-size: 13px; color: #F4EEEF"><svg width="8" height="9" viewBox="0 0 10 11"><path d="M5 1C5 1 1 5.5 1 7.4A4 4 0 0 0 9 7.4C9 5.5 5 1 5 1Z" fill="#D9607A"></path></svg>Medium flow</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 14px; background: rgba(44,40,42,0.7); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.20); font-size: 13px; color: #F4EEEF"><span style="width: 6px; height: 6px; border-radius: 3px; background: #D4607A"></span>Cramps · mild</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 14px; background: rgba(44,40,42,0.7); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.20); font-size: 13px; color: #F4EEEF"><span style="width: 6px; height: 6px; border-radius: 3px; background: #B3A8AC"></span>Energy · low</span>
+      </div>
+      <div aria-hidden="true" style="margin-right: 8px; border-radius: 18px; background: rgba(44,40,42,0.5); box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.15); padding: 10px 12px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: #9FC0D6">ESTIMATES</span>
+        <span style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #F4EEEF"><span style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 6px; border: 1.5px dashed #D9607A; flex-shrink: 0"></span><span style="flex: 1">Period likely ends 3–5 Nov</span><span style="display: flex; gap: 2px"><span style="width: 3px; height: 10px; border-radius: 2px; background: #F4EEEF"></span><span style="width: 3px; height: 10px; border-radius: 2px; background: rgba(0,0,0,0.45)"></span><span style="width: 3px; height: 10px; border-radius: 2px; background: rgba(0,0,0,0.45)"></span></span></span>
+        <span style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #F4EEEF"><span style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 6px; border: 1.5px dashed #D9607A; flex-shrink: 0"></span><span style="flex: 1">Next period likely 26–30 Nov</span><span style="display: flex; gap: 2px"><span style="width: 3px; height: 10px; border-radius: 2px; background: #F4EEEF"></span><span style="width: 3px; height: 10px; border-radius: 2px; background: #F4EEEF"></span><span style="width: 3px; height: 10px; border-radius: 2px; background: rgba(0,0,0,0.45)"></span></span></span>
+      </div>
+    </div>
+
+    <nav aria-label="Tabs" style="width: 370px; height: 62px; border-radius: 31px; background: linear-gradient(180deg, rgba(70,62,66,0.55) 0%, rgba(30,26,28,0.38) 42%, rgba(40,35,38,0.45) 100%); backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 26px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.12); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center; padding: 0 6px; box-sizing: border-box; font-size: 10px; text-align: center">
+      <a href="#" style="text-decoration: none; color: #CFC6CA; display: flex; flex-direction: column; align-items: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C12 3 5.5 10.5 5.5 14.5A6.5 6.5 0 0 0 18.5 14.5C18.5 10.5 12 3 12 3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path></svg>Today</a>
+      <a href="#" aria-current="page" style="text-decoration: none; color: #E8869A; font-weight: 600; height: 52px; border-radius: 26px; background: rgba(212,96,122,0.14); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"></rect><path d="M3.5 10H20.5M8 3V7M16 3V7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path></svg>Calendar</a>
+      <a href="#" style="text-decoration: none; color: #CFC6CA; display: flex; flex-direction: column; align-items: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 18L9 12.5L13 16L20.5 7.5M15.5 7.5H20.5V12.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>Insights</a>
+      <a href="#" style="text-decoration: none; color: #CFC6CA; display: flex; flex-direction: column; align-items: center; gap: 2px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.7"></circle><path d="M12 2.8V5.3M12 18.7V21.2M2.8 12H5.3M18.7 12H21.2M5.5 5.5L7.3 7.3M16.7 16.7L18.5 18.5M5.5 18.5L7.3 16.7M16.7 7.3L18.5 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path><circle cx="12" cy="12" r="6.6" fill="none" stroke="currentColor" stroke-width="1.7"></circle></svg>Settings</a>
+    </nav>
+  </div>
+</div>
+
+</body>
+</html>
