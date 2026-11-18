@@ -52,7 +52,7 @@ describe('pastOvulations', () => {
 
   it.each([
     ['pregnant', { kind: 'pregnant' as const, since: '2026-10-10' }],
-    ['non-IUD hormonal contraception', { kind: 'hormonal_contraception' as const, method: 'pill' as const, since: '2026-10-10' }],
+    ['non-IUD hormonal contraception', { kind: 'hormonal_contraception' as const, method: 'combined_pill' as const, since: '2026-10-10' }],
     ['postpartum before the first period', { kind: 'postpartum' as const, delivered: '2026-10-10', breastfeeding: false }],
   ])('a suspended state (%s) gives no row for a cycle it covers, and a cycle before it keeps its row', (_name, state) => {
     const settings = { ...FIXTURE_SETTINGS, lifeStates: [state] };
@@ -105,7 +105,7 @@ describe('pastOvulations', () => {
     const h = historyFromLengths([28, 28, 28, 28], '2026-10-31');
     const from = h.cycles[0]!.start;
     const state = kind === 'post_contraception'
-      ? { kind, stopped: from, method: 'pill' }
+      ? { kind, stopped: from, method: 'combined_pill' }
       : { kind, delivered: from, breastfeeding: false };
     const rows = pastOvulations(h, { ...FIXTURE_SETTINGS, lifeStates: [state] });
     expect(rows.map(r => r.confidence)).toEqual(['low', 'low', 'medium', 'medium']);
