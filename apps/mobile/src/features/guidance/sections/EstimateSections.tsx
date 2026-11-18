@@ -56,7 +56,10 @@ function LengthsPicture({ lengths, label }: { lengths: number[]; label: string }
     <Picture w={W} h={base + f * 0.55} label={label}>
       <Rect x={x(0)} y={cy - 4} width={x(10) - x(0)} height={8} rx={4} fill={t.c.border} />
       <Rect x={x(0)} y={cy - 4} width={x(8) - x(0)} height={8} rx={4} fill={t.c.period} fillOpacity={0.22} />
-      {lengths.map((d, i) => <Circle key={i} cx={x(Math.min(d, 10))} cy={cy} r={7} fill={t.c.period} stroke={t.cardBg} strokeWidth={2} />)}
+      {lengths.map((d, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: period lengths repeat, so the position is the identity
+        <Circle key={i} cx={x(Math.min(d, 10))} cy={cy} r={7} fill={t.c.period} stroke={t.cardBg} strokeWidth={2} />
+      ))}
       <SvgText x={x(0)} y={base} fontSize={f} fill={t.c.textSecondary}>0</SvgText>
       <SvgText x={x(8)} y={base} fontSize={f} textAnchor="middle" fill={t.c.textSecondary}>{tr('estimates.how.days', { n: 8 })}</SvgText>
       <SvgText x={x(10)} y={base} fontSize={f} textAnchor="end" fill={t.c.textSecondary}>10</SvgText>
