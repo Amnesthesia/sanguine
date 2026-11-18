@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { Circle, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
-import { shownFertileDays } from '@/features/today/fertileShown';
+import { ovulationDrawable, ovulationUncertain, shownFertileDays, UNCERTAIN_ARM_DAYS } from '@/features/today/fertileShown';
 import { useTheme } from '@/theme';
 import { Card } from '@/ui/Card';
 import { CautionPanel } from '@/ui/CautionPanel';
@@ -51,7 +51,7 @@ function LengthsPicture({ lengths, label }: { lengths: number[]; label: string }
     <Picture w={W} h={46} label={label}>
       <Rect x={x(0)} y={14} width={x(10) - x(0)} height={8} rx={4} fill={t.c.border} />
       <Rect x={x(0)} y={14} width={x(8) - x(0)} height={8} rx={4} fill={t.c.period} fillOpacity={0.22} />
-      {lengths.map((d, i) => <Circle key={`len${d}at${lengths.slice(0, i).length}`} cx={x(Math.min(d, 10))} cy={18} r={7} fill={t.c.period} stroke={t.cardBg} strokeWidth={2} />)}
+      {lengths.map((d, i) => <Circle key={i} cx={x(Math.min(d, 10))} cy={18} r={7} fill={t.c.period} stroke={t.cardBg} strokeWidth={2} />)}
       <SvgText x={x(0)} y={40} fontSize={11} fill={t.c.textSecondary}>0</SvgText>
       <SvgText x={x(8)} y={40} fontSize={11} textAnchor="middle" fill={t.c.textSecondary}>{tr('estimates.how.days', { n: 8 })}</SvgText>
       <SvgText x={x(10)} y={40} fontSize={11} textAnchor="end" fill={t.c.textSecondary}>10</SvgText>
@@ -177,7 +177,7 @@ function NextPeriodCard({ p }: { p: Prediction }) {
 type Ov = { point: ISODate; i80: { lo: ISODate; hi: ISODate }; confidence: Confidence; basis: NonNullable<Prediction['ovulation']>['basis'] };
 
 /** This cycle as a row of days: the period, the graded fertile band, the ovulation range and the next period's range. */
-function CycleStrip({ p, start, ov, day }: { p: Prediction; start: ISODate; ov: Ov; day: ISODate }) {
+function CycleStrip({ p, start, ov, day, includeUncertain }: { p: Prediction; start: ISODate; ov: Ov; day: ISODate; includeUncertain: boolean }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
   const next = p.nextPeriod;
@@ -186,7 +186,7 @@ function CycleStrip({ p, start, ov, day }: { p: Prediction; start: ISODate; ov: 
   const cw = W / n;
   const x = (d: ISODate) => diffDays(d, start) * cw;
   const nr = (d: ISODate) => diffDays(d, start) + 1;
-  const fertile = shownFertileDays(p, { includeUncertain: true });
+  const fertile = shownFertileDays(p, { includeUncertain });
   const bleed = p.currentBleed && p.currentPhase?.phase === 'menstrual' ? p.currentBleed : undefined;
   const parts = [
     tr('estimates.ovulation.stripStart'),
@@ -214,54 +214,73 @@ function CycleStrip({ p, start, ov, day }: { p: Prediction; start: ISODate; ov: 
   );
 }
 
-function OvulationCard({ p, day, past }: { p: Prediction; day: ISODate; past: PastOvulation | undefined }) {
+/** A past cycle's 80% range wider than the uncertain rule allows (the same width rule as ovulationUncertain and the calendar). */
+const wideRow = (r: { i80: { lo: ISODate; hi: ISODate } }) => diffDays(r.i80.hi, r.i80.lo) > 2 * UNCERTAIN_ARM_DAYS;
+
+/**
+ * One rule with the calendar grid (D-098, D-106, D-115): a wide range is drawn (strip, fertile band, point) only when she turned on uncertain
+ * estimates; otherwise the card says so in words and nothing else, with no point date and no fertile wording.
+ */
+function OvulationCard({ p, day, past, includeUncertain }: { p: Prediction; day: ISODate; past: PastOvulation | undefined; includeUncertain: boolean }) {
   const { t } = useTranslation();
   const live = p.ovulation;
   const ov: Ov | undefined = past ? { ...past, basis: past.basis === 'wearable' ? 'bbt' : past.basis === 'cervix' ? 'combined' : past.basis } : live;
   if (!ov) return null;
   const start = past ? past.cycleStart : p.currentPhase ? addDays(p.asOf, -(p.currentPhase.dayOfCycle - 1)) : undefined;
-  const uncertain = !past && diffDays(ov.i80.hi, ov.i80.lo) > 12;
+  const wordsOnly = !past && !ovulationDrawable(p, includeUncertain);
+  const uncertain = past ? wideRow(ov) : ovulationUncertain(p);
   const range = formatRange(ov.i80.lo, ov.i80.hi);
   const point = formatDay(ov.point);
+  const line = past
+    ? uncertain ? t('day.estimates.ovulationPastUncertain', { range, basis: t(`day.estimates.basis.${ov.basis}`) }) : t('estimates.ovulation.linePast', { range, point })
+    : uncertain ? t('day.estimates.ovulationUncertain', { range }) : t('estimates.ovulation.line', { range, point });
   return (
     <Card testID="estimate-ovulation" style={{ gap: 12 }}>
-      <CardHead title={t('estimates.ovulation.title')} confidence={ov.confidence} />
+      <CardHead title={t(wordsOnly ? 'estimates.ovulation.titleWords' : 'estimates.ovulation.title')} confidence={ov.confidence} />
       {ov.basis === 'calendar' && !past ? <CautionPanel>{t('estimates.how.calendarOnly')}</CautionPanel> : null}
-      <Text>{uncertain ? t('day.estimates.ovulationUncertain', { range }) : t(past ? 'estimates.ovulation.linePast' : 'estimates.ovulation.line', { range, point })}</Text>
-      {start && !past ? <CycleStrip p={p} start={start} ov={ov} day={day} /> : null}
+      <Text>{line}</Text>
+      {start && !past && !wordsOnly ? <CycleStrip p={p} start={start} ov={ov} day={day} includeUncertain={includeUncertain} /> : null}
       <How>
         {ov.basis === 'calendar' ? (
           <Text variant="bodySmall">{past ? t('estimates.how.ovulationPast') : `${t('estimates.how.ovulationCalendar')} `}{past ? null : <Cite n={2} />}{past ? null : ` ${t('estimates.how.ovulationCalendarWide')}`}</Text>
         ) : <Text variant="bodySmall">{t(`today.estimateBasis.${ov.basis}`)}</Text>}
-        {past ? null : <Text variant="bodySmall">{t('estimates.how.fertile')}<Cite n={3} />{uncertain ? ` ${t('estimates.how.fertileWide')}` : ''}</Text>}
+        {past || wordsOnly ? null : <Text variant="bodySmall">{t('estimates.how.fertile')}<Cite n={3} />{uncertain ? ` ${t('estimates.how.fertileWide')}` : ''}</Text>}
       </How>
-      <Text variant="bodySmall" color="textSecondary" testID="estimate-legal">{t('legal.estimateCard', { point, lo: formatDay(ov.i80.lo), hi: formatDay(ov.i80.hi) })}</Text>
+      {wordsOnly
+        ? <Text variant="bodySmall" color="textSecondary" testID="estimate-footer">{t('legal.footer')}</Text>
+        : <Text variant="bodySmall" color="textSecondary" testID="estimate-legal">{t('legal.estimateCard', { point, lo: formatDay(ov.i80.lo), hi: formatDay(ov.i80.hi) })}</Text>}
     </Card>
   );
 }
 
-/** Which closed cycle a day belongs to, when it is before the open cycle starts (D-112 estimates). */
-function pastFor(day: ISODate, p: Prediction, pastOv: PastOvulation[]): PastOvulation | undefined {
-  const openStart = p.currentPhase ? addDays(p.asOf, -(p.currentPhase.dayOfCycle - 1)) : undefined;
-  if (!openStart || day >= openStart) return undefined;
-  return pastOv.filter((o) => o.cycleStart <= day).sort((a, b) => (a.cycleStart < b.cycleStart ? 1 : -1))[0];
-}
+/** The closed cycle a day before the open cycle belongs to (D-112 estimates), if it has an estimate row. */
+const pastFor = (day: ISODate, pastOv: PastOvulation[]): PastOvulation | undefined =>
+  pastOv.filter((o) => o.cycleStart <= day).sort((a, b) => (a.cycleStart < b.cycleStart ? 1 : -1))[0];
 
-export function EstimateSections({ prediction, day, pastOv, showEstimate, periodLengths = [] }: {
+export function EstimateSections({ prediction, day, pastOv, showEstimate, includeUncertain, periodLengths = [] }: {
   prediction: Prediction;
   /** The day the sheet or screen is about. */
   day: ISODate;
   pastOv: PastOvulation[];
   /** Effective ovulation-estimate preference (teen mode folded in). Off: no ovulation or fertile card, picture or wording. */
   showEstimate: boolean;
+  /** The effective show-uncertain-estimates preference (effectivePrefs): off, a wide ovulation range is words only and a wide past one is not shown. */
+  includeUncertain: boolean;
   /** Days of her recent closed periods, oldest first, for the period-end card. */
   periodLengths?: number[];
 }) {
   const { t } = useTranslation();
   const t2 = useTheme();
   if (prediction.suspended) return null;
-  const past = pastFor(day, prediction, pastOv);
-  const isPast = diffDays(day, prediction.asOf) < 0 && past !== undefined;
+  // a day before the open cycle belongs to an earlier cycle: its own ovulation estimate if it has one, never the open cycle's live cards
+  const openStart = prediction.currentPhase ? addDays(prediction.asOf, -(prediction.currentPhase.dayOfCycle - 1)) : undefined;
+  const before = openStart !== undefined && day < openStart;
+  const past = before ? pastFor(day, pastOv) : undefined;
+  const periodEnd = !before && Boolean(prediction.currentBleed);
+  const nextPeriod = !before && Boolean(prediction.nextPeriod);
+  const ovulation = showEstimate && (before ? past !== undefined && (includeUncertain || !wideRow(past)) : Boolean(prediction.ovulation));
+  if (!periodEnd && !nextPeriod && !ovulation) return null;
+  const fertileCited = ovulation && !before && ovulationDrawable(prediction, includeUncertain);
   return (
     <View testID="estimate-sections" style={{ gap: 16 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
@@ -277,12 +296,12 @@ export function EstimateSections({ prediction, day, pastOv, showEstimate, period
           </View>
         </View>
       </View>
-      {isPast ? null : <PeriodEndCard p={prediction} day={day} periodLengths={periodLengths} />}
-      {isPast ? null : <NextPeriodCard p={prediction} />}
-      {showEstimate ? <OvulationCard p={prediction} day={day} past={past} /> : null}
+      {periodEnd ? <PeriodEndCard p={prediction} day={day} periodLengths={periodLengths} /> : null}
+      {nextPeriod ? <NextPeriodCard p={prediction} /> : null}
+      {ovulation ? <OvulationCard p={prediction} day={day} past={past} includeUncertain={includeUncertain} /> : null}
       <View style={{ gap: 8 }}>
         <Text variant="heading" accessibilityRole="header">{t('estimates.how.sources')}</Text>
-        <Sources items={[t('estimates.how.src1'), t('estimates.how.src2'), ...(showEstimate ? [t('estimates.how.src3')] : [])]} />
+        <Sources items={[t('estimates.how.src1'), t('estimates.how.src2'), ...(fertileCited ? [t('estimates.how.src3')] : [])]} />
         <Text variant="caption" color="textSecondary">{t('day.estimates.note')}</Text>
       </View>
     </View>

@@ -17,7 +17,8 @@ const GRADES: readonly Evidence[] = ['strong', 'some', 'early', 'general'];
 
 function EvidenceMeter({ evidence }: { evidence: Evidence }) {
   const { t } = useTranslation();
-  return <Meter level={evidenceLevel(evidence)} word={t(`guidance.evidenceKey.${evidence}.word`)} />;
+  // the visible word stays short; the screen reader gets the phrase ("Some evidence"), not a bare "Some"
+  return <View accessible accessibilityLabel={t(`guidance.evidence.${evidence}`)}><Meter level={evidenceLevel(evidence)} word={t(`guidance.evidenceKey.${evidence}.word`)} /></View>;
 }
 
 /** The reason in a tinted panel, under the note's tip. */
@@ -52,7 +53,13 @@ function Tile({ label, text, evidence }: { label: string; text: string; evidence
 
 const best = (grades: readonly Evidence[]): Evidence => grades.reduce((a, b) => (evidenceLevel(b) > evidenceLevel(a) ? b : a), 'general' as Evidence);
 
-export function GuidanceSections({ day, supplements, compact, onMore }: { day: GuideDay; supplements: boolean; compact: boolean; onMore?: () => void }) {
+/** The per-phase source line is one sentence per reference; sections.test.tsx pins the count for every phase so an abbreviation ("Int. J.") cannot split one silently. */
+export const splitSources = (line: string): string[] => line.split(/\.\s+/).map((s) => (s.endsWith('.') ? s : `${s}.`));
+
+/** The compact form is a summary with a Read more button, so it must say where that goes. */
+type Props = { day: GuideDay; supplements: boolean } & ({ compact: true; onMore: () => void } | { compact: false; onMore?: never });
+
+export function GuidanceSections({ day, supplements, compact, onMore }: Props) {
   const { t } = useTranslation();
   const p = day.phase;
   const g = GUIDANCE[p];
@@ -75,8 +82,7 @@ export function GuidanceSections({ day, supplements, compact, onMore }: { day: G
   }
 
   const supps = supplements ? g.supps : [];
-  // the per-phase source line is one sentence per reference
-  const sources = t(`guidance.${p}.sources`).split(/\.\s+/).map((s) => (s.endsWith('.') ? s : `${s}.`));
+  const sources = splitSources(t(`guidance.${p}.sources`));
   return (
     <View testID="guidance-sections" style={{ gap: 16 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>

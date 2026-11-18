@@ -1218,6 +1218,7 @@
     },
     "ovulation": {
       "title": "Ovulation and fertile window",
+      "titleWords": "Ovulation",
       "line": "Ovulation most likely {range}, around {point}.",
       "linePast": "Ovulation was most likely {range}, around {point}.",
       "curveLabel": "ovulation",
@@ -1243,7 +1244,7 @@
       "periodEndYours": "yours",
       "periodEndShaded": "Shaded: periods up to 8 days long are within the typical range used by gynaecologists worldwide.",
       "nextPeriodNone": "You have no completed cycles yet, so this rests on what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long.",
-      "nextPeriod": "Your own cycles ({count} used, averaging {mean} days) are combined with what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long.",
+      "nextPeriod": "Your own cycles ({count} used) are combined with what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long. Together they point to a cycle of about {mean} days for you.",
       "nextPeriodFew": "With only {count} of your cycles, the study still carries much of the weight. After about six regular cycles your own pattern takes over and confidence can reach high.",
       "calendarOnly": "Calendar only: no LH tests or temperatures this cycle",
       "ovulationCalendar": "The phase after ovulation lasts about 12.4 days on average (give or take 2.4), so ovulation is placed that far before your expected next period.",
