@@ -1,5 +1,5 @@
 // Theme provider: ui-tokens by colour scheme and platform treatment (PLAN.md §9.1-9.3). Brand wine is not here (splash, icon, About only).
-import { colors, m3, radii, type ColorToken } from '@sanguine/ui-tokens';
+import { colors, elevation, glass, m3, radii, type ColorToken } from '@sanguine/ui-tokens';
 import { createContext, type ReactNode, useContext, useEffect, useMemo } from 'react';
 import { Appearance, Platform, useColorScheme } from 'react-native';
 import type { ThemePref } from '@/data/prefs';
@@ -15,7 +15,9 @@ export interface Theme {
   /** Raised fill for chips and grouped rows. */
   chipBg: string;
   hairline: string;
-  radius: { chip: number; card: number; sheet: number; tile: number };
+  radius: { chip: number; card: number; float: number; sheet: number; tile: number };
+  elevation: typeof elevation;
+  glass: { inset: number };
   isIOS: boolean;
 }
 
@@ -26,6 +28,8 @@ export function buildTheme(scheme: Scheme, platform: 'ios' | 'android'): Theme {
   const ios = platform === 'ios';
   return {
     scheme, c, isIOS: ios,
+    elevation,
+    glass: { inset: glass[scheme].inset },
     screenBg: ios ? c.bg : m.surfaceContainerLow,
     cardBg: ios ? c.surface : m.surfaceContainer,
     chipBg: ios ? c.surface2 : m.surfaceContainerHigh,
