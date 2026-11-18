@@ -72,11 +72,8 @@ export default function InsightsScreen() {
 
   return (
     <Screen testID="screen-insights" chrome={
-      // the segmented control rides in the glass toolbar under the title (frames Insights-*)
-      <View style={{ gap: 8 }}>
-        <GlassBar title={tr('insights.title')} />
-        <Segmented testIDPrefix="insights-tab" value={tab} onChange={setTab} options={[{ value: 'history', label: tr('insights.segments.history') }, { value: 'charts', label: tr('insights.segments.charts') }, { value: 'accuracy', label: tr('insights.segments.accuracy') }]} />
-      </View>
+      // the segmented control rides in the glass toolbar under the title, one glass surface (frames Insights-*)
+      <GlassBar title={tr('insights.title')} below={<Segmented inGlass testIDPrefix="insights-tab" value={tab} onChange={setTab} options={[{ value: 'history', label: tr('insights.segments.history') }, { value: 'charts', label: tr('insights.segments.charts') }, { value: 'accuracy', label: tr('insights.segments.accuracy') }]} />} />
     }>
 
       {tab === 'history' ? (

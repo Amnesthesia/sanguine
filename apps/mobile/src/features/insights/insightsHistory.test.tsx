@@ -10,8 +10,8 @@ const app = vi.hoisted(() => ({ state: {} as Record<string, unknown>, cycles: []
 vi.mock('@/state/app', () => ({ useApp: () => app.state }));
 vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/ui/Screen', () => ({ Screen: ({ children, chrome }: { children: ReactNode; chrome?: ReactNode }) => <div>{chrome}{children}</div> }));
-vi.mock('@/ui/GlassBar', () => ({ GlassBar: ({ title }: { title: string }) => <h1>{title}</h1> }));
-vi.mock('@/ui/Segmented', () => ({ Segmented: () => null }));
+vi.mock('@/ui/GlassBar', () => ({ GlassBar: ({ title, below }: { title: string; below?: ReactNode }) => <header data-testid="bar"><h1>{title}</h1>{below}</header> }));
+vi.mock('@/ui/Segmented', () => ({ Segmented: ({ inGlass, testIDPrefix }: { inGlass?: boolean; testIDPrefix?: string }) => <nav data-testid={testIDPrefix} data-inglass={String(!!inGlass)} /> }));
 vi.mock('@sanguine/engine', async (orig) => ({ ...(await orig<typeof import('@sanguine/engine')>()), analyzeCycles: () => app.cycles.map((record) => ({ record })) }));
 vi.mock('@/features/insights/charts', () => ({ EnergyChart: () => null, LengthChart: () => null, TempChart: () => null }));
 const setExcluded = vi.hoisted(() => vi.fn(async () => {}));
@@ -30,6 +30,12 @@ async function show(confidence: 'low' | 'high', refresh = vi.fn(async () => {}))
 }
 
 describe('Insights history', () => {
+  it('puts the segmented control in the glass toolbar (one glass surface), without its own surface', async () => {
+    await show('high');
+    const tabs = screen.getByTestId('insights-tab');
+    expect(screen.getByTestId('bar').contains(tabs)).toBe(true);
+    expect(tabs.getAttribute('data-inglass')).toBe('true');
+  });
   it('shows the length summary at low confidence, with the excluded cycle in the list', async () => {
     await show('low');
     expect(screen.getByTestId('length-summary')).toBeTruthy();

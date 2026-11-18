@@ -14,7 +14,7 @@ const app = vi.hoisted(() => ({ state: {} as Record<string, unknown> }));
 vi.mock('@/state/app', () => ({ useApp: () => app.state }));
 vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/ui/Screen', () => ({ Screen: ({ children, chrome }: { children: ReactNode; chrome?: ReactNode }) => <div>{chrome}{children}</div> }));
-vi.mock('@/ui/GlassBar', () => ({ GlassBar: ({ title }: { title: string }) => <h1>{title}</h1> }));
+vi.mock('@/ui/GlassBar', () => ({ GlassBar: ({ title, below }: { title: string; below?: ReactNode }) => <header><h1>{title}</h1>{below}</header> }));
 vi.mock('@/ui/Segmented', () => ({ Segmented: ({ onChange }: { onChange: (v: string) => void }) => <button type="button" onClick={() => onChange('charts')}>Charts</button> }));
 vi.mock('@/features/insights/charts', () => ({
   EnergyChart: ({ label }: { label: string }) => <div data-testid="chart-energy" role="img" aria-label={label} />,
