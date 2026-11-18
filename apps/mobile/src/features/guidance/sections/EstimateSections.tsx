@@ -14,7 +14,7 @@ import { formatDay, formatRange } from '@/ui/format';
 import { Meter, confidenceLevel } from '@/ui/Meter';
 import { Cite, Sources } from '@/ui/Sources';
 import { Text } from '@/ui/Text';
-import { Picture } from './HormoneCurve';
+import { Picture, useSvgText } from './HormoneCurve';
 
 const W = 326;
 const dayNum = (d: ISODate) => String(Number(d.slice(8, 10)));
@@ -46,16 +46,21 @@ const list = (parts: string[], and: string) => (parts.length < 2 ? parts.join(''
 function LengthsPicture({ lengths, label }: { lengths: number[]; label: string }) {
   const t = useTheme();
   const { t: tr } = useTranslation();
+  const { fs, fit } = useSvgText();
   const x = (d: number) => 8 + (d / 10) * (W - 16);
+  const f = fs(11);
+  const cy = f * 0.95 + 8; // the bar sits under the "yours" label and above the 0 / 8 / 10 labels, both of which grow with the text
+  const base = cy + 11 + f;
+  const yours = tr('estimates.how.periodEndYours');
   return (
-    <Picture w={W} h={46} label={label}>
-      <Rect x={x(0)} y={14} width={x(10) - x(0)} height={8} rx={4} fill={t.c.border} />
-      <Rect x={x(0)} y={14} width={x(8) - x(0)} height={8} rx={4} fill={t.c.period} fillOpacity={0.22} />
-      {lengths.map((d, i) => <Circle key={i} cx={x(Math.min(d, 10))} cy={18} r={7} fill={t.c.period} stroke={t.cardBg} strokeWidth={2} />)}
-      <SvgText x={x(0)} y={40} fontSize={11} fill={t.c.textSecondary}>0</SvgText>
-      <SvgText x={x(8)} y={40} fontSize={11} textAnchor="middle" fill={t.c.textSecondary}>{tr('estimates.how.days', { n: 8 })}</SvgText>
-      <SvgText x={x(10)} y={40} fontSize={11} textAnchor="end" fill={t.c.textSecondary}>10</SvgText>
-      <SvgText x={x(Math.min(lengths[0] ?? 0, 10))} y={8} fontSize={11} fontWeight="600" textAnchor="middle" fill={t.c.textPrimary}>{tr('estimates.how.periodEndYours')}</SvgText>
+    <Picture w={W} h={base + f * 0.55} label={label}>
+      <Rect x={x(0)} y={cy - 4} width={x(10) - x(0)} height={8} rx={4} fill={t.c.border} />
+      <Rect x={x(0)} y={cy - 4} width={x(8) - x(0)} height={8} rx={4} fill={t.c.period} fillOpacity={0.22} />
+      {lengths.map((d, i) => <Circle key={i} cx={x(Math.min(d, 10))} cy={cy} r={7} fill={t.c.period} stroke={t.cardBg} strokeWidth={2} />)}
+      <SvgText x={x(0)} y={base} fontSize={f} fill={t.c.textSecondary}>0</SvgText>
+      <SvgText x={x(8)} y={base} fontSize={f} textAnchor="middle" fill={t.c.textSecondary}>{tr('estimates.how.days', { n: 8 })}</SvgText>
+      <SvgText x={x(10)} y={base} fontSize={f} textAnchor="end" fill={t.c.textSecondary}>10</SvgText>
+      <SvgText x={fit(x(Math.min(lengths[0] ?? 0, 10)), yours, f)} y={f * 0.75} fontSize={f} fontWeight="600" textAnchor="middle" fill={t.c.textPrimary}>{yours}</SvgText>
     </Picture>
   );
 }
@@ -66,8 +71,12 @@ function BleedStrip({ start, asOf, bleed, day, label }: { start: ISODate; asOf: 
   const end = addDays(bleed.i80.hi, 1);
   const n = Math.min(10, diffDays(end, start) + 1);
   const cw = W / n;
+  const { fs } = useSvgText();
+  const r = Math.min(cw / 2 - 2, 13 * (fs(1))); // the circles grow with the text but stay apart
+  const f = Math.min(fs(12), r * 1.5); // two digits still fit inside the circle
+  const cy = r + 3;
   return (
-    <Picture w={W} h={50} label={label}>
+    <Picture w={W} h={cy + r + 21} label={label}>
       {Array.from({ length: n }, (_, i) => {
         const d = addDays(start, i);
         const logged = d <= asOf;
@@ -75,9 +84,9 @@ function BleedStrip({ start, asOf, bleed, day, label }: { start: ISODate; asOf: 
         const cx = i * cw + cw / 2;
         return (
           <G key={d}>
-            <Circle cx={cx} cy={16} r={13} fill={logged ? t.c.period : 'none'} stroke={estimated ? t.c.period : 'none'} strokeWidth={1.5} strokeDasharray={estimated ? '3 2' : undefined} />
-            {d === day ? <Circle cx={cx} cy={16} r={15.5} fill="none" stroke={t.c.textPrimary} strokeWidth={1.5} /> : null}
-            <SvgText x={cx} y={20} fontSize={12} textAnchor="middle" fill={logged ? t.c.surface : t.c.textPrimary}>{dayNum(d)}</SvgText>
+            <Circle cx={cx} cy={cy} r={r} fill={logged ? t.c.period : 'none'} stroke={estimated ? t.c.period : 'none'} strokeWidth={1.5} strokeDasharray={estimated ? '3 2' : undefined} />
+            {d === day ? <Circle cx={cx} cy={cy} r={r + 2.5} fill="none" stroke={t.c.textPrimary} strokeWidth={1.5} /> : null}
+            <SvgText x={cx} y={cy + f * 0.35} fontSize={f} textAnchor="middle" fill={logged ? t.c.surface : t.c.textPrimary}>{dayNum(d)}</SvgText>
           </G>
         );
       })}
@@ -121,11 +130,14 @@ function RangeBar({ next }: { next: NonNullable<Prediction['nextPeriod']> }) {
   const x = (d: ISODate) => 8 + (diffDays(d, lo) / span) * (W - 16);
   const label = tr('estimates.nextPeriod.a11y', { lo80: formatDay(next.i80.lo), hi80: formatDay(next.i80.hi), lo95: formatDay(next.i95.lo), hi95: formatDay(next.i95.hi) });
   const px = x(next.point) + (x(addDays(next.point, 1)) - x(next.point)) / 2;
+  const { fs, fit } = useSvgText();
+  const f = fs(11);
+  const base = 43 + f; // under the bar, which stays the same size
   const tick = (d: ISODate, text: string, bold: boolean, at: number = x(d)) => (
-    <SvgText key={`${d}-${text}`} x={at} y={54} fontSize={11} fontWeight={bold ? '600' : '400'} textAnchor="middle" fill={bold ? t.c.textPrimary : t.c.textSecondary}>{text}</SvgText>
+    <SvgText key={`${d}-${text}`} x={fit(at, text, f)} y={base} fontSize={f} fontWeight={bold ? '600' : '400'} textAnchor="middle" fill={bold ? t.c.textPrimary : t.c.textSecondary}>{text}</SvgText>
   );
   return (
-    <Picture w={W} h={64} label={label}>
+    <Picture w={W} h={base + f * 0.9} label={label}>
       <Line x1={8} y1={22} x2={W - 8} y2={22} stroke={t.c.border} strokeWidth={1} />
       <Rect x={x(next.i95.lo)} y={13} width={x(addDays(next.i95.hi, 1)) - x(next.i95.lo)} height={18} rx={9} fill={t.c.period} fillOpacity={0.14} stroke={t.c.period} strokeOpacity={0.45} strokeDasharray="3 3" />
       <Rect x={x(next.i80.lo)} y={13} width={x(addDays(next.i80.hi, 1)) - x(next.i80.lo)} height={18} rx={9} fill={t.c.period} fillOpacity={0.42} />
@@ -195,8 +207,12 @@ function CycleStrip({ p, start, ov, day, includeUncertain }: { p: Prediction; st
     ...(next ? [tr('estimates.ovulation.stripNext', { lo: nr(next.i80.lo), hi: nr(next.i80.hi) })] : []),
   ];
   const within = (d: ISODate) => diffDays(d, start) >= 0 && diffDays(d, start) < n;
+  const { fs, fit } = useSvgText();
+  const f = fs(10);
+  const base = 48 + f; // under the marker, which stays the same size
+  const pointText = String(nr(ov.point));
   return (
-    <Picture w={W} h={64} label={parts.join('; ')}>
+    <Picture w={W} h={base + 6 + (f - 10) * 0.3} label={parts.join('; ')}>
       {Array.from({ length: n }, (_, i) => <Rect key={`c${addDays(start, i)}`} x={i * cw + 0.5} y={8} width={cw - 1} height={18} rx={2} fill={t.c.border} />)}
       {bleed ? Array.from({ length: Math.max(0, diffDays(bleed.i80.hi, start) + 1) }, (_, i) => {
         const d = addDays(start, i);
@@ -208,8 +224,8 @@ function CycleStrip({ p, start, ov, day, includeUncertain }: { p: Prediction; st
       {within(day) ? <Rect x={x(day)} y={6} width={cw} height={22} rx={3} fill="none" stroke={t.c.textPrimary} strokeWidth={1.5} /> : null}
       <Rect x={Math.max(0, x(ov.i80.lo))} y={31} width={Math.min(W, (diffDays(ov.i80.hi, ov.i80.lo) + 1) * cw)} height={5} rx={2.5} fill={t.c.ovulation} fillOpacity={0.35} />
       <Path d={`M${x(ov.point) + cw / 2},37 l-4,7 h8 Z`} fill={t.c.ovulation} />
-      <SvgText x={0} y={58} fontSize={10} fill={t.c.textSecondary}>{tr('guidance.curve.day1')}</SvgText>
-      <SvgText x={x(ov.point) + cw / 2} y={58} fontSize={10} fontWeight="600" textAnchor="middle" fill={t.c.textPrimary}>{nr(ov.point)}</SvgText>
+      <SvgText x={0} y={base} fontSize={f} fill={t.c.textSecondary}>{tr('guidance.curve.day1')}</SvgText>
+      <SvgText x={fit(x(ov.point) + cw / 2, pointText, f)} y={base} fontSize={f} fontWeight="600" textAnchor="middle" fill={t.c.textPrimary}>{pointText}</SvgText>
     </Picture>
   );
 }
