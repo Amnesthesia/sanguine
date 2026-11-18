@@ -1,6 +1,6 @@
 // Today's cycle dial (D-121, PLAN.md §9.5): arcs on a track over the expected cycle length, one tick per day, today as a knob.
 // Solid = logged, soft = estimate, graded green = fertile window estimate, blue ring = ovulation estimate.
-import { over } from '@sanguine/ui-tokens';
+import { colors, over } from '@sanguine/ui-tokens';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Svg, { Circle, Defs, G, Line, Path, RadialGradient, Stop } from 'react-native-svg';
@@ -19,6 +19,12 @@ const CAP_DEG = (STROKE / 2 / R) * (180 / Math.PI); // round caps stick out by h
 const OVERLAP_DEG = 0.6; // butt-capped slices overlap a hair so no seam shows
 const TICK_OUTER = 107;
 const ESTIMATE_ALPHA = 0.3;
+const RIM_R = R + STROKE / 2 - 0.75; // a thin solid edge on the outer rim of every estimate, so its extent does not rest on colour grading alone (>= 3:1 on the track, D-093)
+const RIM = 1.5;
+// The frames' dial track (Today-*.html). packages/ui-tokens is frozen for this work, so it is a local constant; move it to the tokens as `dialTrack` when they open.
+export const TRACK = { light: '#ECE7E9', dark: '#2A2628' } as const;
+// The knob's drop shadow is dark in both themes; textPrimary is near-white in dark and would make a halo. Same ink as the card shadows in tokens.elevation.
+const SHADOW = colors.light.textPrimary;
 
 export interface DialCentre { kicker: string; big: string; pill?: string; sub?: string }
 const pt = (deg: number, r: number) => ({ x: C + r * Math.sin((deg * Math.PI) / 180), y: C - r * Math.cos((deg * Math.PI) / 180) });
@@ -37,32 +43,34 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
   const stacked = useFontScale() > LARGE; // at large text the words leave the dial and stack beneath it
   const { days, arcs } = model;
   const deg = (boundary: number) => (boundary / days) * 360;
-  const roundedArc = (a: DialArc) => {
+  const track = TRACK[t.scheme];
+  const roundedArc = (a: DialArc, r = R) => {
     const from = deg(a.from - 1) + CAP_DEG, to = deg(a.to) - CAP_DEG;
-    return to > from ? arcPath(C, C, R, from, to) : arcPath(C, C, R, (from + to) / 2 - 0.3, (from + to) / 2 + 0.3);
+    return to > from ? arcPath(C, C, r, from, to) : arcPath(C, C, r, (from + to) / 2 - 0.3, (from + to) / 2 + 0.3);
   };
   const logged = arcs.filter((a) => a.kind === 'period');
   const estimates = arcs.filter((a) => a.kind === 'periodEstimate');
   const runs = fertileRuns(arcs);
-  const sliceColour = (a: DialArc) => over(t.c.fertile, fertileAlpha(a.p ?? 0), t.c.surface2);
+  const sliceColour = (a: DialArc) => over(t.c.fertile, fertileAlpha(a.p ?? 0), track);
   const todayDeg = model.todayDay ? deg(model.todayDay - 0.5) : undefined;
   const ovDeg = model.ovulationDay ? deg(model.ovulationDay - 0.5) : undefined;
 
-  const range = (a: DialArc) => ({ from: a.from, to: a.to });
+  // a one-day range is spoken as "on day 13", never "days 13 to 13"; each separate fertile run gets its own sentence
+  const span = (key: string, from: number, to: number) => (from === to ? tr(`${key}One`, { day: from }) : tr(key, { from, to }));
   const nextArc = estimates.reduce<DialArc | undefined>((m, a) => (!m || a.from > m.from ? a : m), undefined);
-  const spoken = days === 0
-    ? [centre.kicker, centre.big, centre.pill, centre.sub]
+  const label = days === 0
+    // the empty dial's big value is a dash placeholder, which a screen reader would speak as "dash"
+    ? [centre.kicker, /\d/.test(centre.big) ? centre.big : '', centre.pill, centre.sub].filter(Boolean).join('. ')
     : [
       model.todayDay ? tr('today.dial.day', { day: model.todayDay }) : '',
-      ...logged.map((a) => tr('today.dial.periodLogged', range(a))),
-      ...estimates.filter((a) => a !== nextArc).map((a) => tr('today.dial.periodEnding', range(a))),
-      runs.length ? tr('today.dial.fertile', { from: runs[0]![0]!.from, to: runs[runs.length - 1]!.slice(-1)[0]!.to }) : '',
+      ...logged.map((a) => span('today.dial.periodLogged', a.from, a.to)),
+      ...estimates.filter((a) => a !== nextArc).map((a) => span('today.dial.periodEnding', a.from, a.to)),
+      ...runs.map((r) => span('today.dial.fertile', r[0]!.from, r[r.length - 1]!.to)),
       model.ovulationDay ? tr('today.dial.ovulation', { day: model.ovulationDay }) : '',
-      nextArc ? tr('today.dial.next', range(nextArc)) : '',
+      nextArc ? span('today.dial.next', nextArc.from, nextArc.to) : '',
       centre.pill ? `${centre.pill}.` : '',
       centre.sub ? `${centre.sub}.` : '',
-    ];
-  const label = spoken.filter(Boolean).join(' ');
+    ].filter(Boolean).join(' ');
 
   const legend = [
     logged.length ? { key: 'period', swatch: { backgroundColor: t.c.period } } : null,
@@ -93,7 +101,7 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
               </RadialGradient>
             </Defs>
             <Circle cx={C} cy={C} r={90} fill="url(#dialCentre)" />
-            <Circle cx={C} cy={C} r={R} stroke={t.c.surface2} strokeWidth={STROKE} fill="none" />
+            <Circle cx={C} cy={C} r={R} stroke={track} strokeWidth={STROKE} fill="none" />
             {days > 0 ? Array.from({ length: days }, (_, d) => {
               const major = d % 7 === 0;
               const a = pt(deg(d), TICK_OUTER), b = pt(deg(d), TICK_OUTER - (major ? 6 : 3));
@@ -109,12 +117,18 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
                     const from = i === 0 ? start : deg(a.from - 1) - OVERLAP_DEG, to = i === run.length - 1 ? end : deg(a.to);
                     return <Path key={a.from} d={arcPath(C, C, R, from, to)} stroke={sliceColour(a)} strokeWidth={STROKE} fill="none" />;
                   })}
+                  <Path d={arcPath(C, C, RIM_R, start, end)} stroke={t.c.fertile} strokeWidth={RIM} fill="none" />
                   <Circle cx={s.x} cy={s.y} r={STROKE / 2} fill={sliceColour(first)} />
                   <Circle cx={e.x} cy={e.y} r={STROKE / 2} fill={sliceColour(last)} />
                 </G>
               );
             })}
-            {estimates.map((a) => <Path key={`e${a.from}`} d={roundedArc(a)} stroke={t.c.period} strokeOpacity={ESTIMATE_ALPHA} strokeWidth={STROKE} strokeLinecap="round" fill="none" />)}
+            {estimates.map((a) => (
+              <G key={`e${a.from}`}>
+                <Path d={roundedArc(a)} stroke={t.c.period} strokeOpacity={ESTIMATE_ALPHA} strokeWidth={STROKE} strokeLinecap="round" fill="none" />
+                <Path d={roundedArc(a, RIM_R)} stroke={t.c.period} strokeWidth={RIM} strokeDasharray="3 3" fill="none" />
+              </G>
+            ))}
             {logged.map((a) => <Path key={`p${a.from}`} d={roundedArc(a)} stroke={t.c.period} strokeWidth={STROKE} strokeLinecap="round" fill="none" />)}
             {ovDeg !== undefined ? (() => {
               const o = pt(ovDeg, R);
@@ -127,8 +141,8 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
               const k = pt(todayDeg, R);
               return (<>
                 {/* soft shadow from stacked translucent discs; an SVG filter is not reliable across Expo Go versions */}
-                <Circle cx={k.x} cy={k.y + 2.5} r={17} fill={t.c.textPrimary} fillOpacity={0.06} />
-                <Circle cx={k.x} cy={k.y + 2} r={15.5} fill={t.c.textPrimary} fillOpacity={0.1} />
+                <Circle cx={k.x} cy={k.y + 2.5} r={17} fill={SHADOW} fillOpacity={0.06} />
+                <Circle cx={k.x} cy={k.y + 2} r={15.5} fill={SHADOW} fillOpacity={0.1} />
                 <Circle cx={k.x} cy={k.y} r={14.5} fill={t.c.surface} />
                 <Circle cx={k.x} cy={k.y} r={10.5} fill="none" stroke={t.c.accent} strokeWidth={3} />
               </>);

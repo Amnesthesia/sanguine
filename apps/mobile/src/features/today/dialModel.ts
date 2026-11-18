@@ -36,7 +36,7 @@ export function dialModel(i: DialInput): DialModel {
     const to = Math.min(days, dayOf(p.currentBleed.i80.hi));
     if (to >= from) arcs.push({ from, to, kind: 'periodEstimate' });
   }
-  arcs.push({ from: Math.max(1, dayOf(p.nextPeriod.i80.lo)), to: days, kind: 'periodEstimate' });
+  arcs.push({ from: Math.max(1, dayOf(p.nextPeriod.i80.lo)), to: dayOf(p.nextPeriod.i80.hi), kind: 'periodEstimate' }); // not stretched to `days`: a late period raises days to today, the estimate stays the engine's range
 
   const model: DialModel = { days, arcs, todayDay };
   if (!i.showEstimate) return model;

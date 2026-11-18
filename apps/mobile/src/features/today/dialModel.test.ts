@@ -61,6 +61,8 @@ describe('dialModel', () => {
     const m = dialModel({ ...base, prediction: prediction({ currentPhase: { phase: 'late', dayOfCycle: 35 } }), today: dateOfDay(35), periodDays: [day(1)] });
     expect(m.days).toBe(35);
     expect(m.todayDay).toBe(35);
+    // the estimate stays the engine's 80% range (days 27 to 31); it is not stretched to today
+    expect(m.arcs.filter((a) => a.kind === 'periodEstimate').at(-1)).toEqual({ from: 27, to: 31, kind: 'periodEstimate' });
   });
   it('is empty without a prediction, with suspended estimates or without a next period', () => {
     const empty = { days: 0, arcs: [] };
