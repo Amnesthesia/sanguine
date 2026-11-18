@@ -16,6 +16,8 @@ export function Chips<T extends string>({ options, value, onChange, testIDPrefix
             accessibilityRole="radio"
             accessibilityLabel={o.label}
             aria-checked={on}
+            aria-selected={on}
+            accessibilityState={{ selected: on, checked: on }}
             onPress={() => onChange(o.value)}
             style={{ minHeight: 44, paddingHorizontal: 16, borderRadius: 999, justifyContent: 'center', backgroundColor: on ? t.c.accentSoft : t.chipBg, borderWidth: 1.5, borderColor: on ? t.c.accent : 'transparent' }}>
             <Text variant="bodySmall" color={on ? 'onAccentSoft' : 'textPrimary'} style={{ fontWeight: on ? '600' : '400' }}>{o.label}</Text>

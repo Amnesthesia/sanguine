@@ -15,12 +15,13 @@ export function Group({ children, title }: { children: ReactNode; title?: string
 }
 
 /** Row with a title, optional description and a trailing accessory. The whole row is the target (min 56 pt). */
-export function SettingsRow({ title, description, right, onPress, testID, destructive, last, disabled }: {
-  title: string; description?: string | undefined; right?: ReactNode; onPress?: () => void; testID?: string; destructive?: boolean; last?: boolean; disabled?: boolean;
+export function SettingsRow({ title, description, right, onPress, testID, destructive, last, disabled, leadingIcon }:  {
+  leadingIcon?: ReactNode; title: string; description?: string | undefined; right?: ReactNode; onPress?: () => void; testID?: string; destructive?: boolean; last?: boolean; disabled?: boolean;
 }) {
   const t = useTheme();
   const body = (
     <View style={{ minHeight: 56, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: last ? 0 : 1, borderBottomColor: t.hairline, opacity: disabled ? 0.5 : 1 }}>
+      {leadingIcon != null ? <View accessibilityElementsHidden style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: t.c.accentSoft, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: t.c.onAccentSoft }}>{leadingIcon}</Text></View> : null}
       <View style={{ flex: 1 }}>
         <Text style={destructive ? { color: t.c.period } : undefined}>{title}</Text>
         {description ? <Text variant="bodySmall" color="textSecondary">{description}</Text> : null}
@@ -40,7 +41,7 @@ export function SwitchRow({ title, description, value, onChange, testID, last, d
   return (
     <SettingsRow
       title={title} description={description} last={last} disabled={disabled}
-      right={<Switch testID={testID} accessibilityLabel={title} value={value} disabled={disabled} onValueChange={onChange} trackColor={{ true: t.c.accent }} thumbColor={t.scheme === 'dark' ? '#F4EEEF' : '#FFFFFF'} />}
+      right={<Switch testID={testID} accessibilityRole="switch" accessibilityLabel={title} value={value} disabled={disabled} onValueChange={onChange} trackColor={{ true: t.c.accent }} thumbColor={t.c.surface} />}
     />
   );
 }
