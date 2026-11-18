@@ -147,6 +147,15 @@
       "next": "Next period likely days {from} to {to}.",
       "legend": { "period": "Period", "estimate": "Estimate", "fertile": "Fertile window", "ovulation": "Ovulation" }
     },
+    "dial": {
+      "day": "Cycle day {day}.",
+      "periodLogged": "Period logged on days {from} to {to}.",
+      "periodEnding": "Likely ending on days {from} to {to}.",
+      "fertile": "Fertile window estimate, days {from} to {to}.",
+      "ovulation": "Ovulation estimate around day {day}.",
+      "next": "Next period likely days {from} to {to}.",
+      "legend": { "period": "Period", "estimate": "Estimate", "fertile": "Fertile window", "ovulation": "Ovulation" }
+    },
     "legend": "darker = more likely to be in the fertile window",
     "ring": {
       "dayLabel": "Day {day} of your cycle",
