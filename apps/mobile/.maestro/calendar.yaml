@@ -140,8 +140,9 @@ name: Calendar - month grid, marks, glass day card and day sheet, month list, ba
 - takeScreenshot: swiped-next
 - tapOn:
     id: cal-today
-- assertNotVisible:
-    id: cal-today
+# the pill is always there (it is the frame's toolbar); back on this month today's cycle-day number shows again
+- assertVisible:
+    id: cycle-day-${output.today}
 - assertVisible:
     id: day-sheet
 - swipe:
@@ -152,8 +153,8 @@ name: Calendar - month grid, marks, glass day card and day sheet, month list, ba
     id: cal-today
 - tapOn:
     id: cal-title-button
-- assertNotVisible:
-    id: cal-today
+- assertVisible:
+    id: cycle-day-${output.today}
 # tap yesterday: the open sheet updates in place, with its logged entries as chips (each has an X)
 - tapOn:
     id: day-${output.yesterday}

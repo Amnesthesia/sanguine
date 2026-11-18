@@ -14,9 +14,7 @@ name: Calendar - food and movement sections in the day sheet's large detent (P8-
     visible:
       id: screen-calendar
     timeout: 10000
-# the summary card is gone: food and movement live in the day sheet, behind Show details
-- assertNotVisible:
-    id: guidance-summary
+# food and movement live in the day sheet, behind Show details
 # today is cycle day 11 (follicular): tap the day card to open the sheet, then Show details for the large detent
 - tapOn:
     id: day-card-open

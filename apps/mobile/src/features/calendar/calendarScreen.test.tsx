@@ -1,7 +1,8 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { addDays, type EngineSettings, type History, type ISODate, pastOvulations, predict } from '@sanguine/engine';
 import type { ReactNode } from 'react';
-import { AccessibilityInfo } from 'react-native';
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { AccessibilityInfo, PanResponder } from 'react-native';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
 import { DEFAULT_PREFS, type Prefs } from '@/data/prefs';
 import { migrate } from '@/data/migrate';
@@ -9,7 +10,7 @@ import { EventStore } from '@/data/store';
 import { openTestDb } from '@/data/testDb';
 import { dayState, saveLh, setFlow, setSymptom } from '@/features/logging/actions';
 import type * as CalendarModel from './calendarModel';
-import { nextDetent } from './DaySheet';
+import { nextDetent, sheetMaxHeight } from './DaySheet';
 
 type Model = typeof CalendarModel;
 type BuildInput = Parameters<Model['buildMonth']>[0];
@@ -69,17 +70,24 @@ it('tapping the selected day opens the day sheet; another day only selects it', 
   expect(screen.getByTestId('day-card')).toBeTruthy();
 });
 
+const S: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
+function hist(lengths: number[], last: ISODate, bleed = 4): History {
+  const starts: ISODate[] = [last];
+  for (let i = lengths.length - 1; i >= 0; i--) starts.unshift(addDays(starts[0] as ISODate, -(lengths[i] as number)));
+  return { cycles: starts.map((s, i) => ({ id: `c${i}`, start: s, end: addDays(s, bleed - 1), quality: 'valid' as const })), temperatures: [], lh: [], mucus: [], cervix: [], logs: [] };
+}
+
 it('the large detent shows the estimate and guidance sections, with her period lengths', async () => {
-  const prediction = { suspended: false, asOf: TODAY };
-  const history = { cycles: [{ id: 'c1', start: '2026-11-16' }], logs: [] };
-  await setup({}, { prediction, history, settings: { lifeStates: [] } });
+  const history = hist([28, 29, 28], '2026-11-12', 5);
+  const prediction = predict(history, S, TODAY);
+  await setup({}, { prediction, history, settings: S });
   view();
   fireEvent.click(screen.getByTestId('day-card-open'));
   expect(screen.queryByTestId('estimate-sections')).toBeNull(); // not built until the sheet is dragged up
   fireEvent.click(screen.getByTestId('sheet-expand'));
   expect(screen.getByTestId('estimate-sections')).toBeTruthy();
   expect(screen.getByTestId('guidance-sections')).toBeTruthy();
-  expect(spies.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ day: TODAY, showEstimate: true });
+  expect(spies.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ day: TODAY, showEstimate: true, periodLengths: [5, 5, 5] });
   fireEvent.click(screen.getByTestId('sheet-scrim'));
   expect(screen.queryByTestId('estimate-sections')).toBeNull();
   expect(screen.getByTestId('day-sheet')).toBeTruthy();
@@ -91,6 +99,59 @@ it('maps a drag to a detent', () => {
   expect(nextDetent('large', 80)).toBe('small');
   expect(nextDetent('small', 80)).toBe('closed');
   expect(nextDetent('small', 10)).toBe('small');
+});
+
+it('releasing a drag on the day card or the open sheet header moves the sheet one detent', async () => {
+  const create = vi.spyOn(PanResponder, 'create');
+  await setup();
+  view();
+  const release = () => (create.mock.calls[create.mock.calls.length - 1]?.[0] as unknown as { onPanResponderRelease: (e: unknown, g: { dy: number; dx: number }) => void } | undefined)?.onPanResponderRelease({}, { dy: -80, dx: 0 });
+  expect(screen.getByTestId('day-card')).toBeTruthy();
+  act(release);
+  expect(screen.getByTestId('day-sheet')).toBeTruthy(); // closed -> small
+  act(release);
+  expect(screen.getByTestId('day-sheet-large')).toBeTruthy(); // small -> large
+  create.mockRestore();
+});
+
+it('the small detent is height-bounded, with the entries and estimates in a scroll area and the header and actions pinned', async () => {
+  const { store } = await setup();
+  for (const code of ['cramps', 'headache', 'acne', 'bloating', 'fatigue']) await setSymptom(store, TODAY, code, 2);
+  view();
+  fireEvent.click(await screen.findByTestId('day-card-open'));
+  const scroll = await screen.findByTestId('sheet-scroll');
+  expect(scroll.style.maxHeight).toMatch(/^\d+(\.\d+)?px$/);
+  expect(within(scroll).getAllByRole('button', { name: /^Remove:/ }).length).toBe(5);
+  for (const id of ['sheet-grabber', 'day-sheet-close', 'sheet-expand', 'day-log', 'day-details']) {
+    expect(screen.getByTestId(id)).toBeTruthy();
+    expect(scroll.contains(screen.getByTestId(id))).toBe(false);
+  }
+});
+
+it('sheetMaxHeight leaves the sheet room above the tab bar and below the toolbar, also at 150% text', () => {
+  // a 667 pt phone: the toolbar is taller at 150% (its second row and the title grow), so the sheet gets less, never more than the window
+  const toolbar = (scale: number) => 20 + 8 + 60 * scale; // status bar + inset + measured toolbar
+  const at100 = sheetMaxHeight(667, toolbar(1), 0);
+  const at150 = sheetMaxHeight(667, toolbar(1.5), 0);
+  expect(at150).toBeLessThan(at100);
+  expect(at150 + toolbar(1.5)).toBeLessThanOrEqual(667 - 20);
+  // pinned parts at 150%: grabber, a two-line title and subline, Show details and a two-line Log button, plus paddings and gaps
+  const pinned = (20 + 2 * 22 * 1.5 + 20 * 1.5) + (44 * 1.5 + 12 + 2 * 22 * 1.5 + 12) + 8 + 16 + 12 * 2;
+  expect(at150 - pinned).toBeGreaterThan(96); // the list keeps a usable scroll area
+  expect(sheetMaxHeight(300, 200, 0)).toBe(240); // a tiny window still gets the floor, not a negative height
+});
+
+it('the large detent is modal: the screen behind it is hidden from screen readers', async () => {
+  await setup();
+  const { container } = view();
+  const behind = () => container.querySelector('[data-testid="screen-calendar"]')?.parentElement as HTMLElement;
+  expect(behind().getAttribute('aria-hidden')).not.toBe('true');
+  fireEvent.click(screen.getByTestId('day-card-open'));
+  fireEvent.click(screen.getByTestId('sheet-expand'));
+  expect(screen.getByTestId('day-sheet-large').getAttribute('aria-modal')).toBe('true');
+  expect(behind().getAttribute('aria-hidden')).toBe('true');
+  fireEvent.click(screen.getByTestId('sheet-scrim'));
+  expect(behind().getAttribute('aria-hidden')).not.toBe('true');
 });
 
 it('removes a chip with its X and brings it back with Undo, append-only', async () => {
@@ -173,12 +234,66 @@ it('the uncertain-estimates setting never outranks the ovulation-estimate switch
   expect(spies.buildMonth.mock.calls.at(-1)?.[0]).toMatchObject({ showEstimate: true, includeUncertain: true });
 });
 
-it('the toolbar Today pill is secondary: glass text colour, not filled', async () => {
+it('the toolbar Today pill is always there, secondary (glass text colour, not filled), and returns to this month', async () => {
   await setup();
   view();
-  fireEvent.click(screen.getByTestId('cal-next'));
-  const pill = screen.getByTestId('cal-today');
+  const pill = screen.getByTestId('cal-today'); // on the current month too, as in the frame
   expect(pill.style.backgroundColor).not.toBe('rgb(188, 69, 96)');
-  fireEvent.click(pill);
-  expect(screen.queryByTestId('cal-today')).toBeNull();
+  fireEvent.click(screen.getByTestId('cal-next'));
+  expect(screen.getByTestId('cal-title').textContent).toBe('December 2026');
+  fireEvent.click(screen.getByTestId('cal-today'));
+  expect(screen.getByTestId('cal-title').textContent).toBe('November 2026');
+  expect(screen.getByTestId('cal-today')).toBeTruthy();
+});
+
+it('the closed card\'s round Log button draws the plus glyph, not the word', async () => {
+  await setup();
+  view();
+  const log = screen.getByTestId('day-log');
+  expect(log.textContent).toBe('');
+  expect(log.getAttribute('aria-label')).toMatch(/^Log: /);
+});
+
+it('the day sheet and the chips use the shared LoggedEntries removal (retract, toast, Undo)', async () => {
+  const { store, db } = await setup();
+  await setSymptom(store, TODAY, 'cramps', 1);
+  view();
+  fireEvent.click(await screen.findByTestId('day-card-open'));
+  fireEvent.click(await screen.findByLabelText('Remove: Cramps 1/3'));
+  await waitFor(async () => expect((await dayState(db, TODAY)).symptoms.cramps).toBeUndefined());
+  expect(await screen.findByText('Removed: Cramps 1/3')).toBeTruthy();
+});
+
+describe('teen profile with an uncertain ovulation estimate (D-115)', () => {
+  const irregular = hist([24, 38, 31, 45, 27, 36], '2026-11-01');
+  const prediction = predict(irregular, S, TODAY);
+  const past = pastOvulations(irregular, S);
+  const ovPoint = (prediction.ovulation as NonNullable<typeof prediction.ovulation>).point;
+  const state = (profile: Record<string, unknown>) => ({ prediction, history: irregular, settings: S, profile });
+  it('control: an adult who opted in sees the uncertain estimate drawn and listed', async () => {
+    await setup({ showUncertainEstimates: true }, state({ birthYear: 1990 }));
+    view();
+    expect(past.length).toBeGreaterThan(0);
+    expect(document.querySelectorAll('[data-testid^="fertile-"]').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Ovulation estimate')).toBeTruthy();
+  });
+  it('a teen draws and says nothing about ovulation or the fertile window, even with the stored switch on', async () => {
+    await setup({ showUncertainEstimates: true }, state({ birthDate: '2012-05-01' }));
+    view();
+    expect(spies.buildMonth.mock.calls.at(-1)?.[0]).toMatchObject({ showEstimate: false, includeUncertain: false });
+    expect(document.querySelectorAll('[data-testid^="fertile-"]')).toHaveLength(0);
+    for (const c of document.querySelectorAll('[data-testid^="day-2"]')) expect(c.getAttribute('aria-label')).not.toMatch(/ovulation|fertile/i);
+    expect(document.querySelectorAll('[data-testid^="month-row-ovulation"], [data-testid^="month-row-fertile"]')).toHaveLength(0);
+    for (const r of document.querySelectorAll('[data-testid^="month-row-"]')) expect(r.getAttribute('aria-label')).not.toMatch(/ovulation|fertile/i);
+    expect(screen.queryByText('Ovulation estimate')).toBeNull();
+    expect(screen.queryByText('Fertile window likelihood')).toBeNull();
+    expect(screen.queryByTestId('cal-uncertain')).toBeNull();
+    expect(screen.queryByTestId('cal-fertile-caption')).toBeNull();
+    // the open sheet on the ovulation day: no estimate line about ovulation; the large detent builds its sections for a teen
+    fireEvent.click(screen.getByTestId(`day-${ovPoint}`));
+    fireEvent.click(screen.getByTestId(`day-${ovPoint}`));
+    for (const l of screen.queryAllByTestId('sheet-estimate')) expect(l.textContent).not.toMatch(/ovulation|fertile/i);
+    fireEvent.click(screen.getByTestId('sheet-expand'));
+    expect(spies.estimate.mock.calls.at(-1)?.[0]).toMatchObject({ showEstimate: false, includeUncertain: false });
+  });
 });

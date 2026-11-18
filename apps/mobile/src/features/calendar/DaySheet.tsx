@@ -1,14 +1,17 @@
 import type { ISODate } from '@sanguine/engine';
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PanResponder, Pressable, ScrollView, View } from 'react-native';
+import { PanResponder, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
-import { GlassSurface } from '@/ui/GlassBar';
+import type { DayEvent } from '@/features/logging/actions';
+import { describeEvent } from '@/features/logging/describe';
+import { LoggedEntries } from '@/features/logging/LoggedEntries';
+import { useApp } from '@/state/app';
+import { GlassSurface, useChromeBottom } from '@/ui/GlassBar';
 import { GUTTER } from '@/ui/Screen';
-import { LoggedChip } from '@/ui/LoggedChip';
 import { formatLong, formatWeekday } from '@/ui/format';
 import { Text } from '@/ui/Text';
 import type { DayCell } from './calendarModel';
@@ -24,7 +27,14 @@ export function nextDetent(d: Detent, dy: number): Detent {
   return d;
 }
 
-export interface SheetEntry { id: string; label: string; mark: 'flow' | 'symptom' | 'other' }
+/** Space the open sheet leaves under itself (the gap above the tab bar plus a breath) and the least it ever offers. */
+const SHEET_GAP = 20;
+const SHEET_MIN_HEIGHT = 240;
+/** The tallest the small detent may be: the window below the toolbar and above the tab bar. At 150% text the toolbar is taller, so the bound
+ *  follows its measured bottom edge (`chromeBottom`) instead of a fixed number, and the sheet's own list scrolls inside what is left. */
+export function sheetMaxHeight(windowHeight: number, chromeBottom: number, bottomInset: number): number {
+  return Math.max(SHEET_MIN_HEIGHT, windowHeight - chromeBottom - bottomInset - SHEET_GAP);
+}
 
 export interface DaySheetProps {
   date: ISODate;
@@ -35,8 +45,10 @@ export interface DaySheetProps {
   period: boolean;
   detent: Detent;
   onDetent: (d: Detent) => void;
-  entries: SheetEntry[];
-  onRemove: (id: string) => void;
+  /** The day's visible entries (visibleEntries): chips with a remove button, wired by the shared LoggedEntries. */
+  entries: DayEvent[];
+  /** Runs after a removal and after its Undo, so the screen reloads. */
+  onChanged: () => void | Promise<void>;
   /** The marks of the day in words, each with its range and confidence (D-104). */
   estimates: string[];
   isFuture: boolean;
@@ -46,7 +58,7 @@ export interface DaySheetProps {
   detail?: ReactNode;
 }
 
-const Plus = ({ color }: { color: string }) => <Svg width={16} height={16} viewBox="0 0 16 16"><Path d="M8 2V14M2 8H14" stroke={color} strokeWidth={2.2} strokeLinecap="round" /></Svg>;
+const Plus = ({ color, size = 16 }: { color: string; size?: number }) => <Svg width={size} height={size} viewBox="0 0 16 16"><Path d="M8 2.5V13.5M2.5 8H13.5" stroke={color} strokeWidth={2.2} strokeLinecap="round" /></Svg>;
 
 /** A vertical drag on whatever it is spread onto moves the sheet one detent (iOS/Android: PanResponder, so a tap still presses). */
 function useDrag(detent: Detent, onDetent: (d: Detent) => void) {
@@ -63,6 +75,14 @@ export function DaySheet(p: DaySheetProps) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const drag = useDrag(p.detent, p.onDetent);
+  const { prefs } = useApp();
+  const { height: windowH } = useWindowDimensions();
+  const chromeBottom = useChromeBottom((c) => c.bottom);
+  const [headH, setHeadH] = useState(0);
+  const [footH, setFootH] = useState(0);
+  const maxH = sheetMaxHeight(windowH, chromeBottom, insets.bottom);
+  // the small detent's list scrolls inside what is left once the pinned header and actions (their measured heights) and the paddings and gaps are taken off
+  const scrollMax = Math.max(96, maxH - headH - footH - 8 - 16 - 12 * 2);
   const onGlass = { color: t.c.textOnGlass } as const;
   const title = formatLong(p.date);
   const subline = [p.date === p.today ? tr('calendar.today') : null, p.cycleDay ? tr('calendar.summaryDay', { day: p.cycleDay }) : null, p.period ? tr('calendar.list.period') : null].filter(Boolean).join(' · ');
@@ -73,11 +93,7 @@ export function DaySheet(p: DaySheetProps) {
       <Text accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ ...onGlass, fontSize: 15 }}>{glyph}</Text>
     </Pressable>
   );
-  const chips = p.entries.length ? (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-      {p.entries.map((e) => <LoggedChip key={e.id} label={e.label} mark={e.mark} onRemove={() => p.onRemove(e.id)} />)}
-    </View>
-  ) : null;
+  const chips = empty ? null : <LoggedEntries entries={p.entries} onChanged={p.onChanged} />;
   const futureNote = p.isFuture ? <Text variant="caption" testID="cal-future-note" style={onGlass}>{tr('calendar.futureNote')}</Text> : null;
   const nothing = !p.isFuture && empty ? <Text variant="bodySmall" style={onGlass} testID="sheet-nothing">{tr('calendar.summaryNothing')}</Text> : null;
   const tag = (
@@ -101,7 +117,8 @@ export function DaySheet(p: DaySheetProps) {
   if (p.detent === 'closed') {
     // the card: everything left of Log is one button that opens the sheet (owner)
     const shown = p.estimates.slice(0, 2);
-    const summary = [title, subline, ...p.entries.map((e) => e.label), ...(empty && !p.isFuture ? [tr('calendar.summaryNothing')] : []), ...shown, tr('calendar.sheet.open')].filter(Boolean).join('. ');
+    const labels = p.entries.map((e) => describeEvent(e, tr, prefs.tempUnit));
+    const summary = [title, subline, ...labels, ...(empty && !p.isFuture ? [tr('calendar.summaryNothing')] : []), ...shown, tr('calendar.sheet.open')].filter(Boolean).join('. ');
     return (
       <View {...drag} testID="day-card">
         <GlassSurface style={{ borderRadius: 28 }}>
@@ -117,7 +134,7 @@ export function DaySheet(p: DaySheetProps) {
               </View>
               {chips ? (
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                  {p.entries.map((e) => <View key={e.id} style={{ borderRadius: 14, paddingHorizontal: 10, minHeight: 28, justifyContent: 'center', backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}><Text variant="caption" style={onGlass}>{e.label}</Text></View>)}
+                  {p.entries.map((e, i) => <View key={e.id} style={{ borderRadius: 14, paddingHorizontal: 10, minHeight: 28, justifyContent: 'center', backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}><Text variant="caption" style={onGlass}>{labels[i]}</Text></View>)}
                 </View>
               ) : nothing}
               {shown.length ? <View style={{ borderRadius: 16, backgroundColor: t.chipBg, padding: 10, gap: 6 }}>{lines(shown)}</View> : null}
@@ -125,7 +142,7 @@ export function DaySheet(p: DaySheetProps) {
             </Pressable>
             {p.isFuture ? null : (
               <Pressable testID="day-log" accessibilityRole="button" accessibilityLabel={`${tr('calendar.sheet.logRound')}: ${title}`} onPress={p.onLog} style={{ position: 'absolute', top: 16, right: 16, width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', backgroundColor: t.c.accent }}>
-                <Text accessibilityElementsHidden importantForAccessibility="no-hide-descendants" variant="heading" style={{ color: onPrimary, fontSize: 15 }}>{tr('calendar.sheet.logRound')}</Text>
+                <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Plus color={onPrimary} size={20} /></View>
               </Pressable>
             )}
           </View>
@@ -153,15 +170,20 @@ export function DaySheet(p: DaySheetProps) {
     return (
       <GlassSurface testID="day-sheet" style={{ borderRadius: 34 }}>
         <View style={{ padding: 16, paddingTop: 8, gap: 12 }}>
-          {header}
-          {chips ?? nothing}
-          {lines(p.estimates)}
-          {futureNote}
-          <Pressable testID="sheet-expand" accessibilityRole="button" accessibilityLabel={tr('calendar.sheet.showDetailsA11y')} onPress={() => p.onDetent('large')} style={{ alignSelf: 'center', minHeight: 44, paddingHorizontal: 16, borderRadius: 22, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}>
-            <Svg width={12} height={8} viewBox="0 0 12 8" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Path d="M1 7L6 2L11 7" fill="none" stroke={t.c.textOnGlass} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></Svg>
-            <Text variant="bodySmall" style={{ ...onGlass, fontWeight: '600' }}>{tr('calendar.sheet.showDetails')}</Text>
-          </Pressable>
-          {actions}
+          <View onLayout={(e) => setHeadH(e.nativeEvent.layout.height)}>{header}</View>
+          {/* the entries and estimate lines scroll; the header above and the actions below stay put (a tall list or 150% text never pushes the title off screen) */}
+          <ScrollView testID="sheet-scroll" style={{ maxHeight: scrollMax }} contentContainerStyle={{ gap: 12 }}>
+            {chips ?? nothing}
+            {lines(p.estimates)}
+            {futureNote}
+          </ScrollView>
+          <View onLayout={(e) => setFootH(e.nativeEvent.layout.height)} style={{ gap: 12 }}>
+            <Pressable testID="sheet-expand" accessibilityRole="button" accessibilityLabel={tr('calendar.sheet.showDetailsA11y')} onPress={() => p.onDetent('large')} style={{ alignSelf: 'center', minHeight: 44, paddingHorizontal: 16, borderRadius: 22, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}>
+              <Svg width={12} height={8} viewBox="0 0 12 8" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Path d="M1 7L6 2L11 7" fill="none" stroke={t.c.textOnGlass} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></Svg>
+              <Text variant="bodySmall" style={{ ...onGlass, fontWeight: '600' }}>{tr('calendar.sheet.showDetails')}</Text>
+            </Pressable>
+            {actions}
+          </View>
         </View>
       </GlassSurface>
     );
@@ -169,7 +191,7 @@ export function DaySheet(p: DaySheetProps) {
 
   // large: opaque, over a scrim that fades the calendar (content stays opaque; glass is navigation only)
   return (
-    <View testID="day-sheet-large" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+    <View testID="day-sheet-large" accessibilityViewIsModal aria-modal style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
       <Pressable testID="sheet-scrim" accessibilityRole="button" accessibilityLabel={tr('calendar.sheet.hideDetailsA11y')} onPress={() => p.onDetent('small')} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, minHeight: 44, backgroundColor: t.c.bg, opacity: 0.6 }} />
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, top: insets.top + 40, borderTopLeftRadius: t.radius.sheet, borderTopRightRadius: t.radius.sheet, backgroundColor: t.screenBg, overflow: 'hidden', boxShadow: '0 -4px 30px rgba(31,26,28,0.16)' }}>
         <View style={{ paddingHorizontal: GUTTER, paddingTop: 8, paddingBottom: 8 }}>{header}</View>
