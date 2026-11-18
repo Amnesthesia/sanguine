@@ -20,6 +20,7 @@ import { Chips } from '@/ui/Chips';
 import { DateField } from '@/ui/DateField';
 import { GlassSurface } from '@/ui/GlassBar';
 import { OptionList } from '@/ui/OptionList';
+import { ProgressDots } from '@/ui/ProgressDots';
 import { TextField } from '@/ui/TextField';
 import { Text } from '@/ui/Text';
 import { defaultBirthDate, isTeenOn, validateBirthDate } from '@/data/age';
@@ -34,22 +35,6 @@ const num = (s: string, len = 0) => (s.length > 0 && (len === 0 || s.length === 
 const BAR = 44; // height of the glass controls in the header
 const SIDE = 80; // the Back and Skip slots are the same width, so the platter stays centred
 const GUTTER = 24;
-
-/** The step platter: past steps are dots, the current step a longer pill, later steps faint. One labelled element for screen readers. */
-function StepDots({ step, total }: { step: number; total: number }) {
-  const t = useTheme();
-  const { t: tr } = useTranslation();
-  return (
-    <GlassSurface accessible accessibilityRole="image" accessibilityLabel={tr('onboarding.progress', { n: step + 1, total })} style={{ borderRadius: 15 }}>
-      <View style={{ height: 30, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 7 }}>
-        {Array.from({ length: total }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length list of identical dots
-          <View key={i} style={{ width: i === step ? 22 : 8, height: 8, borderRadius: 4, backgroundColor: i <= step ? t.c.accent : t.c.border }} />
-        ))}
-      </View>
-    </GlassSurface>
-  );
-}
 
 /** A line of text with an icon, so a message never relies on colour alone. */
 function Notice({ icon, children, testID, live, tone = 'error' }: { icon: ReactNode; children: ReactNode; testID?: string; live?: boolean; tone?: 'error' | 'info' }) {
@@ -229,7 +214,7 @@ export function OnboardingFlow() {
         <View pointerEvents="box-none" style={{ minWidth: SIDE, alignItems: 'flex-start' }}>
           {step > 0 ? <GlassSurface style={{ borderRadius: BAR / 2 }}><BackButton onGlass testID="onboarding-back" onPress={() => setStep(step - 1)} /></GlassSurface> : null}
         </View>
-        <View pointerEvents="box-none" style={{ flex: 1, alignItems: 'center' }}><StepDots step={step} total={TOTAL_STEPS} /></View>
+        <View pointerEvents="box-none" style={{ flex: 1, alignItems: 'center' }}><ProgressDots step={step} total={TOTAL_STEPS} /></View>
         <View pointerEvents="box-none" style={{ minWidth: SIDE, alignItems: 'flex-end' }}>
           {step === 2 || step === 3 ? (
             <GlassSurface style={{ borderRadius: BAR / 2 }}>

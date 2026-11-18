@@ -184,8 +184,7 @@ export default function BackupScreen() {
     );
   }
   return (
-    <SubScreen testID="screen-backup" title={t('settings.privacy.backup')}>
-      <Segmented testIDPrefix="backup-mode" value={mode} onChange={(m) => { setMode(m); setMsg(undefined); }} options={[{ value: 'create', label: t('settings.privacy.backupModeCreate') }, { value: 'restore', label: t('settings.privacy.backupRestore') }]} />
+    <SubScreen testID="screen-backup" title={t('settings.privacy.backup')} below={<Segmented inGlass testIDPrefix="backup-mode" value={mode} onChange={(m) => { setMode(m); setMsg(undefined); }} options={[{ value: 'create', label: t('settings.privacy.backupModeCreate') }, { value: 'restore', label: t('settings.privacy.backupRestore') }]} />}>
       <Text variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('settings.privacy.backupNote')}</Text>
       {msg ? <View testID="backup-message" accessibilityLiveRegion="polite"><CautionPanel>{msg}</CautionPanel></View> : null}
       {pct !== undefined ? <View testID="backup-progress" accessibilityLiveRegion="polite"><CautionPanel>{t('settings.privacy.backupWorking', { pct })}</CautionPanel></View> : null}

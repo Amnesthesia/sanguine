@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { getConsent } from '@/data/consent';
 import { useTranslation } from 'react-i18next';
-import { Alert, Platform, Switch, View } from 'react-native';
+import { Alert, Platform, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
 import { shareExport, pickAndImport } from '@/services/exportImport';
 import { deviceHasLock } from '@/services/lockAuth';
@@ -28,7 +28,6 @@ function Glyph({ name }: { name: 'lock' | 'download' | 'upload' | 'leaf' }) {
 
 export default function PrivacyScreen() {
   const { t } = useTranslation();
-  const theme = useTheme();
   const router = useRouter();
   const { db, store, prefs, updatePrefs, refresh, deleteEverything } = useApp();
   /** What the last action left to say: an error, or the import result. It stays until the next action (a caution panel, not a toast). */
@@ -82,11 +81,10 @@ export default function PrivacyScreen() {
       </Group>
       <Group>
         <SwitchRow testID="privacy-lock" title={t('settings.privacy.appLock')} description={t('settings.privacy.appLockDesc')} value={prefs.appLock} onChange={(v) => void (async () => { if (v && !(await deviceHasLock())) { setMsg(t('settings.privacy.appLockOnly')); return; } setMsg(undefined); await updatePrefs({ appLock: v }); })()} />
-        {/* SwitchRow has no leading icon, so this row is SettingsRow with the same switch: the leaf shows what the discreet icon looks like */}
-        <SettingsRow
-          leadingIcon={<Glyph name="leaf" />} title={t('settings.privacy.discreetIcon')} disabled={!discreetOk}
+        <SwitchRow
+          testID="privacy-icon" leadingIcon={<Glyph name="leaf" />} title={t('settings.privacy.discreetIcon')} disabled={!discreetOk}
           description={discreetOk ? t(Platform.OS === 'android' ? 'settings.privacy.discreetIconDescAndroid' : 'settings.privacy.discreetIconDesc') : t('settings.privacy.discreetIconUnavailable')}
-          right={<Switch testID="privacy-icon" accessibilityRole="switch" accessibilityLabel={t('settings.privacy.discreetIcon')} value={prefs.discreetIcon} disabled={!discreetOk} onValueChange={(v) => void switchIcon(v)} trackColor={{ true: theme.c.accent, false: theme.c.border }} thumbColor={theme.scheme === 'dark' ? theme.c.textPrimary : theme.c.surface} />} />
+          value={prefs.discreetIcon} onChange={(v) => void switchIcon(v)} />
         <SwitchRow testID="privacy-protect" title={t('settings.privacy.screenProtection')} description={t('settings.privacy.screenProtectionDesc')} value={prefs.screenProtection} onChange={(v) => void updatePrefs({ screenProtection: v })} last />
       </Group>
       <Group>

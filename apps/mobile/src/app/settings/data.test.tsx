@@ -18,7 +18,7 @@ const svc = vi.hoisted(() => ({
 }));
 vi.mock('@/state/app', () => ({ useApp: () => app.state }));
 vi.mock('expo-router', () => ({ useRouter: () => ({ push: vi.fn(), back: vi.fn(), replace: vi.fn() }), useLocalSearchParams: () => ({}) }));
-vi.mock('@/ui/SubScreen', () => ({ SubScreen: ({ children, testID }: { children: ReactNode; testID: string }) => <div data-testid={testID}>{children}</div> }));
+vi.mock('@/ui/SubScreen', () => ({ SubScreen: ({ children, testID, below }: { children: ReactNode; testID: string; below?: ReactNode }) => <div data-testid={testID}>{below}{children}</div> }));
 vi.mock('@/ui/Toast', () => ({ showToast: toast }));
 vi.mock('@/ui/Segmented', () => ({ Segmented: ({ options, onChange }: { options: Array<{ value: string; label: string }>; onChange: (v: string) => void }) => <div>{options.map((o) => <button key={o.value} type="button" onClick={() => onChange(o.value)}>{o.label}</button>)}</div> }));
 vi.mock('react-native-svg', () => ({ default: ({ children }: { children?: ReactNode }) => <svg role="presentation"><title>icon</title>{children}</svg>, Path: () => null, Circle: () => null, Rect: () => null }));
