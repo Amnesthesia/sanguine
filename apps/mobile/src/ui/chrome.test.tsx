@@ -104,6 +104,23 @@ it('GlassSurface paints the real material on its first render once the setting i
   expect(screen.getByTestId('glass-view')).toBeTruthy();
 });
 
+it('a toolbar second row sits inside the same glass and inside the measured toolbar wrapper', async () => {
+  render(<SubScreen title="Backup" testID="b" below={<button type="button" data-testid="below">Restore</button>}><span>Body</span></SubScreen>);
+  await settle();
+  const below = screen.getByTestId('below');
+  const title = screen.getByRole('heading', { name: 'Backup' });
+  expect(screen.getAllByTestId('glass-view')).toHaveLength(1);
+  expect(screen.getByTestId('glass-view').contains(below) && screen.getByTestId('glass-view').contains(title)).toBe(true);
+  // Screen measures the wrapper around the whole toolbar (absolute, under the status bar), so the second row is part of the height the toast sits under
+  let wrapper: HTMLElement | null = below;
+  while (wrapper && getComputedStyle(wrapper).position !== 'absolute') wrapper = wrapper.parentElement;
+  expect(wrapper?.contains(title)).toBe(true);
+});
+it('a toolbar without a second row draws none', () => {
+  render(<SubScreen title="Plain" testID="p"><span>Body</span></SubScreen>);
+  expect(screen.queryByTestId('glass-bar-below')).toBeNull();
+});
+
 it('a tab root with a title draws it once, as the one heading; a pushed page draws it once in its bar', () => {
   render(<Screen title="Today"><span>Body</span></Screen>);
   expect(screen.getAllByText('Today')).toHaveLength(1);

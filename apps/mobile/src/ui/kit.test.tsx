@@ -80,6 +80,15 @@ describe('content kit', () => {
   });
 });
 
+describe('switch row icon', () => {
+  it('shows the same round rose disc as a settings row and keeps the switch', () => {
+    const change = vi.fn();
+    render(<SwitchRow testID="sw" title="Discreet icon" leadingIcon={<Text>leaf</Text>} value={false} onChange={change} />);
+    expect(screen.getByText('leaf').parentElement?.style.backgroundColor).toBe('rgb(244, 220, 224)');
+    expect(screen.getAllByRole('switch', { name: 'Discreet icon' }).length).toBeGreaterThan(0);
+  });
+});
+
 describe('switch thumb', () => {
   it('stays light against the off track in dark', () => {
     (Appearance as unknown as { setColorScheme: () => void }).setColorScheme = () => {};

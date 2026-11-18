@@ -36,11 +36,11 @@ export function SettingsRow({ title, description, right, onPress, testID, destru
   );
 }
 
-export function SwitchRow({ title, description, value, onChange, testID, last, disabled }: { title: string; description?: string; value: boolean; onChange: (v: boolean) => void; testID?: string; last?: boolean; disabled?: boolean }) {
+export function SwitchRow({ title, description, value, onChange, testID, last, disabled, leadingIcon }: { leadingIcon?: ReactNode; title: string; description?: string; value: boolean; onChange: (v: boolean) => void; testID?: string; last?: boolean; disabled?: boolean }) {
   const t = useTheme();
   return (
     <SettingsRow
-      title={title} description={description} last={last} disabled={disabled}
+      title={title} description={description} last={last} disabled={disabled} leadingIcon={leadingIcon}
       right={<Switch testID={testID} accessibilityRole="switch" accessibilityLabel={title} value={value} disabled={disabled} onValueChange={onChange} trackColor={{ true: t.c.accent, false: t.c.border }} thumbColor={t.scheme === 'dark' ? t.c.textPrimary : t.c.surface} />}
     />
   );

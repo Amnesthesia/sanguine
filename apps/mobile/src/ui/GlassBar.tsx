@@ -43,10 +43,14 @@ export function GlassSurface({ children, style, flat, ...props }: ViewProps & { 
   </View>;
 }
 
-export function GlassBar({ title, leading, trailing }: { title?: string; leading?: ReactNode; trailing?: ReactNode }) {
-  return <GlassSurface><View style={{ flexDirection: 'row', alignItems: 'center', padding: 8, gap: 6, minHeight: 60 }}>
-    <View style={{ minWidth: 44, flex: 1, alignItems: 'flex-start' }}>{leading}</View>
-    {title ? <Text accessibilityRole="header" style={{ flex: 3, textAlign: 'center', fontSize: 17, lineHeight: 22, fontWeight: '600' }}>{title}</Text> : null}
-    <View style={{ minWidth: 44, flex: 1, alignItems: 'flex-end' }}>{trailing}</View>
+/** The toolbar: Back / title / trailing on the first row. `below`: a second row in the same glass (a segmented control under the title). */
+export function GlassBar({ title, leading, trailing, below }: { title?: string; leading?: ReactNode; trailing?: ReactNode; below?: ReactNode }) {
+  return <GlassSurface><View style={{ padding: 8, gap: 6 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 }}>
+      <View style={{ minWidth: 44, flex: 1, alignItems: 'flex-start' }}>{leading}</View>
+      {title ? <Text accessibilityRole="header" style={{ flex: 3, textAlign: 'center', fontSize: 17, lineHeight: 22, fontWeight: '600' }}>{title}</Text> : null}
+      <View style={{ minWidth: 44, flex: 1, alignItems: 'flex-end' }}>{trailing}</View>
+    </View>
+    {below ? <View testID="glass-bar-below">{below}</View> : null}
   </View></GlassSurface>;
 }
