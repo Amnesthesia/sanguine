@@ -68,6 +68,7 @@ it('undo after removing a cycle-start flow restores cycles and join answers', as
   expect(beforeCycles).toHaveLength(2);
   expect(beforeStarts).toHaveLength(1);
   expect(JSON.parse(beforeStarts[0]!.payload)).toEqual({ day, merge: false, asked_on: day });
+  const log = await store.events();
   const written = await removeEntry(store, db, await entry('flow'));
   expect(await cycles()).not.toEqual(beforeCycles);
   expect(await cycles()).toHaveLength(1);
@@ -76,6 +77,7 @@ it('undo after removing a cycle-start flow restores cycles and join answers', as
   await undoRemoval(store, written);
   expect(await cycles()).toEqual(beforeCycles);
   expect(await starts()).toEqual(beforeStarts);
+  expect((await store.events()).slice(0, log.length)).toEqual(log);
 });
 
 it('retracts a temperature and undo restores it', async () => {

@@ -10,6 +10,7 @@ export function visibleEntries(events: DayEvent[]): DayEvent[] {
 }
 
 export async function removeEntry(store: EventStore, _db: Database, entry: DayEvent): Promise<EventRow[]> {
+  // Keep _db to preserve the signature mandated by the Task 4 brief.
   const day = entry.effective_day;
   switch (entry.kind) {
     case 'flow': return setFlow(store, day, 'none', { kind: entry.data.flow_kind as FlowKind });
@@ -19,7 +20,7 @@ export async function removeEntry(store: EventStore, _db: Database, entry: DayEv
   }
 }
 
-/** Reverse write order restores the flow before restoring its join answers. */
+/** Newest-first undo affects only the intermediate projection, not the final restored state. */
 export async function undoRemoval(store: EventStore, written: EventRow[]): Promise<void> {
   for (const event of [...written].reverse()) await store.retract(event.id);
 }
