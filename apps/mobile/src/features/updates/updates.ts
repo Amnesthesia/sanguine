@@ -37,3 +37,43 @@ export async function checkAndApply(): Promise<CheckResult> {
     return 'failed';
   }
 }
+
+/** The least time between two background checks (one hour). */
+export const CHECK_GAP_MS = 60 * 60 * 1000;
+/** A downloaded update is applied when the app comes back after at least this long away (five minutes): a quick look at another app never reloads it. */
+export const APPLY_AFTER_AWAY_MS = 5 * 60 * 1000;
+
+let lastCheck = Number.NEGATIVE_INFINITY;
+let downloaded = false;
+/** Test hook: forgets the last check and any downloaded update. */
+export const resetUpdateWatch = (): void => { lastCheck = Number.NEGATIVE_INFINITY; downloaded = false; };
+
+export type QuietCheck = 'off' | 'throttled' | 'latest' | 'downloaded' | 'failed';
+
+/** The periodic check (Updates.checkAutomatically only runs at a cold start, and a phone keeps an app in memory for days): at most one an hour,
+ *  downloads a newer update without applying it. `now` is the clock in ms. */
+export async function checkQuietly(now: number = Date.now()): Promise<QuietCheck> {
+  if (!updatesOn()) return 'off';
+  if (now - lastCheck < CHECK_GAP_MS) return 'throttled';
+  lastCheck = now;
+  try {
+    if (!(await Updates.checkForUpdateAsync()).isAvailable) return 'latest';
+    if (!(await Updates.fetchUpdateAsync()).isNew) return 'latest';
+    downloaded = true;
+    return 'downloaded';
+  } catch {
+    return 'failed';
+  }
+}
+
+/** Called when the app comes to the foreground after `awayMs` in the background: restarts into a downloaded update once the person has been away
+ *  long enough that it is a fresh session. True when it restarted. */
+export async function applyDownloaded(awayMs: number): Promise<boolean> {
+  if (!downloaded || awayMs < APPLY_AFTER_AWAY_MS) return false;
+  try {
+    await Updates.reloadAsync();
+    return true;
+  } catch {
+    return false;
+  }
+}

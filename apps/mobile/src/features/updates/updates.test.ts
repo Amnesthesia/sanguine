@@ -8,11 +8,12 @@ const updates = vi.hoisted(() => ({
 }));
 vi.mock('expo-updates', () => updates);
 vi.stubGlobal('__DEV__', false);
-const { checkAndApply, isNewUpdate, noteLaunchedUpdate } = await import('./updates');
+const { APPLY_AFTER_AWAY_MS, applyDownloaded, CHECK_GAP_MS, checkAndApply, checkQuietly, isNewUpdate, noteLaunchedUpdate, resetUpdateWatch } = await import('./updates');
 
 beforeEach(() => {
   Object.assign(updates, { isEnabled: true, updateId: 'store', isEmbeddedLaunch: true });
   vi.clearAllMocks();
+  resetUpdateWatch();
 });
 
 describe('isNewUpdate', () => {
@@ -68,5 +69,38 @@ describe('checkAndApply', () => {
     updates.isEnabled = false;
     expect(await checkAndApply()).toBe('off');
     expect(updates.reloadAsync).not.toHaveBeenCalled();
+  });
+});
+
+describe('the periodic check', () => {
+  it('downloads a newer update without restarting', async () => {
+    updates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true });
+    updates.fetchUpdateAsync.mockResolvedValue({ isNew: true });
+    expect(await checkQuietly(1000)).toBe('downloaded');
+    expect(updates.reloadAsync).not.toHaveBeenCalled();
+  });
+  it('checks at most once an hour', async () => {
+    updates.checkForUpdateAsync.mockResolvedValue({ isAvailable: false });
+    expect(await checkQuietly(0)).toBe('latest');
+    expect(await checkQuietly(CHECK_GAP_MS - 1)).toBe('throttled');
+    expect(await checkQuietly(CHECK_GAP_MS)).toBe('latest');
+    expect(updates.checkForUpdateAsync).toHaveBeenCalledTimes(2);
+  });
+  it('reports a failed check and tries again after the gap, and does nothing when updates are off', async () => {
+    updates.checkForUpdateAsync.mockRejectedValue(new Error('offline'));
+    expect(await checkQuietly(0)).toBe('failed');
+    updates.isEnabled = false;
+    expect(await checkQuietly(CHECK_GAP_MS)).toBe('off');
+    expect(updates.checkForUpdateAsync).toHaveBeenCalledTimes(1);
+  });
+  it('restarts into a downloaded update only after the person has been away long enough', async () => {
+    expect(await applyDownloaded(APPLY_AFTER_AWAY_MS * 2)).toBe(false); // nothing downloaded
+    updates.checkForUpdateAsync.mockResolvedValue({ isAvailable: true });
+    updates.fetchUpdateAsync.mockResolvedValue({ isNew: true });
+    await checkQuietly(0);
+    expect(await applyDownloaded(APPLY_AFTER_AWAY_MS - 1)).toBe(false);
+    expect(updates.reloadAsync).not.toHaveBeenCalled();
+    expect(await applyDownloaded(APPLY_AFTER_AWAY_MS)).toBe(true);
+    expect(updates.reloadAsync).toHaveBeenCalledOnce();
   });
 });

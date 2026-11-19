@@ -3,7 +3,7 @@ import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import type { DayEvent } from '@/features/logging/actions';
@@ -57,6 +57,9 @@ export interface DaySheetProps {
   /** The large detent's sections (estimates, food and movement), built only once the sheet shows them. */
   detail?: () => ReactNode;
 }
+
+/** Three dots: "More" (not a chevron, which reads as a popover that is already open). */
+const Dots = ({ color }: { color: string }) => <Svg width={16} height={16} viewBox="0 0 16 16"><Circle cx={3} cy={8} r={1.7} fill={color} /><Circle cx={8} cy={8} r={1.7} fill={color} /><Circle cx={13} cy={8} r={1.7} fill={color} /></Svg>;
 
 const Plus = ({ color, size = 16 }: { color: string; size?: number }) => <Svg width={size} height={size} viewBox="0 0 16 16"><Path d="M8 2.5V13.5M2.5 8H13.5" stroke={color} strokeWidth={2.2} strokeLinecap="round" /></Svg>;
 
@@ -138,7 +141,7 @@ export function DaySheet(p: DaySheetProps) {
     ) };
   };
 
-  // the open sheet: the header drags; the list scrolls; the footer is one row, Show details smaller beside Log this day (bigger)
+  // the open sheet: the header drags; the list scrolls; the footer is one row: More (a third) then Log this day (two thirds). The full sheet keeps the same row with Open day in the first place, so Log this day stays where it is.
   const small = () => ({
     root: { testID: 'day-sheet', style: { padding: 16, paddingTop: 8, gap: 12 } } as const,
     grip: <View onLayout={(e) => setHeadH(e.nativeEvent.layout.height)}>{header(false)}</View>,
@@ -151,8 +154,8 @@ export function DaySheet(p: DaySheetProps) {
           {futureNote}
         </ScrollView>
         <View onLayout={(e) => setFootH(e.nativeEvent.layout.height)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Pressable testID="sheet-expand" accessibilityRole="button" accessibilityLabel={tr('calendar.sheet.showDetailsA11y')} onPress={() => p.onDetent('large')} style={{ flex: 1, minHeight: 52, paddingHorizontal: 12, borderRadius: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}>
-            <Svg width={12} height={8} viewBox="0 0 12 8" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Path d="M1 7L6 2L11 7" fill="none" stroke={t.c.textOnGlass} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></Svg>
+          <Pressable testID="sheet-expand" accessibilityRole="button" accessibilityLabel={tr('calendar.sheet.showDetailsA11y')} onPress={() => p.onDetent('large')} style={{ flex: 1, minHeight: 52, paddingHorizontal: 12, borderRadius: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}>
+            <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Dots color={t.c.textOnGlass} /></View>
             <Text variant="bodySmall" style={{ ...onGlass, fontWeight: '600' }}>{tr('calendar.sheet.showDetails')}</Text>
           </Pressable>
           {log}
@@ -172,8 +175,8 @@ export function DaySheet(p: DaySheetProps) {
           {p.detail?.()}
         </ScrollView>
         <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', paddingHorizontal: GUTTER, paddingVertical: 12, borderTopWidth: 1, borderTopColor: t.hairline }}>
-          {log}
           <Button testID="day-open" kind="secondary" label={tr('calendar.sheet.openDay')} accessibilityLabel={`${tr('calendar.sheet.openDayA11y')}: ${title}`} onPress={p.onDetails} style={{ minHeight: 52, flex: 1 }} />
+          {log}
         </View>
       </>
     ),

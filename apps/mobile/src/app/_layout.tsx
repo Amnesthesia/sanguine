@@ -14,7 +14,7 @@ import { ScreenProtection } from '@/features/lock/ScreenProtection';
 import { BrandSplash } from '@/features/splash/BrandSplash';
 import { taglineFor } from '@/features/splash/tagline';
 import { isTeen } from '@/data/prefs';
-import { noteLaunchedUpdate } from '@/features/updates/updates';
+import { applyDownloaded, CHECK_GAP_MS, checkQuietly, noteLaunchedUpdate } from '@/features/updates/updates';
 import '@/services/health/backgroundTask';
 import { ThemeProvider, useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
@@ -111,6 +111,22 @@ export default function RootLayout() {
   useEffect(() => {
     if (db) void noteLaunchedUpdate(db).then((isNew) => { if (isNew) showToast(trSplash('settings.about.justUpdated')); }, () => undefined);
   }, [db, trSplash]);
+  // the app looks for an update now, every hour while it is open, and each time it comes back to the foreground; a download is applied on a return after
+  // five minutes away, otherwise at the next cold start (the native check runs only at a cold start, and a phone keeps the app in memory for days)
+  useEffect(() => {
+    let leftAt: number | null = null;
+    const look = () => { void checkQuietly(); };
+    look();
+    const timer = setInterval(look, CHECK_GAP_MS);
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'background') { leftAt = Date.now(); return; }
+      if (st !== 'active') return;
+      const away = leftAt === null ? 0 : Date.now() - leftAt;
+      leftAt = null;
+      void applyDownloaded(away).then((restarted) => { if (!restarted) look(); });
+    });
+    return () => { clearInterval(timer); sub.remove(); };
+  }, []);
   const ready = fontsLoaded && status !== 'loading';
   useEffect(() => { if (ready) void SplashScreen.hideAsync(); }, [ready]);
   // the capture block must not wait for fonts and data: it is applied from the first frame (D-049, review finding)
