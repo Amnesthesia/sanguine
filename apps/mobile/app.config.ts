@@ -55,6 +55,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   if (!projectId) throw new Error('app.json extra.eas.projectId is missing');
   return {
     ...(config as ExpoConfig),
+    // ponytail: set here, not in app.json, so the runtime version stays 1.0.0-237a565d6697 (app.json is hashed, this file is not).
+    // Safe because a removed manifest permission changes nothing the JS can call. Anything that does change the native surface
+    // belongs in app.json. READ_MEDIA_IMAGES comes from expo-screen-capture's unused screenshot listener (Play photo policy, D-148).
+    android: { ...config.android, blockedPermissions: [...(config.android?.blockedPermissions ?? []), 'android.permission.READ_MEDIA_IMAGES'] },
     runtimeVersion: runtimeVersionFor(config.version ?? '0.0.0'),
     updates: {
       url: `https://u.expo.dev/${projectId}`,
