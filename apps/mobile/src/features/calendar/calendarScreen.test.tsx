@@ -153,7 +153,7 @@ it('the large detent is slim: the day\'s estimate rows with meters, the compact 
   expect(screen.getByTestId('day-sheet')).toBeTruthy();
 });
 
-it('the open sheet\'s footer is one row: Show details beside Log this day, with Log the bigger of the two', async () => {
+it('the open sheet\'s footer is one row: More then Log this day, with Log the bigger; the full sheet keeps Log in the same place after Open day', async () => {
   const { store } = await setup();
   await setFlow(store, TODAY, 'medium');
   view();
@@ -163,12 +163,14 @@ it('the open sheet\'s footer is one row: Show details beside Log this day, with 
   expect(log.parentElement).toBe(expand.parentElement);
   expect(getComputedStyle(expand.parentElement as HTMLElement).flexDirection).toBe('row');
   expect(Number(getComputedStyle(log).flexGrow)).toBeGreaterThan(Number(getComputedStyle(expand).flexGrow));
-  // the large detent's footer is a row too: Log this day first and bigger, Open day beside it
+  expect(expand.compareDocumentPosition(log) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  // the large detent's footer is the same row: Open day first, then Log this day, bigger (it does not change side when the sheet grows)
   fireEvent.click(expand);
   const large = screen.getByTestId('day-sheet-large');
   const largeLog = within(large).getByTestId('day-log');
   const openDay = within(large).getByTestId('day-open');
   expect(largeLog.parentElement).toBe(openDay.parentElement);
+  expect(openDay.compareDocumentPosition(largeLog) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(Number(getComputedStyle(largeLog).flexGrow)).toBeGreaterThan(Number(getComputedStyle(openDay).flexGrow));
 });
 
@@ -194,11 +196,11 @@ it('the sheet minimises to a compact bar: the date circle, the cycle day and per
   expect(screen.getByTestId('day-card')).toBeTruthy();
 });
 
-it('one Show details in the open sheet; the day screen opens from the large detent as Open day', async () => {
+it('one More in the open sheet; the day screen opens from the large detent as Open day', async () => {
   await setup();
   view();
   fireEvent.click(screen.getByTestId('day-card-open'));
-  expect(screen.getAllByText('Show details')).toHaveLength(1);
+  expect(screen.getAllByText('More')).toHaveLength(1);
   expect(screen.queryByText('Details')).toBeNull();
   expect(screen.queryByTestId('day-open')).toBeNull();
   fireEvent.click(screen.getByTestId('sheet-expand'));

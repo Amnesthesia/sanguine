@@ -362,7 +362,7 @@
     "legendRule": "Solid is logged. Dashed, dotted or glowing is an estimate.",
     "sheet": {
       "open": "Open the day sheet",
-      "showDetails": "Show details",
+      "showDetails": "More",
       "showDetailsA11y": "Show details: how these were worked out, food and movement, sources",
       "hideDetailsA11y": "Hide the details",
       "closeA11y": "Close the day sheet",
