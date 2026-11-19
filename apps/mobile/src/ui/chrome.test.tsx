@@ -196,14 +196,19 @@ it('the Undo label and Back chevron use the glass text colour, which reads on gl
 const hexToRgb = (h: string) => `rgb(${[1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ')})`;
 
 const tintAlpha = () => Number(/rgba\([^)]*,\s*([\d.]+)\)/.exec(screen.getByTestId('glass-legible-tint').style.backgroundColor)?.[1]);
-it.each(['light', 'dark'] as const)('GlassSurface legible, %s: a tint layer of at least 0.9 alpha sits between the material and the content', async (scheme) => {
+it.each(['light', 'dark'] as const)('GlassSurface legible, %s: a heavy blur and the glass sit under a tint, and the content over all of it', async (scheme) => {
   env.scheme = scheme;
   render(<GlassSurface legible testID="l"><span data-testid="content">inside</span></GlassSurface>);
   await settle();
-  expect(tintAlpha()).toBeGreaterThanOrEqual(0.9);
+  // the blur, not an opaque tint, is what keeps the content beneath unreadable (D-150): the tint is a half-strength wash, not a cover
+  expect(tintAlpha()).toBeGreaterThanOrEqual(0.4);
+  expect(tintAlpha()).toBeLessThan(0.9);
   const tint = screen.getByTestId('glass-legible-tint');
   const glassView = screen.getByTestId('glass-view');
   // the tint is a sibling of the glass layer, painted after it and before the content, so it covers the glass and the content is drawn over it
+  const blur = screen.getByTestId('blur-view');
+  expect(blur.parentElement).toBe(tint.parentElement);
+  expect(blur.compareDocumentPosition(glassView) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(glassView.parentElement).toBe(tint.parentElement);
   expect(glassView.compareDocumentPosition(tint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(tint.compareDocumentPosition(screen.getByTestId('content')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

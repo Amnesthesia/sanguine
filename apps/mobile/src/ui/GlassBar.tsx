@@ -24,8 +24,10 @@ export const useChromeBottom = create<{ bottom: number }>(() => ({ bottom: 0 }))
 
 /** The 1 pt rim drawn round every glass surface. */
 export const glassRim = (dark: boolean) => (dark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.6)');
-/** Opacity of the tint `legible` lays over the material (D-130): at least 0.9, so text beneath cannot be read through it (0.72 still showed the month list ghosting through the day bar on the simulator). */
-export const LEGIBLE_ALPHA = 0.94;
+/** Opacity of the tint `legible` lays over the blur and glass (D-150): a wash for contrast. The blur below it, not the tint, keeps text beneath from being read through; 0.94 hid the glass altogether (owner, 2026-11-19). */
+export const LEGIBLE_ALPHA = 0.55;
+/** Blur strength under a legible surface (0 to 100). */
+export const LEGIBLE_BLUR = 100;
 const LEGIBLE_HEX = Math.round(LEGIBLE_ALPHA * 255).toString(16).toUpperCase().padStart(2, '0');
 
 /** Navigation material shared by floating chrome; content cards stay opaque. `flat`: a hairline shadow for a control inline in content.
@@ -53,10 +55,10 @@ export function GlassSurface({ children, style, flat, legible, ...props }: ViewP
     // Reduce Transparency: a legible surface is fully opaque (the F0 fallback still let the list beneath ghost through)
     ? <View style={{ backgroundColor: legible ? t.c.surface : `${t.c.surface}F0` }}>{children}</View>
     : legible
+      // frosted glass: a heavy blur under the glass layer (text beneath dissolves into colour), then a light tint for contrast, then the content
       ? <View>
-          {glassOn
-            ? <materials.glass.GlassView style={fill} glassEffectStyle="regular" colorScheme={t.scheme} />
-            : <materials.blur.BlurView style={fill} intensity={40} tint={dark ? 'dark' : 'light'} />}
+          <materials.blur.BlurView style={fill} intensity={LEGIBLE_BLUR} tint={dark ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'} />
+          {glassOn ? <materials.glass.GlassView style={fill} glassEffectStyle="regular" colorScheme={t.scheme} /> : null}
           {tint}
           {children}
         </View>

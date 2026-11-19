@@ -1,6 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View, type ViewProps } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, Ellipse, G, RadialGradient, Stop } from 'react-native-svg';
 import type { Confidence, FlagCode } from '@sanguine/engine';
 import { useTheme } from '@/theme';
@@ -37,6 +38,9 @@ const WASH_H = 1000;
 /** Faint rose, blue and green wash behind the hero, so the glass over it has something to blur (owner exception, D-122). Decorative. */
 export function HeroWash() {
   const t = useTheme();
+  // The scroll content starts below the status bar (the automatic content inset), so a wash at the content's top edge left the notch area blank;
+  // it reaches up by the inset and the drawing keeps its place (a negative viewBox origin), so the rose blob continues under the status bar.
+  const up = useSafeAreaInsets().top;
   const blob = (id: string, colour: string, alpha: number, cx: number, cy: number, rx: number, ry: number) => (
     <G key={id}>
       <Defs>
@@ -49,8 +53,8 @@ export function HeroWash() {
     </G>
   );
   return (
-    <View testID="hero-wash" pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', top: 0, left: -GUTTER, right: -GUTTER, height: WASH_H }}>
-      <Svg width="100%" height="100%" viewBox={`0 0 ${WASH_W} ${WASH_H}`} preserveAspectRatio="none">
+    <View testID="hero-wash" pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: 'absolute', top: -up, left: -GUTTER, right: -GUTTER, height: WASH_H + up }}>
+      <Svg width="100%" height="100%" viewBox={`0 ${-up} ${WASH_W} ${WASH_H + up}`} preserveAspectRatio="none">
         {blob('washRose', t.c.accent, 0.18, 0.12 * WASH_W, 0.1 * WASH_H, 0.7 * WASH_W, 0.3 * WASH_H)}
         {blob('washBlue', t.c.ovulation, 0.12, WASH_W, 0.32 * WASH_H, 0.55 * WASH_W, 0.26 * WASH_H)}
         {blob('washGreen', t.c.fertile, 0.13, 0.2 * WASH_W, 0.62 * WASH_H, 0.7 * WASH_W, 0.28 * WASH_H)}

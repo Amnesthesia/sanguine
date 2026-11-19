@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { addDays, type EngineSettings, type History, type ISODate, pastOvulations, predict } from '@sanguine/engine';
+import type { ViewProps } from 'react-native';
 import type { ReactNode } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -26,7 +27,10 @@ vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ t
 vi.mock('./SwipeMonth', () => ({ SwipeMonth: ({ children }: { children: ReactNode }) => <div>{children}</div> }));
 // the movement runs on the UI thread (reanimated, gesture handler; its snapping is tested in sheetSnap.test.ts): here the sheet shows the detent it is at
 vi.mock('./SheetMotion', () => ({
-  SheetMotion: ({ detent, scrim, children }: { detent: Detent; scrim: ReactNode; children: (d: Detent, grip: (n: ReactNode) => ReactNode, largeH: number) => ReactNode }) => <>{detent === 'large' ? scrim : null}{children(detent, (n) => n, 700)}</>,
+  SheetMotion: ({ detent, scrim, children }: { detent: Detent; scrim: ReactNode; children: (d: Detent, largeH: number) => { grip: ReactNode; body?: ReactNode; root?: ViewProps } }) => {
+    const c = children(detent, 700);
+    return <>{detent === 'large' ? scrim : null}<div data-testid={c.root?.testID} {...(c.root?.['aria-modal'] ? { role: 'dialog', 'aria-modal': true } : {})}>{c.grip}{c.body}</div></>;
+  },
 }));
 vi.mock('@/services/locale', () => ({ deviceWeekStart: () => 'mon', deviceRegion: () => 'AU' }));
 // the real model (the bar names a paused state from it), without its notice cards
@@ -147,6 +151,25 @@ it('the large detent is slim: the day\'s estimate rows with meters, the compact 
   fireEvent.click(screen.getByTestId('sheet-scrim'));
   expect(screen.queryByTestId('day-estimates')).toBeNull();
   expect(screen.getByTestId('day-sheet')).toBeTruthy();
+});
+
+it('the open sheet\'s footer is one row: Show details beside Log this day, with Log the bigger of the two', async () => {
+  const { store } = await setup();
+  await setFlow(store, TODAY, 'medium');
+  view();
+  fireEvent.click(screen.getByTestId('day-card-open'));
+  const expand = screen.getByTestId('sheet-expand');
+  const log = within(screen.getByTestId('day-sheet')).getByTestId('day-log');
+  expect(log.parentElement).toBe(expand.parentElement);
+  expect(getComputedStyle(expand.parentElement as HTMLElement).flexDirection).toBe('row');
+  expect(Number(getComputedStyle(log).flexGrow)).toBeGreaterThan(Number(getComputedStyle(expand).flexGrow));
+  // the large detent's footer is a row too: Log this day first and bigger, Open day beside it
+  fireEvent.click(expand);
+  const large = screen.getByTestId('day-sheet-large');
+  const largeLog = within(large).getByTestId('day-log');
+  const openDay = within(large).getByTestId('day-open');
+  expect(largeLog.parentElement).toBe(openDay.parentElement);
+  expect(Number(getComputedStyle(largeLog).flexGrow)).toBeGreaterThan(Number(getComputedStyle(openDay).flexGrow));
 });
 
 it('the sheet minimises to a compact bar: the date circle, the cycle day and period word, and Log; every detent has a labelled button', async () => {
