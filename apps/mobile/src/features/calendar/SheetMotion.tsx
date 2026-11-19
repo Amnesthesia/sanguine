@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { View, type ViewProps } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { Extrapolation, interpolate, useAnimatedReaction, useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,8 +24,9 @@ export interface SheetMotionProps {
   scrim: ReactNode;
   /** Height of the settled bar or small sheet, so the screen behind can pad its content clear of it. */
   onInset: (h: number) => void;
-  /** The content of a detent. `grip` makes its node a drag handle; `largeH` is the large detent's height. */
-  children: (shown: Detent, grip: (node: ReactNode) => ReactNode, largeH: number) => ReactNode;
+  /** The content of a detent: `grip` is the part that drags the sheet (the bar, or the header), `body` the rest (it scrolls or taps, never drags), `root` the props of the
+   *  view holding both. The drag handle itself lives here and stays mounted when the content changes, so a drag survives the swap a quarter of the way in. */
+  children: (shown: Detent, largeH: number) => { grip: ReactNode; body?: ReactNode; root?: ViewProps };
 }
 
 /**
@@ -90,10 +91,15 @@ export function SheetMotion({ detent, onDetent, maxSmall, scrim, onInset, childr
       go(snaps.value[d], e.velocityY);
       scheduleOnRN(onDetent, d);
     })
-    .onFinalize(() => {
+    .onFinalize((_e, success) => {
+      // a drag the system cancelled (a call, a system gesture) never reaches onEnd: settle where it is instead of leaving the sheet half-way
+      if (!success && dragging.value) {
+        const d = snapDetent(h.value, 0, snaps.value);
+        go(snaps.value[d], 0);
+        scheduleOnRN(onDetent, d);
+      }
       dragging.value = false;
     });
-  const grip = (node: ReactNode) => <GestureDetector gesture={pan}><View collapsable={false}>{node}</View></GestureDetector>;
 
   // full width and opaque at the large detent, inset glass below it; the scrim darkens in step
   const sheetStyle = useAnimatedStyle(() => ({ height: h.value, marginHorizontal: interpolate(h.value, [snaps.value.small, snaps.value.large], [SIDE, 0], Extrapolation.CLAMP) }));
@@ -108,6 +114,7 @@ export function SheetMotion({ detent, onDetent, maxSmall, scrim, onInset, childr
     const v = shown === 'small' ? Math.min(height, maxSmall) : height;
     if (Math.abs(v - measured[shown]) >= 1) setMeasured((m) => ({ ...m, [shown]: v }));
   };
+  const content = children(shown, snapsNow.large);
   return (
     <>
       <Animated.View pointerEvents={detent === 'large' ? 'auto' : 'none'} style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: t.c.bg }, scrimStyle]}>{scrim}</Animated.View>
@@ -123,7 +130,13 @@ export function SheetMotion({ detent, onDetent, maxSmall, scrim, onInset, childr
               <GlassSurface flat legible style={{ borderRadius: radius }}>
                 <Animated.View style={fillStyle}>
                   <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: t.screenBg }, opaqueStyle]} />
-                  <View onLayout={(e) => measure(e.nativeEvent.layout.height)}>{children(shown, grip, snapsNow.large)}</View>
+                  <View onLayout={(e) => measure(e.nativeEvent.layout.height)}>
+                    <View {...content.root}>
+                      {/* one drag handle for every detent: it is the same element while the content under it changes, so the gesture is not torn down mid-drag */}
+                      <GestureDetector gesture={pan}><View collapsable={false}>{content.grip}</View></GestureDetector>
+                      {content.body}
+                    </View>
+                  </View>
                 </Animated.View>
               </GlassSurface>
             </View>

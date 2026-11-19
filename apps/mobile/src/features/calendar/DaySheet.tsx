@@ -94,7 +94,7 @@ export function DaySheet(p: DaySheetProps) {
       <Text variant="bodySmall" testID="sheet-estimate" style={{ ...onGlass, flex: 1 }}>{l}</Text>
     </View>
   ));
-  const log = p.isFuture ? null : <Button testID="day-log" label={tr('calendar.edit')} accessibilityLabel={`${tr('calendar.edit')}: ${title}`} icon={<Plus color={t.c.onAccent} />} onPress={p.onLog} style={{ flex: 1 }} />;
+  const log = p.isFuture ? null : <Button testID="day-log" label={tr('calendar.edit')} accessibilityLabel={`${tr('calendar.edit')}: ${title}`} icon={<Plus color={t.c.onAccent} />} onPress={p.onLog} style={{ flex: 2 }} />;
   const grabber = (color: string) => <View style={{ width: 36, height: 5, borderRadius: 3, backgroundColor: color }} />;
 
   const header = (large: boolean) => (
@@ -114,11 +114,11 @@ export function DaySheet(p: DaySheetProps) {
     </View>
   );
 
-  const bar = (grip: (n: ReactNode) => ReactNode) => {
+  const bar = () => {
     const labels = p.entries.map((e) => describeEvent(e, tr, prefs.tempUnit));
     const heading = p.date === p.today ? `${tr('calendar.today')}, ${title}` : title;
     const summary = [heading, barLine, ...labels, ...(empty && !p.isFuture ? [tr('calendar.summaryNothing')] : []), ...p.estimates.slice(0, 2), tr('calendar.sheet.open')].filter(Boolean).join('. ');
-    return grip(
+    return { grip: (
       <View testID="day-card" style={{ paddingLeft: 12, paddingRight: 10, paddingTop: 6, paddingBottom: 10, gap: 4 }}>
         <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ alignItems: 'center' }}>{grabber(`${t.c.textOnGlass}38`)}</View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -134,49 +134,56 @@ export function DaySheet(p: DaySheetProps) {
             </Pressable>
           )}
         </View>
-      </View>,
-    );
+      </View>
+    ) };
   };
 
-  const small = (grip: (n: ReactNode) => ReactNode) => (
-    <View testID="day-sheet" style={{ padding: 16, paddingTop: 8, gap: 12 }}>
-      <View onLayout={(e) => setHeadH(e.nativeEvent.layout.height)}>{grip(header(false))}</View>
-      {/* the entries and estimate lines scroll; the header above and the actions below stay put (a tall list or 150% text never pushes the title off screen) */}
-      <ScrollView testID="sheet-scroll" style={{ maxHeight: scrollMax }} contentContainerStyle={{ gap: 12 }}>
-        {chips ?? nothing}
-        {lines(p.estimates)}
-        {futureNote}
-      </ScrollView>
-      <View onLayout={(e) => setFootH(e.nativeEvent.layout.height)} style={{ gap: 12 }}>
-        <Pressable testID="sheet-expand" accessibilityRole="button" accessibilityLabel={tr('calendar.sheet.showDetailsA11y')} onPress={() => p.onDetent('large')} style={{ alignSelf: 'center', minHeight: 44, paddingHorizontal: 16, borderRadius: 22, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}>
-          <Svg width={12} height={8} viewBox="0 0 12 8" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Path d="M1 7L6 2L11 7" fill="none" stroke={t.c.textOnGlass} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></Svg>
-          <Text variant="bodySmall" style={{ ...onGlass, fontWeight: '600' }}>{tr('calendar.sheet.showDetails')}</Text>
-        </Pressable>
-        {log}
-      </View>
-    </View>
-  );
+  // the open sheet: the header drags; the list scrolls; the footer is one row, Show details smaller beside Log this day (bigger)
+  const small = () => ({
+    root: { testID: 'day-sheet', style: { padding: 16, paddingTop: 8, gap: 12 } } as const,
+    grip: <View onLayout={(e) => setHeadH(e.nativeEvent.layout.height)}>{header(false)}</View>,
+    body: (
+      <>
+        {/* the entries and estimate lines scroll; the header above and the actions below stay put (a tall list or 150% text never pushes the title off screen) */}
+        <ScrollView testID="sheet-scroll" style={{ maxHeight: scrollMax }} contentContainerStyle={{ gap: 12 }}>
+          {chips ?? nothing}
+          {lines(p.estimates)}
+          {futureNote}
+        </ScrollView>
+        <View onLayout={(e) => setFootH(e.nativeEvent.layout.height)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Pressable testID="sheet-expand" accessibilityRole="button" accessibilityLabel={tr('calendar.sheet.showDetailsA11y')} onPress={() => p.onDetent('large')} style={{ flex: 1, minHeight: 52, paddingHorizontal: 12, borderRadius: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: t.cardBg, borderWidth: 1, borderColor: t.hairline }}>
+            <Svg width={12} height={8} viewBox="0 0 12 8" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"><Path d="M1 7L6 2L11 7" fill="none" stroke={t.c.textOnGlass} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></Svg>
+            <Text variant="bodySmall" style={{ ...onGlass, fontWeight: '600' }}>{tr('calendar.sheet.showDetails')}</Text>
+          </Pressable>
+          {log}
+        </View>
+      </>
+    ),
+  });
 
   // large: opaque (SheetMotion fades the glass to the page colour), over a scrim; content stays opaque, glass is navigation only
-  const large = (grip: (n: ReactNode) => ReactNode, height: number) => (
-    <View testID="day-sheet-large" accessibilityViewIsModal aria-modal style={{ height }}>
-      <View style={{ paddingHorizontal: GUTTER, paddingTop: 8, paddingBottom: 8 }}>{grip(header(true))}</View>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 16, gap: 16 }}>
-        {chips ?? (p.isFuture ? <Text variant="caption" color="textSecondary" testID="cal-future-note">{tr('calendar.futureNote')}</Text> : <Text variant="bodySmall" color="textSecondary" testID="sheet-nothing">{tr('calendar.summaryNothing')}</Text>)}
-        {p.detail?.()}
-      </ScrollView>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center', paddingHorizontal: GUTTER, paddingVertical: 12, borderTopWidth: 1, borderTopColor: t.hairline }}>
-        {log}
-        <Button testID="day-open" kind="secondary" label={tr('calendar.sheet.openDay')} accessibilityLabel={`${tr('calendar.sheet.openDayA11y')}: ${title}`} onPress={p.onDetails} style={{ minHeight: 52, ...(p.isFuture ? { flex: 1 } : null) }} />
-      </View>
-    </View>
-  );
+  const large = (height: number) => ({
+    root: { testID: 'day-sheet-large', accessibilityViewIsModal: true, 'aria-modal': true, style: { height } } as const,
+    grip: <View style={{ paddingHorizontal: GUTTER, paddingTop: 8, paddingBottom: 8 }}>{header(true)}</View>,
+    body: (
+      <>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: GUTTER, paddingBottom: 16, gap: 16 }}>
+          {chips ?? (p.isFuture ? <Text variant="caption" color="textSecondary" testID="cal-future-note">{tr('calendar.futureNote')}</Text> : <Text variant="bodySmall" color="textSecondary" testID="sheet-nothing">{tr('calendar.summaryNothing')}</Text>)}
+          {p.detail?.()}
+        </ScrollView>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', paddingHorizontal: GUTTER, paddingVertical: 12, borderTopWidth: 1, borderTopColor: t.hairline }}>
+          {log}
+          <Button testID="day-open" kind="secondary" label={tr('calendar.sheet.openDay')} accessibilityLabel={`${tr('calendar.sheet.openDayA11y')}: ${title}`} onPress={p.onDetails} style={{ minHeight: 52, flex: 1 }} />
+        </View>
+      </>
+    ),
+  });
 
   return (
     <SheetMotion
       detent={p.detent} onDetent={p.onDetent} maxSmall={maxH} onInset={p.onInset}
       scrim={<Pressable testID="sheet-scrim" accessibilityRole="button" accessibilityLabel={tr('calendar.sheet.hideDetailsA11y')} onPress={() => p.onDetent('small')} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, minHeight: 44 }} />}>
-      {(shown, grip, largeH) => (shown === 'closed' ? bar(grip) : shown === 'small' ? small(grip) : large(grip, largeH))}
+      {(shown, largeH) => (shown === 'closed' ? bar() : shown === 'small' ? small() : large(largeH))}
     </SheetMotion>
   );
 }

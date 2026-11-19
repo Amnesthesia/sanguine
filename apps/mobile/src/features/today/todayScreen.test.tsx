@@ -13,11 +13,11 @@ import { dayState, setSymptom } from '@/features/logging/actions';
 import { contrast, over } from '../../../../../packages/ui-tokens/src/contrast';
 
 const app = vi.hoisted(() => ({ state: {} as Record<string, unknown> }));
-const env = vi.hoisted(() => ({ platform: 'ios' as 'ios' | 'android', scheme: 'light' as 'light' | 'dark' }));
+const env = vi.hoisted(() => ({ platform: 'ios' as 'ios' | 'android', scheme: 'light' as 'light' | 'dark', insetTop: 0 }));
 vi.mock('@/state/app', () => ({ useApp: (sel?: (s: unknown) => unknown) => (sel ? sel(app.state) : app.state) }));
 const push = vi.hoisted(() => vi.fn());
 vi.mock('expo-router', () => ({ useRouter: () => ({ push, back: vi.fn() }) }));
-vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }), SafeAreaView: ({ children }: { children: ReactNode }) => children }));
+vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: env.insetTop, bottom: 0 }), SafeAreaView: ({ children }: { children: ReactNode }) => children }));
 // react-native-svg ships Flow sources vitest cannot load; drawing is checked on the simulator, these tests cover words, structure and accessibility
 vi.mock('react-native-svg', () => { const n = () => null; return { default: n, Circle: n, Defs: n, Ellipse: n, G: n, Line: n, Path: n, RadialGradient: n, Stop: n, Rect: n, Text: n }; });
 vi.mock('expo-glass-effect', () => ({ GlassView: ({ children }: { children: ReactNode }) => <div data-testid="glass-view">{children}</div>, isLiquidGlassAvailable: () => true, isGlassEffectAPIAvailable: () => true }));
@@ -54,7 +54,7 @@ const body = () => document.body.textContent ?? '';
 const view = () => render(<><ToastHost /><TodayScreen /></>);
 
 beforeEach(() => {
-  env.platform = 'ios'; env.scheme = 'light';
+  env.platform = 'ios'; env.scheme = 'light'; env.insetTop = 0;
   Object.assign(AccessibilityInfo, { isReduceTransparencyEnabled: vi.fn().mockResolvedValue(false), addEventListener: vi.fn(() => ({ remove: vi.fn() })), announceForAccessibility: vi.fn() });
 });
 afterEach(cleanup);
@@ -95,6 +95,14 @@ describe('Today, typical day', () => {
     fireEvent.click(details);
     expect(body().includes('Based on')).toBe(!before);
     expect(screen.getByTestId('estimate-legal')).toBeTruthy();
+  });
+
+  it('the wash reaches up under the status bar by the top inset, so the notch area is not left blank', async () => {
+    env.insetTop = 47;
+    await setup({ today: '2026-10-13' });
+    view();
+    const wash = getComputedStyle(screen.getByTestId('hero-wash'));
+    expect([wash.top, wash.height]).toEqual(['-47px', '1047px']);
   });
 
   it('is opaque in dark mode and on Android: no wash, no glass', async () => {
