@@ -20,6 +20,9 @@ Phases 0–2 (Expo Go): expo-router with native tabs, expo-sqlite (plain), expo-
 ## Visual reference
 The glass redesign (P8-20 to P8-22) is the visual source for every screen in the app: `docs/design/glass-redesign/index.html` (one file per screen in `docs/design/glass-redesign/frames/`), with exact values in `docs/superpowers/specs/2026-11-18-glass-design-language.md` and behaviour in `docs/superpowers/specs/2026-11-18-glass-redesign-design.md` and `2026-11-18-calendar-clarity-design.md`. Open the frame before building or changing a screen and match it; the frames win on look, the specs on behaviour. Text on glass uses `textOnGlass`, never the accent. `docs/brand.html` still renders the splash, icon and wordmark; `docs/mockups.html` is the older mock-up and is superseded where a frame exists.
 
+## App config: `app.config.ts` first (owner, 2026-11-19, D-148)
+Make Expo config changes in `apps/mobile/app.config.ts` (layer them on `config` there) rather than in `app.json` whenever the change leaves the JS-to-native interface as it is. `app.json` is hashed into the runtime version (`runtimeVersionFor`) and `app.config.ts` is not, so an `app.json` edit gives every later build a new runtime version, and builds already installed stop receiving OTA updates. Examples that go in `app.config.ts`: blocked or removed permissions, store and listing metadata, colours, splash and icon paths, update settings. Anything that adds or changes what the JS can call natively must still go in `app.json` (or `modules/`, `plugins/`, a dependency), so the runtime version changes: a native module or config plugin, an entitlement or capability, a usage string or Info.plist key the JS relies on, a permission the JS requests. If unsure, use `app.json`. After any config change, check `runtimeVersionFor('1.0.0')` still prints the pinned value unless a new runtime is intended.
+
 ## Repository layout (PLAN.md §6.2)
 ```
 apps/mobile/            expo-router app

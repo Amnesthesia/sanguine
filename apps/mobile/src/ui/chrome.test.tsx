@@ -128,7 +128,9 @@ it('a toolbar second row sits inside the same glass and inside the measured tool
   const below = screen.getByTestId('below');
   const title = screen.getByRole('heading', { name: 'Backup' });
   expect(screen.getAllByTestId('glass-view')).toHaveLength(1);
-  expect(screen.getByTestId('glass-view').contains(below) && screen.getByTestId('glass-view').contains(title)).toBe(true);
+  // legible: the glass is a sibling layer under the tint, and the title and second row sit in that same surface
+  const surfaceEl = screen.getByTestId('glass-view').parentElement!;
+  expect(surfaceEl.contains(below) && surfaceEl.contains(title)).toBe(true);
   // Screen measures the wrapper around the whole toolbar (absolute, under the status bar), so the second row is part of the height the toast sits under
   let wrapper: HTMLElement | null = below;
   while (wrapper && getComputedStyle(wrapper).position !== 'absolute') wrapper = wrapper.parentElement;
@@ -200,8 +202,10 @@ it.each(['light', 'dark'] as const)('GlassSurface legible, %s: a tint layer of a
   await settle();
   expect(tintAlpha()).toBeGreaterThanOrEqual(0.9);
   const tint = screen.getByTestId('glass-legible-tint');
-  expect(screen.getByTestId('glass-view').contains(tint)).toBe(true);
-  // painted before the content, so the content is drawn over it
+  const glassView = screen.getByTestId('glass-view');
+  // the tint is a sibling of the glass layer, painted after it and before the content, so it covers the glass and the content is drawn over it
+  expect(glassView.parentElement).toBe(tint.parentElement);
+  expect(glassView.compareDocumentPosition(tint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   expect(tint.compareDocumentPosition(screen.getByTestId('content')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 it('a plain GlassSurface has no legibility tint; the toolbar has', async () => {

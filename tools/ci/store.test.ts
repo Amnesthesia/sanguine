@@ -47,6 +47,15 @@ describe('release configuration', () => {
     const types = pm.NSPrivacyAccessedAPITypes.map((e: { NSPrivacyAccessedAPIType: string }) => e.NSPrivacyAccessedAPIType);
     expect(new Set(types).size).toBe(types.length); // a repeated category is a malformed manifest
   });
+  it('blocks READ_MEDIA_IMAGES, which expo-screen-capture declares for its unused screenshot listener (Play photo permissions policy, D-148)', async () => {
+    // set in app.config.ts, not app.json, so the runtime version does not change (app.json is hashed)
+    const { default: appConfig } = await import(join(root, 'apps/mobile/app.config.ts'));
+    expect(appConfig({ config: json('apps/mobile/app.json').expo }).android.blockedPermissions).toContain('android.permission.READ_MEDIA_IMAGES');
+    // the listener needs the permission; git grep exits 1 when nothing matches
+    let users = '';
+    try { users = execFileSync('git', ['grep', '-l', 'addScreenshotListener', '--', 'apps/mobile/src'], { cwd: root, encoding: 'utf8' }); } catch { /* no match */ }
+    expect(users).toBe('');
+  });
   it('entitlement arrays have no repeated values (duplicates fail provisioning)', () => {
     const ent = json('apps/mobile/app.json').expo.ios.entitlements as Record<string, string[]>;
     for (const values of Object.values(ent)) expect(new Set(values).size).toBe(values.length);
@@ -58,24 +67,46 @@ const FIXED = 'Sanguine helps you track and understand your menstrual cycle. It 
 
 describe('store listing (en-AU)', () => {
   const section = (from: string, to: string) => listing.slice(listing.indexOf(from), listing.indexOf(to));
-  it('opens the description with the fixed §2.3 wording', () => expect(section('## Description', '## Keywords')).toContain(`## Description\n\n${FIXED}\n`));
-  it('ends the description with the fixed about wording', () => expect(listing).toContain('Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional.'));
-  it('has no forbidden word in the text users read', () => {
-    const text = (section('## Name', '## Category')).replace(FIXED, '');
+  const field = (label: string) => listing.match(new RegExp(`^- ${label}[^:]*: (.+)$`, 'm'))?.[1] ?? '';
+  const description = (store: 'App Store' | 'Google Play') => {
+    const d = section('## Description', '## Keywords');
+    const from = d.indexOf(`### ${store}\n\n`) + `### ${store}\n\n`.length;
+    const rest = d.slice(from);
+    return rest.slice(0, rest.search(/\n### |$/)).trim();
+  };
+  const FORBIDDEN = /\b(safe|unsafe|(un)?protected|contraception|birth control|concei\w*|fertile today|chance of pregnancy|risks?|diagnosis|PCOS|endometriosis|perimenopaus\w*|abnormal|ladies|girls?|feminine|womanhood|should|normal)\b/i;
+  it('opens both descriptions with the fixed §2.3 wording and ends them with the fixed about wording', () => {
+    for (const store of ['App Store', 'Google Play'] as const) {
+      expect(description(store).startsWith(`${FIXED}\n`), store).toBe(true);
+      expect(description(store).endsWith('Sanguine does not diagnose, screen for or treat any condition. If you are worried about your health, talk to a health professional.'), store).toBe(true);
+    }
+  });
+  it('has no forbidden word in the text users read: the copy, the screenshot table and the slide captions', async () => {
     // §2.3 and §8.7 list; same words as copy/copy.test.ts
-    const words = /\b(safe|unsafe|(un)?protected|contraception|birth control|concei\w*|fertile today|chance of pregnancy|risks?|diagnosis|PCOS|endometriosis|perimenopaus\w*|abnormal|ladies|girls?|feminine|womanhood|should|normal)\b/i;
-    expect(text.match(words)).toBeNull();
+    expect(section('## Name', '## URLs').replace(FIXED, '').match(FORBIDDEN)).toBeNull();
+    const { SLIDES } = await import('../brand/store');
+    for (const s of SLIDES) expect([...s.caption, s.sub].join(' ').match(FORBIDDEN), s.name).toBeNull();
+  });
+  it('names no other platform in a store description (App Review Guideline 2.3.10)', () => {
+    expect(description('App Store')).not.toMatch(/Android|Health Connect|Google Play/);
+    expect(description('Google Play')).not.toMatch(/iPhone|Apple Health|iCloud|Face ID|Touch ID/);
   });
   it('fits the store limits', () => {
-    expect('Sanguine: Cycle Tracker'.length).toBeLessThanOrEqual(30);
-    expect('Private, on-device cycle log'.length).toBeLessThanOrEqual(30);
-    expect('A private cycle tracker that keeps everything on your phone.'.length).toBeLessThanOrEqual(80);
-    expect(listing.match(/Promotional text[^:]*: (.+)/)?.[1].length).toBeLessThanOrEqual(170);
-    const kw = section('## Keywords', '## Category').split('\n').find((l) => l.includes(',')) ?? '';
+    expect(field('Name').length).toBeGreaterThan(0);
+    expect(field('Name').length).toBeLessThanOrEqual(30);
+    expect(field('Subtitle').length).toBeLessThanOrEqual(30);
+    expect(field('Short description').length).toBeLessThanOrEqual(80);
+    expect(field('Promotional text').length).toBeLessThanOrEqual(170);
+    expect(field("What's new").length).toBeLessThanOrEqual(500); // Play release notes, the smaller of the two limits
+    for (const store of ['App Store', 'Google Play'] as const) expect(description(store).length, store).toBeLessThanOrEqual(4000);
+    const kw = section('## Keywords', '## Category').split('\n').find((l) => l.includes(',') && !l.includes(' ')) ?? '';
+    expect(kw.length).toBeGreaterThan(0);
     expect(kw.length).toBeLessThanOrEqual(100);
   });
-  it('has review notes and the Play declaration', () => {
-    for (const f of ['review-notes.md', 'play-health-declaration.md']) expect(existsSync(join(root, 'docs/store', f))).toBe(true);
+  it('has review notes under the App Store limit, the console field guides and the Play declaration', () => {
+    for (const f of ['review-notes.md', 'play-health-declaration.md', 'app-store-connect.md', 'play-console.md']) expect(existsSync(join(root, 'docs/store', f)), f).toBe(true);
+    const notes = read('docs/store/review-notes.md');
+    expect(notes.slice(notes.indexOf('---') + 3).trim().length).toBeLessThanOrEqual(4000);
   });
 });
 
