@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Import from Clue: the guide, dark</title>
+<style>
+body{margin:0;background:#fff}
+.phone{--t:1;width:440px;min-height:956px;position:relative;box-sizing:border-box;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);
+--bg:#FFFFFF;--ink:#1F1A1C;--sec:#6B6165;--line:#E4E4E6;--accent:#BC4560;--soft:#F4DCE0;--onsoft:#A3354F;--card:#FFFFFF;--cardRing:0 0 0 1px rgba(31,26,28,0.04),0 2px 6px rgba(31,26,28,0.04),0 12px 32px rgba(31,26,28,0.08);
+--fieldRing:0 0 0 1px rgba(31,26,28,0.07),0 1px 3px rgba(31,26,28,0.05);--s2:#F3F3F4;--fill:rgba(188,69,96,0.96);--fillShadow:inset 0 1px 0 rgba(255,255,255,0.45),0 6px 16px rgba(188,69,96,0.32);
+--cauBg:rgba(185,116,30,0.10);--cauInk:#5E3A0C;--cauIcon:#8A5512;--ok:#3E7D5A;--err:#B8324A;--chev:#8E8387;--onGlass:#4A4246;--dim:rgba(31,26,28,0.38);--kb:#D1D3D9;
+--glass:linear-gradient(180deg,rgba(255,255,255,0.50) 0%,rgba(255,255,255,0.22) 42%,rgba(255,255,255,0.30) 100%);--glassFx:blur(18px) saturate(200%) brightness(1.04);--rim:rgba(255,255,255,0.6);
+--glassShadow:0 10px 30px rgba(31,26,28,0.14),inset 0 1px 0 rgba(255,255,255,0.95),inset 0 -1px 0 rgba(255,255,255,0.35);--backBg:rgba(255,255,255,0.5);--backShadow:inset 0 1px 0 rgba(255,255,255,0.9),0 2px 6px rgba(31,26,28,0.08);
+--sheet:rgba(250,249,250,0.98);--sheetShadow:0 -6px 30px rgba(31,26,28,0.22),inset 0 1px 0 rgba(255,255,255,0.95)}
+.dark{--bg:#000000;--ink:#F4EEEF;--sec:#B3A8AC;--line:#3A3A3C;--accent:#D4607A;--soft:#3A1F27;--onsoft:#E8869A;--card:#1C1C1E;--cardRing:0 0 0 1px #3A3A3C;--fieldRing:0 0 0 1px #3A3A3C;--s2:#2C2C2E;
+--fill:#BB546B;--fillShadow:inset 0 1px 0 rgba(255,255,255,0.18),0 6px 16px rgba(0,0,0,0.4);--cauBg:rgba(217,160,84,0.10);--cauInk:#D9A054;--cauIcon:#D9A054;--ok:#6FB68C;--err:#D9607A;--onGlass:#CFC6CA;--dim:rgba(0,0,0,0.55);--kb:#2B2B2D;
+--glass:linear-gradient(180deg,rgba(70,62,66,0.55) 0%,rgba(30,26,28,0.38) 42%,rgba(40,35,38,0.45) 100%);--glassFx:blur(18px) saturate(180%);--rim:rgba(255,255,255,0.12);
+--glassShadow:0 10px 30px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.12),inset 0 -1px 0 rgba(255,255,255,0.12);--backBg:rgba(255,255,255,0.10);--backShadow:inset 0 1px 0 rgba(255,255,255,0.12);
+--sheet:rgba(28,28,30,0.98);--sheetShadow:0 -6px 30px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.10)}
+.big{--t:1.5}
+.fixed{height:956px}
+main{padding:82px 16px 40px;display:flex;flex-direction:column;gap:16px}
+p,h1,h2,h3,ol{margin:0}
+.body{font-size:calc(15px*var(--t));line-height:calc(21px*var(--t))}
+.sec{font-size:calc(13px*var(--t));line-height:calc(18px*var(--t));color:var(--sec)}
+.lead{font-size:calc(15px*var(--t));line-height:calc(21px*var(--t));color:var(--sec);margin:0 4px}
+.h{font-size:calc(17px*var(--t));line-height:calc(22px*var(--t));font-weight:600}
+.label{font-size:calc(11px*var(--t));line-height:calc(14px*var(--t));font-weight:600;letter-spacing:0.4px;text-transform:uppercase;color:var(--sec)}
+.card{border-radius:24px;background:var(--card);box-shadow:var(--cardRing);padding:16px;display:flex;flex-direction:column;gap:12px}
+.steps{list-style:none;padding:0;display:flex;flex-direction:column;gap:16px}
+.steps>li{display:flex;gap:12px;align-items:flex-start}
+.num{width:calc(30px*var(--t));height:calc(30px*var(--t));flex-shrink:0;border-radius:50%;background:var(--soft);color:var(--onsoft);font-weight:700;font-size:calc(15px*var(--t));display:flex;align-items:center;justify-content:center}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:2px}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;box-sizing:border-box;padding:5px 12px;border-radius:16px;background:var(--s2);font-size:calc(14px*var(--t));line-height:calc(18px*var(--t));font-weight:500;color:var(--ink)}
+.inset{border-radius:16px;background:var(--s2);padding:10px 12px;display:flex;gap:10px;align-items:center}
+.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace;letter-spacing:1px;font-size:calc(16px*var(--t));line-height:calc(21px*var(--t))}
+.primary{width:100%;min-height:52px;border-radius:26px;border:0;background:var(--fill);color:#FFFFFF;font-size:calc(17px*var(--t));line-height:calc(22px*var(--t));font-weight:600;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 20px;box-shadow:var(--fillShadow)}
+.primary[aria-disabled=true]{opacity:0.4;box-shadow:none}
+.secondary{min-height:48px;padding:8px 20px;border:0;border-radius:24px;background:var(--card);box-shadow:var(--cardRing);color:var(--ink);font-size:calc(15px*var(--t));line-height:calc(20px*var(--t));font-weight:500;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.caution{border-radius:18px;background:var(--cauBg);padding:12px 14px;display:flex;gap:10px;align-items:flex-start;color:var(--cauInk)}
+.caution .body{font-size:calc(14px*var(--t));line-height:calc(20px*var(--t))}
+.chev{flex-shrink:0}
+header.bar{position:absolute;top:10px;left:10px;right:10px;border-radius:30px;padding:8px;background:var(--glass);backdrop-filter:var(--glassFx);-webkit-backdrop-filter:var(--glassFx);border:1px solid var(--rim);box-shadow:var(--glassShadow);display:flex;align-items:center;gap:6px}
+header.bar .back{width:44px;height:44px;flex-shrink:0;border-radius:22px;border:1px solid var(--rim);background:var(--backBg);box-shadow:var(--backShadow);color:var(--ink);font-size:22px;padding:0}
+header.bar h1{flex:1;text-align:center;font-size:calc(17px*var(--t));line-height:calc(22px*var(--t));font-weight:600;white-space:nowrap}
+.rows{border-radius:26px;background:var(--card);box-shadow:var(--cardRing);overflow:hidden}
+.row{min-height:56px;box-sizing:border-box;padding:11px 16px;display:flex;align-items:center;gap:12px}
+.row+.row{border-top:1px solid var(--line)}
+.row .t{font-size:calc(16px*var(--t));line-height:calc(21px*var(--t))}
+.switch{position:relative;width:51px;height:31px;flex-shrink:0;border-radius:16px;border:0;padding:0;background:var(--line)}
+.switch[aria-checked=true]{background:#BC4560}
+.switch span{position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:14px;background:#FFFFFF;box-shadow:0 2px 5px rgba(31,26,28,0.22)}
+.switch[aria-checked=true] span{left:22px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{min-width:56px;min-height:44px;padding:0 16px;border-radius:22px;font-size:calc(15px*var(--t));font-family:inherit;background:var(--card);box-shadow:var(--fieldRing);border:1.5px solid transparent;color:var(--ink)}
+.pill[aria-pressed=true]{background:var(--soft);border-color:var(--accent);color:var(--onsoft);font-weight:600;box-shadow:none}
+.scrim{position:absolute;inset:0;background:var(--dim)}
+.sheet{position:absolute;left:0;right:0;bottom:336px;border-radius:34px 34px 0 0;background:var(--sheet);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);box-shadow:var(--sheetShadow);padding:8px 16px 20px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px}
+.grab{width:36px;height:5px;border-radius:3px;background:rgba(120,120,128,0.36);align-self:center}
+.field{display:flex;align-items:center;min-height:52px;box-sizing:border-box;border-radius:18px;background:var(--card);box-shadow:var(--fieldRing);border:1.5px solid transparent;padding:0 4px 0 16px}
+.field[aria-invalid=true]{border-color:var(--err);box-shadow:none}
+.field input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:calc(17px*var(--t));color:var(--ink);outline:none;padding:0}
+.field input::placeholder{color:var(--sec)}
+.eye{width:44px;height:44px;flex-shrink:0;border:0;border-radius:22px;background:none;display:flex;align-items:center;justify-content:center;padding:0}
+.err{display:flex;gap:8px;align-items:flex-start;color:var(--err);font-size:calc(14px*var(--t));line-height:calc(20px*var(--t))}
+.kb{position:absolute;left:0;right:0;bottom:0;height:336px;background:var(--kb);display:flex;align-items:center;justify-content:center;color:var(--sec);font-size:13px}
+</style>
+</head>
+<body>
+<div class="phone dark">
+  <main>
+    
+    <p class="lead">Bring your Clue history into Sanguine in four steps. Steps 1 to 3 happen in Clue and your email; step 4 is here.</p>
+    <ol class="steps" aria-label="Steps">
+      <li class="card" style="flex-direction:row;gap:12px"><span class="num" aria-hidden="true">1</span><div class="col"><h2 class="h"><span class="sr" style="position:absolute;left:-9999px">Step 1: </span>Ask Clue for your data</h2><p class="body">In Clue, open More, then Settings, then Download my data.</p><p class="crumbs" aria-label="Where to tap: More, then Settings, then Download my data"><span class="chip">More</span><span style="display:inline-flex;align-items:center;gap:6px"><svg class="chev" width="7" height="12" viewBox="0 0 8 14" aria-hidden="true"><path d="M1.5 1.5L6.5 7L1.5 12.5" fill="none" stroke="var(--chev)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="chip">Settings</span></span><span style="display:inline-flex;align-items:center;gap:6px"><svg class="chev" width="7" height="12" viewBox="0 0 8 14" aria-hidden="true"><path d="M1.5 1.5L6.5 7L1.5 12.5" fill="none" stroke="var(--chev)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="chip">Download my data</span></span></p></div></li>
+      <li class="card" style="flex-direction:row;gap:12px"><span class="num" aria-hidden="true">2</span><div class="col"><h2 class="h"><span class="sr" style="position:absolute;left:-9999px">Step 2: </span>Note the password</h2><p class="body">Clue shows a password. Write it down or leave that screen open: you type it in step 4. If Clue says your data was already sent, the same password is still on that screen.</p><div class="inset"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex-shrink:0"><circle cx="6.5" cy="10" r="3.6" fill="none" stroke="var(--sec)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.1 10H17.5M15 10V12.8M17.5 10V12" fill="none" stroke="var(--sec)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span class="sec">Clue's password, for step 4</span><span class="mono" aria-hidden="true">•••• •••• ••••</span></span></div></div></li>
+      <li class="card" style="flex-direction:row;gap:12px"><span class="num" aria-hidden="true">3</span><div class="col"><h2 class="h"><span class="sr" style="position:absolute;left:-9999px">Step 3: </span>Save the file from Clue's email</h2><p class="body">Clue emails you a link. Open it on this phone within 72 hours and save the file to Files.</p><p class="crumbs" aria-label="Where to tap: Email from Clue, then Open the link, then Save to Files"><span class="chip"><svg width="16" height="16" viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="4" width="14" height="10.5" rx="2" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.6 5L9 10L15.4 5" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Email from Clue</span><span style="display:inline-flex;align-items:center;gap:6px"><svg class="chev" width="7" height="12" viewBox="0 0 8 14" aria-hidden="true"><path d="M1.5 1.5L6.5 7L1.5 12.5" fill="none" stroke="var(--chev)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="chip">Open the link</span></span><span style="display:inline-flex;align-items:center;gap:6px"><svg class="chev" width="7" height="12" viewBox="0 0 8 14" aria-hidden="true"><path d="M1.5 1.5L6.5 7L1.5 12.5" fill="none" stroke="var(--chev)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="chip"><svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5V12.5M6.5 9L10 12.5L13.5 9M3 13V16A1.5 1.5 0 0 0 4.5 17.5H15.5A1.5 1.5 0 0 0 17 16V13" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Save to Files</span></span></p><div class="inset"><svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="flex-shrink:0"><path d="M5 2.5H11.5L15.5 6.5V17.5H5Z" fill="none" stroke="var(--sec)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.5 2.5V6.5H15.5M9 6V7M9 9V10M9 12V13" fill="none" stroke="var(--sec)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span class="sec">The file name starts with</span><span class="body" style="overflow-wrap:anywhere">ClueDataDownload</span></span></div></div></li>
+      <li class="card" style="flex-direction:row;gap:12px"><span class="num" aria-hidden="true">4</span><div class="col"><h2 class="h"><span class="sr" style="position:absolute;left:-9999px">Step 4: </span>Choose the file here</h2><p class="body">Sanguine asks for the password, then shows what came across.</p><button type="button" class="primary"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2.5 5.5A1.5 1.5 0 0 1 4 4H7.2L8.8 5.8H14A1.5 1.5 0 0 1 15.5 7.3V13A1.5 1.5 0 0 1 14 14.5H4A1.5 1.5 0 0 1 2.5 13Z" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Choose the Clue file</button><p class="sec">Days you already logged in Sanguine keep your own entry.</p></div></li>
+    </ol>
+    <p class="sec" style="margin:0 4px">Unzipped it on a computer? Choose measurements.json from the folder instead. It needs no password.</p>
+    <article class="card" style="flex-direction:row;align-items:flex-start"><svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true" style="flex-shrink:0"><rect x="4" y="9.5" width="14" height="10" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 9.5V7A3.5 3.5 0 0 1 14.5 7V9.5" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="body" style="flex:1">The file is read on this phone. Nothing is sent anywhere, and the password is not kept.</p></article>
+  </main>
+  <!-- navigation layer: glass toolbar (D-096): round back button, centred title -->
+  <header class="bar"><button type="button" class="back" aria-label="Back">‹</button><h1>Import from Clue</h1><span aria-hidden="true" style="width:44px;flex-shrink:0"></span></header>
+</div>
+</body>
+</html>
