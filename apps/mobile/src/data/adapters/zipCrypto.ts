@@ -7,6 +7,9 @@ export class ZipPasswordNeeded extends ZipError {}
 export class ZipWrongPassword extends ZipError {}
 export class ZipUnsupported extends ZipError {}
 export class ZipCorrupt extends ZipError {}
+export class ZipTooLarge extends ZipError {}
+
+export const MAX_ENTRY_BYTES = 64 * 1024 * 1024;
 
 export type ZipEntry = {
   name: string;
@@ -79,6 +82,8 @@ export function listZip(bytes: Uint8Array): ZipEntry[] {
 export function readZipEntry(bytes: Uint8Array, entry: ZipEntry, password?: string): Uint8Array {
   if (entry.aes) throw new ZipUnsupported('AES encryption');
   if (entry.method !== 0 && entry.method !== 8) throw new ZipUnsupported(`method ${entry.method}`);
+  if (entry.size > MAX_ENTRY_BYTES || entry.compSize > MAX_ENTRY_BYTES) throw new ZipTooLarge('entry too large');
+  if (entry.method === 0 && entry.compSize !== entry.size + (entry.encrypted ? 12 : 0)) throw new ZipCorrupt('size mismatch');
   const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const o = entry.localOffset;
   if (o + 30 > bytes.length || v.getUint32(o, true) !== 0x04034b50) throw new ZipCorrupt('bad local header');
@@ -111,7 +116,9 @@ export function readZipEntry(bytes: Uint8Array, entry: ZipEntry, password?: stri
   if (entry.method === 0) out = data;
   else {
     try {
-      out = inflateSync(data);
+      // Fixed output buffer: fflate does not grow it, so memory is bounded by the declared size;
+      // an overflowing stream is truncated and then fails the length/CRC check below.
+      out = inflateSync(data, { out: new Uint8Array(entry.size) });
     } catch {
       throw entry.encrypted ? new ZipWrongPassword('wrong password') : new ZipCorrupt('inflate failed');
     }

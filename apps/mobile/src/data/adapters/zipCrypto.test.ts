@@ -1,9 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { deflateSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import {
   ZipCorrupt,
   ZipPasswordNeeded,
+  ZipTooLarge,
   ZipUnsupported,
   ZipWrongPassword,
   listZip,
@@ -89,5 +91,63 @@ describe('zipCrypto', () => {
     } catch (err) {
       expect(String((err as Error).message)).not.toContain('secret-pw-xyz');
     }
+  });
+
+  // Builds a one-entry zip by hand with a chosen method, declared size and payload.
+  const handmade = (method: number, payload: Uint8Array, size: number, crc = 0) => {
+    const name = new TextEncoder().encode('a.bin');
+    const b = new Uint8Array(30 + 5 + payload.length + 46 + 5 + 22);
+    const v = new DataView(b.buffer);
+    v.setUint32(0, 0x04034b50, true);
+    v.setUint16(8, method, true);
+    v.setUint32(14, crc, true);
+    v.setUint32(18, payload.length, true);
+    v.setUint32(22, size, true);
+    v.setUint16(26, 5, true);
+    b.set(name, 30);
+    b.set(payload, 35);
+    const c = 35 + payload.length;
+    v.setUint32(c, 0x02014b50, true);
+    v.setUint16(c + 10, method, true);
+    v.setUint32(c + 16, crc, true);
+    v.setUint32(c + 20, payload.length, true);
+    v.setUint32(c + 24, size, true);
+    v.setUint16(c + 28, 5, true);
+    b.set(name, c + 46);
+    const e = c + 51;
+    v.setUint32(e, 0x06054b50, true);
+    v.setUint16(e + 8, 1, true);
+    v.setUint16(e + 10, 1, true);
+    v.setUint32(e + 12, 51, true);
+    v.setUint32(e + 16, c, true);
+    return b;
+  };
+
+  it('a deflate bomb with a tiny declared size fails without allocating its expanded size', () => {
+    const bomb = deflateSync(new Uint8Array(50 * 1024 * 1024));
+    const z = handmade(8, bomb, 100);
+    const before = process.memoryUsage().arrayBuffers;
+    expect(() => readZipEntry(z, listZip(z)[0])).toThrow(ZipCorrupt);
+    expect(process.memoryUsage().arrayBuffers - before).toBeLessThan(20 * 1024 * 1024);
+  });
+
+  it('declared size above the cap throws ZipTooLarge', () => {
+    const z = handmade(8, deflateSync(new Uint8Array(10)), 65 * 1024 * 1024);
+    expect(() => readZipEntry(z, listZip(z)[0])).toThrow(ZipTooLarge);
+  });
+
+  it('stored entry with compSize != size is corrupt', () => {
+    const z = handmade(0, new Uint8Array(10), 5);
+    expect(() => readZipEntry(z, listZip(z)[0])).toThrow(ZipCorrupt);
+  });
+
+  it('central directory or local offset past EOF is corrupt', () => {
+    const z = handmade(0, new Uint8Array(4), 4);
+    const e = listZip(z)[0];
+    expect(() => readZipEntry(z, { ...e, localOffset: z.length + 10 })).toThrow(ZipCorrupt);
+    expect(() => readZipEntry(z, { ...e, compSize: 4, localOffset: z.length - 40 })).toThrow(ZipCorrupt);
+    const bad = z.slice();
+    new DataView(bad.buffer).setUint32(bad.length - 22 + 16, bad.length + 100, true);
+    expect(() => listZip(bad)).toThrow(ZipCorrupt);
   });
 });
