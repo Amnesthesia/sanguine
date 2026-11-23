@@ -1,5 +1,5 @@
 {
-  "_note": "40 symptom codes, 8 visible by default (PLAN.md §11.1; 16 added for imports, D-056). Symptoms never affect a prediction: affectsPrediction is false for every code and a test enforces it.",
+  "_note": "46 symptom codes, 8 visible by default (PLAN.md §11.1; 16 added for imports, D-056; 6 more for Clue, D-160). Symptoms never affect a prediction: affectsPrediction is false for every code and a test enforces it.",
   "symptoms": [
     { "code": "cramps", "label": "Cramps", "defaultVisible": true, "affectsPrediction": false },
     { "code": "headache", "label": "Headache", "defaultVisible": true, "affectsPrediction": false },
@@ -39,7 +39,13 @@
     { "code": "oily_skin", "label": "Oily skin", "defaultVisible": false, "affectsPrediction": false },
     { "code": "puffiness", "label": "Puffiness", "defaultVisible": false, "affectsPrediction": false },
     { "code": "smell_sensitivity", "label": "Sensitive to smells", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "not_in_control", "label": "Not in control", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "insecure", "label": "Insecure", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "grateful", "label": "Grateful", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "indifferent", "label": "Indifferent", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "pms", "label": "PMS", "defaultVisible": false, "affectsPrediction": false },
     { "code": "low_libido", "label": "Low sex drive", "defaultVisible": false, "affectsPrediction": false },
-    { "code": "high_libido", "label": "High sex drive", "defaultVisible": false, "affectsPrediction": false }
+    { "code": "high_libido", "label": "High sex drive", "defaultVisible": false, "affectsPrediction": false },
+    { "code": "painful_sex", "label": "Painful sex", "defaultVisible": false, "affectsPrediction": false }
   ]
 }
