@@ -704,8 +704,10 @@
       "window": {
         "30d": "30 days",
         "1y": "1 year",
-        "2y": "2 years"
+        "2y": "2 years",
+        "all": "All history"
       },
+      "otherApps": "Coming from Flo or Natural Cycles? Both can share their data with {platform}. Choose All history and it comes across from there.",
       "windowNote": "Applies the next time you switch a type on.",
       "offNote": "Switching a type off stops syncing. Entries already imported stay in Sanguine.",
       "syncNow": "Sync now",
@@ -795,13 +797,77 @@
       "resend": "To update the dates later, send a new file. Calendars that recognise the event replace it; in others, delete the earlier event first.",
       "failed": "The calendar file could not be shared."
     },
+    "importClue": {
+      "row": "Import from Clue",
+      "rowDesc": "A step-by-step guide to bring your Clue history across.",
+      "title": "Import from Clue",
+      "intro": "Bring your Clue history into Sanguine in four steps. Steps 1 to 3 happen in Clue and your email; step 4 is here.",
+      "stepA11y": "Step {n}:",
+      "crumbsA11y": "Where to tap: {path}",
+      "crumbsJoin": ", then",
+      "step1": {
+        "title": "Ask Clue for your data",
+        "body": "In Clue, open More, then Settings, then Download my data.",
+        "crumbs": {
+          "more": "More",
+          "settings": "Settings",
+          "download": "Download my data"
+        }
+      },
+      "step2": {
+        "title": "Note the password",
+        "body": "Clue shows a password. Write it down or leave that screen open: you type it in step 4. If Clue says your data was already sent, the same password is still on that screen.",
+        "drawing": "Clue's password, for step 4"
+      },
+      "step3": {
+        "title": "Save the file from Clue's email",
+        "body": "Clue emails you a link. Open it on this phone within 72 hours and save the file to Files.",
+        "bodyAndroid": "Clue emails you a link. Open it on this phone within 72 hours and save the file to Downloads.",
+        "crumbs": {
+          "email": "Email from Clue",
+          "link": "Open the link",
+          "save": "Save to Files",
+          "saveAndroid": "Save to Downloads"
+        },
+        "fileLabel": "The file name starts with",
+        "fileName": "ClueDataDownload"
+      },
+      "step4": {
+        "title": "Choose the file here",
+        "body": "Sanguine asks for the password, then shows what came across.",
+        "button": "Choose the Clue file",
+        "ownEntries": "Days you already logged in Sanguine keep your own entry."
+      },
+      "unzipped": "Unzipped it on a computer? Choose measurements.json from the folder instead. It needs no password.",
+      "privacy": "The file is read on this phone. Nothing is sent anywhere, and the password is not kept.",
+      "sheet": {
+        "title": "Type Clue's password",
+        "body": "The one Clue showed on its Download my data screen. You can paste it.",
+        "label": "Password",
+        "a11yLabel": "Clue's password",
+        "placeholder": "Paste or type the password",
+        "show": "Show password",
+        "hide": "Hide password",
+        "wrong": "That password does not open this file. Compare it with the one on Clue's Download my data screen; capitals count.",
+        "open": "Open"
+      },
+      "result": {
+        "notImported": "Not imported",
+        "notImportedNote": "These stay in your Clue file."
+      },
+      "cannotOpen": {
+        "title": "Sanguine cannot open this zip",
+        "body": "Clue locked it with a kind of encryption this app cannot read. On a computer, unzip it with the password, get the file measurements.json onto this phone (by email, for example) and choose it here.",
+        "button": "Choose measurements.json"
+      }
+    },
     "privacy": {
       "title": "Privacy and data",
       "intro": "Your data is stored only on this phone, in an encrypted database. Sanguine has no account and no server.",
       "export": "Export my data",
       "exportDesc": "A zip with JSON and CSV files.",
       "import": "Import",
-      "importDesc": "Sanguine export, Natural Cycles or drip export, or a CSV of period start dates.",
+      "importDesc": "Clue, Natural Cycles or drip export, a Sanguine export, or a CSV of period start dates.",
       "backup": "Encrypted backup",
       "backupDesc": "Saves an encrypted file you can keep anywhere.",
       "backupOff": "Backup is off",
@@ -829,6 +895,9 @@
       "importSkipped": "Not everything could be imported:",
       "importMore": "and {n} more.",
       "importFailed": "That file could not be read.",
+      "importKept_one": "Kept your own entry on {n} day where the file had something different.",
+      "importKept_other": "Kept your own entry on {n} days where the file had something different.",
+      "importSymptomsOn": "Switched on in Tracking, so they show when you log: {list}.",
       "recoveryCode": {
         "title": "Recovery code",
         "body": "Write this down. Without it and this phone, your backup cannot be opened, by design.",

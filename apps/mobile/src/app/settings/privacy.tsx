@@ -4,7 +4,9 @@ import { getConsent } from '@/data/consent';
 import { useTranslation } from 'react-i18next';
 import { Alert, Platform, View } from 'react-native';
 import Svg, { Path, Rect } from 'react-native-svg';
-import { shareExport, pickAndImport } from '@/services/exportImport';
+import { importText } from '@/features/import/importMessage';
+import { useImport } from '@/features/import/useImport';
+import { shareExport } from '@/services/exportImport';
 import { deviceHasLock } from '@/services/lockAuth';
 import { discreetIconSupported, setDiscreetIcon } from '@/services/discreet';
 import { useApp } from '@/state/app';
@@ -28,20 +30,22 @@ function Glyph({ name }: { name: 'lock' | 'import' | 'export' | 'leaf' }) {
 export default function PrivacyScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { db, store, prefs, updatePrefs, refresh, deleteEverything } = useApp();
-  /** What the last export or import left to say: ready, an error, or the import result. It stays until the next action (a panel, not a toast). */
+  const { db, store, prefs, updatePrefs, deleteEverything } = useApp();
+  const imp = useImport();
+  /** What the last export left to say: ready or an error. The import's own result is `imp.outcome`; either stays until the next action (a panel, not a toast). */
   const [msg, setMsg] = useState<string | undefined>();
   /** The refusal from the App lock switch, shown right under the switches she tapped (the panel above may be off-screen). */
   const [lockMsg, setLockMsg] = useState<string | undefined>();
-  const [busy, setBusy] = useState<'export' | 'import' | undefined>();
+  const [busy, setBusy] = useState<'export' | undefined>();
   const [consentAt, setConsentAt] = useState<string | null>(null);
   useEffect(() => { if (db) void getConsent(db).then((c) => setConsentAt(c?.at ?? null)); }, [db]);
 
-  async function run(what: 'export' | 'import', fn: () => Promise<string | undefined>) {
+  async function run(what: 'export', fn: () => Promise<string | undefined>) {
     if (busy) return;
     setBusy(what);
     setMsg(undefined);
-    try { setMsg(await fn()); } catch (e) { setMsg(`${t(what === 'export' ? 'settings.privacy.exportFailed' : 'settings.privacy.importFailed')} ${(e as Error).message}`); } finally { setBusy(undefined); }
+    imp.reset();
+    try { setMsg(await fn()); } catch (e) { setMsg(`${t('settings.privacy.exportFailed')} ${(e as Error).message}`); } finally { setBusy(undefined); }
   }
   // Saved first: on Android the switch closes the app, so nothing after it is guaranteed to run. Reverted if it fails.
   async function switchIcon(on: boolean) {
@@ -53,27 +57,21 @@ export default function PrivacyScreen() {
     { text: t('common.cancel'), style: 'cancel' },
     { text: t('settings.privacy.deleteConfirmAction'), style: 'destructive', onPress: () => void deleteEverything().then(() => router.replace('/')) },
   ]);
-  const importFile = (d: NonNullable<typeof db>, st: NonNullable<typeof store>) => run('import', async () => {
-    const r = await pickAndImport(d, st);
-    if (r.kind === 'cancelled') return undefined;
-    await refresh();
-    // imported symptoms appear in the logging sheet too, not only in the day detail
-    const daily = r.kind === 'natural_cycles' || r.kind === 'drip' ? r : undefined;
-    if (daily?.symptoms.some((c) => !prefs.symptoms.includes(c))) await updatePrefs({ symptoms: [...new Set([...prefs.symptoms, ...daily.symptoms])] });
-    const done = t('settings.privacy.importDone', { n: r.kind === 'sanguine' ? r.result.imported : r.result.added })
-      + (daily && daily.result.notesDropped > 0 ? ` ${t('settings.privacy.importNotesDropped', { n: daily.result.notesDropped })}` : '');
-    return daily && daily.problems.length > 0 ? `${done}\n${t('settings.privacy.importSkipped')} ${daily.problems.slice(0, 5).join('; ')}${daily.problems.length > 5 ? ` ${t('settings.privacy.importMore', { n: daily.problems.length - 5 })}` : ''}` : done;
-  });
+  const startImport = () => { setMsg(undefined); void imp.start(); };
+  const o = imp.outcome;
+  const shown = msg ?? (o?.kind === 'done' ? importText(t, o.parts) : o?.kind === 'failed' ? o.text : o?.kind === 'cannotOpen' ? `${t('settings.importClue.cannotOpen.title')}. ${t('settings.importClue.cannotOpen.body')}` : undefined);
+  const busyAny = busy !== undefined || imp.busy;
   return (
     <SubScreen testID="screen-privacy" title={t('settings.privacy.title')}>
       <Card style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
         <Glyph name="lock" />
         <Text style={{ flex: 1 }}>{t('settings.privacy.intro')}</Text>
       </Card>
-      {msg ? <View testID="privacy-message" accessibilityLiveRegion="polite"><CautionPanel>{msg}</CautionPanel></View> : null}
+      {shown ? <View testID="privacy-message" accessibilityLiveRegion="polite"><CautionPanel>{shown}</CautionPanel></View> : null}
       <Group>
-        <SettingsRow testID="privacy-export" title={t('settings.privacy.export')} description={busy === 'export' ? t('settings.privacy.exportBusy') : t('settings.privacy.exportDesc')} disabled={busy !== undefined} right={<Glyph name="export" />} onPress={() => db && store && void run('export', async () => { await shareExport(db, store); return t('settings.privacy.exportDone'); })} />
-        <SettingsRow testID="privacy-import" title={t('settings.privacy.import')} description={t('settings.privacy.importDesc')} disabled={busy !== undefined} right={<Glyph name="import" />} onPress={() => db && store && void importFile(db, store)} last />
+        <SettingsRow testID="privacy-export" title={t('settings.privacy.export')} description={busy === 'export' ? t('settings.privacy.exportBusy') : t('settings.privacy.exportDesc')} disabled={busyAny} right={<Glyph name="export" />} onPress={() => db && store && void run('export', async () => { await shareExport(db, store); return t('settings.privacy.exportDone'); })} />
+        <SettingsRow testID="privacy-import" title={t('settings.privacy.import')} description={t('settings.privacy.importDesc')} disabled={busyAny} right={<Glyph name="import" />} onPress={startImport} />
+        <SettingsRow testID="privacy-import-clue" title={t('settings.importClue.row')} description={t('settings.importClue.rowDesc')} onPress={() => router.push('/settings/import-clue' as never)} last />
       </Group>
       <Group>
         <SettingsRow testID="privacy-report" title={t('report.screenTitle')} description={t('report.rowDesc')} onPress={() => router.push('/settings/report' as never)} />
@@ -95,6 +93,7 @@ export default function PrivacyScreen() {
       <Group>
         <SettingsRow testID="privacy-delete" title={t('settings.privacy.deleteAll')} destructive onPress={confirmDelete} last />
       </Group>
+      {imp.sheet}
     </SubScreen>
   );
 }

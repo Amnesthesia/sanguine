@@ -63,5 +63,6 @@ describe('mergeReports and sinceFor', () => {
     expect(sinceFor('30d', '2026-10-09')).toBe('2026-09-09T00:00:00.000Z');
     expect(sinceFor('1y', '2026-10-09')).toBe('2025-10-09T00:00:00.000Z');
     expect(sinceFor('2y', '2026-10-09')).toBe('2024-10-09T00:00:00.000Z');
+    expect(sinceFor('all', '2026-10-09')).toBe('1970-01-01T00:00:00.000Z');
   });
 });

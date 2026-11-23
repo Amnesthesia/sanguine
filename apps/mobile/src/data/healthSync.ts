@@ -6,10 +6,11 @@ import { storeSink } from './healthSink';
 import type { EventStore } from './store';
 
 /** How far back the first import reads (PLAN.md §7.2: default two years; Health Connect without the history permission only offers 30 days). */
-export type HealthWindow = '30d' | '1y' | '2y';
+export type HealthWindow = '30d' | '1y' | '2y' | 'all';
 export const DEFAULT_HEALTH_WINDOW: HealthWindow = '2y';
 
 export function sinceFor(w: HealthWindow, today: string): string {
+  if (w === 'all') return '1970-01-01T00:00:00.000Z'; // Health Connect without the history permission clamps this itself (PLAN.md §7.2)
   const d = new Date(`${today}T00:00:00Z`);
   if (w === '30d') d.setUTCDate(d.getUTCDate() - 30);
   else d.setUTCFullYear(d.getUTCFullYear() - (w === '1y' ? 1 : 2));

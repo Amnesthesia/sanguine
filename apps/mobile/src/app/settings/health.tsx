@@ -7,6 +7,7 @@ import { effectivePrefs } from '@/data/prefs';
 import { healthRows, withType } from '@/features/health/healthModel';
 import { getHealthDriver, healthPlatformName, requestHealthAccess } from '@/services/health';
 import { useApp } from '@/state/app';
+import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { CautionPanel } from '@/ui/CautionPanel';
@@ -17,6 +18,7 @@ import { Text } from '@/ui/Text';
 
 export default function HealthScreen() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { prefs, profile, today, updatePrefs, health, syncHealth, resolveHealthAsk } = useApp();
   const [available, setAvailable] = useState<boolean | undefined>();
   /** Access was refused for the last type she switched on: she needs to read it and act (phone settings), so it is a panel, not a toast. */
@@ -88,8 +90,11 @@ export default function HealthScreen() {
 
       <View style={{ gap: 8 }}>
         <Text variant="caption" color="textSecondary" accessibilityRole="header" style={{ marginHorizontal: 4, fontWeight: '600' }}>{t('settings.health.since')}</Text>
-        <Chips testIDPrefix="health-since" value={prefs.healthWindow} onChange={(v) => void updatePrefs({ healthWindow: v })} options={(['30d', '1y', '2y'] as const).map((w) => ({ value: w, label: t(`settings.health.window.${w}`) }))} />
+        <Chips testIDPrefix="health-since" value={prefs.healthWindow} onChange={(v) => void updatePrefs({ healthWindow: v })} options={(['30d', '1y', '2y', 'all'] as const).map((w) => ({ value: w, label: t(`settings.health.window.${w}`) }))} />
         <Text variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('settings.health.windowNote')}</Text>
+        <View testID="health-other-apps" style={{ borderRadius: 16, padding: 12, backgroundColor: theme.chipBg }}>
+          <Text variant="bodySmall">{t('settings.health.otherApps', { platform })}</Text>
+        </View>
       </View>
 
       <Text variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('settings.health.shared', { platform })}</Text>

@@ -117,6 +117,14 @@ describe('health sync', () => {
     expect(hasCaution('health-empty')).toBe(true);
     expect(screen.getByTestId('health-open-settings')).toBeTruthy();
   });
+  it('offers All history as a fourth import window and names Flo and Natural Cycles', async () => {
+    render(<HealthScreen />);
+    await waitFor(() => expect(screen.getByTestId('health-since-all')).toBeTruthy());
+    expect(screen.getByTestId('health-since-all').getAttribute('aria-label')).toBe('All history');
+    fireEvent.click(screen.getByTestId('health-since-all'));
+    expect(app.state.updatePrefs).toHaveBeenCalledWith({ healthWindow: 'all' });
+    expect(screen.getByTestId('health-other-apps').textContent).toContain('Flo or Natural Cycles');
+  });
   it('tells a refused permission in a panel that stays, and leaves the type off', async () => {
     svc.health.request.mockRejectedValueOnce(new Error('denied'));
     render(<HealthScreen />);
@@ -139,7 +147,7 @@ describe('health sync', () => {
 describe('privacy and data', () => {
   it('has the rows of the frame in their groups, all with the ids the flows tap', async () => {
     render(<PrivacyScreen />);
-    for (const id of ['privacy-export', 'privacy-import', 'privacy-report', 'privacy-calendar', 'privacy-backup', 'privacy-lock', 'privacy-icon', 'privacy-protect', 'privacy-consent', 'privacy-delete']) expect(screen.getByTestId(id), id).toBeTruthy();
+    for (const id of ['privacy-export', 'privacy-import', 'privacy-import-clue', 'privacy-report', 'privacy-calendar', 'privacy-backup', 'privacy-lock', 'privacy-icon', 'privacy-protect', 'privacy-consent', 'privacy-delete']) expect(screen.getByTestId(id), id).toBeTruthy();
     // the discreet icon row carries a picture of the leaf
     expect(screen.getByText('Discreet app icon').parentElement?.parentElement?.querySelector('svg')).toBeTruthy();
     await waitFor(() => expect(screen.getByText('Given on 2026-09-05. To withdraw it, delete your data.')).toBeTruthy());
@@ -174,7 +182,7 @@ describe('privacy and data', () => {
     await act(async () => { done(); });
   });
   it('shows the import result, skipped problems and dropped notes in an inline panel, not a toast', async () => {
-    svc.io.pick.mockResolvedValueOnce({ kind: 'drip', symptoms: [], problems: ['row 3: bad date'], result: { added: 4, notesDropped: 2 } });
+    svc.io.pick.mockResolvedValueOnce({ kind: 'data', adapter: 'drip', symptoms: [], problems: ['row 3: bad date'], result: { added: 4, notesDropped: 2, kept: 0, skipped: 0, duplicates: 0 } });
     render(<PrivacyScreen />);
     fireEvent.click(screen.getByTestId('privacy-import'));
     await waitFor(() => expect(screen.getByTestId('privacy-message')).toBeTruthy());
