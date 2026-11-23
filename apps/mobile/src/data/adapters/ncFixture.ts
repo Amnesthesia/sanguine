@@ -2,8 +2,8 @@
 // (tools/backtest/src/events.ts), as the table and as xlsx bytes in the layout the real export uses (D-056).
 import { strToU8, zipSync } from 'fflate';
 import { addDays, diffDays, type ISODate } from '@sanguine/engine';
-import type { Timeline } from '../../../../tools/backtest/src/events';
-import type { Rng } from '../../../../tools/backtest/src/rng';
+import type { Timeline } from '../../../../../tools/backtest/src/events';
+import type { Rng } from '../../../../../tools/backtest/src/rng';
 
 export const NC_HEADER = ['Date', 'Temperature', 'Menstruation', 'LH test', 'Pregnancy test', 'Had sex', 'Notes', 'Skipped', 'Source', 'Data Flag',
   'Menstruation Quantity', 'Cervical Mucus Consistency', 'Cervical Mucus Quantity', 'Sex Type', 'Libido', 'Covid Test'] as const;

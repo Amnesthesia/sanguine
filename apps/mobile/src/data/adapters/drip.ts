@@ -1,16 +1,15 @@
 // drip export (P8-1, D-078): drip's CSV of its CycleDay schema, header of dotted paths (`bleeding.value`, `mucus.feeling`, ...).
 // Format checked against drip's source (db/schemas/4.js, lib/import-export, components/helpers/labels.js; main, 2026-10-10).
-// Parses into DailyRow for the shared writer in importDaily.ts. Anything it cannot map is reported, never guessed.
+// Adapter of the day-based format (D-159): decodes the file to SanguineData for importSanguineData. Anything it cannot map is reported, never guessed.
 import { strFromU8 } from 'fflate';
 import type { ISODate } from '@sanguine/engine';
-import { parseCsv } from './csv';
-import { parseDateCell } from './exportImport';
-import type { DailyRow } from './importDaily';
-import { celsius } from './importNaturalCycles';
+import { parseCsv } from '../csv';
+import { parseDateCell } from '../exportImport';
+import { emptyData, type Cervix, type Day, type Mucus } from '../format/sanguineData';
+import { celsius } from './naturalCycles';
+import type { FormatAdapter } from './types';
 
-export interface DripParse { rows: DailyRow[]; problems: string[] }
-type Mucus = NonNullable<DailyRow['mucus']>;
-type Cervix = NonNullable<DailyRow['cervix']>;
+export interface DripParse { rows: Day[]; problems: string[] }
 
 const FLOW = ['spotting', 'light', 'medium', 'heavy'] as const;
 // Sensation and appearance each map to a quality; the higher one wins, as drip's own NFP value does (lib/nfp-mucus.js).
@@ -36,7 +35,7 @@ const isDrip = (header: string[] | undefined) => {
 /** `table[0]` is the header row; columns are found by name, so an older drip schema with fewer columns still imports. */
 export function parseDrip(table: string[][]): DripParse {
   const col = new Map((table[0] ?? []).map((h, i) => [h.trim(), i]));
-  const rows: DailyRow[] = [];
+  const rows: Day[] = [];
   const problems: string[] = [];
   const ignored = new Map<string, number>();
   const count = (k: string) => ignored.set(k, (ignored.get(k) ?? 0) + 1);
@@ -52,21 +51,19 @@ export function parseDrip(table: string[][]): DripParse {
     const rawDate = get('date');
     const day = parseDateCell(rawDate);
     if (!day) { problems.push(`line ${line}: "${rawDate}" is not a date`); return; }
-    const r: DailyRow = { day: day as ISODate };
+    const r: Day = { date: day as ISODate };
 
     const flow = code('bleeding.value', FLOW);
     if (flow === null) problems.push(`line ${line}: bleeding "${get('bleeding.value')}" not recognised`);
-    else if (flow) { r.flow = flow; if (yes('bleeding.exclude')) r.flowKind = 'intermenstrual'; } // drip's exclude: does not start a cycle
+    else if (flow) r.flow = { level: flow, ...(yes('bleeding.exclude') ? { kind: 'intermenstrual' as const } : {}) }; // drip's exclude: does not start a cycle
 
     const temp = get('temperature.value');
     if (temp !== '') {
       const c = celsius(Number(temp));
       if (c === undefined) problems.push(`line ${line}: temperature "${temp}" is out of range`);
       else {
-        r.tempC = c;
         const time = get('temperature.time');
-        if (/^\d{2}:\d{2}$/.test(time)) r.tempTime = time;
-        if (yes('temperature.exclude')) r.tempExcluded = true;
+        r.temperatures = [{ valueC: c, type: 'bbt', source: 'oral', ...(/^\d{2}:\d{2}$/.test(time) ? { time } : {}), ...(yes('temperature.exclude') ? { disturbed: true } : {}) }];
       }
     }
 
@@ -75,7 +72,7 @@ export function parseDrip(table: string[][]): DripParse {
     if (feeling === null || texture === null) problems.push(`line ${line}: cervical mucus "${get('mucus.feeling')}/${get('mucus.texture')}" not recognised`);
     else if (feeling !== undefined || texture !== undefined) {
       if (yes('mucus.exclude')) count('mucus marked excluded');
-      else r.mucus = [feeling, texture].filter((q): q is Mucus => q !== undefined).reduce((a, b) => (MUCUS_ORDER.indexOf(b) > MUCUS_ORDER.indexOf(a) ? b : a), 'dry');
+      else r.mucus = { quality: [feeling, texture].filter((q): q is Mucus => q !== undefined).reduce((a, b) => (MUCUS_ORDER.indexOf(b) > MUCUS_ORDER.indexOf(a) ? b : a), 'dry') };
     }
 
     const cervix = { opening: code('cervix.opening', OPENING), firmness: code('cervix.firmness', FIRMNESS), position: code('cervix.position', POSITION) };
@@ -96,7 +93,7 @@ export function parseDrip(table: string[][]): DripParse {
     const desire = code('desire.value', DESIRE);
     if (desire === null) problems.push(`line ${line}: desire "${get('desire.value')}" not recognised`);
     else if (desire) symptoms.add(desire);
-    if (symptoms.size > 0) r.symptoms = [...symptoms];
+    if (symptoms.size > 0) r.symptoms = [...symptoms].map((code) => ({ code }));
 
     const note = NOTES.map(([name, label]) => (get(name) === '' ? '' : `${label}${get(name)}`)).filter(Boolean).join('\n');
     if (note !== '') r.note = note;
@@ -113,3 +110,13 @@ export function readDrip(bytes: Uint8Array): DripParse | null {
   const table = parseCsv(strFromU8(bytes));
   return isDrip(table[0]) ? parseDrip(table) : null;
 }
+
+export const drip: FormatAdapter = {
+  id: 'drip',
+  detect: (f) => (readDrip(f.bytes) ? 'yes' : 'no'),
+  decode: (f) => {
+    const parsed = readDrip(f.bytes);
+    if (!parsed) throw new Error('not a drip export');
+    return { data: { ...emptyData('drip'), days: parsed.rows }, problems: parsed.problems };
+  },
+};

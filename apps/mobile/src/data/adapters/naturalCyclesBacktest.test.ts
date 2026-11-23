@@ -8,16 +8,16 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { addDays, analyzeCycles, diffDays, predict, type EngineSettings, type History, type ISODate } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { CHALLENGERS, type DateForecast, type DateModel, tally, type Tally } from '../../../../tools/backtest/src/challengers';
-import { mlModels, train } from '../../../../tools/backtest/src/ml';
-import type { Clock } from './ids';
-import { importDailyRows } from './importDaily';
-import { readNaturalCycles } from './importNaturalCycles';
-import { migrate } from './migrate';
-import { EventStore } from './store';
-import { openTestDb } from './testDb';
+import { CHALLENGERS, type DateForecast, type DateModel, tally, type Tally } from '../../../../../tools/backtest/src/challengers';
+import { mlModels, train } from '../../../../../tools/backtest/src/ml';
+import type { Clock } from '../ids';
+import { importSanguineData } from '../format/importSanguineData';
+import { naturalCycles } from './naturalCycles';
+import { migrate } from '../migrate';
+import { EventStore } from '../store';
+import { openTestDb } from '../testDb';
 
-const FILE = process.env.NC_XLSX ?? fileURLToPath(new URL('../../../../NaturalCycles-daily-entries.xlsx', import.meta.url));
+const FILE = process.env.NC_XLSX ?? fileURLToPath(new URL('../../../../../NaturalCycles-daily-entries.xlsx', import.meta.url));
 const OFFSETS = [0, 7, 14, 21];
 const MIN_HISTORY = 3;
 
@@ -114,18 +114,19 @@ const table = (a: Arm) => Object.entries(a.byOffset).flatMap(([off, ms]) => Obje
 
 /** An export through the real pipeline, with what the backtest needs from it. */
 async function load(bytes: Uint8Array) {
-  const parsed = readNaturalCycles(bytes);
-  if (!parsed) throw new Error('not a Natural Cycles export');
+  const file = { name: 'Daily Entries.xlsx', bytes };
+  if (naturalCycles.detect(file) !== 'yes') throw new Error('not a Natural Cycles export');
+  const parsed = naturalCycles.decode(file, {});
   const db = openTestDb();
   await migrate(db);
   const store = new EventStore(db, clock);
   const opts = { sourceApp: 'natural_cycles', today: '2026-10-10', clock };
-  const first = await importDailyRows(db, store, parsed.rows, opts);
-  const again = await importDailyRows(db, store, parsed.rows, opts);
+  const first = await importSanguineData(db, store, parsed.data, opts);
+  const again = await importSanguineData(db, store, parsed.data, opts);
   const { history, settings } = await store.engineInputs();
-  const positives = parsed.rows.filter((r) => r.pregTest === 'positive').map((r) => r.day).sort();
-  const lossBleeds = parsed.rows.filter((r) => r.flowKind === 'post_pregnancy').map((r) => r.day).sort();
-  const end = parsed.rows.map((r) => r.day).sort().at(-1) as ISODate;
+  const positives = parsed.data.days.filter((r) => r.pregTest === 'positive').map((r) => r.date).sort();
+  const lossBleeds = parsed.data.days.filter((r) => r.flow?.kind === 'post_pregnancy').map((r) => r.date).sort();
+  const end = parsed.data.days.map((r) => r.date).sort().at(-1) as ISODate;
   const marked = markLosses(history, settings, positives, lossBleeds, end);
   const raw = backtest(history, () => settings, end);
   const withLoss = backtest(history, (today) => markLosses(history, settings, positives, lossBleeds, today), end);
@@ -183,7 +184,7 @@ describe('real Natural Cycles export backtest (local only)', async () => {
 
 // Exports generated with an LLM (tools/sample/generate_logs.py) in the Natural Cycles layout, committed: no ground truth beyond
 // the file itself, so they check the import and the engine against messy, model-written data rather than a known answer.
-const SAMPLES = fileURLToPath(new URL('../../../../tools/sample/', import.meta.url));
+const SAMPLES = fileURLToPath(new URL('../../../../../tools/sample/', import.meta.url));
 const sampleFiles = readdirSync(SAMPLES).filter((f) => f.endsWith('.xlsx')).sort();
 // what the importer is expected to report in them: "Had sex" as 1 (protection not stated, D-056) and flags it does not know
 const EXPECTED_PROBLEM = /^line \d+: sex "1" not recognised$|^not imported: /;

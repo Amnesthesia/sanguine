@@ -1,14 +1,17 @@
 import { strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
-import { toCsv } from './csv';
-import { parseNaturalCycles, readNaturalCycles } from './importNaturalCycles';
+import { toCsv } from '../csv';
+import { naturalCycles, parseNaturalCycles, readNaturalCycles } from './naturalCycles';
+
+const T = (valueC: number, extra: object = {}) => ({ valueC, type: 'bbt', source: 'oral', ...extra });
+const S = (...codes: string[]) => codes.map((code) => ({ code }));
 
 // Synthetic rows in the layout of a real Natural Cycles "daily entries" export (header verified against a sample, D-056).
 const HEADER = ['Date', 'Temperature', 'Menstruation', 'LH test', 'Pregnancy test', 'Had sex', 'Notes', 'Skipped', 'Source', 'Data Flag', 'Menstruation Quantity', 'Cervical Mucus Consistency', 'Cervical Mucus Quantity', 'Sex Type', 'Libido', 'Covid Test'];
 const row = (o: Partial<Record<(typeof HEADER)[number], string>>) => HEADER.map((h) => o[h] ?? '');
 
 describe('parseNaturalCycles (P3-13)', () => {
-  it('maps flow, temperature, tests, mucus, symptoms and notes onto DailyRow', () => {
+  it('maps flow, temperature, tests, mucus, symptoms and notes onto Day', () => {
     const { rows, problems } = parseNaturalCycles([
       HEADER,
       row({ Date: '2026-09-01', Menstruation: 'MENSTRUATION', 'Menstruation Quantity': 'HEAVY', Temperature: '36.269999999999996', Notes: 'Migraine', 'Data Flag': 'PAIN_CRAMPS,PAIN_HEADACHE' }),
@@ -18,19 +21,19 @@ describe('parseNaturalCycles (P3-13)', () => {
     ]);
     expect(problems).toEqual([]);
     expect(rows).toEqual([
-      { day: '2026-09-01', flow: 'heavy', tempC: 36.27, note: 'Migraine', symptoms: ['cramps', 'headache'] },
-      { day: '2026-09-02', flow: 'spotting' },
-      { day: '2026-09-14', tempC: 36.5, lh: 'positive', mucus: 'eggwhite', mucusAmount: 'heavy' },
-      { day: '2026-09-15', lh: 'negative', pregTest: 'negative' },
+      { date: '2026-09-01', flow: { level: 'heavy' }, temperatures: [T(36.27)], note: 'Migraine', symptoms: S('cramps', 'headache') },
+      { date: '2026-09-02', flow: { level: 'spotting' } },
+      { date: '2026-09-14', temperatures: [T(36.5)], lh: 'positive', mucus: { quality: 'eggwhite', amount: 'heavy' } },
+      { date: '2026-09-15', lh: 'negative', pregTest: 'negative' },
     ]);
   });
   it('bleeding after a pregnancy loss is post_pregnancy flow, never a period', () => {
     expect(parseNaturalCycles([HEADER, row({ Date: '2026-09-01', Menstruation: 'MISCARRIAGE_BLEEDING', 'Menstruation Quantity': 'LIGHT' })]).rows)
-      .toEqual([{ day: '2026-09-01', flow: 'light', flowKind: 'post_pregnancy' }]);
+      .toEqual([{ date: '2026-09-01', flow: { level: 'light', kind: 'post_pregnancy' } }]);
   });
   it('a period day without a known amount is medium; an unknown amount is reported, the day is kept', () => {
     const { rows, problems } = parseNaturalCycles([HEADER, row({ Date: '2026-09-01', Menstruation: 'MENSTRUATION' }), row({ Date: '2026-09-02', Menstruation: 'MENSTRUATION', 'Menstruation Quantity': 'SUPER' })]);
-    expect(rows).toEqual([{ day: '2026-09-01', flow: 'medium' }, { day: '2026-09-02', flow: 'medium' }]);
+    expect(rows).toEqual([{ date: '2026-09-01', flow: { level: 'medium' } }, { date: '2026-09-02', flow: { level: 'medium' } }]);
     expect(problems).toEqual(['line 3: menstruation quantity "SUPER" not recognised, imported as medium']);
   });
   it('a deviation flag or a skipped day marks the temperature disturbed', () => {
@@ -41,13 +44,13 @@ describe('parseNaturalCycles (P3-13)', () => {
       row({ Date: '2026-09-03', 'Data Flag': 'DEVIATION_REASON_SICK' }),
     ]);
     expect(rows).toEqual([
-      { day: '2026-09-01', tempC: 36.9, tempExcluded: true, symptoms: ['fatigue'] },
-      { day: '2026-09-02', tempC: 36.8, tempExcluded: true },
+      { date: '2026-09-01', temperatures: [T(36.9, { disturbed: true })], symptoms: S('fatigue') },
+      { date: '2026-09-02', temperatures: [T(36.8, { disturbed: true })] },
     ]);
   });
   it('Fahrenheit readings convert; implausible readings are left out and reported', () => {
     const { rows, problems } = parseNaturalCycles([HEADER, row({ Date: '2026-09-01', Temperature: '97.7' }), row({ Date: '2026-09-02', Temperature: '3.65' })]);
-    expect(rows).toEqual([{ day: '2026-09-01', tempC: 36.5 }]);
+    expect(rows).toEqual([{ date: '2026-09-01', temperatures: [T(36.5)] }]);
     expect(problems).toEqual(['line 3: temperature "3.65" is out of range']);
   });
   it('a temperature from another device (Source set) is left out, because it may be a wearable reading, not BBT', () => {
@@ -63,13 +66,13 @@ describe('parseNaturalCycles (P3-13)', () => {
     expect(problems).toEqual([]);
     expect(rows).toHaveLength(1);
     expect(rows[0]?.symptoms).toHaveLength(28); // tired and exhausted are both fatigue
-    expect(rows[0]?.symptoms).toEqual(expect.arrayContaining(['happy', 'pelvic_pain', 'smell_sensitivity', 'high_libido']));
+    expect(rows[0]?.symptoms).toEqual(expect.arrayContaining(S('happy', 'pelvic_pain', 'smell_sensitivity', 'high_libido')));
   });
   it('every symptom code it writes is in the catalogue', async () => {
-    const { symptoms } = (await import('../../../../copy/symptoms.json')).default as { symptoms: Array<{ code: string }> };
+    const { symptoms } = (await import('../../../../../copy/symptoms.json')).default as { symptoms: Array<{ code: string }> };
     const codes = new Set(symptoms.map((s) => s.code));
     const { rows } = parseNaturalCycles([HEADER, row({ Date: '2026-09-01', Libido: 'LOW', 'Data Flag': 'PAIN_CRAMPS,PAIN_HEADACHE,PAIN_BLOATING,PAIN_SORE_BREASTS,PAIN_BACKACHE,PAIN_NAUSEOUS,PAIN_CRAVINGS,PAIN_PELVIC,PAIN_OTHER,SKIN_ACNE,SKIN_OILY,SKIN_PUFFY,MOOD_TIRED,MOOD_SAD,MOOD_IRRITABLE,MOOD_SWINGS,MOOD_STRESSED,MOOD_SENSITIVE,MOOD_SELF_CRITICAL,MOOD_NUMB,MOOD_UNFOCUSED,MOOD_SENSITIVE_TO_SMELL,MOOD_HAPPY,MOOD_CALM,MOOD_CONFIDENT,MOOD_ENERGETIC,MOOD_EXCITED' })]);
-    expect((rows[0]?.symptoms ?? []).filter((c) => !codes.has(c))).toEqual([]);
+    expect((rows[0]?.symptoms ?? []).map((s) => s.code).filter((c) => !codes.has(c))).toEqual([]);
   });
   it('sex imports only when protected or not is stated', () => {
     const { rows, problems } = parseNaturalCycles([
@@ -79,7 +82,7 @@ describe('parseNaturalCycles (P3-13)', () => {
       row({ Date: '2026-09-03', 'Had sex': 'YES' }),
       row({ Date: '2026-09-04', 'Had sex': 'NO' }),
     ]);
-    expect(rows).toEqual([{ day: '2026-09-01', sex: { protected: false } }, { day: '2026-09-02', sex: { protected: true } }]);
+    expect(rows).toEqual([{ date: '2026-09-01', sex: { protected: false } }, { date: '2026-09-02', sex: { protected: true } }]);
     expect(problems).toEqual(['line 4: sex "YES" not recognised']);
   });
   it('mucus amount needs a consistency', () => {
@@ -101,8 +104,8 @@ describe('parseNaturalCycles (P3-13)', () => {
     ]);
   });
   it('Excel serial dates (1900 and 1904 systems)', () => {
-    expect(parseNaturalCycles([HEADER, row({ Date: '44335', Menstruation: 'SPOTTING' })]).rows[0]?.day).toBe('2021-05-19');
-    expect(parseNaturalCycles([HEADER, row({ Date: '42873', Menstruation: 'SPOTTING' })], { date1904: true }).rows[0]?.day).toBe('2021-05-19');
+    expect(parseNaturalCycles([HEADER, row({ Date: '44335', Menstruation: 'SPOTTING' })]).rows[0]?.date).toBe('2021-05-19');
+    expect(parseNaturalCycles([HEADER, row({ Date: '42873', Menstruation: 'SPOTTING' })], { date1904: true }).rows[0]?.date).toBe('2021-05-19');
   });
 });
 
@@ -125,20 +128,20 @@ describe('readNaturalCycles: picks the export out of xlsx, zip or csv bytes', ()
     const bytes = xlsx(cells, strings);
     expect(readNaturalCycles(bytes)).toEqual({
       rows: [
-        { day: '2021-05-19', flow: 'medium', note: 'Tom & Jerry' },
-        { day: '2021-05-20', tempC: 36.07, note: 'Hot day' },
-        { day: '2021-05-21', note: '<3 &#x110000;' },
+        { date: '2021-05-19', flow: { level: 'medium' }, note: 'Tom & Jerry' },
+        { date: '2021-05-20', temperatures: [T(36.07)], note: 'Hot day' },
+        { date: '2021-05-21', note: '<3 &#x110000;' },
       ],
       problems: [],
     });
   });
   it('honours the 1904 date system', () => {
     const bytes = xlsx('<row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c><c r="C1" t="s"><v>3</v></c></row><row r="2"><c r="A2"><v>42873</v></c><c r="B2" t="s"><v>2</v></c></row>', ['Date', 'Menstruation', 'SPOTTING', 'LH test'], true);
-    expect(readNaturalCycles(bytes)?.rows).toEqual([{ day: '2021-05-19', flow: 'spotting' }]);
+    expect(readNaturalCycles(bytes)?.rows).toEqual([{ date: '2021-05-19', flow: { level: 'spotting' } }]);
   });
   it('reads a CSV, plain or inside a zip as "Daily Entries.csv"', () => {
     const csv = toCsv(HEADER, [row({ Date: '2026-09-01', Menstruation: 'MENSTRUATION', 'Menstruation Quantity': 'LIGHT', Notes: 'a, "quoted" note' })]);
-    const want = { rows: [{ day: '2026-09-01', flow: 'light', note: 'a, "quoted" note' }], problems: [] };
+    const want = { rows: [{ date: '2026-09-01', flow: { level: 'light' }, note: 'a, "quoted" note' }], problems: [] };
     expect(readNaturalCycles(strToU8(csv))).toEqual(want);
     expect(readNaturalCycles(zipSync({ 'export/Daily Entries.csv': strToU8(csv) }))).toEqual(want);
   });
@@ -146,5 +149,23 @@ describe('readNaturalCycles: picks the export out of xlsx, zip or csv bytes', ()
     expect(readNaturalCycles(strToU8('start,end\n2026-09-01,2026-09-05\n'))).toBeNull();
     expect(readNaturalCycles(strToU8('Date,Menstruation\n2026-09-01,yes\n'))).toBeNull(); // generic period CSV with similar names
     expect(readNaturalCycles(zipSync({ 'events.jsonl': strToU8(''), 'manifest.json': strToU8('{}') }))).toBeNull();
+  });
+});
+
+describe('naturalCycles adapter (D-159)', () => {
+  const csv = toCsv(HEADER, [row({ Date: '2026-09-01', Menstruation: 'MENSTRUATION', 'Menstruation Quantity': 'LIGHT', Temperature: '36.4', 'Data Flag': 'PAIN_CRAMPS', Notes: 'n' })]);
+  const file = { name: 'Daily Entries.csv', bytes: strToU8(csv) };
+  it('detects its export and not others', () => {
+    expect(naturalCycles.id).toBe('natural_cycles');
+    expect(naturalCycles.detect(file)).toBe('yes');
+    expect(naturalCycles.detect({ name: 'x.csv', bytes: strToU8('start\n2026-09-01\n') })).toBe('no');
+  });
+  it('decodes to SanguineData with the same problems', () => {
+    const { data, problems } = naturalCycles.decode(file, {});
+    expect(problems).toEqual([]);
+    expect(data).toEqual({
+      format: 'sanguine-data', version: 1, source: { app: 'natural_cycles' },
+      days: [{ date: '2026-09-01', flow: { level: 'light' }, temperatures: [T(36.4)], symptoms: S('cramps'), note: 'n' }],
+    });
   });
 });

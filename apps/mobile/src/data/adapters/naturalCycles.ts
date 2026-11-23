@@ -1,12 +1,13 @@
 // Natural Cycles "daily entries" export (P3-13, D-056): xlsx from the app, or the same columns as CSV (plain or in a zip).
-// Parses into DailyRow for the shared writer in importDaily.ts. Anything it cannot map is reported, never guessed.
+// Adapter of the day-based format (D-159): decodes the file to SanguineData for importSanguineData. Anything it cannot map is reported, never guessed.
 import { strFromU8, unzipSync } from 'fflate';
 import type { ISODate } from '@sanguine/engine';
-import { parseCsv } from './csv';
-import { parseDateCell } from './exportImport';
-import type { DailyRow } from './importDaily';
+import { parseCsv } from '../csv';
+import { parseDateCell } from '../exportImport';
+import { emptyData, type Day } from '../format/sanguineData';
+import type { FormatAdapter } from './types';
 
-export interface NaturalCyclesParse { rows: DailyRow[]; problems: string[] }
+export interface NaturalCyclesParse { rows: Day[]; problems: string[] }
 
 const FLOW = { LIGHT: 'light', MEDIUM: 'medium', HEAVY: 'heavy' } as const;
 const YES_NO = { YES: 'positive', NO: 'negative' } as const;
@@ -41,7 +42,7 @@ export function celsius(v: number): number | undefined {
 export function parseNaturalCycles(table: string[][], o: { date1904?: boolean } = {}): NaturalCyclesParse {
   const header = (table[0] ?? []).map((h) => h.trim());
   const col = new Map(header.map((h, i) => [h.toLowerCase(), i]));
-  const rows: DailyRow[] = [];
+  const rows: Day[] = [];
   const problems: string[] = [];
   const ignored = new Map<string, number>();
   const otherDevice = new Map<string, number>();
@@ -53,17 +54,16 @@ export function parseNaturalCycles(table: string[][], o: { date1904?: boolean } 
     if (cells.every((c) => c.trim() === '')) return;
     const day = /^\d+(\.\d+)?$/.test(rawDate) ? serialDay(Number(rawDate), o.date1904 === true) : parseDateCell(rawDate);
     if (!day) { problems.push(`line ${line}: "${rawDate}" is not a date`); return; }
-    const r: DailyRow = { day: day as ISODate };
+    const r: Day = { date: day as ISODate };
 
     const men = get('menstruation');
     const qty = get('menstruation quantity');
-    if (men === 'SPOTTING') r.flow = 'spotting';
+    if (men === 'SPOTTING') r.flow = { level: 'spotting' };
     else if (men === 'MENSTRUATION' || men === 'MISCARRIAGE_BLEEDING') {
       // a bleeding day logged without a known amount keeps the day as medium: the day matters for cycles, the amount does not (D-056)
       const level = lookup(FLOW, qty);
       if (!level && qty !== '') problems.push(`line ${line}: menstruation quantity "${qty}" not recognised, imported as medium`);
-      r.flow = level ?? 'medium';
-      if (men === 'MISCARRIAGE_BLEEDING') r.flowKind = 'post_pregnancy'; // never starts a cycle (D-053)
+      r.flow = { level: level ?? 'medium', ...(men === 'MISCARRIAGE_BLEEDING' ? { kind: 'post_pregnancy' as const } : {}) }; // post_pregnancy never starts a cycle (D-053)
     } else if (men !== '') problems.push(`line ${line}: menstruation "${men}" not recognised`);
 
     const flags = get('data flag').split(',').map((f) => f.trim()).filter(Boolean);
@@ -74,9 +74,9 @@ export function parseNaturalCycles(table: string[][], o: { date1904?: boolean } 
       if (c === undefined) problems.push(`line ${line}: temperature "${temp}" is out of range`);
       else if (source !== '') count(otherDevice, source); // may be a wearable's skin temperature, which is not BBT
       else {
-        r.tempC = c;
         const skipped = get('skipped');
-        if (flags.some((f) => f.startsWith('DEVIATION_REASON_')) || (skipped !== '' && skipped !== '0')) r.tempExcluded = true;
+        const disturbed = flags.some((f) => f.startsWith('DEVIATION_REASON_')) || (skipped !== '' && skipped !== '0');
+        r.temperatures = [{ valueC: c, type: 'bbt', source: 'oral', ...(disturbed ? { disturbed: true } : {}) }]; // Natural Cycles is an oral-thermometer app
       }
     }
 
@@ -91,14 +91,14 @@ export function parseNaturalCycles(table: string[][], o: { date1904?: boolean } 
     const mucusQty = get('cervical mucus quantity');
     if (mucus !== '') {
       const q = lookup(MUCUS, mucus);
-      if (q) r.mucus = q;
+      if (q) r.mucus = { quality: q };
       else problems.push(`line ${line}: cervical mucus "${mucus}" not recognised`);
     }
     if (mucusQty !== '') {
       const a = lookup(FLOW, mucusQty);
       if (!a) problems.push(`line ${line}: cervical mucus quantity "${mucusQty}" not recognised`);
       else if (!r.mucus) problems.push(`line ${line}: cervical mucus quantity without a consistency not imported`); // the engine reads the consistency
-      else r.mucusAmount = a;
+      else r.mucus.amount = a;
     }
 
     // protected or not must be stated: "YES" alone is reported rather than guessed (D-056)
@@ -121,7 +121,7 @@ export function parseNaturalCycles(table: string[][], o: { date1904?: boolean } 
       if (code === undefined) problems.push(`line ${line}: libido "${libido}" not recognised`);
       else if (code) symptoms.add(code);
     }
-    if (symptoms.size > 0) r.symptoms = [...symptoms];
+    if (symptoms.size > 0) r.symptoms = [...symptoms].map((code) => ({ code }));
     const note = get('notes');
     if (note !== '') r.note = note;
     header.forEach((h, k) => { if (!HANDLED.has(h.toLowerCase()) && (cells[k] ?? '').trim() !== '') count(ignored, h); });
@@ -187,3 +187,13 @@ function readXlsxSheet(files: Record<string, Uint8Array>): string[][] {
   }
   return table;
 }
+
+export const naturalCycles: FormatAdapter = {
+  id: 'natural_cycles',
+  detect: (f) => (readNaturalCycles(f.bytes) ? 'yes' : 'no'),
+  decode: (f) => {
+    const parsed = readNaturalCycles(f.bytes);
+    if (!parsed) throw new Error('not a Natural Cycles export');
+    return { data: { ...emptyData('natural_cycles'), days: parsed.rows }, problems: parsed.problems };
+  },
+};

@@ -1,31 +1,32 @@
 // P8-12 (D-091): fake Natural Cycles exports from synthetic users with known truth go through the real import
-// (xlsx -> parser -> importDailyRows -> event store -> projection) and must reach the engine as that truth.
+// (xlsx -> adapter -> importSanguineData -> event store -> projection) and must reach the engine as that truth.
 import { analyzeCycles, diffDays, predict, type ISODate } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { EVENTS, type EventKind, historyFrom, timeline, type Timeline } from '../../../../tools/backtest/src/events';
-import { Rng } from '../../../../tools/backtest/src/rng';
-import { sampleUsers, TIGHT } from '../../../../tools/backtest/src/synth';
-import type { Clock } from './ids';
-import { importDailyRows } from './importDaily';
-import { readNaturalCycles } from './importNaturalCycles';
-import { migrate } from './migrate';
+import { EVENTS, type EventKind, historyFrom, timeline, type Timeline } from '../../../../../tools/backtest/src/events';
+import { Rng } from '../../../../../tools/backtest/src/rng';
+import { sampleUsers, TIGHT } from '../../../../../tools/backtest/src/synth';
+import type { Clock } from '../ids';
+import { importSanguineData } from '../format/importSanguineData';
+import { naturalCycles } from './naturalCycles';
+import { migrate } from '../migrate';
 import { ncTable, ncXlsx } from './ncFixture';
-import { EventStore } from './store';
-import { openTestDb } from './testDb';
+import { EventStore } from '../store';
+import { openTestDb } from '../testDb';
 
 let n = 0;
 const clock: Clock = { nowMs: () => 1_700_000_000_000 + n++, iso: () => '2026-10-10T08:00:00+10:00', tz: () => 'Australia/Sydney', randomBytes: (k) => Uint8Array.from({ length: k }, (_, i) => (n + i) % 256) };
 const PER_EVENT = 3;
 
 async function importUser(t: Timeline, rng: Rng) {
-  const parsed = readNaturalCycles(ncXlsx(ncTable(t, rng)));
-  if (!parsed) throw new Error('fixture not recognised as a Natural Cycles export');
+  const file = { name: 'Daily Entries.xlsx', bytes: ncXlsx(ncTable(t, rng)) };
+  if (naturalCycles.detect(file) !== 'yes') throw new Error('fixture not recognised as a Natural Cycles export');
+  const parsed = naturalCycles.decode(file, {});
   const db = openTestDb();
   await migrate(db);
   const store = new EventStore(db, clock);
   const opts = { sourceApp: 'natural_cycles', today: t.observed.at(-1) as ISODate, clock };
-  const first = await importDailyRows(db, store, parsed.rows, opts);
-  const again = await importDailyRows(db, store, parsed.rows, opts);
+  const first = await importSanguineData(db, store, parsed.data, opts);
+  const again = await importSanguineData(db, store, parsed.data, opts);
   return { parsed, first, again, inputs: await store.engineInputs() };
 }
 
