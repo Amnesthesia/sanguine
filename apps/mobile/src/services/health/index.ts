@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import type { HealthType, PlatformDriver, SyncReport } from '@sanguine/health-adapter';
 import type { Database } from '@/data/database';
-import { activeHealthTypes, runHealthSync, sinceFor } from '@/data/healthSync';
+import { activeHealthTypes, reconcileWindow, runHealthSync, sinceFor } from '@/data/healthSync';
 import type { Prefs } from '@/data/prefs';
 import type { EventStore } from '@/data/store';
 import { deviceClock, todayLocal } from '../clock';
@@ -38,6 +38,7 @@ export async function syncHealthOnce(db: Database, store: EventStore, prefs: Pic
   if (types.length === 0) return null;
   const driver = await getHealthDriver();
   if (!driver) return null;
+  await reconcileWindow(db, driver.platform, prefs.healthWindow);
   return runHealthSync(db, store, driver, types, { now: new Date(deviceClock.nowMs()).toISOString(), deviceZone: deviceClock.tz(), since: sinceFor(prefs.healthWindow, todayLocal()) });
 }
 

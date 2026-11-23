@@ -1,7 +1,7 @@
 import { FakeDriver, localIso } from '@sanguine/health-adapter';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Database } from './database';
-import { activeHealthTypes, mergeReports, runHealthSync, sinceFor } from './healthSync';
+import { activeHealthTypes, mergeReports, reconcileWindow, runHealthSync, sinceFor } from './healthSync';
 import type { Clock } from './ids';
 import { migrate } from './migrate';
 import { EventStore } from './store';
@@ -64,5 +64,34 @@ describe('mergeReports and sinceFor', () => {
     expect(sinceFor('1y', '2026-10-09')).toBe('2025-10-09T00:00:00.000Z');
     expect(sinceFor('2y', '2026-10-09')).toBe('2024-10-09T00:00:00.000Z');
     expect(sinceFor('all', '2026-10-09')).toBe('1970-01-01T00:00:00.000Z');
+  });
+});
+
+describe('reconcileWindow', () => {
+  const anchors = async () => (await db.all<{ anchor: string | null }>('SELECT anchor FROM health_sync ORDER BY data_type')).map((r) => r.anchor);
+  const links = async () => (await db.all('SELECT external_id FROM health_link')).length;
+  it('widening clears the anchors but keeps the links; a second sync reads from the new since', async () => {
+    d.seed([foreignFlow('2026-08-04'), foreignFlow('2024-03-01')]);
+    await reconcileWindow(db, d.platform, '30d');
+    await runHealthSync(db, store, d, ['period_flow'], { ...o, since: '2026-08-01T00:00:00Z' });
+    const linked = await links();
+    expect(linked).toBe(1);
+    expect((await anchors())[0]).not.toBeNull();
+    await reconcileWindow(db, d.platform, 'all');
+    expect(await anchors()).toEqual([null]);
+    expect(await links()).toBe(linked);
+    const r = await runHealthSync(db, store, d, ['period_flow'], { ...o, since: sinceFor('all', '2026-10-09') });
+    expect(r.imported).toBe(1); // only the older record: the August one is already linked
+    expect(d.lastAnchor).toBeNull();
+  });
+  it('narrowing, or the same window, keeps the anchors', async () => {
+    d.seed([foreignFlow('2026-08-04')]);
+    await reconcileWindow(db, d.platform, '2y');
+    await runHealthSync(db, store, d, ['period_flow'], o);
+    const before = await anchors();
+    await reconcileWindow(db, d.platform, '2y');
+    await reconcileWindow(db, d.platform, '30d');
+    expect(await anchors()).toEqual(before);
+    expect(before[0]).not.toBeNull();
   });
 });

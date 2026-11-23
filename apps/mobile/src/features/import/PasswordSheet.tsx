@@ -89,17 +89,20 @@ export function PasswordSheet({ open, ...p }: SheetProps & { open: boolean }) {
 export function usePasswordPrompt() {
   const [st, setSt] = useState<{ open: boolean; attempt: 'first' | 'wrong'; fileName?: string | undefined; submitting: boolean }>({ open: false, attempt: 'first', submitting: false });
   const resolver = useRef<((v: string | undefined) => void) | null>(null);
-  const settle = (v: string | undefined) => { const r = resolver.current; resolver.current = null; r?.(v); };
+  const settle = useCallback((v: string | undefined) => { const r = resolver.current; resolver.current = null; r?.(v); }, []);
   const ask = useCallback((attempt: 'first' | 'wrong', fileName?: string): Promise<string | undefined> => new Promise((res) => {
+    resolver.current?.(undefined); // a second ask never strands the first
     resolver.current = res;
     setSt({ open: true, attempt, fileName, submitting: false });
   }), []) as AskPassword & ((attempt: 'first' | 'wrong', fileName?: string) => Promise<string | undefined>);
-  const close = useCallback(() => { resolver.current = null; setSt((s) => ({ ...s, open: false, submitting: false })); }, []);
+  const close = useCallback(() => { settle(undefined); setSt((s) => ({ ...s, open: false, submitting: false })); }, [settle]);
+  // the host screen going away must not leave pickAndImport waiting: its cleanup (removing the picked file) runs after the prompt settles
+  useEffect(() => () => settle(undefined), [settle]);
   const sheet = (
     <PasswordSheet
       open={st.open} attempt={st.attempt} fileName={st.fileName} submitting={st.submitting}
       onSubmit={(pw) => { setSt((s) => ({ ...s, submitting: true })); settle(pw); }}
-      onCancel={() => { settle(undefined); close(); }} />
+      onCancel={close} />
   );
   return { ask, close, sheet };
 }

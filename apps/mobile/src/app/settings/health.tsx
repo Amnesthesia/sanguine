@@ -1,8 +1,9 @@
 // Health sync (PLAN.md §7.5): each type is its own switch, nothing is on until the user asks, wrist temperature is read only.
 import type { HealthType } from '@sanguine/health-adapter';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
+import { isWider } from '@/data/healthSync';
 import { effectivePrefs } from '@/data/prefs';
 import { healthRows, withType } from '@/features/health/healthModel';
 import { getHealthDriver, healthPlatformName, requestHealthAccess } from '@/services/health';
@@ -23,6 +24,9 @@ export default function HealthScreen() {
   const [available, setAvailable] = useState<boolean | undefined>();
   /** Access was refused for the last type she switched on: she needs to read it and act (phone settings), so it is a panel, not a toast. */
   const [denied, setDenied] = useState(false);
+  /** A wider window was chosen while a pass was running (that request is refused): run it again when the pass ends. */
+  const rescan = useRef(false);
+  useEffect(() => { if (rescan.current && !health.running) { rescan.current = false; void syncHealth({ force: true }); } }, [health.running, syncHealth]);
   useEffect(() => { void getHealthDriver().then((d) => setAvailable(d !== null)); }, []);
   const platform = healthPlatformName();
   const eff = effectivePrefs(prefs, profile, today);
@@ -42,6 +46,15 @@ export default function HealthScreen() {
     setDenied(false);
     await updatePrefs({ healthTypes: withType(prefs.healthTypes, type, on) });
     if (on) void syncHealth({ force: true });
+  }
+
+  /** Widening the window re-reads history: the sync pass clears the platform cursors itself (reconcileWindow) when it sees the wider window. */
+  async function pickWindow(w: typeof prefs.healthWindow) {
+    const wider = isWider(w, prefs.healthWindow);
+    await updatePrefs({ healthWindow: w });
+    if (!wider || prefs.healthTypes.length === 0) return;
+    if (health.running) rescan.current = true;
+    else void syncHealth({ force: true });
   }
 
   const last = health.last;
@@ -90,7 +103,7 @@ export default function HealthScreen() {
 
       <View style={{ gap: 8 }}>
         <Text variant="caption" color="textSecondary" accessibilityRole="header" style={{ marginHorizontal: 4, fontWeight: '600' }}>{t('settings.health.since')}</Text>
-        <Chips testIDPrefix="health-since" value={prefs.healthWindow} onChange={(v) => void updatePrefs({ healthWindow: v })} options={(['30d', '1y', '2y', 'all'] as const).map((w) => ({ value: w, label: t(`settings.health.window.${w}`) }))} />
+        <Chips testIDPrefix="health-since" value={prefs.healthWindow} onChange={(v) => void pickWindow(v)} options={(['30d', '1y', '2y', 'all'] as const).map((w) => ({ value: w, label: t(`settings.health.window.${w}`) }))} />
         <Text variant="bodySmall" color="textSecondary" style={{ marginHorizontal: 4 }}>{t('settings.health.windowNote')}</Text>
         <View testID="health-other-apps" style={{ borderRadius: 16, padding: 12, backgroundColor: theme.chipBg }}>
           <Text variant="bodySmall">{t('settings.health.otherApps', { platform })}</Text>

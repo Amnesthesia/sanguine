@@ -76,4 +76,39 @@ describe('usePasswordPrompt', () => {
     await expect(got).resolves.toBeUndefined();
     expect(screen.queryByTestId('password-sheet')).toBeNull();
   });
+  function setup() {
+    const h: { ask?: ReturnType<typeof usePasswordPrompt>['ask']; close?: () => void } = {};
+    function H() { const p = usePasswordPrompt(); h.ask = p.ask; h.close = p.close; return <>{p.sheet}</>; }
+    const r = render(<H />);
+    return { h, r };
+  }
+  const pending = (p: Promise<string | undefined>) => { const s = { v: 'pending' as string | undefined | 'pending' }; void p.then((x) => { s.v = x; }); return s; };
+  it('unmounting while the sheet is open resolves the pending ask with undefined', async () => {
+    const { h, r } = setup();
+    let got: Promise<string | undefined> = Promise.resolve('x');
+    act(() => { got = (h.ask as NonNullable<typeof h.ask>)('first'); });
+    r.unmount();
+    await expect(got).resolves.toBeUndefined();
+  });
+  it('close() while pending resolves undefined', async () => {
+    const { h } = setup();
+    let got: Promise<string | undefined> = Promise.resolve('x');
+    act(() => { got = (h.ask as NonNullable<typeof h.ask>)('first'); });
+    act(() => { (h.close as () => void)(); });
+    await expect(got).resolves.toBeUndefined();
+    expect(screen.queryByTestId('password-sheet')).toBeNull();
+  });
+  it('a second ask resolves the first with undefined and stays pending itself', async () => {
+    const { h } = setup();
+    let first: Promise<string | undefined> = Promise.resolve('x');
+    let second: Promise<string | undefined> = Promise.resolve('x');
+    act(() => { first = (h.ask as NonNullable<typeof h.ask>)('first'); });
+    act(() => { second = (h.ask as NonNullable<typeof h.ask>)('wrong'); });
+    const s = pending(second);
+    await expect(first).resolves.toBeUndefined();
+    expect(s.v).toBe('pending');
+    fireEvent.change(input(), { target: { value: 'pw' } });
+    fireEvent.click(open());
+    await expect(second).resolves.toBe('pw');
+  });
 });
