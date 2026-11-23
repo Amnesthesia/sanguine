@@ -7,6 +7,8 @@ import { useChromeBottom } from './GlassBar';
 
 export const GUTTER = 16;
 
+/** The native tab bar floats this far from each screen edge on iOS (measured on a 440 pt iPhone, D-158); the floating action lines up with it. */
+export const TAB_BAR_INSET = 21;
 /** Gap between a floating action and the tab bar: taps at the bar's edge land on a tab (D-093). */
 const FLOAT_GAP = 12;
 
@@ -46,7 +48,7 @@ export function Screen({ title, children, testID, bottomInset = 96, header, noTo
       {/* the view's own bottom safe area: inside the native tab controller it includes the tab bar */}
       {floating ? (
         <SafeAreaView edges={['bottom']} style={styles.float}>
-          <View style={{ paddingHorizontal: GUTTER, paddingBottom: FLOAT_GAP, pointerEvents: 'box-none' }} onLayout={(e) => setFloatH(e.nativeEvent.layout.height)}>{floating}</View>
+          <View style={{ paddingHorizontal: t.isIOS ? TAB_BAR_INSET : GUTTER, paddingBottom: FLOAT_GAP, pointerEvents: 'box-none' }} onLayout={(e) => setFloatH(e.nativeEvent.layout.height)}>{floating}</View>
         </SafeAreaView>
       ) : null}
     </View>

@@ -56,4 +56,11 @@ describe('Log today pill, legible glass (text under it must not read through)', 
     await settle();
     expect(screen.getByTestId('glass-legible-tint')).toBeTruthy();
   });
+  it('is a soft glass: a lighter wash than the toolbar, so the glass shows like the tab bar (D-158)', async () => {
+    render(<QuickLogRow title="Thu 12 Nov" subtitle="Day 13 of your cycle" />);
+    await settle();
+    const alpha = Number(/rgba\([^)]*,\s*([\d.]+)\)/.exec(screen.getByTestId('glass-legible-tint').style.backgroundColor)?.[1]);
+    expect(alpha).toBeLessThan(0.3);
+    expect(alpha).toBeGreaterThan(0);
+  });
 });

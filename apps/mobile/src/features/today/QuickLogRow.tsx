@@ -28,7 +28,7 @@ export function QuickLogRow({ day, label: shown, accessibilityLabel, title, subt
     router.push(day ? { pathname: '/log', params: { day } } : '/log');
   };
   return (
-    <GlassSurface legible>
+    <GlassSurface legible="soft">
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, paddingLeft: title ? 16 : 10 }}>
         {title ? (
           <View testID="quick-log-text" style={{ flex: 1, minWidth: 0 }}>

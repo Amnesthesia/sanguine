@@ -28,12 +28,15 @@ export const glassRim = (dark: boolean) => (dark ? 'rgba(255,255,255,0.12)' : 'r
 export const LEGIBLE_ALPHA = 0.55;
 /** Blur strength under a legible surface (0 to 100). */
 export const LEGIBLE_BLUR = 100;
-const LEGIBLE_HEX = Math.round(LEGIBLE_ALPHA * 255).toString(16).toUpperCase().padStart(2, '0');
+/** `legible='soft'` (the Log today bar, D-158): the same layers with a lighter wash and blur, so the glass shows as it does on the tab bar. The text on it is short and large. */
+export const SOFT_ALPHA = 0.22;
+export const SOFT_BLUR = 40;
+const hex = (alpha: number) => Math.round(alpha * 255).toString(16).toUpperCase().padStart(2, '0');
 
 /** Navigation material shared by floating chrome; content cards stay opaque. `flat`: a hairline shadow for a control inline in content.
  *  `legible`: for a surface that holds text over scrolling content. iOS 26 `regular` glass is a clear lens, so a tint of the surface colour
  *  is laid between the material and the content (D-130); expo-glass-effect's `tintColor` is a colour tint with no documented opacity floor. */
-export function GlassSurface({ children, style, flat, legible, ...props }: ViewProps & { flat?: boolean; legible?: boolean }) {
+export function GlassSurface({ children, style, flat, legible, ...props }: ViewProps & { flat?: boolean; legible?: boolean | 'soft' }) {
   const t = useTheme();
   const reduce = useReduceTransparency(t.isIOS);
   const [materials, setMaterials] = useState(loaded);
@@ -47,7 +50,8 @@ export function GlassSurface({ children, style, flat, legible, ...props }: ViewP
   if (!t.isIOS) return <View {...props} style={[shape, { overflow: 'hidden', backgroundColor: t.cardBg, elevation: 2 }, style]}>{children}</View>;
   const dark = t.scheme === 'dark';
   // the tint view: `legible` surfaces draw it between the material and the content (below)
-  const tint = legible ? <View testID="glass-legible-tint" pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: `${t.c.surface}${LEGIBLE_HEX}` }} /> : null;
+  const soft = legible === 'soft';
+  const tint = legible ? <View testID="glass-legible-tint" pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: `${t.c.surface}${hex(soft ? SOFT_ALPHA : LEGIBLE_ALPHA)}` }} /> : null;
   const fill = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 } as const;
   // `legible`: the material is a sibling drawn first, then the tint, then the content (seen on the iOS 26 simulator with real glass: the list beneath no longer reads through the bar).
   const glassOn = !reduce && materials && materials.glass.isLiquidGlassAvailable() && materials.glass.isGlassEffectAPIAvailable();
@@ -57,7 +61,7 @@ export function GlassSurface({ children, style, flat, legible, ...props }: ViewP
     : legible
       // frosted glass: a heavy blur under the glass layer (text beneath dissolves into colour), then a light tint for contrast, then the content
       ? <View>
-          <materials.blur.BlurView style={fill} intensity={LEGIBLE_BLUR} tint={dark ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'} />
+          <materials.blur.BlurView style={fill} intensity={soft ? SOFT_BLUR : LEGIBLE_BLUR} tint={dark ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'} />
           {glassOn ? <materials.glass.GlassView style={fill} glassEffectStyle="regular" colorScheme={t.scheme} /> : null}
           {tint}
           {children}
