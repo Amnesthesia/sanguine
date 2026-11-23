@@ -74,7 +74,8 @@ export function DaySheet(p: DaySheetProps) {
   const chromeBottom = useChromeBottom((c) => c.bottom);
   const [headH, setHeadH] = useState(0);
   const [footH, setFootH] = useState(0);
-  const maxH = sheetMaxHeight(windowH, chromeBottom, insets.bottom);
+  // Android: the screen ends at the tab bar, so the window's navigation-bar inset is not under the sheet (floatEdges, D-159)
+  const maxH = sheetMaxHeight(windowH, chromeBottom, t.isIOS ? insets.bottom : 0);
   // the small detent's list scrolls inside what is left once the pinned header and actions (their measured heights) and the paddings and gaps are taken off
   const scrollMax = Math.max(96, maxH - headH - footH - 8 - 16 - 12 * 2);
   const onGlass = { color: t.c.textOnGlass } as const;

@@ -1,6 +1,6 @@
 import { type ReactNode, type Ref, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { type Edge, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { Text } from './Text';
 import { useChromeBottom } from './GlassBar';
@@ -11,6 +11,12 @@ export const GUTTER = 16;
 export const TAB_BAR_INSET = 21;
 /** Gap between a floating action and the tab bar: taps at the bar's edge land on a tab (D-093). */
 const FLOAT_GAP = 12;
+
+/** The safe-area edges a control floating above the tab bar pads by (D-159). iOS: the bottom, because the view's own safe area inside the
+ *  native tab controller includes the floating tab bar. Android: none. The tab screen already ends at the top of the Material navigation
+ *  bar (react-native-screens pads it), and react-native-safe-area-context measures from the root window, so `bottom` there added the system
+ *  navigation bar's inset (24 to 48 dp) a second time and lifted the control well clear of the bar. */
+export const floatEdges = (isIOS: boolean): Edge[] => (isIOS ? ['bottom'] : []);
 
 /** Scrollable screen on the theme's background with an optional large title (tab roots: the title is drawn once, large, with no bar).
  *  `chrome`: a floating glass toolbar (GlassBar) the content scrolls beneath; a pushed page puts its title in the bar, not in `title`.
@@ -45,9 +51,9 @@ export function Screen({ title, children, testID, bottomInset = 96, header, noTo
       {/* a solid band behind the status bar, so scrolled content never shows through it above the floating toolbar */}
       {toolbar ? <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: insets.top, backgroundColor: t.screenBg }} /> : null}
       {toolbar ? <View onLayout={(e) => setChromeH(e.nativeEvent.layout.height)} style={{ position: 'absolute', top: insets.top + t.glass.inset, left: t.glass.inset, right: t.glass.inset }}>{toolbar}</View> : null}
-      {/* the view's own bottom safe area: inside the native tab controller it includes the tab bar */}
+      {/* iOS: the view's own bottom safe area, which inside the native tab controller includes the tab bar; Android: none (floatEdges) */}
       {floating ? (
-        <SafeAreaView edges={['bottom']} style={styles.float}>
+        <SafeAreaView edges={floatEdges(t.isIOS)} style={styles.float}>
           <View style={{ paddingHorizontal: t.isIOS ? TAB_BAR_INSET : GUTTER, paddingBottom: FLOAT_GAP, pointerEvents: 'box-none' }} onLayout={(e) => setFloatH(e.nativeEvent.layout.height)}>{floating}</View>
         </SafeAreaView>
       ) : null}
