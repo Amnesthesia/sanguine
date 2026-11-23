@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { effectivePrefs } from '@/data/prefs';
 import { getSetting, setSetting } from '@/data/settings';
-import { FERTILITY_EVENTS, MAX_RULES, REMINDER_DAYS, REMINDER_EVENTS, type ReminderEvent, type ReminderRule, reminderText } from '@/features/notifications/plan';
+import { FERTILITY_EVENTS, MAX_RULES, MAX_TEXT, REMINDER_DAYS, REMINDER_EVENTS, type ReminderEvent, type ReminderPlan, type ReminderRule, cleanText, isPhaseEvent, reminderBody } from '@/features/notifications/plan';
 import { ensurePermission, remindersSupported } from '@/services/notifications';
 import { widgetsSupported } from '@/services/widgets';
 import { useApp } from '@/state/app';
@@ -17,6 +17,7 @@ import { Group, SettingsRow, SwitchRow } from '@/ui/SettingsRow';
 import { SubScreen } from '@/ui/SubScreen';
 import { formatDay } from '@/ui/format';
 import { Text } from '@/ui/Text';
+import { TextField } from '@/ui/TextField';
 
 /** A heading between groups (frame Settings-Notifications): 15 semibold, a little in from the card edge. */
 const SECTION = { fontSize: 15, lineHeight: 20, fontWeight: '600', marginTop: 8, marginLeft: 4 } as const;
@@ -44,11 +45,12 @@ function NotificationPair({ on, onText, offText, setting }: { on: boolean; onTex
 
 /** Notifications and widgets (D-090): the user's own reminder rules, "N days before <period | ovulation | fertile window>", plus the
  *  late-period reminder. Ovulation and fertile-window rules exist only while the estimate is shown (off under 18 until unlocked). */
-/** The small mark at the left of a reminder rule (frame Settings-Notifications): period a dashed ring, ovulation a glowing ring, fertile window a solid dot. The row's words name the event too, so the shape is never the only cue. */
+/** The small mark at the left of a reminder rule (frame Settings-Notifications): period a dashed ring, ovulation a glowing ring, fertile window a solid dot, a cycle phase a plain hollow ring. The row's words name the event too, so the shape is never the only cue. */
 function RuleDot({ event, id }: { event: ReminderEvent; id: string }) {
   const th = useTheme();
   const base = { width: 12, height: 12, borderRadius: 6 } as const;
   const style = event === 'period' ? { ...base, borderWidth: 1.5, borderStyle: 'dashed' as const, borderColor: th.c.period }
+    : isPhaseEvent(event) ? { ...base, borderWidth: 1.5, borderColor: th.c.textSecondary }
     : event === 'ovulation' ? { ...base, backgroundColor: th.cardBg, borderWidth: 1.5, borderColor: th.c.ovulation, shadowColor: th.c.ovulation, shadowOpacity: 0.5, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }
     : { ...base, backgroundColor: th.c.fertile };
   return <View testID={`rule-dot-${id}`} aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={style} />;
@@ -64,6 +66,9 @@ export default function NotificationsScreen() {
   const [days, setDays] = useState<string>('3');
   const [event, setEvent] = useState<ReminderEvent>('period');
   const [msg, setMsg] = useState<string>();
+  const [text, setText] = useState('');
+  const [editing, setEditing] = useState<string>();
+  const [draft, setDraft] = useState('');
   const n = prefs.notifications;
   const fertility = effectivePrefs(prefs, profile, today).showOvulationEstimate;
   const events = REMINDER_EVENTS.filter((e) => fertility || !FERTILITY_EVENTS.includes(e));
@@ -83,18 +88,34 @@ export default function NotificationsScreen() {
     if (n.rules.some((r) => r.days === d && r.event === event)) return setMsg(t('settings.notifications.duplicate'));
     if (n.rules.length >= MAX_RULES) return setMsg(t('settings.notifications.maxRules', { n: MAX_RULES }));
     setMsg(undefined);
-    set({ rules: [...n.rules, { id: `r-${Date.now().toString(36)}`, days: d, event }] });
+    const own = cleanText(text);
+    set({ rules: [...n.rules, { id: `r-${Date.now().toString(36)}`, days: d, event, ...(own ? { text: own } : {}) }] });
+    setText('');
+  }
+  /** Save (or, with undefined, remove) the own words of one rule; the key is dropped, never stored as undefined. */
+  function saveText(id: string, own: string | undefined) {
+    set({ rules: n.rules.map((r) => {
+      if (r.id !== id) return r;
+      const next = { ...r };
+      delete next.text;
+      return own ? { ...next, text: own } : next;
+    }) });
+    setEditing(undefined);
   }
   const sample = shown[0];
-  const preview = sample ? reminderText({ event: sample.event, lo: Math.max(sample.days, 0), hi: sample.days + 5 }) : reminderText({ event: 'late', lo: 0, hi: 0 });
-  const previewText = n.descriptive ? `${t('notifications.defaultTitle')}: ${t(preview.key, preview.params)}` : t('settings.notifications.defaultText');
+  const lo = sample ? Math.max(sample.days, 0) : 0;
+  // fireDate is unused by reminderBody; the cast only satisfies the ISODate type
+  const body = (descriptive: boolean) => reminderBody({ id: 'preview', event: sample?.event ?? 'late', fireDate: '' as ReminderPlan['fireDate'], hour: 9, descriptive, lo, hi: sample ? sample.days + 5 : 0 }, (k, p) => t(k, p));
+  const offBody = body(false);
+  const onBody = body(true);
+  const previewText = n.descriptive ? `${t('notifications.defaultTitle')}: ${onBody}` : sample && isPhaseEvent(sample.event) ? offBody : t('settings.notifications.defaultText');
   return (
     <SubScreen testID="screen-notifications" title={t('settings.notifications.title')}>
       <Group>
         <SwitchRow testID="notif-enabled" title={t('settings.notifications.reminders')} description={remindersSupported ? t('settings.notifications.remindersDesc') : t('settings.notifications.androidLater')} disabled={!remindersSupported} value={n.enabled} onChange={(v) => void toggle(v)} />
         <SwitchRow testID="notif-late" title={t('settings.notifications.late')} description={t('settings.notifications.lateDesc')} disabled={!n.enabled} value={n.late} onChange={(v) => set({ late: v })} />
         <SwitchRow testID="notif-descriptive" title={t('settings.notifications.descriptive')} description={t('settings.notifications.descriptiveDesc', { text: previewText })} value={n.descriptive} onChange={(v) => set({ descriptive: v })} last />
-        <View style={{ padding: 16, paddingTop: 0 }}><NotificationPair setting={t('settings.notifications.descriptive')} on={n.descriptive} offText={t('notifications.defaultBody')} onText={t(preview.key, preview.params)} /></View>
+        <View style={{ padding: 16, paddingTop: 0 }}><NotificationPair setting={t('settings.notifications.descriptive')} on={n.descriptive} offText={offBody} onText={onBody} /></View>
       </Group>
       {denied ? <View testID="notif-denied" accessibilityLiveRegion="polite"><CautionPanel>{t('settings.notifications.denied')}</CautionPanel></View> : null}
       {n.enabled ? (
@@ -106,13 +127,34 @@ export default function NotificationsScreen() {
 
       <Text accessibilityRole="header" style={SECTION}>{t('settings.notifications.yourReminders')}</Text>
       <Group>
-        {shown.length === 0 ? <SettingsRow title={t('settings.notifications.noRules')} disabled last /> : shown.map((r, i) => (
-          <View key={r.id} testID={`rule-${r.event}-${r.days}`} style={{ minHeight: 56, paddingLeft: 16, paddingRight: 8, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: i === shown.length - 1 ? 0 : 1, borderBottomColor: th.hairline }}>
-            <RuleDot event={r.event} id={`${r.event}-${r.days}`} />
-            <Text style={{ flex: 1 }}>{ruleText(r)}</Text>
-            <Button kind="text" testID={`rule-remove-${r.event}-${r.days}`} label={t('settings.notifications.remove')} accessibilityLabel={`${t('settings.notifications.remove')}: ${ruleText(r)}`} onPress={() => set({ rules: n.rules.filter((x) => x.id !== r.id) })} />
-          </View>
-        ))}
+        {shown.length === 0 ? <SettingsRow title={t('settings.notifications.noRules')} disabled last /> : shown.map((r, i) => {
+          const k = `${r.event}-${r.days}`;
+          return (
+            <View key={r.id} testID={`rule-${k}`} style={{ minHeight: 56, paddingLeft: 16, paddingRight: 8, paddingVertical: 6, gap: 4, borderBottomWidth: i === shown.length - 1 ? 0 : 1, borderBottomColor: th.hairline }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <RuleDot event={r.event} id={k} />
+                <Text style={{ flex: 1 }}>{ruleText(r)}</Text>
+                <Button kind="text" testID={`rule-remove-${k}`} label={t('settings.notifications.remove')} accessibilityLabel={`${t('settings.notifications.remove')}: ${ruleText(r)}`} onPress={() => set({ rules: n.rules.filter((x) => x.id !== r.id) })} />
+              </View>
+              <View style={{ marginLeft: 24, gap: 6 }}>
+                {r.text ? <Text variant="bodySmall" color="textSecondary" testID={`rule-text-${k}`}>{t('settings.notifications.ownTextOn', { text: r.text })}</Text> : null}
+                {editing === r.id ? (
+                  <View style={{ gap: 8, paddingBottom: 8 }}>
+                    <TextField testID={`rule-edit-field-${k}`} label={t('settings.notifications.ownText')} placeholder={t('settings.notifications.ownTextPlaceholder')} helper={t('settings.notifications.ownTextHelper')} keyboardType="default" maxLength={MAX_TEXT} value={draft} onChangeText={setDraft} />
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                      <Button kind="secondary" testID={`rule-save-${k}`} label={t('settings.notifications.saveText')} accessibilityLabel={`${t('settings.notifications.saveText')}: ${ruleText(r)}`} onPress={() => saveText(r.id, cleanText(draft))} />
+                      <Button kind="text" testID={`rule-clear-${k}`} label={t('settings.notifications.clearText')} accessibilityLabel={`${t('settings.notifications.clearText')}: ${ruleText(r)}`} onPress={() => saveText(r.id, undefined)} />
+                    </View>
+                  </View>
+                ) : (
+                  <View style={{ flexDirection: 'row' }}>
+                    <Button kind="text" testID={`rule-edit-${k}`} label={t('settings.notifications.editText')} accessibilityLabel={`${t('settings.notifications.editText')}: ${ruleText(r)}`} onPress={() => { setDraft(r.text ?? ''); setEditing(r.id); }} />
+                  </View>
+                )}
+              </View>
+            </View>
+          );
+        })}
       </Group>
 
       <Card testID="notif-add" style={{ gap: 12 }}>
@@ -121,6 +163,7 @@ export default function NotificationsScreen() {
           <Chips testIDPrefix="rule-days" value={days} onChange={setDays} options={REMINDER_DAYS.map((d) => ({ value: String(d), label: d === 0 ? t('settings.notifications.onTheDay') : t(d === 1 ? 'settings.notifications.days1' : 'settings.notifications.daysN', { n: d }) }))} />
           <Text variant="bodySmall" color="textSecondary">{t('settings.notifications.beforeThe')}</Text>
           <Chips testIDPrefix="rule-event" value={events.includes(event) ? event : 'period'} onChange={setEvent} options={events.map((e) => ({ value: e, label: t(`settings.notifications.eventLabel.${e}`) }))} />
+          <TextField testID="rule-own-text" label={t('settings.notifications.ownText')} helper={t('settings.notifications.ownTextHelper')} placeholder={t('settings.notifications.ownTextPlaceholder')} keyboardType="default" maxLength={MAX_TEXT} value={text} onChangeText={setText} />
           <Button testID="rule-add" kind="secondary" label={t('settings.notifications.add')} onPress={add} />
           {msg ? <Text variant="bodySmall" accessibilityLiveRegion="polite" testID="rule-message">{msg}</Text> : null}
         </View>

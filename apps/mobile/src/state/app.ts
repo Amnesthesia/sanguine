@@ -1,5 +1,5 @@
 // View cache over the event log (PLAN.md §6.1): the log is the source of truth, this store only holds the latest derived values.
-import { type EngineSettings, type FlagCode, type History, type ISODate, type Prediction, predict } from '@sanguine/engine';
+import { analyzeCycles, type EngineSettings, type FlagCode, type History, type ISODate, type Prediction, predict } from '@sanguine/engine';
 import { create } from 'zustand';
 import type { Database } from '@/data/database';
 import { flagContext, loadFlagState, muteFlag, recordRaised } from '@/data/flagState';
@@ -25,6 +25,7 @@ import type { Profile } from '@/data/project';
 import { getSetting, setSetting } from '@/data/settings';
 import type { EventStore } from '@/data/store';
 import { planReminders } from '@/features/notifications/plan';
+import { SHOW_OVULATION_ESTIMATE } from '@/features/today/todayModel';
 import { appData, startFreshDatabase } from '@/services/appData';
 import { KeyMismatchError } from '@/data/cipher';
 import { ensurePermission, syncReminders } from '@/services/notifications';
@@ -201,12 +202,15 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   async syncReminders() {
-    const { prediction, prefs, profile, today } = get();
+    const { prediction, prefs, profile, today, history, settings } = get();
     const hour = new Date().getHours();
     try {
       const n = prefs.notifications;
       // ovulation and fertile-window reminders follow the estimate card: off under 18 until unlocked (§8.6)
-      const plans = planReminders(prediction, n.rules, { enabled: n.enabled, late: n.late, descriptive: n.descriptive, fertility: effectivePrefs(prefs, profile, today).showOvulationEstimate, today, nowHour: hour });
+      const showEstimate = effectivePrefs(prefs, profile, today).showOvulationEstimate;
+      // phase reminders read the same phase rule as Today's phase card (D-107, D-152)
+      const cycles = history && settings ? analyzeCycles(history, settings).map((c) => c.record) : [];
+      const plans = planReminders(prediction, n.rules, { enabled: n.enabled, late: n.late, descriptive: n.descriptive, fertility: showEstimate, today, nowHour: hour, phase: { cycles, showEstimate: SHOW_OVULATION_ESTIMATE && showEstimate } });
       set({ nextReminder: await syncReminders(plans, prefs.discreetIcon) });
     } catch {
       set({ nextReminder: undefined });
@@ -220,7 +224,8 @@ export const useApp = create<AppState>((set, get) => ({
     const next = { ...prefs, ...patch };
     await savePrefs(db, next);
     set({ prefs: next });
-    if (patch.notifications || patch.discreetIcon !== undefined) void get().syncReminders();
+    // the estimate switches decide which reminders exist and where the phase halves fall (D-152), so they reschedule too
+    if (patch.notifications || patch.discreetIcon !== undefined || patch.showOvulationEstimate !== undefined || patch.teenUnlockEstimate !== undefined) void get().syncReminders();
     if (patch.widgetDetails !== undefined || patch.discreetIcon !== undefined) void get().syncWidgets();
     if (patch.healthTypes) rewatch(next.healthTypes, () => void get().syncHealth({ force: true }));
     if (patch.healthTypes || patch.cloudBackup !== undefined) void setHealthBackground(next.healthTypes.length > 0 || next.cloudBackup);

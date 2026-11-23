@@ -4,6 +4,7 @@ import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useEffect } from 'react';
 import { getSetting } from '@/data/settings';
 import { quickActionItems } from '@/features/settings/quickActions';
+import { useReminderTapRouting } from '@/services/notifications';
 import { useApp } from '@/state/app';
 import { useTranslation } from 'react-i18next';
 import { m3 } from '@sanguine/ui-tokens';
@@ -16,6 +17,7 @@ export default function TabsLayout() {
   const m = m3[t.scheme];
   // home-screen quick actions (P8-8): routed here, inside the tabs, as the library asks; kept in step with the setting and the discreet icon
   useQuickActionRouting();
+  useReminderTapRouting(); // a tapped reminder opens today's log sheet (D-152)
   const { db, prefs, version } = useApp();
   // biome-ignore lint/correctness/useExhaustiveDependencies: `version` re-reads the setting after it is switched
   useEffect(() => {

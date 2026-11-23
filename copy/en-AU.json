@@ -887,8 +887,15 @@
       "ruleBefore": "{n} days before the {event}",
       "ruleBefore1": "1 day before the {event}",
       "ruleOnDay": "On the day the {event} range starts",
-      "event": { "period": "period", "ovulation": "ovulation estimate", "fertile": "fertile window estimate" },
-      "eventLabel": { "period": "Period", "ovulation": "Ovulation", "fertile": "Fertile window" },
+      "event": { "period": "period", "ovulation": "ovulation estimate", "fertile": "fertile window estimate", "follicularEarly": "early follicular phase", "follicularLate": "late follicular phase", "lutealEarly": "early luteal phase", "lutealLate": "late luteal phase" },
+      "eventLabel": { "period": "Period", "ovulation": "Ovulation", "fertile": "Fertile window", "follicularEarly": "Early follicular", "follicularLate": "Late follicular", "lutealEarly": "Early luteal", "lutealLate": "Late luteal" },
+      "ownText": "Your own words (optional)",
+      "ownTextHelper": "Shown exactly as written, also on the lock screen, even with details off.",
+      "ownTextPlaceholder": "Leave empty for the built-in text",
+      "editText": "Edit words",
+      "saveText": "Save",
+      "clearText": "Use built-in text",
+      "ownTextOn": "Your words: {text}",
       "notifyMe": "Notify me",
       "onTheDay": "On the day",
       "days1": "1 day",
@@ -976,6 +983,7 @@
     "channel": "Reminders",
     "defaultTitle": "Sanguine",
     "defaultBody": "A reminder",
+    "discreetBody": { "phase": "How are you feeling today?" },
     "periodTitle": "Sanguine",
     "periodBody": "Period likely in {lo}–{hi} days",
     "body": {
@@ -985,7 +993,11 @@
       "ovulationNow": "Ovulation estimate: likely from today, within {hi} days",
       "fertile": "Fertile window estimate: likely from {lo} to {hi} days from now",
       "fertileNow": "Fertile window estimate: likely from today to {hi} days from now",
-      "late": "Your period has not been logged yet and is later than the likely range. Log it when it starts."
+      "late": "Your period has not been logged yet and is later than the likely range. Log it when it starts.",
+      "follicularEarly": "Your follicular phase has likely started. How are you feeling?",
+      "follicularLate": "You are likely in the later part of your follicular phase. How are you feeling?",
+      "lutealEarly": "Your luteal phase has likely started. How are you feeling?",
+      "lutealLate": "You are likely in the later part of your luteal phase. How are you feeling?"
     }
   },
   "lock": {

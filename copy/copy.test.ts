@@ -149,3 +149,19 @@ describe('policies use the same word list (P0-10)', () => {
     });
   }
 });
+
+describe('phase reminders (D-152)', () => {
+  const en = load('en-AU.json');
+  const phases = ['follicularEarly', 'follicularLate', 'lutealEarly', 'lutealLate'];
+  const texts = [
+    ...phases.map((e) => en.notifications.body[e] as string),
+    ...phases.map((e) => en.settings.notifications.event[e] as string),
+    ...phases.map((e) => en.settings.notifications.eventLabel[e] as string),
+    en.notifications.discreetBody.phase as string,
+  ];
+  it('every phase has a notification text, a rule noun and a chip label', () => expect(texts.every((t) => typeof t === 'string' && t.length > 0)).toBe(true));
+  // teen mode keeps phase reminders, and ovulation and the fertile window are hidden there (§8.6)
+  it('never names ovulation or the fertile window', () => expect(texts.filter((t) => /ovulat|fertil/i.test(t))).toEqual([]));
+  it('is a check-in, not advice or a verdict', () => expect(texts.filter((t) => /\bshould\b|\bnormal\b/i.test(t))).toEqual([]));
+  it('the discreet phase text carries no health word', () => expect(en.notifications.discreetBody.phase).not.toMatch(/period|phase|cycle|follic|luteal|ovulat|fertil/i));
+});

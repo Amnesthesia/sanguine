@@ -33,7 +33,7 @@ describe('prefs', () => {
     expect(DEFAULT_SYMPTOMS).toEqual(['cramps', 'headache', 'bloating', 'breast_tenderness', 'mood_low', 'acne', 'fatigue', 'midcycle_spotting']);
     expect(DEFAULT_PREFS.sexLogging).toBe(false);
     expect(DEFAULT_PREFS.notifications).toMatchObject({ enabled: true, late: true, descriptive: false }); // owner, D-090; text stays discreet
-    expect(DEFAULT_PREFS.notifications.rules.map((x) => [x.days, x.event])).toEqual([[3, 'ovulation'], [3, 'period'], [1, 'period']]);
+    expect(DEFAULT_PREFS.notifications.rules.map((x) => [x.days, x.event])).toEqual([[0, 'follicularEarly'], [3, 'ovulation'], [0, 'lutealEarly'], [3, 'period'], [1, 'period']]);
     expect(DEFAULT_PREFS.appLock).toBe(false); // D-073: the owner chose no Face ID at launch unless asked for
   });
   it('load merges saved values over defaults', async () => {
@@ -49,8 +49,15 @@ describe('prefs', () => {
     await setSetting(db, 'prefs', { notifications: { period: false, descriptive: true } });
     const n = (await loadPrefs(db)).notifications;
     expect(n).toMatchObject({ enabled: false, descriptive: true, late: true });
-    expect(n.rules).toHaveLength(3);
+    expect(n.rules).toHaveLength(5);
     expect('period' in n).toBe(false);
+  });
+  it('saved rules load unchanged: one without text stays without, one with text keeps it', async () => {
+    const db = openTestDb();
+    await migrate(db);
+    const rules = [{ id: 'a', days: 3, event: 'period' }, { id: 'b', days: 0, event: 'lutealLate', text: 'Be kind to yourself' }];
+    await setSetting(db, 'prefs', { notifications: { rules } });
+    expect((await loadPrefs(db)).notifications.rules).toEqual(rules);
   });
   it('teen mode (13-17) hides the ovulation estimate until unlocked; adults follow the preference', () => {
     const today = '2026-10-09';

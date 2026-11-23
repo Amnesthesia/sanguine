@@ -775,6 +775,7 @@ A glossary file (`copy/glossary.en-AU.json`) fixes terms: period, bleeding, spot
 ### 8.8 Discretion
 
 - Notifications default to "Sanguine: a reminder"; a Settings toggle enables descriptive text ("Period likely in 3–8 days").
+- A reminder may carry its own text (up to 120 characters), shown exactly as written even with the Settings toggle off, because the user wrote it; the field says it also shows on the lock screen. Phase reminders use "How are you feeling today?" as their discreet default (D-152).
 - Widgets default to the ring and day count; health words appear only if the user opts in.
 - App lock: Face ID / fingerprint / device passcode, on by default after onboarding with an explanation; auto-lock after 1 minute in background; notes are double-encrypted (6.1).
 - Discreet icon: alternate app icons (iOS `CFBundleAlternateIcons`, Android activity-alias) with a neutral name and glyph ("Notes", a leaf); switching is one tap and the notification title follows the chosen name.

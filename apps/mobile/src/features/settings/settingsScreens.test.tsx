@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
 import { DEFAULT_PREFS, type Prefs } from '@/data/prefs';
+import type { ReminderRule } from '@/features/notifications/plan';
 
 const app = vi.hoisted(() => ({ state: {} as Record<string, unknown> }));
 const push = vi.hoisted(() => vi.fn());
@@ -133,7 +134,7 @@ describe('how Sanguine estimates', () => {
 describe('notifications', () => {
   it('draws a shape-coded dot on each reminder rule row and an icon on the next-reminder line, both hidden from screen readers', () => {
     render(<NotificationsScreen />);
-    for (const id of ['rule-dot-ovulation-3', 'rule-dot-period-3', 'rule-dot-period-1']) {
+    for (const id of ['rule-dot-follicularEarly-0', 'rule-dot-ovulation-3', 'rule-dot-lutealEarly-0', 'rule-dot-period-3', 'rule-dot-period-1']) {
       expect(screen.getByTestId(id).getAttribute('aria-hidden'), id).toBe('true');
     }
     expect(screen.getByTestId('notif-next-icon').getAttribute('aria-hidden')).toBe('true');
@@ -144,6 +145,63 @@ describe('notifications', () => {
     render(<NotificationsScreen />);
     expect(screen.queryByTestId('rule-dot-ovulation-3')).toBeNull();
     expect(screen.getByTestId('rule-dot-period-3')).toBeTruthy();
+  });
+  it('under 18 the phase rules and chips stay while ovulation goes', () => {
+    setup({}, { birthDate: '2011-06-01' });
+    render(<NotificationsScreen />);
+    expect(screen.getByTestId('rule-dot-follicularEarly-0').getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByTestId('rule-dot-lutealEarly-0').getAttribute('aria-hidden')).toBe('true');
+    for (const e of ['follicularEarly', 'follicularLate', 'lutealEarly', 'lutealLate']) expect(screen.getByTestId(`rule-event-${e}`), e).toBeTruthy();
+    expect(screen.queryByTestId('rule-event-ovulation')).toBeNull();
+    expect(screen.queryByTestId('rule-dot-ovulation-3')).toBeNull();
+  });
+  it('adds a phase reminder with own words and saves the text on the rule', () => {
+    render(<NotificationsScreen />);
+    fireEvent.click(screen.getByTestId('rule-days-0'));
+    fireEvent.click(screen.getByTestId('rule-event-lutealLate'));
+    fireEvent.change(screen.getByTestId('rule-own-text'), { target: { value: '  Be kind to yourself ' } });
+    fireEvent.click(screen.getByTestId('rule-add'));
+    const saved = update.mock.calls.at(-1)?.[0].notifications.rules.find((r: { event: string }) => r.event === 'lutealLate');
+    expect(saved).toMatchObject({ days: 0, event: 'lutealLate', text: 'Be kind to yourself' });
+    expect((screen.getByTestId('rule-own-text') as HTMLInputElement).value).toBe('');
+  });
+  it('adds a rule without own words with no text key', () => {
+    render(<NotificationsScreen />);
+    fireEvent.click(screen.getByTestId('rule-days-0'));
+    fireEvent.click(screen.getByTestId('rule-event-lutealLate'));
+    fireEvent.click(screen.getByTestId('rule-add'));
+    const saved = update.mock.calls.at(-1)?.[0].notifications.rules.find((r: { event: string }) => r.event === 'lutealLate');
+    expect('text' in saved).toBe(false);
+  });
+  it('shows a rule\'s own words, edits them, and clears them without leaving a text key', () => {
+    const rules: ReminderRule[] = [{ id: 'a', days: 0, event: 'lutealLate', text: 'Be kind to yourself' }, { id: 'b', days: 3, event: 'period' }];
+    setup({ notifications: { ...DEFAULT_PREFS.notifications, rules } });
+    render(<NotificationsScreen />);
+    expect(screen.getByTestId('rule-text-lutealLate-0').textContent).toBe('Your words: Be kind to yourself');
+    expect(screen.queryByTestId('rule-text-period-3')).toBeNull();
+    fireEvent.click(screen.getByTestId('rule-edit-lutealLate-0'));
+    expect((screen.getByTestId('rule-edit-field-lutealLate-0') as HTMLInputElement).value).toBe('Be kind to yourself');
+    fireEvent.change(screen.getByTestId('rule-edit-field-lutealLate-0'), { target: { value: ' Rest well ' } });
+    fireEvent.click(screen.getByTestId('rule-save-lutealLate-0'));
+    expect(update.mock.calls.at(-1)?.[0].notifications.rules).toEqual([{ id: 'a', days: 0, event: 'lutealLate', text: 'Rest well' }, rules[1]]);
+    expect(screen.queryByTestId('rule-edit-field-lutealLate-0')).toBeNull();
+    fireEvent.click(screen.getByTestId('rule-edit-lutealLate-0'));
+    fireEvent.click(screen.getByTestId('rule-clear-lutealLate-0'));
+    const cleared = update.mock.calls.at(-1)?.[0].notifications.rules[0];
+    expect(cleared).toEqual({ id: 'a', days: 0, event: 'lutealLate' });
+    expect('text' in cleared).toBe(false);
+    fireEvent.click(screen.getByTestId('rule-edit-lutealLate-0'));
+    fireEvent.change(screen.getByTestId('rule-edit-field-lutealLate-0'), { target: { value: '   ' } });
+    fireEvent.click(screen.getByTestId('rule-save-lutealLate-0'));
+    expect('text' in (update.mock.calls.at(-1)?.[0].notifications.rules[0] ?? { text: 1 })).toBe(false);
+  });
+  it('the drawing shows the feeling check-in for a phase sample and "A reminder" for a period sample', () => {
+    render(<NotificationsScreen />); // the first default rule is early follicular
+    expect(screen.getByTestId('notif-pair').getAttribute('aria-label')).toContain('Off shows: How are you feeling today?');
+    cleanup();
+    setup({ notifications: { ...DEFAULT_PREFS.notifications, rules: [{ id: 'p', days: 3, event: 'period' }] } });
+    render(<NotificationsScreen />);
+    expect(screen.getByTestId('notif-pair').getAttribute('aria-label')).toContain('Off shows: A reminder');
   });
   it('names the setting in the off/on drawing label', () => {
     render(<NotificationsScreen />);
