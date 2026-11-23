@@ -177,6 +177,55 @@ describe('zipCrypto', () => {
     new DataView(bad.buffer).setUint32(bad.length - 22 + 16, bad.length + 100, true);
     expect(() => listZip(bad)).toThrow(ZipCorrupt);
   });
+
+  // One stored 4-byte local file at offset 0, then a central directory with the given names, all pointing at offset 0.
+  const multi = (names: string[], offsets: number[] = []) => {
+    const nb = names.map((n) => new TextEncoder().encode(n));
+    const local = 30 + 1 + 4;
+    const cdLen = nb.reduce((n, x) => n + 46 + x.length, 0);
+    const b = new Uint8Array(local + cdLen + 22);
+    const v = new DataView(b.buffer);
+    v.setUint32(0, 0x04034b50, true);
+    v.setUint32(18, 4, true);
+    v.setUint32(22, 4, true);
+    v.setUint16(26, 1, true);
+    b[30] = 97;
+    let p = local;
+    nb.forEach((x, i) => {
+      v.setUint32(p, 0x02014b50, true);
+      v.setUint32(p + 20, 4, true);
+      v.setUint32(p + 24, 4, true);
+      v.setUint16(p + 28, x.length, true);
+      v.setUint32(p + 42, offsets[i] ?? 0, true);
+      b.set(x, p + 46);
+      p += 46 + x.length;
+    });
+    v.setUint16(p + 8, names.length, true);
+    v.setUint16(p + 10, names.length, true);
+    v.setUint32(p + 12, cdLen, true);
+    v.setUint32(p + 16, local, true);
+    v.setUint32(p, 0x06054b50, true);
+    return b;
+  };
+
+  it('rejects more than 1000 entries and duplicate names', () => {
+    expect(() => listZip(multi(Array.from({ length: 1001 }, (_, i) => `f${i}`)))).toThrow(ZipCorrupt);
+    expect(listZip(multi(Array.from({ length: 1000 }, (_, i) => `f${i}`)))).toHaveLength(1000);
+    expect(() => listZip(multi(['a', 'b', 'a']))).toThrow(ZipCorrupt);
+  });
+
+  it('rejects overlapping wanted regions', () => {
+    const z = multi(['a', 'b']);
+    expect(() => readZipFiles(z)).toThrow(ZipTooLarge);
+    expect(() => readZipFiles(z, (n) => n === 'a')).not.toThrow(ZipTooLarge);
+  });
+
+  it('a size-0 entry with a large stream fails fast', () => {
+    const z = handmade(8, new Uint8Array(5 * 1024 * 1024), 0);
+    const t0 = performance.now();
+    expect(() => readZipFiles(z)).toThrow(ZipCorrupt);
+    expect(performance.now() - t0).toBeLessThan(200);
+  });
 });
 
 describe('readZipFiles', () => {

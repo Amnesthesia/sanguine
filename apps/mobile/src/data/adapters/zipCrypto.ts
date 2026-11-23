@@ -10,6 +10,7 @@ export class ZipCorrupt extends ZipError {}
 export class ZipTooLarge extends ZipError {}
 
 const SLICE = 16 * 1024;
+export const MAX_ENTRIES = 1000;
 export const MAX_ENTRY_BYTES = 64 * 1024 * 1024;
 
 export type ZipEntry = {
@@ -50,7 +51,9 @@ export function listZip(bytes: Uint8Array): ZipEntry[] {
   const count = v.getUint16(eocd + 10, true);
   let p = v.getUint32(eocd + 16, true);
   if (count === 0xffff || p === 0xffffffff) throw new ZipUnsupported('zip64');
+  if (count > MAX_ENTRIES) throw new ZipCorrupt('too many entries');
   const out: ZipEntry[] = [];
+  const names = new Set<string>();
   for (let n = 0; n < count; n++) {
     if (p + 46 > bytes.length || v.getUint32(p, true) !== 0x02014b50) throw new ZipCorrupt('bad central directory');
     const flags = v.getUint16(p + 8, true);
@@ -63,8 +66,11 @@ export function listZip(bytes: Uint8Array): ZipEntry[] {
     for (let e = p + 46 + nameLen, end = e + extraLen; e + 4 <= end; e += 4 + v.getUint16(e + 2, true)) {
       if (v.getUint16(e, true) === 0x9901) aes = true;
     }
+    const name = new TextDecoder().decode(bytes.subarray(p + 46, p + 46 + nameLen));
+    if (names.has(name)) throw new ZipCorrupt('duplicate entry name');
+    names.add(name);
     out.push({
-      name: new TextDecoder().decode(bytes.subarray(p + 46, p + 46 + nameLen)),
+      name,
       method,
       flags,
       time: v.getUint16(p + 12, true),
@@ -84,6 +90,8 @@ export function readZipEntry(bytes: Uint8Array, entry: ZipEntry, password?: stri
   if (entry.aes) throw new ZipUnsupported('AES encryption');
   if (entry.method !== 0 && entry.method !== 8) throw new ZipUnsupported(`method ${entry.method}`);
   if (entry.size > MAX_ENTRY_BYTES || entry.compSize > MAX_ENTRY_BYTES) throw new ZipTooLarge('entry too large');
+  // An empty deflate stream is 2 bytes (plus the 12-byte header when encrypted).
+  if (entry.method === 8 && entry.size === 0 && entry.compSize > (entry.encrypted ? 14 : 2)) throw new ZipCorrupt('empty entry with data');
   if (entry.method === 0 && entry.compSize !== entry.size + (entry.encrypted ? 12 : 0)) throw new ZipCorrupt('size mismatch');
   const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const o = entry.localOffset;
@@ -156,6 +164,16 @@ export const MAX_TOTAL_BYTES = 128 * 1024 * 1024;
 export function readZipFiles(bytes: Uint8Array, keep: (name: string) => boolean = () => true, password?: string): Record<string, Uint8Array> {
   const wanted = listZip(bytes).filter((e) => keep(e.name) && !e.name.endsWith('/'));
   if (wanted.reduce((n, e) => n + e.size, 0) > MAX_TOTAL_BYTES) throw new ZipTooLarge('zip is too large');
+  if (wanted.reduce((n, e) => n + e.compSize, 0) > MAX_TOTAL_BYTES) throw new ZipTooLarge('zip is too large');
+  // Wanted compressed regions must not overlap, or one stream could be inflated many times.
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const spans = wanted.map((e) => {
+    const o = e.localOffset;
+    if (o + 30 > bytes.length) throw new ZipCorrupt('bad local header');
+    return [o, o + 30 + v.getUint16(o + 26, true) + v.getUint16(o + 28, true) + e.compSize];
+  });
+  spans.sort((a, b) => a[0] - b[0]);
+  for (let i = 1; i < spans.length; i++) if (spans[i][0] < spans[i - 1][1]) throw new ZipTooLarge('overlapping entries');
   const out: Record<string, Uint8Array> = {};
   for (const e of wanted) out[e.name] = readZipEntry(bytes, e, password);
   return out;
