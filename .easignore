@@ -16,6 +16,8 @@ apps/mobile/android
 
 # personal data exports used to build importers: never upload either
 NaturalCycles-*.xlsx
+# the owner's real Clue export (zip and extracted folder)
+samples/
 
 # not needed to build the app (about 125 MB, mostly Maestro screenshots). The app imports copy/ at runtime, so copy/ stays.
 docs/
