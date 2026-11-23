@@ -32,7 +32,7 @@ describe('Import from Clue guide', () => {
     render(<ImportClueScreen />);
     fireEvent.click(screen.getByTestId('import-clue-choose'));
     await waitFor(() => expect(screen.getByTestId('import-clue-result')).toBeTruthy());
-    expect(typeof (pick.mock.calls[0]?.[2] as { askPassword: unknown }).askPassword).toBe('function');
+    expect(typeof (pick.mock.calls[0] as [unknown, unknown, { askPassword: unknown }])[2].askPassword).toBe('function');
     const text = screen.getByTestId('import-clue-result').textContent ?? '';
     expect(text).toContain('Imported 12 records.');
     expect(text).toContain('Kept your own entry on 2 days');
