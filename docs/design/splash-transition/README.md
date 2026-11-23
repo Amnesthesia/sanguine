@@ -32,7 +32,7 @@ Options (`<option>`):
 
 - `morph`: the whole lock-up curls into the crescent, sweeping left to right. Left to right on the lock-up becomes horn to horn; top to bottom becomes the bite's edge to the moon's outer edge, so the emblem lands on the inner edge and the script on the outer. The outlines thicken a little as they bend so they stay visible, and the solid moon fades in at the end. The first frame is the exact splash PNG, and it hands over to the retraced outlines in 0.12 s.
 - `fade`: the lock-up fades and settles back (scale 0.94) while the crescent fades in and settles forward (0.9 to 1).
-- `flip`: the lock-up turns edge-on about the vertical axis, and the crescent turns in from the other side, like the back of a card.
+- `flip`: the lock-up narrows to a vertical line, like a card turned edge-on, and the crescent widens out of it. This is a 2D squeeze (`scaleX`), as in the app: a 3D rotation was clipped by the full-screen layers beneath it on iOS (D-154).
 
 Light has all nine moments per option. Dark (`-dark-`) has `1-hold`, `3-change-50`, `5-moon` and `7-zoom-50`.
 

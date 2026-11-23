@@ -47,6 +47,13 @@ export function fieldWithHole(w: number, h: number, bite: Circle): string {
   return `M0 0H${w}V${h}H0Z M${x - r} ${y}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z`;
 }
 
+/** To scale a w×h view by s about its point (px, py): scale an inner view by s (React Native scales about a view's centre)
+ * and shift an outer view by this much. Two nested views, so the result does not depend on the order a transform list is
+ * composed in; transformOrigin would be shorter, but the native animation driver ignores it (D-154). */
+export function zoomShift(px: number, py: number, w: number, h: number, s: number): [number, number] {
+  return [(px - w / 2) * (1 - s), (py - h / 2) * (1 - s)];
+}
+
 /** How far to scale about the bite's centre so the bite covers the whole screen. */
 export function zoomToCover(w: number, h: number, bite: Circle): number {
   const far = Math.max(...[[0, 0], [w, 0], [0, h], [w, h]].map(([x, y]) => Math.hypot(x - bite.x, y - bite.y)));

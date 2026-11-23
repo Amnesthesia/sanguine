@@ -83,7 +83,7 @@ describe('motion (§8.9: reduced motion degrades to cross-fades; the ring never 
     const reduced = src.slice(src.indexOf('anim = reduce'), src.indexOf(': Animated.sequence(['));
     expect(reduced).toContain('reveal');
     expect(reduced).not.toMatch(/flip|zoom|cover|duration: [^0]/);
-    expect(src).not.toMatch(/translate|LayoutAnimation|reanimated|withRepeat/);
+    expect(src).not.toMatch(/LayoutAnimation|reanimated|withRepeat/);
   });
 });
 
