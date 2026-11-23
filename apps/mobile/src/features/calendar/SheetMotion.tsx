@@ -6,7 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets';
 import { useTheme } from '@/theme';
 import { GlassSurface } from '@/ui/GlassBar';
-import { TAB_BAR_INSET } from '@/ui/Screen';
+import { floatEdges, TAB_BAR_INSET } from '@/ui/Screen';
 import { type Detent, dragHeight, SPRING, type Snaps, settle, shownAt, snapDetent } from './sheetSnap';
 
 /** Gap above the tab bar (as Screen's floating action) and the room the large detent leaves under the status bar. */
@@ -121,7 +121,8 @@ export function SheetMotion({ detent, onDetent, maxSmall, scrim, onInset, childr
   return (
     <>
       <Animated.View pointerEvents={detent === 'large' ? 'auto' : 'none'} style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: t.c.bg }, scrimStyle]}>{scrim}</Animated.View>
-      <SafeAreaView edges={['bottom']} pointerEvents="box-none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      {/* on Android the screen already ends at the tab bar: no bottom edge, or the bar sits a navigation-bar inset too high (floatEdges, D-159) */}
+      <SafeAreaView edges={floatEdges(t.isIOS)} pointerEvents="box-none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
         <View
           pointerEvents="box-none"
           onLayout={(e) => { const large = e.nativeEvent.layout.height - FLOAT_GAP - insets.top - LARGE_TOP; if (Math.abs(large - measured.large) >= 1) setMeasured((m) => ({ ...m, large })); }}

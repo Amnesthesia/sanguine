@@ -3,7 +3,8 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, afterEach, expect, it, vi } from 'vitest';
 import { AccessibilityInfo } from 'react-native';
 import '@/i18n';
-vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 20, bottom: 0 }), SafeAreaView: ({ children }: { children: ReactNode }) => children }));
+const safe = vi.hoisted(() => ({ edges: [] as unknown[] }));
+vi.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 20, bottom: 0 }), SafeAreaView: ({ children, edges }: { children: ReactNode; edges?: unknown }) => { safe.edges.push(edges); return children; } }));
 vi.mock('expo-router', () => ({ useRouter: () => ({ back: vi.fn() }) }));
 vi.mock('react-native-svg', () => ({ default: () => null, Path: () => null }));
 const env = vi.hoisted(() => ({ platform: 'ios' as 'ios' | 'android', scheme: 'light' as 'light' | 'dark', glassAvailable: true }));
@@ -15,7 +16,7 @@ import { buildTheme } from '@/theme';
 import { contrast, over } from '../../../../packages/ui-tokens/src/contrast';
 import { ToastHost, showToast } from './Toast';
 import { SubScreen } from './SubScreen';
-import { Screen } from './Screen';
+import { floatEdges, Screen } from './Screen';
 import { GlassSurface, useChromeBottom } from './GlassBar';
 const setReduce = (reduce: boolean) => Object.assign(AccessibilityInfo, { isReduceTransparencyEnabled: vi.fn().mockResolvedValue(reduce), addEventListener: vi.fn(() => ({ remove: vi.fn() })) });
 beforeEach(() => {
@@ -228,4 +229,15 @@ it('the toolbar title is one line that shrinks to fit, and the Back control is a
   expect(getComputedStyle(title).whiteSpace).toBe('nowrap');
   const back = getComputedStyle(screen.getByRole('button', { name: 'Back' }));
   expect([back.width, back.height, back.borderTopLeftRadius]).toEqual(['44px', '44px', '22px']);
+});
+
+it('a floating action pads by the bottom safe area on iOS only: on Android the tab screen already ends at the tab bar (D-159)', () => {
+  expect(floatEdges(true)).toEqual(['bottom']);
+  expect(floatEdges(false)).toEqual([]);
+  for (const platform of ['ios', 'android'] as const) {
+    env.platform = platform; safe.edges = [];
+    render(<Screen title="Today" floating={<button type="button">Log today</button>}><span>Body</span></Screen>);
+    expect(safe.edges).toEqual([platform === 'ios' ? ['bottom'] : []]);
+    cleanup();
+  }
 });

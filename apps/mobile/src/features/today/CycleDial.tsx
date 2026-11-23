@@ -1,9 +1,10 @@
-// Today's cycle dial (D-121, PLAN.md §9.5): arcs on a track over the expected cycle length, one tick per day, today as a knob.
+// Today's cycle dial (D-121, PLAN.md §9.5): arcs on a track over the expected cycle length, one tick per day, today as a knob
+// (a filled accent disc carrying the day number, so it reads as "you are here" and is not mistaken for the hollow ovulation point, D-159).
 // Solid = logged, soft = estimate, graded green = fertile window estimate, blue ring = ovulation estimate.
 import { colors, over } from '@sanguine/ui-tokens';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import Svg, { Circle, Defs, G, Line, Path, RadialGradient, Stop } from 'react-native-svg';
+import Svg, { Circle, Defs, G, Line, Path, RadialGradient, Stop, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '@/theme';
 import { fertileAlpha } from '@/ui/fertileAlpha';
 import { Text } from '@/ui/Text';
@@ -24,6 +25,10 @@ const RIM_R = R + STROKE / 2 - 0.75; // a thin solid edge on the outer rim of ev
 const RIM = 1.5;
 // The knob's drop shadow is dark in both themes; textPrimary is near-white in dark and would make a halo. Same ink as the card shadows in tokens.elevation.
 const SHADOW = colors.light.textPrimary;
+/** The today knob's outer radius: a 2.5 pt surface rim round the accent disc keeps it apart from a rose period arc beneath it. */
+const KNOB_R = 15;
+/** The knob's numeral shrinks for a three-digit day (a late period keeps today on the dial, dialModel). */
+const knobFontFor = (day: number) => (day >= 100 ? 10 : 13);
 
 /** The pill takes the colour of what it names: period rose, fertile window green, anything else neutral (a rose pill must never name the green window). */
 export type PillTone = 'period' | 'fertile' | 'neutral';
@@ -56,6 +61,7 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
   const runs = fertileRuns(arcs);
   const sliceColour = (a: DialArc) => over(t.c.fertile, fertileAlpha(a.p ?? 0), track);
   const todayDeg = model.todayDay ? deg(model.todayDay - 0.5) : undefined;
+  const knobFont = knobFontFor(model.todayDay ?? 0);
   const ovDeg = model.ovulationDay ? deg(model.ovulationDay - 0.5) : undefined;
 
   // a one-day range is spoken as "on day 13", never "days 13 to 13"; each separate fertile run gets its own sentence
@@ -75,7 +81,9 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
       centre.sub ? `${centre.sub}.` : '',
     ].filter(Boolean).join(' ');
 
+  // the knob is named first: without it people could not tell what the marker on the ring was for (owner feedback, D-159)
   const legend = [
+    model.todayDay ? { key: 'today', swatch: { width: 14, height: 14, borderRadius: 7, backgroundColor: t.c.accentFill, borderWidth: 2, borderColor: t.c.surface, boxShadow: `0 1px 2px ${SHADOW}33` } } : null,
     logged.length ? { key: 'period', swatch: { backgroundColor: t.c.period } } : null,
     estimates.length ? { key: 'estimate', swatch: { backgroundColor: t.c.estimateSwatch } } : null,
     runs.length ? { key: 'fertile', swatch: { backgroundColor: over(t.c.fertile, 0.6, t.c.bg) } } : null,
@@ -145,10 +153,12 @@ export function CycleDial({ model, centre }: { model: DialModel; centre: DialCen
               const k = pt(todayDeg, R);
               return (<>
                 {/* soft shadow from stacked translucent discs; an SVG filter is not reliable across Expo Go versions */}
-                <Circle cx={k.x} cy={k.y + 2.5} r={17} fill={SHADOW} fillOpacity={0.06} />
-                <Circle cx={k.x} cy={k.y + 2} r={15.5} fill={SHADOW} fillOpacity={0.1} />
-                <Circle cx={k.x} cy={k.y} r={14.5} fill={t.c.surface} />
-                <Circle cx={k.x} cy={k.y} r={10.5} fill="none" stroke={t.c.accent} strokeWidth={3} />
+                <Circle cx={k.x} cy={k.y + 2.5} r={KNOB_R + 2.5} fill={SHADOW} fillOpacity={0.06} />
+                <Circle cx={k.x} cy={k.y + 2} r={KNOB_R + 1} fill={SHADOW} fillOpacity={0.1} />
+                <Circle cx={k.x} cy={k.y} r={KNOB_R} fill={t.c.surface} />
+                <Circle testID="dial-today-knob" cx={k.x} cy={k.y} r={KNOB_R - 2.5} fill={t.c.accentFill} />
+                {/* the same number as the centre's big one, so the knob says which day it marks (onAccent on accentFill >= 4.5:1, tokens.test) */}
+                <SvgText x={k.x} y={k.y + knobFont * 0.36} textAnchor="middle" fontSize={knobFont} fontWeight="700" fill={t.c.onAccent}>{model.todayDay}</SvgText>
               </>);
             })() : null}
           </Svg>

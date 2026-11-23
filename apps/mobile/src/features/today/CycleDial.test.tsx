@@ -7,7 +7,7 @@ import { CycleDial } from './CycleDial';
 import type { DialModel } from './dialModel';
 
 // react-native-svg ships Flow sources vitest cannot load; the drawing is checked on the simulator, this covers words and accessibility
-vi.mock('react-native-svg', () => { const n = () => null; const kids = ({ children }: { children?: React.ReactNode }) => <>{children}</>; return { default: kids, Circle: n, Defs: n, G: n, Line: () => <i data-testid="dial-tick" />, Path: n, RadialGradient: n, Stop: n }; });
+vi.mock('react-native-svg', () => { const n = () => null; const kids = ({ children }: { children?: React.ReactNode }) => <>{children}</>; return { default: kids, Circle: n, Defs: n, G: n, Line: () => <i data-testid="dial-tick" />, Path: n, RadialGradient: n, Stop: n, Text: ({ children, fontSize }: { children?: React.ReactNode; fontSize?: number }) => <b data-testid="dial-knob-day" data-day={String(children)} data-size={fontSize} /> }; });
 const env = vi.hoisted(() => ({ scheme: 'light' as 'light' | 'dark' }));
 vi.mock('@/theme', async (orig) => { const m = await orig<typeof import('@/theme')>(); return { ...m, useTheme: () => m.buildTheme(env.scheme, 'ios') }; });
 const font = vi.hoisted(() => ({ scale: 1 }));
@@ -42,6 +42,22 @@ describe('CycleDial', () => {
     const dial = screen.getByTestId('cycle-dial');
     expect(dial.getAttribute('aria-label')).toBe('Cycle day 3. Period logged on days 1 to 3. Likely ending on days 4 to 5. Fertile window estimate, days 13 to 16. Ovulation estimate around day 15. Next period likely days 27 to 31. Period. Likely ends 3–5 Nov.');
     expect(screen.getByText('Fertile window')).toBeTruthy(); // legend present
+  });
+  it('the today knob carries the day number and the legend names it, so it is not read as another estimate (D-159)', () => {
+    render(<CycleDial model={model} centre={centre} />);
+    expect(screen.getByTestId('dial-knob-day').getAttribute('data-day')).toBe('3');
+    expect(screen.getByText('Today')).toBeTruthy();
+    const legend = screen.getByText('Today').parentElement?.parentElement;
+    expect(legend?.firstElementChild?.textContent).toBe('Today'); // named first
+    cleanup();
+    render(<CycleDial model={{ ...model, days: 120, todayDay: 104 }} centre={centre} />);
+    expect(screen.getByTestId('dial-knob-day').getAttribute('data-day')).toBe('104');
+    expect(Number(screen.getByTestId('dial-knob-day').getAttribute('data-size'))).toBeLessThan(13); // three digits fit the knob
+  });
+  it('draws no today knob or legend entry without a cycle day', () => {
+    render(<CycleDial model={{ days: 0, arcs: [] }} centre={{ kicker: 'CYCLE DAY', big: '–', sub: 'No cycle data yet' }} />);
+    expect(screen.queryByTestId('dial-knob-day')).toBeNull();
+    expect(screen.queryByText('Today')).toBeNull();
   });
   it('draws no fertile or ovulation legend when the model has none', () => {
     render(<CycleDial model={{ days: 31, todayDay: 3, arcs: model.arcs.filter((a) => a.kind !== 'fertile') }} centre={centre} />);
