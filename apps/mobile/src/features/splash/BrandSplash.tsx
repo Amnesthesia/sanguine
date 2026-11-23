@@ -17,10 +17,10 @@ import { circles, crescentPath, fieldWithHole, zoomShift, zoomToCover } from './
 import { Text } from '@/ui/Text';
 
 /** The brand field and ink (PLAN.md §9.9, D-051): the splash, the icon and the About band only, never the UI tokens. The moon is
- * the splash's crescent: ink on blush, moonlight yellow on plum (owner, D-154). */
+ * the splash's crescent: ink on blush, the same pink as the mark on plum. */
 export const BRAND = {
   light: { field: '#F5E8E2', ink: '#73393B', text: '#73393B', moon: '#73393B' },
-  dark: { field: '#2A1518', ink: '#E3A7AD', text: '#F5E8E2', moon: '#F4D27A' },
+  dark: { field: '#2A1518', ink: '#E3A7AD', text: '#F5E8E2', moon: '#E3A7AD' },
 } as const;
 const LOCKUP_WIDTH = 260; // app.json expo-splash-screen imageWidth
 const LOCKUP_ASPECT = 881 / 780; // tools/brand/build.ts lock-up canvas
