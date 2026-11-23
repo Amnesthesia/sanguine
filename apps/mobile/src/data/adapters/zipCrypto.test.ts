@@ -8,6 +8,7 @@ import {
   ZipTooLarge,
   ZipUnsupported,
   ZipWrongPassword,
+  readZipFiles,
   listZip,
   readZipEntry,
 } from './zipCrypto';
@@ -17,7 +18,7 @@ const enc = load('clue-synthetic.zip');
 const plain = load('clue-synthetic-plain.zip');
 const stored = load('clue-synthetic-stored.zip');
 const PW = 'sanguine-test';
-const find = (z: Uint8Array, name: string) => listZip(z).find((e) => e.name === name)!;
+const find = (z: Uint8Array, name: string) => listZip(z).find((e) => e.name === name) as ReturnType<typeof listZip>[number];
 
 describe('zipCrypto', () => {
   it('lists entries as encrypted, non-AES', () => {
@@ -175,5 +176,17 @@ describe('zipCrypto', () => {
     const bad = z.slice();
     new DataView(bad.buffer).setUint32(bad.length - 22 + 16, bad.length + 100, true);
     expect(() => listZip(bad)).toThrow(ZipCorrupt);
+  });
+});
+
+describe('readZipFiles', () => {
+  it('reads only the wanted entries, bounded like readZipEntry', () => {
+    const files = readZipFiles(load('clue-synthetic-plain.zip'), (n) => n === 'measurements.json');
+    expect(Object.keys(files)).toEqual(['measurements.json']);
+  });
+  it('needs the password for an encrypted wanted entry and never touches the others', () => {
+    const zip = load('clue-synthetic.zip');
+    expect(() => readZipFiles(zip, (n) => n === 'measurements.json')).toThrow();
+    expect(Object.keys(readZipFiles(zip, (n) => n === 'measurements.json', 'sanguine-test'))).toEqual(['measurements.json']);
   });
 });

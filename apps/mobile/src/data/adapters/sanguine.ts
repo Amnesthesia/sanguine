@@ -1,5 +1,6 @@
 // Adapter for our own day-based format: a plain sanguine-data.json, or a zip holding one (the user's export).
-import { strFromU8, strToU8, unzipSync } from 'fflate';
+import { strFromU8, strToU8 } from 'fflate';
+import { readZipFiles } from './zipCrypto';
 import { FORMAT, validateSanguineData } from '../format/sanguineData';
 import type { FormatAdapter, PickedFile } from './types';
 
@@ -9,7 +10,7 @@ const isZip = (b: Uint8Array) => b.length > 3 && b[0] === 0x50 && b[1] === 0x4b;
 function text(f: PickedFile): string | undefined {
   try {
     if (!isZip(f.bytes)) return strFromU8(f.bytes);
-    const e = unzipSync(f.bytes, { filter: (x) => x.name === ENTRY })[ENTRY];
+    const e = readZipFiles(f.bytes, (n) => n === ENTRY)[ENTRY];
     return e ? strFromU8(e) : undefined;
   } catch { return undefined; }
 }

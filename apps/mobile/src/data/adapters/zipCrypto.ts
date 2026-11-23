@@ -147,3 +147,16 @@ export function readZipEntry(bytes: Uint8Array, entry: ZipEntry, password?: stri
   }
   return out;
 }
+
+/** Total declared output of one zip read through `readZipFiles`. */
+export const MAX_TOTAL_BYTES = 128 * 1024 * 1024;
+
+/** The bounded stand-in for fflate's `unzipSync` on a zip the user picked: reads only the entries `keep` accepts, each through `readZipEntry`
+ *  (size cap, ratio cap, early stop), and refuses a zip whose wanted entries declare more than MAX_TOTAL_BYTES. Encrypted entries need `password`. */
+export function readZipFiles(bytes: Uint8Array, keep: (name: string) => boolean = () => true, password?: string): Record<string, Uint8Array> {
+  const wanted = listZip(bytes).filter((e) => keep(e.name) && !e.name.endsWith('/'));
+  if (wanted.reduce((n, e) => n + e.size, 0) > MAX_TOTAL_BYTES) throw new ZipTooLarge('zip is too large');
+  const out: Record<string, Uint8Array> = {};
+  for (const e of wanted) out[e.name] = readZipEntry(bytes, e, password);
+  return out;
+}

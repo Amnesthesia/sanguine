@@ -1,6 +1,7 @@
 // Natural Cycles "daily entries" export (P3-13, D-056): xlsx from the app, or the same columns as CSV (plain or in a zip).
 // Adapter of the day-based format (D-159): decodes the file to SanguineData for importSanguineData. Anything it cannot map is reported, never guessed.
-import { strFromU8, unzipSync } from 'fflate';
+import { strFromU8 } from 'fflate';
+import { readZipFiles } from './zipCrypto';
 import type { ISODate } from '@sanguine/engine';
 import { parseCsv } from '../csv';
 import { parseDateCell } from '../exportImport';
@@ -144,7 +145,7 @@ export function readNaturalCycles(bytes: Uint8Array): NaturalCyclesParse | null 
   const fromCsv = (text: string) => { const t = parseCsv(text); return isNaturalCycles(t[0]) ? parseNaturalCycles(t) : null; };
   if (bytes[0] !== 0x50 || bytes[1] !== 0x4b) return fromCsv(strFromU8(bytes)); // not a zip ("PK")
   let files: Record<string, Uint8Array>;
-  try { files = unzipSync(bytes); } catch { return null; }
+  try { files = readZipFiles(bytes, (n) => n.startsWith('xl/') || /daily.?entries[^/]*\.csv$/i.test(n)); } catch { return null; } // bounded: a hostile zip cannot inflate without limit
   const workbook = files['xl/workbook.xml'];
   if (workbook) {
     const table = readXlsxSheet(files);

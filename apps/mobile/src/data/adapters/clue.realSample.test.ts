@@ -21,7 +21,7 @@ describe.skipIf(!CLUE_ZIP || !CLUE_ZIP_PASSWORD)('real Clue sample (local only)'
   beforeEach(async () => { db = openTestDb(); await migrate(db); store = new EventStore(db, clock); });
 
   it('decodes, matches the unzipped file, and a second import adds nothing', async () => {
-    const zip = clue.decode({ name: 'zip', bytes: bytes(CLUE_ZIP!) }, { password: CLUE_ZIP_PASSWORD });
+    const zip = clue.decode({ name: 'zip', bytes: bytes(CLUE_ZIP as string) }, { password: CLUE_ZIP_PASSWORD });
     if (CLUE_JSON) expect(clue.decode({ name: 'json', bytes: bytes(CLUE_JSON) }, {})).toEqual(zip);
     const o = { sourceApp: 'clue', today: '2026-11-24' as const, clock, noteKey: new Uint8Array(32).fill(7) };
     const first = await importSanguineData(db, store, zip.data, o);

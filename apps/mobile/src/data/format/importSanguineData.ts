@@ -77,7 +77,8 @@ export async function importSanguineData(db: Database, store: EventStore, data: 
     const seen: Record<string, number> = {};
     for (const t of d.temperatures ?? []) {
       if (!Number.isFinite(t.valueC)) continue;
-      const n = (seen[t.type] = (seen[t.type] ?? 0) + 1);
+      const n = (seen[t.type] ?? 0) + 1;
+      seen[t.type] = n;
       const value = { valueC: Math.round(t.valueC * 100) / 100 };
       add(id(n === 1 ? t.type : `${t.type}:${n}`), day, 'biomarker', {
         day, type: t.type, value, source: t.source ?? (t.type === 'bbt' ? 'oral' : 'wrist'),
@@ -105,8 +106,9 @@ export async function importSanguineData(db: Database, store: EventStore, data: 
     const covering = await db.get<{ n: number }>(
       `SELECT count(*) AS n FROM life_state l JOIN event e ON e.id = l.event_id WHERE l.kind = ? AND l.from_day <= ? AND (l.until_day IS NULL OR l.until_day >= ?)
          AND NOT (e.provenance = 'imported' AND e.source_app = ?)`, [s.kind, s.start, s.start, o.sourceApp]);
-    const set = (covering?.n ?? 0) > 0 ? (keptDays.add(`life:${s.kind}:${s.start}`), 'kept' as const)
-      : add(`${s.start}:life:${s.kind}`, s.start, 'life_state.set', { kind: s.kind, detail: s.detail ?? {}, day: s.start });
+    const held = (covering?.n ?? 0) > 0;
+    if (held) keptDays.add(`life:${s.kind}:${s.start}`);
+    const set = held ? 'kept' as const : add(`${s.start}:life:${s.kind}`, s.start, 'life_state.set', { kind: s.kind, detail: s.detail ?? {}, day: s.start });
     if (!s.end) continue;
     // The projector closes the latest open span of the kind, so an end is only safe next to the start written in this same import.
     if (set === 'written') add(`${s.end}:life_end:${s.kind}`, s.end, 'life_state.end', { kind: s.kind, ...(s.outcome ? { outcome: s.outcome } : {}), day: s.end });

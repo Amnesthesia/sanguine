@@ -32,6 +32,9 @@ export type PickedImport =
   | { kind: 'data'; adapter: string; result: SanguineImportResult; problems: string[]; symptoms: string[] }
   | { kind: 'cancelled' };
 
+/** A file this size is not a cycle export; refuse it before any adapter reads it. */
+const MAX_PICKED_BYTES = 256 * 1024 * 1024;
+
 /** What the password sheet answers: the text she typed, or undefined when she cancels. `attempt` is 'wrong' after a password that did not open the file. */
 export type AskPassword = (attempt: 'first' | 'wrong', fileName?: string) => Promise<string | undefined>;
 
@@ -50,6 +53,7 @@ export async function pickAndImport(db: Database, store: EventStore, o: { askPas
   const file = new File(asset.uri);
   try {
     const bytes = await file.bytes();
+    if (bytes.length > MAX_PICKED_BYTES) throw new Error('That file is too large to import.');
     if (isSanguineBundle(bytes)) return { kind: 'sanguine', result: await importBundle(db, store, bytes) };
     const pf = { name: asset.name, bytes };
     for (const adapter of ADAPTERS) {

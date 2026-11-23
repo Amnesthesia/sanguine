@@ -17,10 +17,10 @@ const lastProblem = (r: ReturnType<typeof parseClue>) => r.problems[r.problems.l
 
 describe('clue mapping', () => {
   it('flow: very_heavy is heavy, highest wins, period beats spotting, none is silent', () => {
-    expect(one(opt('period', D, 'very_heavy')).days[0]!.flow).toEqual({ level: 'heavy' });
-    expect(one(opt('period', D, 'light'), opt('period', D, 'heavy'), opt('period', D, 'medium')).days[0]!.flow).toEqual({ level: 'heavy' });
-    expect(one(opt('spotting', D, 'any'), opt('period', D, 'light')).days[0]!.flow).toEqual({ level: 'light' });
-    expect(one(opt('spotting', D, 'light')).days[0]!.flow).toEqual({ level: 'spotting' });
+    expect(one(opt('period', D, 'very_heavy')).days[0]?.flow).toEqual({ level: 'heavy' });
+    expect(one(opt('period', D, 'light'), opt('period', D, 'heavy'), opt('period', D, 'medium')).days[0]?.flow).toEqual({ level: 'heavy' });
+    expect(one(opt('spotting', D, 'any'), opt('period', D, 'light')).days[0]?.flow).toEqual({ level: 'light' });
+    expect(one(opt('spotting', D, 'light')).days[0]?.flow).toEqual({ level: 'spotting' });
     expect(one(opt('period', D, 'none'))).toEqual({ days: [], problems: [] });
   });
   it('pain maps codes with severity as intensity, pain_free is silent', () => {
@@ -41,20 +41,20 @@ describe('clue mapping', () => {
     expect(lastProblem(one(opt('energy', D, 'ok')))).toBe('not imported: energy:ok ×1');
   });
   it('sex: protected only if every partnered option is protected; withdrawal is unprotected', () => {
-    expect(one(opt('sex_life', D, 'protected')).days[0]!.sex).toEqual({ protected: true });
-    expect(one(opt('sex_life', D, 'protected', 'protected')).days[0]!.sex).toEqual({ protected: true });
-    expect(one(opt('sex_life', D, 'protected', 'unprotected')).days[0]!.sex).toEqual({ protected: false });
-    expect(one(opt('sex_life', D, 'protected', 'withdrawal')).days[0]!.sex).toEqual({ protected: false });
-    expect(one(opt('sex_life', D, 'withdrawal')).days[0]!.sex).toEqual({ protected: false });
+    expect(one(opt('sex_life', D, 'protected')).days[0]?.sex).toEqual({ protected: true });
+    expect(one(opt('sex_life', D, 'protected', 'protected')).days[0]?.sex).toEqual({ protected: true });
+    expect(one(opt('sex_life', D, 'protected', 'unprotected')).days[0]?.sex).toEqual({ protected: false });
+    expect(one(opt('sex_life', D, 'protected', 'withdrawal')).days[0]?.sex).toEqual({ protected: false });
+    expect(one(opt('sex_life', D, 'withdrawal')).days[0]?.sex).toEqual({ protected: false });
     expect(one(opt('sex_life', D, 'no_sex_today'))).toEqual({ days: [], problems: [] });
     const r = one(opt('sex_life', D, 'high_sex_drive', 'low_sex_drive', 'painful_intercourse', 'masturbation', 'sex_toys', 'orgasm', 'no_orgasm', 'fantasies'));
     expect(codes(r).map((s) => s.code)).toEqual(['high_libido', 'low_libido', 'painful_sex']);
     expect(lastProblem(r)).toBe('not imported: sex_life:fantasies ×1, sex_life:masturbation ×1, sex_life:no_orgasm ×1, sex_life:orgasm ×1, sex_life:sex_toys ×1');
   });
   it('discharge: most fertile wins, none and atypical are counted, never dry', () => {
-    expect(one(opt('discharge', D, 'sticky', 'egg_white', 'creamy')).days[0]!.mucus).toEqual({ quality: 'eggwhite' });
-    expect(one(opt('discharge', D, 'sticky', 'watery', 'creamy')).days[0]!.mucus).toEqual({ quality: 'watery' });
-    expect(one(opt('discharge', D, 'sticky')).days[0]!.mucus).toEqual({ quality: 'sticky' });
+    expect(one(opt('discharge', D, 'sticky', 'egg_white', 'creamy')).days[0]?.mucus).toEqual({ quality: 'eggwhite' });
+    expect(one(opt('discharge', D, 'sticky', 'watery', 'creamy')).days[0]?.mucus).toEqual({ quality: 'watery' });
+    expect(one(opt('discharge', D, 'sticky')).days[0]?.mucus).toEqual({ quality: 'sticky' });
     const r = one(opt('discharge', D, 'none', 'atypical'));
     expect(r.days).toEqual([]);
     expect(lastProblem(r)).toBe('not imported: discharge:atypical ×1, discharge:none ×1');
@@ -70,15 +70,15 @@ describe('clue mapping', () => {
     expect(codes(r).map((s) => s.code)).toEqual(['mood_low', 'happy']);
   });
   it('bbt in C and F, excluded is disturbed, out of range is a problem', () => {
-    expect(one(rec('bbt', D, { celsius: 36.45 })).days[0]!.temperatures).toEqual([{ valueC: 36.45, type: 'bbt', source: 'oral' }]);
-    expect(one(rec('bbt', D, { fahrenheit: 97.7, excluded: true })).days[0]!.temperatures).toEqual([{ valueC: 36.5, type: 'bbt', source: 'oral', disturbed: true }]);
+    expect(one(rec('bbt', D, { celsius: 36.45 })).days[0]?.temperatures).toEqual([{ valueC: 36.45, type: 'bbt', source: 'oral' }]);
+    expect(one(rec('bbt', D, { fahrenheit: 97.7, excluded: true })).days[0]?.temperatures).toEqual([{ valueC: 36.5, type: 'bbt', source: 'oral', disturbed: true }]);
     const r = one(rec('bbt', D, { celsius: 12 }), rec('bbt', D, { fahrenheit: 200 }), rec('bbt', D, 'hot'));
     expect(r.days).toEqual([]);
     expect(r.problems).toEqual(['record 1 (bbt): temperature is out of range', 'record 2 (bbt): temperature is out of range', 'record 3 (bbt): value not recognised']);
   });
   it('notes and tags', () => {
-    expect(one(rec('notes', D, { text: 'first' }), rec('notes', D, { text: 'second' }), opt('tags', D, 'a', 'b')).days[0]!.note).toBe('first\n\nsecond\n\nTags: a, b');
-    expect(one(opt('tags', D, 'solo')).days[0]!.note).toBe('Tags: solo');
+    expect(one(rec('notes', D, { text: 'first' }), rec('notes', D, { text: 'second' }), opt('tags', D, 'a', 'b')).days[0]?.note).toBe('first\n\nsecond\n\nTags: a, b');
+    expect(one(opt('tags', D, 'solo')).days[0]?.note).toBe('Tags: solo');
     expect(one(rec('notes', D, { text: '  ' }))).toEqual({ days: [], problems: [] });
   });
   it('counts unmapped types and options by name, sorted, in one line', () => {
@@ -133,7 +133,7 @@ describe('clue adapter', () => {
     expect(r.data.source).toEqual({ app: 'clue' });
     expect(r.data.days.map((d) => d.date)).toEqual(['2026-10-21', '2026-11-03']);
     expect(r.data.days[0]).toMatchObject({ flow: { level: 'medium' }, symptoms: [{ code: 'cramps' }, { code: 'headache' }] });
-    expect(r.data.days[1]!.mucus).toEqual({ quality: 'eggwhite' });
+    expect(r.data.days[1]?.mucus).toEqual({ quality: 'eggwhite' });
     expect(r.problems).toEqual(['not imported: sleep_duration ×1']);
     expect(clue.decode(load('clue-synthetic-plain.zip'), {}).data).toEqual(r.data);
   });
@@ -148,7 +148,7 @@ describe('clue adapter', () => {
     const read = vi.spyOn(zc, 'readZipEntry');
     clue.decode(enc, { password: 'sanguine-test' });
     expect(read).toHaveBeenCalledTimes(1);
-    expect(read.mock.calls[0]![1].name).toBe('measurements.json');
+    expect(read.mock.calls[0]?.[1].name).toBe('measurements.json');
     read.mockRestore();
   });
 });

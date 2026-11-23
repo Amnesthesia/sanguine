@@ -1,7 +1,8 @@
 // Export (zip with events.jsonl + CSVs + README) and import (Sanguine bundle, CSV of period starts). PLAN.md §8.10.
 // Pure over Database/EventStore: file picking and sharing live in services/.
 import { ENGINE_VERSION } from '@sanguine/engine';
-import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+import { strFromU8, strToU8, zipSync } from 'fflate';
+import { readZipFiles } from './adapters/zipCrypto';
 import exportCopy from '../../../../copy/export.en-AU.json';
 import { parseCsv, toCsv } from './csv';
 import { exportSanguineData } from './format/exportSanguineData';
@@ -67,7 +68,7 @@ const EVENT_FIELDS = ['id', 'lamport', 'device_id', 'recorded_at', 'effective_da
 /** Reads a Sanguine export and merges its events into the log. All-or-nothing; importing the same file twice adds nothing. */
 export async function importBundle(db: Database, store: EventStore, zip: Uint8Array): Promise<ImportResult> {
   let files: Record<string, Uint8Array>;
-  try { files = unzipSync(zip); } catch { throw new ImportError('not a zip file'); }
+  try { files = readZipFiles(zip, (n) => n === 'events.jsonl' || n === 'manifest.json' || n === 'profile.json'); } catch { throw new ImportError('not a zip file'); }
   const raw = files['events.jsonl'];
   if (!raw) throw new ImportError('events.jsonl is missing');
   const manifest = files['manifest.json'] ? (JSON.parse(strFromU8(files['manifest.json'])) as { format?: string; version?: number }) : undefined;

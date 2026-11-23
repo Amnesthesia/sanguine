@@ -74,10 +74,10 @@ export function parseClue(records: unknown[]): { days: Day[]; problems: string[]
     if (!date) { problems.push(`${where}: date is not YYYY-MM-DD`); return; }
     const type = rec.type;
     const opts = optionsOf(rec.value);
-    const bad = (why = 'value not recognised') => problems.push(`${where} (${type}): ${why}`);
+    const bad = (why = 'value not recognised'): void => { problems.push(`${where} (${type}): ${why}`); };
     const acc = (): Acc => {
-      let x = accs.get(date);
-      if (!x) accs.set(date, (x = { symptoms: new Map(), partnered: [], temps: [], notes: [], tags: [] }));
+      const x: Acc = accs.get(date) ?? { symptoms: new Map(), partnered: [], temps: [], notes: [], tags: [] };
+      accs.set(date, x);
       return x;
     };
     const symptom = (code: string, intensity?: number) => { const m = acc().symptoms; m.set(code, Math.max(m.get(code) ?? 0, intensity ?? 1)); };
@@ -85,19 +85,19 @@ export function parseClue(records: unknown[]): { days: Day[]; problems: string[]
     if (type === 'bbt') {
       const v = rec.value;
       const raw = isObj(v) ? (typeof v.celsius === 'number' ? v.celsius : typeof v.fahrenheit === 'number' ? v.fahrenheit : undefined) : undefined;
-      if (raw === undefined) return bad();
+      if (raw === undefined) { bad(); return; }
       const c = celsius(raw);
-      if (c === undefined) return bad('temperature is out of range');
+      if (c === undefined) { bad('temperature is out of range'); return; }
       acc().temps.push({ valueC: c, type: 'bbt', source: 'oral', ...(isObj(v) && v.excluded === true ? { disturbed: true } : {}) });
       return;
     }
     if (type === 'notes') {
-      if (!isObj(rec.value) || typeof rec.value.text !== 'string') return bad();
+      if (!isObj(rec.value) || typeof rec.value.text !== 'string') { bad(); return; }
       if (rec.value.text.trim() !== '') acc().notes.push(rec.value.text);
       return;
     }
     if (type === 'period' || type === 'spotting' || SYMPTOM.has(type) || type === 'sex_life' || type === 'discharge' || type === 'tags' || type === 'craving') {
-      if (!opts) return bad();
+      if (!opts) { bad(); return; }
       for (const { option, severity } of opts) {
         if (SILENT.get(type) === option) continue;
         if (type === 'period') {
@@ -112,10 +112,9 @@ export function parseClue(records: unknown[]): { days: Day[]; problems: string[]
           else if (MUCUS_ORDER.indexOf(q) > MUCUS_ORDER.indexOf(acc().mucus ?? 'dry')) acc().mucus = q;
         } else if (type === 'sex_life') {
           if (PARTNERED.has(option)) acc().partnered.push(option);
-          else if (SEX_LIFE.get(option)) symptom(SEX_LIFE.get(option)!);
-          else count(`sex_life:${option}`);
+          else { const sym = SEX_LIFE.get(option); if (sym) symptom(sym); else count(`sex_life:${option}`); }
         } else {
-          const code = SYMPTOM.get(type)!.get(option);
+          const code = SYMPTOM.get(type)?.get(option);
           if (code) symptom(code, type === 'pain' ? severity : undefined); else count(`${type}:${option}`);
         }
       }

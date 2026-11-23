@@ -36,7 +36,7 @@ export async function exportSanguineData(db: Database, store: EventStore, o: { n
       case 'bbt': case 'skin_temp': {
         const time = b.measured_at ? localTimeOfDay(b.measured_at) : undefined;
         const t: Temperature = { valueC: v.valueC as number, type: b.type, ...(time ? { time } : {}), ...((b.type === 'bbt' ? ['oral', 'vaginal', 'other'] : ['wrist', 'finger']).includes(b.source) ? { source: b.source as Temperature['source'] } : {}), ...(b.disturbed ? { disturbed: true } : {}) };
-        (d.temperatures ??= []).push(t);
+        d.temperatures = [...(d.temperatures ?? []), t];
         break;
       }
       case 'lh': d.lh = v.result as LhResult; break;
