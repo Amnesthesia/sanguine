@@ -10,6 +10,7 @@ import { useTheme } from '@/theme';
 import { Text } from '@/ui/Text';
 import { useFontScale } from '@/ui/useFontScale';
 import type { GuideDay, GuidePhase } from '../guidance';
+import { cycleAxis, W, warpPath } from './curveShape';
 
 /** A vector drawing that keeps its aspect ratio at any width and is read as one image. */
 export function Picture({ w, h, label, children }: { w: number; h: number; label: string; children: ReactNode }) {
@@ -20,7 +21,11 @@ export function Picture({ w, h, label, children }: { w: number; h: number; label
   );
 }
 
-const W = 326;
+// the typical 28-day shapes; curveShape.ts stretches them onto the person's own cycle
+const EST = 'M0,96 C40,96 80,86 110,62 S135,20 146,22 S166,64 186,68 S226,48 242,50 S292,82 326,94';
+const PROG = 'M0,102 L150,102 C176,102 196,42 240,40 S300,84 326,102';
+const LH = 'M0,98 L122,98 C134,98 140,16 146,10 C152,16 158,98 170,98 L326,98';
+const FSH = 'M0,88 C14,70 30,68 46,82 S78,98 104,98 L132,98 C140,90 148,88 156,97 L326,98';
 const MAX_SCALE = 2; // the largest text setting that still leaves room for a picture on a phone (same cap as the Insights charts)
 
 /**
@@ -61,7 +66,12 @@ export function HormoneCurve({ day, compact = false, extras = false }: { day: Gu
   const t = useTheme();
   const { t: tr } = useTranslation();
   const { scale, fs } = useSvgText();
-  const x = MARK_X[day.phase];
+  const frame = day.frame;
+  // the picture follows this person's cycle: its length, its bleed and, while the estimate is shown (`extras`), its ovulation day (D-155)
+  const ax = cycleAxis(frame && { length: frame.length, bleedDays: frame.bleedDays, ovulationDay: extras ? frame.ovulationDay : undefined });
+  const typical = MARK_X[day.phase];
+  const x = typical === undefined ? undefined : frame && ax.own ? Math.min(Math.max((frame.day + 0.5) * ax.perDay, 4), W - 4) : typical;
+  const band = extras && ax.own && frame?.ovulationRange ? { lo: frame.ovulationRange.lo * ax.perDay, hi: (frame.ovulationRange.hi + 1) * ax.perDay } : undefined;
   const phase = tr(`guidance.phase.${day.phase}`);
   const label = `${tr('guidance.curve.label')}${extras ? ` ${tr('estimates.ovulation.curve.labelExtras')}` : ''} ${x === undefined ? '' : tr(day.expected ? 'guidance.curve.labelExpected' : 'guidance.curve.labelHere', { phase })}`.trim();
   const small = fs(10);
@@ -81,30 +91,31 @@ export function HormoneCurve({ day, compact = false, extras = false }: { day: Gu
   return (
     <View testID={compact ? 'hormone-curve-compact' : 'hormone-curve'} style={{ gap: 6 }}>
       <Picture w={W} h={H} label={label}>
-        <Rect x={0} y={6} width={48} height={axis - 6} rx={6} fill={t.c.period} fillOpacity={0.1} />
+        <Rect x={0} y={6} width={ax.bleedX} height={axis - 6} rx={6} fill={t.c.period} fillOpacity={0.1} />
+        {band ? <Rect x={band.lo} y={6} width={Math.max(band.hi - band.lo, 2)} height={axis - 6} rx={4} fill={t.c.ovulation} fillOpacity={0.12} /> : null}
         {compact ? null : <SvgText x={4} y={10 + small} fontSize={small} fill={t.c.period}>{tr('guidance.curve.period')}</SvgText>}
         <Line x1={0} y1={axis} x2={W} y2={axis} stroke={t.c.border} strokeWidth={1} />
         {/* y → top + 6 + (y − 6)·k; the strokes keep their width when squashed */}
         <G transform={`translate(0 ${top + 6 - 6 * k}) scale(1 ${k})`}>
-          <Path d="M0,96 C40,96 80,86 110,62 S135,20 146,22 S166,64 186,68 S226,48 242,50 S292,82 326,94" fill="none" stroke={t.c.accent} strokeWidth={2.4} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-          <Path d="M0,102 L150,102 C176,102 196,42 240,40 S300,84 326,102" fill="none" stroke={t.c.textSecondary} strokeWidth={2.4} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          <Path d={warpPath(EST, ax)} fill="none" stroke={t.c.accent} strokeWidth={2.4} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          <Path d={warpPath(PROG, ax)} fill="none" stroke={t.c.textSecondary} strokeWidth={2.4} strokeLinecap="round" vectorEffect="non-scaling-stroke" />
           {extras ? (
             <>
-              <Path d="M0,98 L122,98 C134,98 140,16 146,10 C152,16 158,98 170,98 L326,98" fill="none" stroke={t.c.ovulation} strokeWidth={2} strokeDasharray="6 3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-              <Path d="M0,88 C14,70 30,68 46,82 S78,98 104,98 L132,98 C140,90 148,88 156,97 L326,98" fill="none" stroke={t.c.textPrimary} strokeWidth={2} strokeDasharray="1 4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+              <Path d={warpPath(LH, ax)} fill="none" stroke={t.c.ovulation} strokeWidth={2} strokeDasharray="6 3" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+              <Path d={warpPath(FSH, ax)} fill="none" stroke={t.c.textPrimary} strokeWidth={2} strokeDasharray="1 4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
             </>
           ) : null}
         </G>
         {strip ? (
           <>
             <Line x1={0} y1={bottom} x2={W} y2={bottom} stroke={t.c.border} strokeWidth={1} />
-            <Path d={`M0,${bottom - 10} L148,${bottom - 10} C154,${bottom - 10} 158,${axis + 12} 166,${axis + 12} L${W},${axis + 12}`} fill="none" stroke={t.c.period} strokeWidth={2} strokeLinecap="round" />
+            <Path d={`M0,${bottom - 10} L${ax.ovX + ax.perDay * 0.5},${bottom - 10} C${ax.ovX + ax.perDay},${bottom - 10} ${ax.ovX + ax.perDay * 1.2},${axis + 12} ${ax.ovX + ax.perDay * 2},${axis + 12} L${W},${axis + 12}`} fill="none" stroke={t.c.period} strokeWidth={2} strokeLinecap="round" />
           </>
         ) : null}
         {extras ? null : (
           <>
-            <SvgText x={118} y={(compact ? 12 : 16) + top} fontSize={mid} fontWeight="600" fill={t.c.accent}>{tr('guidance.curve.estrogen')}</SvgText>
-            <SvgText x={large ? W : compact ? 236 : 226} y={(compact ? 22 : 32) + top} textAnchor={large ? 'end' : 'start'} fontSize={mid} fontWeight="600" {...fill}>{tr('guidance.curve.progesterone')}</SvgText>
+            <SvgText x={ax.x(118)} y={(compact ? 12 : 16) + top} fontSize={mid} fontWeight="600" fill={t.c.accent}>{tr('guidance.curve.estrogen')}</SvgText>
+            <SvgText x={large ? W : ax.x(compact ? 236 : 226)} y={(compact ? 22 : 32) + top} textAnchor={large ? 'end' : 'start'} fontSize={mid} fontWeight="600" {...fill}>{tr('guidance.curve.progesterone')}</SvgText>
           </>
         )}
         {x === undefined ? null : (
@@ -115,8 +126,8 @@ export function HormoneCurve({ day, compact = false, extras = false }: { day: Gu
           </>
         )}
         <SvgText x={0} y={row1} fontSize={small} {...fill}>{tr('guidance.curve.day1')}</SvgText>
-        {day.phase === 'ovulatory' ? <SvgText x={152} y={row1} fontSize={small} {...fill}>{tr('estimates.ovulation.curveLabel')}</SvgText> : null}
-        <SvgText x={W} y={row1} textAnchor="end" fontSize={small} {...fill}>{tr('guidance.curve.day28')}</SvgText>
+        {day.phase === 'ovulatory' ? <SvgText x={ax.ovX + 6} y={row1} fontSize={small} {...fill}>{tr('estimates.ovulation.curveLabel')}</SvgText> : null}
+        <SvgText x={W} y={row1} textAnchor="end" fontSize={small} {...fill}>{ax.own ? tr('guidance.curve.dayN', { n: ax.length }) : tr('guidance.curve.day28')}</SvgText>
       </Picture>
       {extras ? (
         <View testID="hormone-legend" style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 14, rowGap: 4 }}>
@@ -127,7 +138,7 @@ export function HormoneCurve({ day, compact = false, extras = false }: { day: Gu
           {strip ? <Swatch color={t.c.period} label={tr('estimates.ovulation.curve.temperature')} /> : null}
         </View>
       ) : null}
-      <Text variant="caption" color="textSecondary">{tr('guidance.curve.caption')}</Text>
+      <Text variant="caption" color="textSecondary">{tr(ax.own ? 'guidance.curve.captionOwn' : 'guidance.curve.caption')}{band ? ` ${tr('estimates.ovulation.curve.band')}` : ''}</Text>
     </View>
   );
 }

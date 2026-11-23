@@ -1,5 +1,5 @@
 import en from '../../../../../copy/en-AU.json';
-import { type CycleRecord, diffDays, type ISODate, type Prediction } from '@sanguine/engine';
+import { addDays, type CycleRecord, diffDays, type ISODate, type Prediction } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import { GUIDANCE, GUIDE_PHASES, phaseOn, type PhaseOnInput, showSupplements } from './guidance';
 
@@ -28,17 +28,17 @@ describe('phaseOn, open cycle', () => {
       currentBleed: { point: '2026-11-04', i80: { lo: '2026-11-03', hi: '2026-11-06' }, confidence: 'low' } });
     const cycles = [rec('2026-10-31', undefined, { end: '2026-11-02' })];
     for (const date of ['2026-11-03', '2026-11-04']) {
-      expect(on(date, { today: '2026-11-03', prediction, cycles })).toEqual({ phase: prediction.currentPhase!.phase, expected: date > '2026-11-03' });
+      expect(on(date, { today: '2026-11-03', prediction, cycles })).toMatchObject({ phase: prediction.currentPhase!.phase, expected: date > '2026-11-03' });
     }
     // the day after the estimated end (currentBleed.point) leaves menstrual; here it is past nextPeriod.i80.hi (11-03), so no card
     expect(on('2026-11-05', { today: '2026-11-03', prediction, cycles })).toBeUndefined();
     expect(on('2026-11-03', { prediction, cycles: [rec('2026-10-31', '2026-11-28', { end: '2026-11-02' })] })?.phase).not.toBe('menstrual');
   });
-  it('today, cycle day 11, is follicular', () => expect(on(TODAY)).toEqual({ phase: 'follicular', expected: false }));
+  it('today, cycle day 11, is follicular', () => expect(on(TODAY)).toMatchObject({ phase: 'follicular', expected: false }));
   it('a logged bleeding day is menstrual', () => expect(on('2026-10-05')?.phase).toBe('menstrual'));
   it('ovulation day and one day either side are ovulatory, and future days are expected', () => {
     expect(on('2026-10-17')?.phase).toBe('follicular');
-    for (const d of ['2026-10-18', '2026-10-19', '2026-10-20']) expect(on(d)).toEqual({ phase: 'ovulatory', expected: true });
+    for (const d of ['2026-10-18', '2026-10-19', '2026-10-20']) expect(on(d)).toMatchObject({ phase: 'ovulatory', expected: true });
     expect(on('2026-10-21')?.phase).toBe('luteal');
   });
   it('the 5 days before the most likely next start are premenstrual', () => {
@@ -46,10 +46,10 @@ describe('phaseOn, open cycle', () => {
     expect(on('2026-10-27')?.phase).toBe('premenstrual');
   });
   it('a future day inside the 80% period range is an expected period day', () =>
-    expect(on('2026-10-31')).toEqual({ phase: 'menstrual', expected: true }));
+    expect(on('2026-10-31')).toMatchObject({ phase: 'menstrual', expected: true }));
   it('a future day past the 80% range gets no card', () => expect(on('2026-11-04')).toBeUndefined());
   it('late: today past the 80% range gives general', () =>
-    expect(on('2026-11-05', { today: '2026-11-05' })).toEqual({ phase: 'general', expected: false }));
+    expect(on('2026-11-05', { today: '2026-11-05' })).toMatchObject({ phase: 'general', expected: false }));
   it('a hidden estimate (teen mode) folds ovulatory into follicular or luteal', () => {
     expect(on('2026-10-18', { showEstimate: false })?.phase).toBe('follicular');
     expect(on('2026-10-19', { showEstimate: false })?.phase).toBe('luteal');
@@ -62,7 +62,7 @@ describe('phaseOn, open cycle', () => {
     const p = pred({ ovulation: { point: '2026-10-19', i80: { lo: '2026-10-08', hi: '2026-10-29' }, sd: 7, confidence: 'low', basis: 'calendar' } });
     expect(on(TODAY, { prediction: p })?.phase).toBe('general');
     expect(on('2026-10-05', { prediction: p })?.phase).toBe('menstrual');
-    expect(on('2026-10-31', { prediction: p })).toEqual({ phase: 'menstrual', expected: true });
+    expect(on('2026-10-31', { prediction: p })).toMatchObject({ phase: 'menstrual', expected: true });
   });
   it('no ovulation estimate gives general', () => {
     const { ovulation: _o, ...rest } = pred();
@@ -73,7 +73,7 @@ describe('phaseOn, open cycle', () => {
 describe('phaseOn, past cycles', () => {
   it('counts back the luteal prior from the next start when there is no biomarker (29 d cycle: ovulation offset 16)', () => {
     expect(on('2026-09-19')?.phase).toBe('follicular');
-    expect(on('2026-09-21')).toEqual({ phase: 'ovulatory', expected: false });
+    expect(on('2026-09-21')).toMatchObject({ phase: 'ovulatory', expected: false });
     expect(on('2026-09-23')?.phase).toBe('luteal');
     expect(on('2026-09-28')?.phase).toBe('luteal');
     expect(on('2026-09-29')?.phase).toBe('premenstrual');
@@ -92,6 +92,33 @@ describe('phaseOn, past cycles', () => {
     expect(on('2026-08-25', { cycles: skip })?.phase).toBe('general');
     const life = [{ ...CYCLES[0]!, quality: 'life_state' as const }, CYCLES[1]!, CYCLES[2]!];
     expect(on('2026-08-09', { cycles: life })).toBeUndefined();
+  });
+});
+
+describe('the cycle frame (D-155)', () => {
+  it('an open cycle: its length is the days to the likely next period, its ovulation day and range are the forecast', () => {
+    expect(on(TODAY)?.frame).toEqual({ day: 10, length: 28, bleedDays: 4, ovulationDay: 15, ovulationRange: { lo: 11, hi: 19 } });
+  });
+  it('a closed cycle: logged length, the luteal prior counted back from the next start, bleed from the logged end', () => {
+    expect(on('2026-09-21')?.frame).toEqual({ day: 16, length: 29, bleedDays: 4, ovulationDay: 16 });
+  });
+  it('a biomarker ovulation is the frame\'s ovulation day', () => {
+    const cycles = [CYCLES[0]!, { ...CYCLES[1]!, ovulation: { point: '2026-09-18', offset: 13, sd: 1, basis: 'lh' as const } }, CYCLES[2]!];
+    expect(on('2026-09-18', { cycles })?.frame?.ovulationDay).toBe(13);
+  });
+  it('no ovulation day while the estimate is uncertain, and none for a merged cycle', () => {
+    const wide = pred({ ovulation: { point: '2026-10-19', i80: { lo: '2026-10-05', hi: '2026-11-02' }, sd: 9, confidence: 'low', basis: 'calendar' } as Prediction['ovulation'] });
+    expect(on('2026-10-05', { prediction: wide })?.frame?.ovulationDay).toBeUndefined();
+    const skip = [{ ...CYCLES[0]!, quality: 'suspect_skip' as const }, CYCLES[1]!, CYCLES[2]!];
+    expect(on('2026-08-25', { cycles: skip })?.frame?.ovulationDay).toBeUndefined();
+  });
+  it('agrees with the phase: the ovulatory days are the frame\'s ovulation day and one either side', () => {
+    for (let i = 0; i < 28; i++) {
+      const d = addDays('2026-10-04', i);
+      const g = on(d);
+      if (!g?.frame || g.frame.ovulationDay === undefined) continue;
+      expect(g.phase === 'ovulatory', d).toBe(Math.abs(g.frame.day - g.frame.ovulationDay) <= 1 && g.frame.day > g.frame.bleedDays - 1);
+    }
   });
 });
 

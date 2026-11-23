@@ -7,7 +7,18 @@ export type GuidePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal' | '
 export type Evidence = 'strong' | 'some' | 'early' | 'general';
 export type SuppId = 'ginger' | 'omega3' | 'zinc' | 'calcium' | 'b6' | 'magnesium';
 export type FoodId = 'iron' | 'omega3' | 'vitaminC' | 'bVitamins' | 'zinc' | 'fibre' | 'vitaminDB6' | 'protein' | 'magnesium' | 'b12' | 'calcium' | 'carbs';
-export interface GuideDay { phase: GuidePhase; expected: boolean }
+/** The person's own cycle in day offsets from its first day (0 = day 1), for drawing the hormone curve on their dates (D-155). */
+export interface CycleFrame {
+  /** Where the date sits in the cycle. */
+  day: number;
+  /** Cycle length: the logged length of a closed cycle, else the days to the most likely next period. Absent when there is no forecast. */
+  length?: number;
+  bleedDays: number;
+  /** The ovulation day and, for an open cycle, its 80% range. Absent while the estimate is uncertain or missing, and for a cycle merged by a missed log. */
+  ovulationDay?: number;
+  ovulationRange?: { lo: number; hi: number };
+}
+export interface GuideDay { phase: GuidePhase; expected: boolean; frame?: CycleFrame }
 export interface PhaseOnInput {
   date: ISODate;
   today: ISODate;
@@ -46,14 +57,30 @@ export const PREMENSTRUAL_DAYS = 5;
 const OVULATORY_HALF_WINDOW = 1;
 const BLEED_DAYS_IF_UNLOGGED = 5;
 
+/** The cycle's own dates as offsets, from the same sources phaseOn() uses below: a closed valid cycle's biomarker ovulation or the luteal prior counted
+ *  back from its next start (§4.5); an open cycle's forecast, with its ovulation only while the estimate is not uncertain. */
+function frameOf(cycle: CycleRecord, p: Prediction, date: ISODate, bleedEnd: ISODate): CycleFrame {
+  const off = (d: ISODate): number => diffDays(d, cycle.start);
+  const frame: CycleFrame = { day: off(date), bleedDays: Math.max(1, off(bleedEnd) + 1) };
+  if (cycle.nextStart) {
+    frame.length = off(cycle.nextStart);
+    if (cycle.quality === 'valid') frame.ovulationDay = off(cycle.ovulation?.point ?? addDays(cycle.start, Math.round(frame.length - LUTEAL_PRIOR.m0 - 1)));
+  } else if (p.nextPeriod) {
+    frame.length = off(p.nextPeriod.point);
+    if (p.ovulation && !ovulationUncertain(p)) { frame.ovulationDay = off(p.ovulation.point); frame.ovulationRange = { lo: off(p.ovulation.i80.lo), hi: off(p.ovulation.i80.hi) }; }
+  }
+  return frame;
+}
+
 export function phaseOn({ date, today, prediction: p, cycles, showEstimate }: PhaseOnInput): GuideDay | undefined {
   if (!p || p.suspended) return undefined;
   let cycle: CycleRecord | undefined;
   for (const c of cycles) if (c.start <= date && (!cycle || c.start > cycle.start)) cycle = c;
   if (!cycle || cycle.quality === 'life_state') return undefined;
   const expected = date > today;
-  const at = (phase: GuidePhase): GuideDay => ({ phase, expected });
   const bleedEnd = !cycle.nextStart && p.currentBleed ? p.currentBleed.point : (cycle.end ?? addDays(cycle.start, BLEED_DAYS_IF_UNLOGGED - 1));
+  const frame = frameOf(cycle, p, date, bleedEnd);
+  const at = (phase: GuidePhase): GuideDay => ({ phase, expected, frame });
   if (date <= bleedEnd) return at('menstrual');
 
   let nextStart: ISODate;

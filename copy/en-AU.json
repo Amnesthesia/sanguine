@@ -1116,7 +1116,9 @@
       "here": "you are here",
       "hereExpected": "expected here",
       "day1": "Day 1",
-      "day28": "Day 28"
+      "day28": "Day 28",
+      "dayN": "Day {n}",
+      "captionOwn": "Drawn to explain, on the dates of your cycle. A typical pattern, not your own hormone levels."
     },
     "foodName": {
       "iron": "Iron, with vitamin C",
@@ -1288,6 +1290,7 @@
         "lh": "LH",
         "fsh": "FSH",
         "temperature": "Temperature",
+        "band": "The shaded band is the likely range for ovulation.",
         "labelExtras": "LH (luteinising hormone) peaks briefly around the middle; FSH (follicle-stimulating hormone) is highest early; body temperature steps up a little in the second half."
       },
       "stripStart": "This cycle from day 1",

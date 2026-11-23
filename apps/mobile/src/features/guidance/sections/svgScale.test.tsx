@@ -81,3 +81,33 @@ describe('curve legend (D-155)', () => {
     expect(more.querySelector('svg')?.getAttribute('aria-label') ?? more.innerHTML).toContain('luteinising');
   });
 });
+
+describe('the curve follows the person\'s own cycle (D-155)', () => {
+  const own = (extras: boolean, ovulationDay?: number) => render(<HormoneCurve extras={extras} day={{ phase: 'luteal', expected: false, frame: { day: 24, length: 35, bleedDays: 6, ...(ovulationDay === undefined ? {} : { ovulationDay, ovulationRange: { lo: ovulationDay - 2, hi: ovulationDay + 2 } }) } }} />).container;
+  const peak = (c: HTMLElement) => {
+    const lh = [...c.querySelectorAll('path')].find((p) => (p.getAttribute('d') ?? '').includes(',10.0'));
+    return Number(/L([\d.]+),10\.0/.exec(lh?.getAttribute('d') ?? '')?.[1]);
+  };
+  it('puts the LH peak on the ovulation day, ends on the cycle\'s last day and marks the day', () => {
+    scale.value = 1;
+    const c = own(true, 20);
+    expect(peak(c)).toBeCloseTo((20.5 * 326) / 35, 0);
+    expect(texts(c).map((t) => t.textContent)).toContain('Day 35');
+    expect(Number(c.querySelector('circle')?.getAttribute('cx'))).toBeCloseTo((24.5 * 326) / 35, 5); // the marker sits on day 25, not the middle of the phase
+    expect(c.querySelectorAll('rect').length).toBe(2); // the bleed and the likely range for ovulation
+  });
+  it('a later ovulation moves the peak right', () => {
+    scale.value = 1;
+    expect(peak(own(true, 24))).toBeGreaterThan(peak(own(true, 16)));
+  });
+  it('without the estimate the peak is not placed on the date: the typical place, and no range band', () => {
+    scale.value = 1;
+    const c = own(false, 20);
+    expect(c.querySelectorAll('rect').length).toBe(1);
+    expect(texts(c).map((t) => t.textContent)).toContain('Day 35');
+  });
+  it('without a frame it is the generic 28-day picture', () => {
+    scale.value = 1;
+    expect(texts(curve('luteal')).map((t) => t.textContent)).toContain('Day 28');
+  });
+});
