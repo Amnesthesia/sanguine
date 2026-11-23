@@ -38,8 +38,8 @@ export async function checkAndApply(): Promise<CheckResult> {
   }
 }
 
-/** The least time between two background checks (one hour). */
-export const CHECK_GAP_MS = 60 * 60 * 1000;
+/** The least time between two background checks (30 minutes, D-153). */
+export const CHECK_GAP_MS = 30 * 60 * 1000;
 /** A downloaded update is applied when the app comes back after at least this long away (five minutes): a quick look at another app never reloads it. */
 export const APPLY_AFTER_AWAY_MS = 5 * 60 * 1000;
 
@@ -50,7 +50,7 @@ export const resetUpdateWatch = (): void => { lastCheck = Number.NEGATIVE_INFINI
 
 export type QuietCheck = 'off' | 'throttled' | 'latest' | 'downloaded' | 'failed';
 
-/** The periodic check (Updates.checkAutomatically only runs at a cold start, and a phone keeps an app in memory for days): at most one an hour,
+/** The periodic check (Updates.checkAutomatically only runs at a cold start, and a phone keeps an app in memory for days): at most one every 30 minutes,
  *  downloads a newer update without applying it. `now` is the clock in ms. */
 export async function checkQuietly(now: number = Date.now()): Promise<QuietCheck> {
   if (!updatesOn()) return 'off';

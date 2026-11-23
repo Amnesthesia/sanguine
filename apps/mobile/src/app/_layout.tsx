@@ -111,7 +111,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (db) void noteLaunchedUpdate(db).then((isNew) => { if (isNew) showToast(trSplash('settings.about.justUpdated')); }, () => undefined);
   }, [db, trSplash]);
-  // the app looks for an update now, every hour while it is open, and each time it comes back to the foreground; a download is applied on a return after
+  // the app looks for an update now, every 30 minutes while it is open, and each time it comes back to the foreground; a download is applied on a return after
   // five minutes away, otherwise at the next cold start (the native check runs only at a cold start, and a phone keeps the app in memory for days)
   useEffect(() => {
     let leftAt: number | null = null;

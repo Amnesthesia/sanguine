@@ -79,7 +79,7 @@ describe('the periodic check', () => {
     expect(await checkQuietly(1000)).toBe('downloaded');
     expect(updates.reloadAsync).not.toHaveBeenCalled();
   });
-  it('checks at most once an hour', async () => {
+  it('checks at most once every 30 minutes', async () => {
     updates.checkForUpdateAsync.mockResolvedValue({ isAvailable: false });
     expect(await checkQuietly(0)).toBe('latest');
     expect(await checkQuietly(CHECK_GAP_MS - 1)).toBe('throttled');

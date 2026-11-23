@@ -103,11 +103,12 @@ export default function NotificationsScreen() {
     setEditing(undefined);
   }
   const sample = shown[0];
-  const lo = sample ? Math.max(sample.days, 0) : 0;
   // fireDate is unused by reminderBody; the cast only satisfies the ISODate type
-  const body = (descriptive: boolean) => reminderBody({ id: 'preview', event: sample?.event ?? 'late', fireDate: '' as ReminderPlan['fireDate'], hour: 9, descriptive, lo, hi: sample ? sample.days + 5 : 0 }, (k, p) => t(k, p));
-  const offBody = body(false);
-  const onBody = body(true);
+  const builtIn = (event: ReminderEvent | 'late', days: number, descriptive: boolean) => reminderBody({ id: 'preview', event, fireDate: '' as ReminderPlan['fireDate'], hour: 9, descriptive, lo: Math.max(days, 0), hi: days + 5 }, (k, p) => t(k, p));
+  /** What a reminder says when the user writes nothing: the text the field shows as its placeholder, following the Show details switch. */
+  const placeholderFor = (event: ReminderEvent, days: number) => builtIn(event, days, n.descriptive);
+  const offBody = builtIn(sample?.event ?? 'late', sample?.days ?? 0, false);
+  const onBody = builtIn(sample?.event ?? 'late', sample?.days ?? 0, true);
   const previewText = n.descriptive ? `${t('notifications.defaultTitle')}: ${onBody}` : sample && isPhaseEvent(sample.event) ? offBody : t('settings.notifications.defaultText');
   return (
     <SubScreen testID="screen-notifications" title={t('settings.notifications.title')}>
@@ -140,7 +141,7 @@ export default function NotificationsScreen() {
                 {r.text ? <Text variant="bodySmall" color="textSecondary" testID={`rule-text-${k}`}>{t('settings.notifications.ownTextOn', { text: r.text })}</Text> : null}
                 {editing === r.id ? (
                   <View style={{ gap: 8, paddingBottom: 8 }}>
-                    <TextField testID={`rule-edit-field-${k}`} label={t('settings.notifications.ownText')} placeholder={t('settings.notifications.ownTextPlaceholder')} helper={t('settings.notifications.ownTextHelper')} keyboardType="default" maxLength={MAX_TEXT} value={draft} onChangeText={setDraft} />
+                    <TextField testID={`rule-edit-field-${k}`} label={t('settings.notifications.ownText')} placeholder={placeholderFor(r.event, r.days)} helper={t('settings.notifications.ownTextHelper')} keyboardType="default" maxLength={MAX_TEXT} value={draft} onChangeText={setDraft} />
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                       <Button kind="secondary" testID={`rule-save-${k}`} label={t('settings.notifications.saveText')} accessibilityLabel={`${t('settings.notifications.saveText')}: ${ruleText(r)}`} onPress={() => saveText(r.id, cleanText(draft))} />
                       <Button kind="text" testID={`rule-clear-${k}`} label={t('settings.notifications.clearText')} accessibilityLabel={`${t('settings.notifications.clearText')}: ${ruleText(r)}`} onPress={() => saveText(r.id, undefined)} />
@@ -163,7 +164,7 @@ export default function NotificationsScreen() {
           <Chips testIDPrefix="rule-days" value={days} onChange={setDays} options={REMINDER_DAYS.map((d) => ({ value: String(d), label: d === 0 ? t('settings.notifications.onTheDay') : t(d === 1 ? 'settings.notifications.days1' : 'settings.notifications.daysN', { n: d }) }))} />
           <Text variant="bodySmall" color="textSecondary">{t('settings.notifications.beforeThe')}</Text>
           <Chips testIDPrefix="rule-event" value={events.includes(event) ? event : 'period'} onChange={setEvent} options={events.map((e) => ({ value: e, label: t(`settings.notifications.eventLabel.${e}`) }))} />
-          <TextField testID="rule-own-text" label={t('settings.notifications.ownText')} helper={t('settings.notifications.ownTextHelper')} placeholder={t('settings.notifications.ownTextPlaceholder')} keyboardType="default" maxLength={MAX_TEXT} value={text} onChangeText={setText} />
+          <TextField testID="rule-own-text" label={t('settings.notifications.ownText')} helper={t('settings.notifications.ownTextHelper')} placeholder={placeholderFor(events.includes(event) ? event : 'period', Number(days))} keyboardType="default" maxLength={MAX_TEXT} value={text} onChangeText={setText} />
           <Button testID="rule-add" kind="secondary" label={t('settings.notifications.add')} onPress={add} />
           {msg ? <Text variant="bodySmall" accessibilityLiveRegion="polite" testID="rule-message">{msg}</Text> : null}
         </View>

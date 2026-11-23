@@ -203,6 +203,17 @@ describe('notifications', () => {
     render(<NotificationsScreen />);
     expect(screen.getByTestId('notif-pair').getAttribute('aria-label')).toContain('Off shows: A reminder');
   });
+  it('the own-text fields show the built-in text as their placeholder, following the details switch', () => {
+    render(<NotificationsScreen />);
+    expect(screen.getByTestId('rule-own-text').getAttribute('placeholder')).toBe('A reminder');
+    fireEvent.click(screen.getByTestId('rule-edit-follicularEarly-0'));
+    expect(screen.getByTestId('rule-edit-field-follicularEarly-0').getAttribute('placeholder')).toBe('How are you feeling today?');
+    cleanup();
+    setup({ notifications: { ...DEFAULT_PREFS.notifications, descriptive: true } });
+    render(<NotificationsScreen />);
+    fireEvent.click(screen.getByTestId('rule-edit-follicularEarly-0'));
+    expect(screen.getByTestId('rule-edit-field-follicularEarly-0').getAttribute('placeholder')).toBe('Your follicular phase has likely started. How are you feeling?');
+  });
   it('names the setting in the off/on drawing label', () => {
     render(<NotificationsScreen />);
     expect(screen.getByTestId('notif-pair').getAttribute('aria-label')).toMatch(/^Show details in notifications\. Off shows: .+\. On shows: /);
