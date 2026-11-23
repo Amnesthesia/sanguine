@@ -76,11 +76,14 @@ describe('motion (§8.9: reduced motion degrades to cross-fades; the ring never 
     expect(src).toMatch(/if \(reduce\) \{\s+x\.value = 0;/);
     expect(src).not.toMatch(/scale|rotate|LayoutAnimation|withRepeat/);
   });
-  it('the one exception, the brand splash (D-042), only fades opacity and drops the fades under Reduce Motion', () => {
+  it('the one exception, the brand splash (D-042, D-154), flips and zooms only when Reduce Motion is off; under it nothing moves', () => {
     const src = readFileSync(SPLASH, 'utf8');
     expect(src).toContain('isReduceMotionEnabled');
-    expect(src.match(/Animated\.timing\(\w+, \{ toValue: \d, duration: \w+/g)?.length).toBe(5);
-    expect(src).not.toMatch(/translate|scale|rotate|LayoutAnimation|reanimated/);
+    // the Reduce Motion branch only shows the lock-up and the tagline at once (duration 0), then waits
+    const reduced = src.slice(src.indexOf('anim = reduce'), src.indexOf(': Animated.sequence(['));
+    expect(reduced).toContain('reveal');
+    expect(reduced).not.toMatch(/flip|zoom|cover|duration: [^0]/);
+    expect(src).not.toMatch(/translate|LayoutAnimation|reanimated|withRepeat/);
   });
 });
 

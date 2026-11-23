@@ -1,12 +1,15 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import '@/i18n';
 import { BrandSplash } from './BrandSplash';
 
+vi.mock('react-native-svg', () => ({ default: ({ children }: { children?: ReactNode }) => <>{children}</>, Path: () => null }));
+
 afterEach(cleanup);
 
 describe('BrandSplash', () => {
-  it('shows the lock-up and the tagline, then hands over', async () => {
+  it('shows the lock-up and the tagline, then flips to the moon, zooms and hands over', async () => {
     vi.useFakeTimers();
     const onDone = vi.fn();
     render(<BrandSplash tagline="Blood demands blood." onDone={onDone} />);

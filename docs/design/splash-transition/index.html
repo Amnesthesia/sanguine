@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Splash transition options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root { --page: #f4f1f0; --text: #1f1a1c; --muted: #6b6165; --line: #e4e4e6; --accent: #bc4560; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --page: #121012; --text: #f4eeef; --muted: #b3a8ac; --line: #3a3a3c; --accent: #d4607a; } }
+  :root[data-theme="dark"] { --page: #121012; --text: #f4eeef; --muted: #b3a8ac; --line: #3a3a3c; --accent: #d4607a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--text); font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  header { padding: 20px 16px 8px; max-width: 1240px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--muted); max-width: 760px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 12px 16px; max-width: 1240px; margin: 0 auto; position: sticky; top: 0; background: var(--page); z-index: 5; border-bottom: 1px solid var(--line); }
+  .controls button, .controls select { font: inherit; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; }
+  .controls button.primary { background: var(--accent); border-color: var(--accent); color: #fff; min-width: 84px; }
+  .controls label { display: flex; gap: 6px; align-items: center; color: var(--muted); }
+  #scrub { width: min(360px, 60vw); accent-color: var(--accent); }
+  #clock { font-variant-numeric: tabular-nums; min-width: 52px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px 20px; padding: 20px 16px 40px; max-width: 1240px; margin: 0 auto; }
+  figure { margin: 0; display: flex; flex-direction: column; align-items: center; }
+  figcaption { max-width: 320px; margin-top: 12px; }
+  figcaption b { display: block; font-size: 16px; }
+  figcaption span { color: var(--muted); font-size: 14px; }
+  .frame { width: 295px; height: 639px; border-radius: 44px; overflow: hidden; position: relative; box-shadow: 0 0 0 8px #1c1c1e, 0 18px 40px rgba(0,0,0,.25); }
+  .phone { width: 393px; height: 852px; position: absolute; left: 0; top: 0; transform: scale(0.75); transform-origin: 0 0; overflow: hidden; }
+  .phone > * { position: absolute; inset: 0; width: 393px; height: 852px; }
+  .app { object-fit: cover; transform-origin: 50% 50%; }
+  .stage { perspective: 900px; }
+  .stage > * { position: absolute; inset: 0; width: 393px; height: 852px; backface-visibility: hidden; transform-origin: 196.5px 50%; }
+  .stage > .lockwrap .lockup, .lockup { inset: auto; position: absolute; left: 66.5px; width: 260px; height: auto; }
+  .phone > .tag { inset: auto; left: 0; right: 0; width: auto; height: auto; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 0 32px; }
+  .tag .rule { width: 200px; height: 1px; opacity: .6; }
+  .tag .words { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 14px; line-height: 22px; letter-spacing: .2em; text-transform: uppercase; text-align: center; }
+  body.only { background: transparent; }
+  body.only header, body.only .controls, body.only figcaption, body.only figure:not(.on) { display: none; }
+  body.only .grid { display: block; padding: 0; }
+  body.only .frame { width: 393px; height: 852px; border-radius: 0; box-shadow: none; }
+  body.only .phone { transform: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Splash to app: three ways into the crescent</h1>
+  <p>The lock-up becomes the crescent moon, then the app is revealed through the crescent's bowl. All three share the same zoom; they differ in how the logo becomes the moon. Timings are shortened (the real splash holds the tagline longer). Retraced from the client's emblem and logotype by <code>trace.py</code>.</p>
+</header>
+<div class="controls">
+  <button id="play" class="primary">Pause</button>
+  <button id="restart">Restart</button>
+  <input id="scrub" type="range" min="0" max="1" step="0.001" value="0" aria-label="Time">
+  <span id="clock">0.00 s</span>
+  <label>Speed <select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option></select></label>
+  <label>Scheme <select id="scheme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
+</div>
+<main class="grid" id="grid"></main>
+<script src="data.js"></script>
+<script>
+const D = window.SPLASH;
+const [W, H] = D.phone;
+const L = D.lockup;
+const SCHEMES = {
+  light: { field: '#F5E8E2', ink: '#73393B', moon: '#73393B', geo: D.crescent, rule: '#73393B', text: '#73393B', lockup: '../../../apps/mobile/assets/brand/splash-lockup.png', app: '../../screenshots/appstore/ios/01-today-light.png' },
+  dark: { field: '#2A1518', ink: '#F5E8E2', moon: '#F4D27A', geo: D.crescent, rule: '#E3A7AD', text: '#F5E8E2', lockup: '../../../apps/mobile/assets/brand/splash-lockup-dark.png', app: '../../screenshots/appstore/ios/01-today-dark.png' },
+};
+const TAGLINE = 'Blood demands blood.';
+
+// Timeline, seconds. Everything is a pure function of t so a frame can be rendered at any time.
+const HOLD = 0.9, TAG_OUT = 0.35, START = HOLD + 0.15, PAUSE = 0.25, ZOOM = 0.85, AFTER = 0.9;
+const VARIANTS = {
+  morph: { title: 'Morph', note: 'The whole lock-up curls into the crescent, left to right: its edges become the horns, the emblem the inner edge, the script the outer edge. Then it fills in.', len: 1.5 },
+  fade: { title: 'Fade', note: 'The lock-up fades and settles back while the crescent fades in and settles forward.', len: 0.75 },
+  flip: { title: 'Flip', note: 'The lock-up turns edge-on like a card; the crescent is on its back.', len: 0.8 },
+};
+for (const v of Object.values(VARIANTS)) { v.zoomAt = START + v.len + PAUSE; v.end = v.zoomAt + ZOOM + AFTER; }
+const TOTAL = Math.max(...Object.values(VARIANTS).map((v) => v.end));
+
+const clamp = (x) => Math.min(1, Math.max(0, x));
+const inOut = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const easeIn = (x) => x * x * x;
+const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+const lerp = (a, b, k) => a + (b - a) * k;
+// How far the zoom must scale the bowl so the hole covers the far corner of the screen.
+const zmax = (CI) => 1.05 * Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - CI[0], y - CI[1]))) / CI[2];
+// Mix two #RRGGBB colours.
+const mix = (a, b, k) => '#' + [1, 3, 5].map((i) => Math.round(lerp(parseInt(a.slice(i, i + 2), 16), parseInt(b.slice(i, i + 2), 16), k)).toString(16).padStart(2, '0')).join('');
+
+const svg = (tag, attrs = {}) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+const el = (tag, cls) => { const e = document.createElement(tag); if (cls) e.className = cls; return e; };
+
+function buildPhone(key) {
+  const v = VARIANTS[key];
+  const fig = el('figure'); fig.dataset.v = key;
+  const frame = el('div', 'frame'); const phone = el('div', 'phone'); frame.append(phone); fig.append(frame);
+  const cap = el('figcaption'); cap.innerHTML = `<b>${v.title}</b><span>${v.note}</span>`; fig.append(cap);
+
+  const app = el('img', 'app'); app.alt = '';
+  const field = svg('svg', { viewBox: `0 0 ${W} ${H}` }); const fieldPath = svg('path', { 'fill-rule': 'evenodd' }); field.append(fieldPath);
+  const stage = el('div', 'stage');
+  const moon = svg('svg', { viewBox: `0 0 ${W} ${H}` }); const moonG = svg('g'); const moonPath = svg('path', { d: D.crescent.d }); moonG.append(moonPath); moon.append(moonG);
+  const lockWrap = el('div', 'lockwrap'); const lockup = el('img', 'lockup'); lockup.alt = 'Sanguine'; lockup.style.top = L.y + 'px'; lockWrap.append(lockup);
+  const shapes = svg('svg', { viewBox: `0 0 ${W} ${H}` });
+  const paths = D.shapes.map(() => { const p = svg('path', { 'fill-rule': 'evenodd' }); shapes.append(p); return p; });
+  stage.append(moon, lockWrap, shapes);
+  const tag = el('div', 'tag'); tag.style.top = (H / 2 + L.h / 2 + 28) + 'px';
+  const rule = el('div', 'rule'); const words = el('div', 'words'); words.textContent = TAGLINE; tag.append(rule, words);
+  phone.append(app, field, stage, tag);
+  return { key, fig, app, fieldPath, moon, moonG, moonPath, lockWrap, lockup, shapes, paths, tag, rule, words, scheme: null };
+}
+
+function morphPaths(P, k, c) {
+  // Each point bends with a delay set by how far right it sits, so the curl sweeps left to right across the lock-up.
+  const [bx, , bw] = D.box;
+  D.shapes.forEach((sh, i) => {
+    let d = '';
+    for (const r of sh.rings) {
+      for (let j = 0; j < r.from.length; j++) {
+        const [x0, y0] = r.from[j], [x1, y1] = r.to[j];
+        const p = inOut(clamp((k * 1.35 - 0.35 * (x0 - bx) / bw) / 1.0));
+        d += (j ? 'L' : 'M') + lerp(x0, x1, p).toFixed(2) + ' ' + lerp(y0, y1, p).toFixed(2);
+      }
+      d += 'Z';
+    }
+    P.paths[i].setAttribute('d', d);
+    // Bending squeezes the lines thin; a growing outline keeps them visible until the moon fills in.
+    const col = mix(c.ink, c.moon, inOut(clamp((k - 0.3) / 0.6))); // dark: blush lines warm to the yellow moon as they bend
+    P.paths[i].setAttribute('fill', col); P.paths[i].setAttribute('stroke', col);
+    P.paths[i].setAttribute('stroke-width', (1.8 * inOut(clamp(k / 0.8))).toFixed(2));
+  });
+}
+
+function render(P, t, opts) {
+  const v = VARIANTS[P.key];
+  const c = SCHEMES[opts.scheme];
+  if (P.scheme !== opts.scheme) {
+    P.scheme = opts.scheme; P.app.src = c.app; P.lockup.src = c.lockup;
+    P.fieldPath.setAttribute('fill', c.field); P.moonPath.setAttribute('fill', c.moon); P.moonPath.setAttribute('d', c.geo.d);
+    P.paths.forEach((p) => { p.setAttribute('fill', c.ink); p.setAttribute('stroke', c.ink); p.setAttribute('stroke-linejoin', 'round'); }); P.rule.style.background = c.rule; P.words.style.color = c.text;
+  }
+  const tl = clamp((t - START) / v.len); // the logo-to-moon phase
+  const z = clamp((t - v.zoomAt) / ZOOM); // the zoom phase
+  P.tag.style.opacity = 1 - easeOut(clamp((t - HOLD) / TAG_OUT));
+
+  // Defaults: lock-up shown, moon and traced shapes hidden.
+  let lockOp = 1, lockTf = 'none', moonOp = 0, moonTf = 'none', shapesOp = 0;
+  if (P.key === 'morph') {
+    // The exact PNG hands over to the retraced outlines at once; at the end the bent lock-up fills in to the solid moon.
+    if (t >= START) { lockOp = 1 - clamp((t - START) / 0.12); shapesOp = 1 - clamp((tl - 0.9) / 0.1); moonOp = inOut(clamp((tl - 0.78) / 0.2)); }
+    if (t >= START) morphPaths(P, tl, c);
+  } else if (P.key === 'fade') {
+    lockOp = 1 - inOut(clamp(tl / 0.7)); lockTf = `scale(${lerp(1, 0.94, inOut(clamp(tl / 0.7)))})`;
+    const m = inOut(clamp((tl - 0.3) / 0.7)); moonOp = m; moonTf = `scale(${lerp(0.9, 1, m)})`;
+  } else { // flip: front face to 90 degrees, then the back face from -90 to 0
+    const a = tl < 0.5 ? 90 * easeIn(tl / 0.5) : 90;
+    const b = tl < 0.5 ? -90 : -90 + 90 * easeOut((tl - 0.5) / 0.5);
+    lockTf = `rotateY(${a}deg)`; lockOp = tl < 0.5 ? 1 : 0;
+    moonTf = `rotateY(${b}deg)`; moonOp = tl < 0.5 ? 0 : 1;
+  }
+  P.lockWrap.style.opacity = lockOp; P.lockWrap.style.transform = lockTf;
+  P.shapes.style.opacity = shapesOp;
+  P.moon.style.opacity = moonOp; P.moon.style.transform = moonTf;
+  P.moon.style.transformOrigin = `${c.geo.outer[0]}px ${c.geo.outer[1]}px`;
+
+  // Zoom through the bowl: the hole opens to the crescent's inner circle, then everything scales about that circle's centre.
+  const s = 1 + (zmax(c.geo.inner) - 1) * easeIn(z);
+  const h = easeOut(clamp(z / 0.3));
+  const [cx, cy, ri] = c.geo.inner;
+  P.moonG.setAttribute('transform', `translate(${cx} ${cy}) scale(${s}) translate(${-cx} ${-cy})`);
+  const r = ri * s * h * 0.995;
+  P.fieldPath.setAttribute('d', `M0 0H${W}V${H}H0Z` + (r > 0.01 ? `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0Z` : ''));
+  P.app.style.transform = `scale(${lerp(1.1, 1, easeOut(z))})`;
+  P.app.style.visibility = z > 0 ? 'visible' : 'hidden';
+}
+
+// ----- page wiring -----
+const q = new URLSearchParams(location.search);
+const opts = { scheme: q.get('scheme') || 'light' };
+const grid = document.getElementById('grid');
+const only = q.get('only');
+const phones = Object.keys(VARIANTS).map(buildPhone);
+phones.forEach((P) => { grid.append(P.fig); if (P.key === only) P.fig.classList.add('on'); });
+if (only) document.body.classList.add('only');
+
+let t = q.has('t') ? Number(q.get('t')) : 0, playing = !q.has('t'), speed = 1, last = performance.now();
+const scrub = document.getElementById('scrub'), clock = document.getElementById('clock'), play = document.getElementById('play');
+scrub.max = TOTAL;
+function draw() { phones.forEach((P) => render(P, Math.min(t, VARIANTS[P.key].end), opts)); scrub.value = t; clock.textContent = t.toFixed(2) + ' s'; }
+function tick(now) {
+  if (playing) { t += ((now - last) / 1000) * speed; if (t > TOTAL + 0.4) t = 0; draw(); }
+  last = now; requestAnimationFrame(tick);
+}
+play.onclick = () => { playing = !playing; play.textContent = playing ? 'Pause' : 'Play'; };
+document.getElementById('restart').onclick = () => { t = 0; draw(); };
+scrub.oninput = () => { t = Number(scrub.value); playing = false; play.textContent = 'Play'; draw(); };
+document.getElementById('speed').onchange = (e) => { speed = Number(e.target.value); };
+const schemeSel = document.getElementById('scheme');
+schemeSel.value = opts.scheme;
+schemeSel.onchange = (e) => { opts.scheme = e.target.value; draw(); };
+window.TIMELINE = { TOTAL, START, HOLD, VARIANTS };
+draw(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>
