@@ -1,6 +1,6 @@
 // Reader for zips with legacy ZipCrypto (PKWARE traditional) encryption, which fflate
 // cannot decrypt. No zip64, no AES. The password is never logged or put in an error.
-import { inflateSync } from 'fflate';
+import { Inflate } from 'fflate';
 
 export class ZipError extends Error {}
 export class ZipPasswordNeeded extends ZipError {}
@@ -9,6 +9,7 @@ export class ZipUnsupported extends ZipError {}
 export class ZipCorrupt extends ZipError {}
 export class ZipTooLarge extends ZipError {}
 
+const SLICE = 16 * 1024;
 export const MAX_ENTRY_BYTES = 64 * 1024 * 1024;
 
 export type ZipEntry = {
@@ -112,15 +113,33 @@ export function readZipEntry(bytes: Uint8Array, entry: ZipEntry, password?: stri
     data = plain.subarray(12);
   }
 
+  const bad = () => (entry.encrypted ? new ZipWrongPassword('wrong password') : new ZipCorrupt('bad deflate data'));
   let out: Uint8Array;
   if (entry.method === 0) out = data;
   else {
+    // Deflate cannot expand more than about 1032:1.
+    if (entry.size > data.length * 1100 + 1024) throw bad();
+    // Stream in slices and stop as soon as the output passes the declared size.
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    const inf = new Inflate((c) => {
+      total += c.length;
+      if (total <= entry.size) chunks.push(c);
+    });
     try {
-      // Fixed output buffer: fflate does not grow it, so memory is bounded by the declared size;
-      // an overflowing stream is truncated and then fails the length/CRC check below.
-      out = inflateSync(data, { out: new Uint8Array(entry.size) });
+      for (let i = 0; i < data.length && total <= entry.size; i += SLICE) {
+        inf.push(data.subarray(i, i + SLICE), i + SLICE >= data.length);
+      }
+      if (data.length === 0) inf.push(new Uint8Array(0), true);
     } catch {
-      throw entry.encrypted ? new ZipWrongPassword('wrong password') : new ZipCorrupt('inflate failed');
+      throw bad();
+    }
+    if (total !== entry.size) throw bad();
+    out = new Uint8Array(entry.size);
+    let at = 0;
+    for (const c of chunks) {
+      out.set(c, at);
+      at += c.length;
     }
   }
   if (out.length !== entry.size || crc32(out) !== entry.crc) {

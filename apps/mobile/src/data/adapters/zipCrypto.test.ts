@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { deflateSync } from 'fflate';
-import { describe, expect, it } from 'vitest';
+import { Inflate, deflateSync } from 'fflate';
+import { describe, expect, it, vi } from 'vitest';
 import {
   ZipCorrupt,
   ZipPasswordNeeded,
@@ -123,12 +123,38 @@ describe('zipCrypto', () => {
     return b;
   };
 
-  it('a deflate bomb with a tiny declared size fails without allocating its expanded size', () => {
+  it('a deflate bomb stops after the first slice', () => {
     const bomb = deflateSync(new Uint8Array(50 * 1024 * 1024));
     const z = handmade(8, bomb, 100);
-    const before = process.memoryUsage().arrayBuffers;
+    const push = vi.spyOn(Inflate.prototype, 'push');
+    const t0 = performance.now();
     expect(() => readZipEntry(z, listZip(z)[0])).toThrow(ZipCorrupt);
-    expect(process.memoryUsage().arrayBuffers - before).toBeLessThan(20 * 1024 * 1024);
+    expect(performance.now() - t0).toBeLessThan(200);
+    const fed = push.mock.calls.reduce((n, c) => n + (c[0] as Uint8Array).length, 0);
+    push.mockRestore();
+    expect(fed).toBeLessThanOrEqual(16 * 1024);
+  });
+
+  it('a ratio-impossible declaration fails before inflating', () => {
+    const z = handmade(8, deflateSync(new Uint8Array(10)), 50 * 1024 * 1024);
+    const push = vi.spyOn(Inflate.prototype, 'push');
+    expect(() => readZipEntry(z, listZip(z)[0])).toThrow(ZipCorrupt);
+    expect(push).not.toHaveBeenCalled();
+    push.mockRestore();
+  });
+
+  it('a legit multi-slice entry decodes', () => {
+    const raw = new Uint8Array(100_000).map(() => Math.floor(Math.random() * 256)); // incompressible
+    const comp = deflateSync(raw);
+    expect(comp.length).toBeGreaterThan(32 * 1024);
+    let c = 0xffffffff;
+    for (const b of raw) {
+      let x = (c ^ b) & 0xff;
+      for (let k = 0; k < 8; k++) x = x & 1 ? 0xedb88320 ^ (x >>> 1) : x >>> 1;
+      c = (x ^ (c >>> 8)) >>> 0;
+    }
+    const z = handmade(8, comp, raw.length, (c ^ 0xffffffff) >>> 0);
+    expect(readZipEntry(z, listZip(z)[0])).toEqual(raw);
   });
 
   it('declared size above the cap throws ZipTooLarge', () => {
