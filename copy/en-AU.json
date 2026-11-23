@@ -1036,7 +1036,7 @@
     "change": "Opens the calendar to change the date"
   },
   "guidance": {
-    "title": "Your cycle and body",
+    "title": "Your cycle",
     "phaseLine": "{phase} · estimate",
     "phaseExpected": "{phase} · expected",
     "foodLabel": "Food",

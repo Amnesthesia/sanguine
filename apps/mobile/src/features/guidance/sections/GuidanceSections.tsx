@@ -89,11 +89,13 @@ export function GuidanceSections({ day, supplements, extras = false, compact, on
   if (compact) {
     return (
       <View testID="guidance-sections-compact" style={{ gap: 12 }}>
-        <View style={{ gap: 2 }}>
-          <Text variant="heading" accessibilityRole="header">{t('guidance.title')}</Text>
-          <Text variant="caption" color="textSecondary" testID={`guidance-phase-${p}`}>{phase}</Text>
-        </View>
-        <HormoneCurve day={day} compact extras={extras} />
+        <Card style={{ gap: 12 }}>
+          <View style={{ gap: 2 }}>
+            <Text variant="heading" accessibilityRole="header">{t('guidance.title')}</Text>
+            <Text variant="caption" color="textSecondary" testID={`guidance-phase-${p}`}>{phase}</Text>
+          </View>
+          <HormoneCurve day={day} compact extras={extras} />
+        </Card>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <Tile label={t('guidance.foodLabel')} text={t(`guidance.summary.${p}.food`)} evidence={best(g.foods.map((f) => f.evidence))} />
           <Tile label={t('guidance.moveLabel')} text={t(`guidance.summary.${p}.move`)} evidence={g.move} />
