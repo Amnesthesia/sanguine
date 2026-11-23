@@ -5,7 +5,7 @@ import type { Database } from '../database';
 import type { FlowKind } from '../events';
 import { activeEvents, localTimeOfDay } from '../project';
 import type { EventStore } from '../store';
-import { FORMAT, VERSION, type CycleMark, type Day, type LifeStateSpan, type SanguineData, type Temperature } from './sanguineData';
+import { FORMAT, VERSION, type CycleMark, type LhResult, type PeriodMark, type Day, type LifeStateSpan, type SanguineData, type Temperature } from './sanguineData';
 
 interface DayRow { day: string; flow: string | null; flow_kind: string | null; clots: number; symptoms: string; sex: string | null; notes_cipher: Uint8Array | null; energy: number | null }
 interface BioRow { day: string; type: string; value: string; measured_at: string | null; source: string; disturbed: number }
@@ -35,11 +35,11 @@ export async function exportSanguineData(db: Database, store: EventStore, o: { n
     switch (b.type) {
       case 'bbt': case 'skin_temp': {
         const time = b.measured_at ? localTimeOfDay(b.measured_at) : undefined;
-        const t: Temperature = { valueC: v.valueC as number, type: b.type, ...(time ? { time } : {}), ...(b.source === 'oral' || b.source === 'vaginal' || b.source === 'other' ? { source: b.source } : {}), ...(b.disturbed ? { disturbed: true } : {}) };
+        const t: Temperature = { valueC: v.valueC as number, type: b.type, ...(time ? { time } : {}), ...((b.type === 'bbt' ? ['oral', 'vaginal', 'other'] : ['wrist', 'finger']).includes(b.source) ? { source: b.source as Temperature['source'] } : {}), ...(b.disturbed ? { disturbed: true } : {}) };
         (d.temperatures ??= []).push(t);
         break;
       }
-      case 'lh': d.lh = v.result as 'negative' | 'positive'; break;
+      case 'lh': d.lh = v.result as LhResult; break;
       case 'preg_test': d.pregTest = v.result as 'negative' | 'positive'; break;
       case 'mucus': d.mucus = { quality: v.quality as never, ...(v.amount ? { amount: v.amount as never } : {}) }; break;
       case 'cervix': d.cervix = v as never; break;
@@ -66,9 +66,16 @@ export async function exportSanguineData(db: Database, store: EventStore, o: { n
     cycleMarks.push({ cycleStart: (JSON.parse(e.payload) as { cycle_start: string }).cycle_start as CycleMark['cycleStart'], mark: e.kind === 'cycle.exclude' ? 'exclude' : 'confirm_long' });
   }
 
+  const periodMarks: PeriodMark[] = [];
+  for (const e of active) {
+    if (e.kind !== 'period.start' && e.kind !== 'period.end') continue;
+    const merge = e.kind === 'period.start' ? (JSON.parse(e.payload) as { merge?: unknown }).merge : undefined;
+    periodMarks.push({ day: e.effective_day as PeriodMark['day'], mark: e.kind === 'period.start' ? 'start' : 'end', ...(typeof merge === 'boolean' ? { merge } : {}) });
+  }
+
   const days = [...byDay.values()].sort((a, b) => (a.date < b.date ? -1 : 1)).filter((d) => Object.keys(d).length > 1);
   return {
-    data: { format: FORMAT, version: VERSION, exportedAt: o.exportedAt, source: { app: 'sanguine' }, days, ...(lifeStates.length ? { lifeStates } : {}), ...(cycleMarks.length ? { cycleMarks } : {}) },
+    data: { format: FORMAT, version: VERSION, exportedAt: o.exportedAt, source: { app: 'sanguine' }, days, ...(lifeStates.length ? { lifeStates } : {}), ...(cycleMarks.length ? { cycleMarks } : {}), ...(periodMarks.length ? { periodMarks } : {}) },
     notesDropped,
   };
 }

@@ -41,8 +41,9 @@ Every field except `format`, `version` and `days` is optional. `days` holds at m
 | `flow.level` | `spotting`, `light`, `medium`, `heavy` | A bleeding day. |
 | `flow.kind` | `period` (default), `withdrawal_bleed`, `intermenstrual`, `on_contraception`, `post_pregnancy` | Only `period` starts a cycle. |
 | `flow.clots` | true / false | |
-| `temperatures[]` | `valueC` 34 to 42 (°C), `type` `bbt` or `skin_temp`, `time` `HH:MM`, `source` `oral`, `vaginal` or `other`, `disturbed` | Several a day are allowed. `disturbed` means the source said the reading is unreliable. |
-| `lh`, `pregTest` | `negative`, `positive` | |
+| `temperatures[]` | `valueC` 34 to 42 (°C), `type` `bbt` or `skin_temp`, `time` `HH:MM`, `source`, `disturbed` | `bbt` source is `oral` (default), `vaginal` or `other`; `skin_temp` source is `wrist` (default) or `finger`: a reading with the other type's source is left out. Several a day are allowed. `disturbed` means the source said the reading is unreliable. |
+| `lh` | `negative`, `positive`, `high`, `peak`, `indeterminate` | |
+| `pregTest` | `negative`, `positive` | |
 | `mucus` | `quality` `dry`, `sticky`, `creamy`, `watery`, `eggwhite`; `amount` `light`, `medium`, `heavy` | |
 | `cervix` | `position` `low`/`mid`/`high`, `firmness` `firm`/`medium`/`soft`, `opening` `closed`/`partial`/`open` | All three or none. |
 | `sex.protected` | true / false | True means a condom was used. |
@@ -51,6 +52,7 @@ Every field except `format`, `version` and `days` is optional. `days` holds at m
 | `note` | text | Plain text. Our export writes it decrypted: the file is the user's to keep, so treat it as sensitive. |
 | `lifeStates[]` | `kind` as in the app (`pregnant`, `postpartum`, `perimenopause`, ...), `start`, optional `end`, `outcome` (`birth` or `loss`, for `pregnant`), `detail` | |
 | `cycleMarks[]` | `cycleStart`, `mark` `exclude` or `confirm_long` | The person's own correction of a cycle. |
+| `periodMarks[]` | `day`, `mark` `start` or `end`, `merge` (true/false, only on a start) | A period's first or last day marked directly (generic CSV import, onboarding) rather than through flow days. Optional; a file without it is still v1. |
 
 ## What changes a prediction
 

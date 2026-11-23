@@ -6,6 +6,7 @@ import type { ISODate } from '@sanguine/engine';
 import type { Database } from '../database';
 import type { NewEvent } from '../events';
 import type { Clock } from '../ids';
+import { activeEvents } from '../project';
 import type { EventStore } from '../store';
 import type { SanguineData } from './sanguineData';
 
@@ -13,30 +14,29 @@ import type { SanguineData } from './sanguineData';
  *  `kept`: days where the device holds a different value, so the file's was not written (once per day). */
 export interface SanguineImportResult { added: number; skipped: number; duplicates: number; notesDropped: number; kept: number }
 
-type Held = { flow?: string; kind?: string; clots: boolean; symptoms: Map<string, number>; sex?: string; energy?: number; note: boolean; bio: Map<string, string[]> };
+type Held = { flow?: string; kind?: string; clots: boolean; symptoms: Map<string, number>; sex?: string; energy?: number; note: boolean; bio: Map<string, string[]>; periodStart: boolean; periodEnd: boolean };
 const stable = (v: unknown): string => (v && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${k}:${stable((v as Record<string, unknown>)[k])}`).join(',')}}` : JSON.stringify(v));
 
-/** What the device itself holds per day: events not imported from this source and not retracted, replayed in log order; biomarkers from the derived table. */
-async function deviceHolds(db: Database, sourceApp: string): Promise<Map<string, Held>> {
+/** What the device itself holds per day: the active events (the projector's own replay, so a retraction of a retraction restores its target),
+ *  leaving out what an earlier import from this same source wrote. */
+async function deviceHolds(store: EventStore, sourceApp: string): Promise<Map<string, Held>> {
   const held = new Map<string, Held>();
-  const at = (d: string) => { let h = held.get(d); if (!h) { h = { clots: false, symptoms: new Map(), note: false, bio: new Map() }; held.set(d, h); } return h; };
-  const evs = await db.all<{ kind: string; payload: string; effective_day: string }>(
-    `SELECT kind, payload, effective_day FROM event WHERE kind IN ('flow','symptom','sex','energy','note') AND NOT (provenance = 'imported' AND source_app = ?)
-       AND id NOT IN (SELECT retracts FROM event WHERE retracts IS NOT NULL) ORDER BY lamport, id`, [sourceApp]);
-  for (const e of evs) {
+  const at = (d: string) => { let h = held.get(d); if (!h) { h = { clots: false, symptoms: new Map(), note: false, bio: new Map(), periodStart: false, periodEnd: false }; held.set(d, h); } return h; };
+  for (const e of activeEvents(await store.events())) {
+    if (e.provenance === 'imported' && e.source_app === sourceApp) continue;
     const p = JSON.parse(e.payload) as Record<string, unknown>;
     const h = at(e.effective_day);
-    if (e.kind === 'flow') { h.flow = p.level as string; h.clots = p.clots === true; h.kind = (p.flow_kind as string) ?? 'period'; }
-    else if (e.kind === 'symptom') { if (p.intensity === 0) h.symptoms.delete(p.code as string); else h.symptoms.set(p.code as string, p.intensity as number); }
-    else if (e.kind === 'sex') h.sex = stable({ protected: p.protected });
-    else if (e.kind === 'energy') h.energy = p.level === 0 ? undefined : (p.level as number);
-    else h.note = true;
-  }
-  const bios = await db.all<{ day: string; type: string; value: string }>(
-    `SELECT b.day, b.type, b.value FROM biomarker b JOIN event e ON e.id = b.event_id WHERE NOT (e.provenance = 'imported' AND e.source_app = ?)`, [sourceApp]);
-  for (const b of bios) {
-    const m = at(b.day).bio;
-    m.set(b.type, [...(m.get(b.type) ?? []), stable(JSON.parse(b.value))]);
+    switch (e.kind) {
+      case 'flow': h.flow = p.level as string; h.clots = p.clots === true; h.kind = (p.flow_kind as string) ?? 'period'; break;
+      case 'symptom': if (p.intensity === 0) h.symptoms.delete(p.code as string); else h.symptoms.set(p.code as string, p.intensity as number); break;
+      case 'sex': h.sex = stable({ protected: p.protected }); break;
+      case 'energy': h.energy = p.level === 0 ? undefined : (p.level as number); break;
+      case 'note': h.note = true; break;
+      case 'period.start': h.periodStart = true; break;
+      case 'period.end': h.periodEnd = true; break;
+      case 'biomarker': h.bio.set(p.type as string, [...(h.bio.get(p.type as string) ?? []), stable(p.value)]); break;
+      default: break;
+    }
   }
   return held;
 }
@@ -45,7 +45,7 @@ async function deviceHolds(db: Database, sourceApp: string): Promise<Map<string,
  *  Notes are sealed with the notes key; without a key they are left out and counted. */
 export async function importSanguineData(db: Database, store: EventStore, data: SanguineData, o: { sourceApp: string; today: ISODate; clock: Clock; noteKey?: Uint8Array }): Promise<SanguineImportResult> {
   const known = new Set((await db.all<{ external_id: string }>('SELECT external_id FROM event WHERE source_app = ? AND external_id IS NOT NULL', [o.sourceApp])).map((r) => r.external_id));
-  const held = await deviceHolds(db, o.sourceApp);
+  const held = await deviceHolds(store, o.sourceApp);
   const events: NewEvent[] = [];
   const inFile = new Set<string>();
   const keptDays = new Set<string>();
@@ -53,14 +53,14 @@ export async function importSanguineData(db: Database, store: EventStore, data: 
   let duplicates = 0;
   let notesDropped = 0;
   /** `device`: 'same' | 'differs' | undefined (device holds nothing for this field). */
-  const add = (idPart: string, day: ISODate, kind: string, payload: Record<string, unknown>, device?: 'same' | 'differs') => {
+  const add = (idPart: string, day: ISODate, kind: string, payload: Record<string, unknown>, device?: 'same' | 'differs'): 'written' | 'duplicate' | 'skipped' | 'kept' => {
     const external_id = `${o.sourceApp}:${idPart}`;
-    if (inFile.has(external_id)) { duplicates++; return; }
+    if (inFile.has(external_id)) { duplicates++; return 'duplicate'; }
     inFile.add(external_id);
-    if (known.has(external_id)) { skipped++; return; }
-    if (device === 'same') { skipped++; return; }
-    if (device === 'differs') { keptDays.add(day); return; }
+    if (known.has(external_id) || device === 'same') { skipped++; return 'skipped'; }
+    if (device === 'differs') { keptDays.add(day); return 'kept'; }
     events.push({ kind, payload, provenance: 'imported', source_app: o.sourceApp, external_id });
+    return 'written';
   };
   const cmp = (same: boolean, present: boolean) => (present ? (same ? 'same' : 'differs') : undefined);
 
@@ -80,7 +80,7 @@ export async function importSanguineData(db: Database, store: EventStore, data: 
       const n = (seen[t.type] = (seen[t.type] ?? 0) + 1);
       const value = { valueC: Math.round(t.valueC * 100) / 100 };
       add(id(n === 1 ? t.type : `${t.type}:${n}`), day, 'biomarker', {
-        day, type: t.type, value, source: t.source ?? (t.type === 'bbt' ? 'oral' : 'other'),
+        day, type: t.type, value, source: t.source ?? (t.type === 'bbt' ? 'oral' : 'wrist'),
         ...(t.time ? { measured_at: `${day}T${t.time}:00` } : {}), ...(t.disturbed ? { disturbed: true } : {}),
       }, bio(t.type, value));
     }
@@ -101,10 +101,23 @@ export async function importSanguineData(db: Database, store: EventStore, data: 
     }
   }
   for (const s of data.lifeStates ?? []) {
-    add(`${s.start}:life:${s.kind}`, s.start, 'life_state.set', { kind: s.kind, detail: s.detail ?? {}, day: s.start });
-    if (s.end) add(`${s.end}:life_end:${s.kind}`, s.end, 'life_state.end', { kind: s.kind, ...(s.outcome ? { outcome: s.outcome } : {}), day: s.end });
+    // A span the device already holds (not from this source) that covers the start: the device's own record wins, nothing is written.
+    const covering = await db.get<{ n: number }>(
+      `SELECT count(*) AS n FROM life_state l JOIN event e ON e.id = l.event_id WHERE l.kind = ? AND l.from_day <= ? AND (l.until_day IS NULL OR l.until_day >= ?)
+         AND NOT (e.provenance = 'imported' AND e.source_app = ?)`, [s.kind, s.start, s.start, o.sourceApp]);
+    const set = (covering?.n ?? 0) > 0 ? (keptDays.add(`life:${s.kind}:${s.start}`), 'kept' as const)
+      : add(`${s.start}:life:${s.kind}`, s.start, 'life_state.set', { kind: s.kind, detail: s.detail ?? {}, day: s.start });
+    if (!s.end) continue;
+    // The projector closes the latest open span of the kind, so an end is only safe next to the start written in this same import.
+    if (set === 'written') add(`${s.end}:life_end:${s.kind}`, s.end, 'life_state.end', { kind: s.kind, ...(s.outcome ? { outcome: s.outcome } : {}), day: s.end });
+    else if (set !== 'duplicate') keptDays.add(`life:${s.kind}:${s.start}`);
   }
   for (const m of data.cycleMarks ?? []) add(`${m.cycleStart}:mark:${m.mark}`, m.cycleStart, `cycle.${m.mark}`, { cycle_start: m.cycleStart });
+  for (const m of data.periodMarks ?? []) {
+    const h = held.get(m.day);
+    add(`${m.day}:period_${m.mark}`, m.day, `period.${m.mark}`, { day: m.day, ...(m.mark === 'start' && m.merge !== undefined ? { merge: m.merge } : {}) },
+      (m.mark === 'start' ? h?.periodStart : h?.periodEnd) ? 'same' : undefined);
+  }
 
   if (events.length > 0) {
     await store.appendMany([{ kind: 'import.batch', payload: { source: o.sourceApp, count: events.length }, effective_day: o.today, provenance: 'imported', source_app: o.sourceApp }, ...events]);

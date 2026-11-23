@@ -7,18 +7,20 @@ import { FLOW_KINDS, LIFE_STATE_KINDS, PREGNANCY_OUTCOMES, type FlowKind } from 
 export const FORMAT = 'sanguine-data';
 export const VERSION = 1;
 
+export type LhResult = 'negative' | 'positive' | 'high' | 'peak' | 'indeterminate';
 export type Level3 = 'light' | 'medium' | 'heavy';
 export type Mucus = 'dry' | 'sticky' | 'creamy' | 'watery' | 'eggwhite';
 export type Cervix = { position: 'low' | 'mid' | 'high'; firmness: 'firm' | 'medium' | 'soft'; opening: 'closed' | 'partial' | 'open' };
 export type LifeStateKind = (typeof LIFE_STATE_KINDS)[number];
-export type Temperature = { valueC: number; type: 'bbt' | 'skin_temp'; time?: string; source?: 'oral' | 'vaginal' | 'other'; disturbed?: boolean };
+/** `bbt` is read from oral, vaginal or other (default oral); `skin_temp` from a wearable: wrist or finger (default wrist). The engine keeps the two series apart by this source. */
+export type Temperature = { valueC: number; type: 'bbt' | 'skin_temp'; time?: string; source?: 'oral' | 'vaginal' | 'other' | 'wrist' | 'finger'; disturbed?: boolean };
 
 export interface Day {
   date: ISODate;
   flow?: { level: 'spotting' | Level3; kind?: FlowKind; clots?: boolean };
   /** The first reading of a type is the day's value; more are allowed (several measurements a day). */
   temperatures?: Temperature[];
-  lh?: 'negative' | 'positive';
+  lh?: LhResult;
   pregTest?: 'negative' | 'positive';
   mucus?: { quality: Mucus; amount?: Level3 };
   cervix?: Cervix;
@@ -30,6 +32,8 @@ export interface Day {
   note?: string;
 }
 export interface LifeStateSpan { kind: LifeStateKind; start: ISODate; end?: ISODate; outcome?: (typeof PREGNANCY_OUTCOMES)[number]; detail?: Record<string, unknown> }
+/** A period's first or last day as the person marked it (generic CSV import, onboarding), for periods that have no flow rows. `merge` only on a start: true joins it to the run before, false splits it. */
+export interface PeriodMark { day: ISODate; mark: 'start' | 'end'; merge?: boolean }
 export interface CycleMark { cycleStart: ISODate; mark: 'exclude' | 'confirm_long' }
 export interface SanguineData {
   format: typeof FORMAT;
@@ -39,6 +43,7 @@ export interface SanguineData {
   days: Day[];
   lifeStates?: LifeStateSpan[];
   cycleMarks?: CycleMark[];
+  periodMarks?: PeriodMark[];
 }
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -51,7 +56,9 @@ const FLOW_LEVELS = ['spotting', ...LEVEL3] as const;
 const MUCUS = ['dry', 'sticky', 'creamy', 'watery', 'eggwhite'] as const;
 const RESULT = ['negative', 'positive'] as const;
 const TEMP_TYPES = ['bbt', 'skin_temp'] as const;
-const TEMP_SOURCES = ['oral', 'vaginal', 'other'] as const;
+const BBT_SOURCES = ['oral', 'vaginal', 'other'] as const;
+const SKIN_SOURCES = ['wrist', 'finger'] as const;
+const LH_RESULTS = ['negative', 'positive', 'high', 'peak', 'indeterminate'] as const;
 const CERVIX = { position: ['low', 'mid', 'high'], firmness: ['firm', 'medium', 'soft'], opening: ['closed', 'partial', 'open'] } as const;
 
 /** Keys of `o` not in `known`, as one problem line each. */
@@ -82,17 +89,15 @@ function parseDay(raw: unknown, where: string, problems: string[]): Day | undefi
         if (!isObj(t) || typeof t.valueC !== 'number' || !Number.isFinite(t.valueC) || t.valueC < 34 || t.valueC > 42) { bad('temperature', 'valueC must be a number from 34 to 42'); continue; }
         if (!oneOf(TEMP_TYPES, t.type)) { bad('temperature', 'type must be bbt or skin_temp'); continue; }
         if (t.time !== undefined && (typeof t.time !== 'string' || !TIME.test(t.time))) { bad('temperature', 'time must be HH:MM'); continue; }
-        if (t.source !== undefined && !oneOf(TEMP_SOURCES, t.source)) { bad('temperature', 'source must be oral, vaginal or other'); continue; }
+        if (t.source !== undefined && !oneOf(t.type === 'bbt' ? BBT_SOURCES : SKIN_SOURCES, t.source)) { bad('temperature', t.type === 'bbt' ? 'source of a bbt reading must be oral, vaginal or other' : 'source of a skin_temp reading must be wrist or finger'); continue; }
         if (t.disturbed !== undefined && typeof t.disturbed !== 'boolean') { bad('temperature', 'disturbed must be true or false'); continue; }
         out.push({ valueC: t.valueC, type: t.type, ...(t.time ? { time: t.time as string } : {}), ...(t.source ? { source: t.source } : {}), ...(t.disturbed ? { disturbed: true } : {}) });
       }
       if (out.length) d.temperatures = out;
     }
   }
-  for (const k of ['lh', 'pregTest'] as const) {
-    if (raw[k] === undefined) continue;
-    if (oneOf(RESULT, raw[k])) d[k] = raw[k] as 'negative' | 'positive'; else bad(k, 'must be negative or positive');
-  }
+  if (raw.lh !== undefined) { if (oneOf(LH_RESULTS, raw.lh)) d.lh = raw.lh; else bad('lh', 'must be negative, positive, high, peak or indeterminate'); }
+  if (raw.pregTest !== undefined) { if (oneOf(RESULT, raw.pregTest)) d.pregTest = raw.pregTest; else bad('pregTest', 'must be negative or positive'); }
   if (raw.mucus !== undefined) {
     const m = raw.mucus;
     if (!isObj(m) || !oneOf(MUCUS, m.quality)) bad('mucus', 'needs a quality of dry, sticky, creamy, watery or eggwhite');
@@ -143,7 +148,7 @@ export function validateSanguineData(x: unknown): { data: SanguineData; problems
   if (typeof x.version !== 'number' || !Number.isInteger(x.version) || x.version < 1) throw new FormatError('the file has no version');
   if (x.version > VERSION) throw new FormatError('this file was made by a newer version of Sanguine');
   const problems: string[] = [];
-  unknownKeys('file', x, ['format', 'version', 'exportedAt', 'source', 'days', 'lifeStates', 'cycleMarks'], problems);
+  unknownKeys('file', x, ['format', 'version', 'exportedAt', 'source', 'days', 'lifeStates', 'cycleMarks', 'periodMarks'], problems);
   if (!Array.isArray(x.days)) throw new FormatError('the file has no days list');
 
   const byDate = new Map<string, Day>();
@@ -174,6 +179,15 @@ export function validateSanguineData(x: unknown): { data: SanguineData; problems
       else cycleMarks.push({ cycleStart: m.cycleStart, mark: m.mark });
     });
   }
+  const periodMarks: PeriodMark[] = [];
+  if (x.periodMarks !== undefined) {
+    if (!Array.isArray(x.periodMarks)) problems.push('periodMarks must be a list');
+    else x.periodMarks.forEach((m, i) => {
+      if (!isObj(m) || !isDay(m.day) || !oneOf(['start', 'end'] as const, m.mark)) problems.push(`period mark ${i + 1}: needs a day and a mark of start or end`);
+      else if (m.merge !== undefined && (typeof m.merge !== 'boolean' || m.mark !== 'start')) problems.push(`period mark ${i + 1}: merge is true or false and only for a start`);
+      else periodMarks.push({ day: m.day, mark: m.mark, ...(m.merge !== undefined ? { merge: m.merge as boolean } : {}) });
+    });
+  }
   if (x.source !== undefined && (!isObj(x.source) || typeof x.source.app !== 'string')) problems.push('source needs an app name');
   if (x.exportedAt !== undefined && typeof x.exportedAt !== 'string') problems.push('exportedAt must be text');
 
@@ -184,6 +198,7 @@ export function validateSanguineData(x: unknown): { data: SanguineData; problems
     days: [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1)),
     ...(lifeStates.length ? { lifeStates } : {}),
     ...(cycleMarks.length ? { cycleMarks } : {}),
+    ...(periodMarks.length ? { periodMarks } : {}),
   };
   return { data, problems };
 }
