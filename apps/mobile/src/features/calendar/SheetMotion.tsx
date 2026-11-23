@@ -6,6 +6,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets';
 import { useTheme } from '@/theme';
 import { GlassSurface } from '@/ui/GlassBar';
+import { TAB_BAR_INSET } from '@/ui/Screen';
 import { type Detent, dragHeight, SPRING, type Snaps, settle, shownAt, snapDetent } from './sheetSnap';
 
 /** Gap above the tab bar (as Screen's floating action) and the room the large detent leaves under the status bar. */
@@ -102,7 +103,9 @@ export function SheetMotion({ detent, onDetent, maxSmall, scrim, onInset, childr
     });
 
   // full width and opaque at the large detent, inset glass below it; the scrim darkens in step
-  const sheetStyle = useAnimatedStyle(() => ({ height: h.value, marginHorizontal: interpolate(h.value, [snaps.value.small, snaps.value.large], [SIDE, 0], Extrapolation.CLAMP) }));
+  // on iOS the closed bar and the small sheet line up with the tab bar's edges (D-158); the frames' 10 pt stays elsewhere
+  const side = t.isIOS ? TAB_BAR_INSET : SIDE;
+  const sheetStyle = useAnimatedStyle(() => ({ height: h.value, marginHorizontal: interpolate(h.value, [snaps.value.small, snaps.value.large], [side, 0], Extrapolation.CLAMP) }));
   const fillStyle = useAnimatedStyle(() => ({ minHeight: h.value }));
   const opaqueStyle = useAnimatedStyle(() => ({ opacity: interpolate(h.value, [snaps.value.small, snaps.value.large], [0, 1], Extrapolation.CLAMP) }));
   const scrimStyle = useAnimatedStyle(() => ({ opacity: interpolate(h.value, [snaps.value.small, snaps.value.large], [0, 0.6], Extrapolation.CLAMP) }));
@@ -127,7 +130,7 @@ export function SheetMotion({ detent, onDetent, maxSmall, scrim, onInset, childr
           <Animated.View style={[{ borderRadius: radius, boxShadow: '0 1px 2px rgba(31,26,28,0.06), 0 14px 36px rgba(31,26,28,0.16)' }, measured.closed > 0 ? sheetStyle : null]}>
             <View style={{ borderRadius: radius, overflow: 'hidden', ...(measured.closed > 0 ? { flex: 1 } : null) }}>
               {/* legible glass: the month list scrolling beneath must not read through the bar or the sheet (D-130, fix plan X1/C1) */}
-              <GlassSurface flat legible style={{ borderRadius: radius }}>
+              <GlassSurface flat legible="soft" style={{ borderRadius: radius }}>
                 <Animated.View style={fillStyle}>
                   <Animated.View pointerEvents="none" style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: t.screenBg }, opaqueStyle]} />
                   <View onLayout={(e) => measure(e.nativeEvent.layout.height)}>
