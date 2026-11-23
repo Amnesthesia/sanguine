@@ -60,7 +60,7 @@ export const splitSources = (line: string): string[] => line.split(/\.\s+/).map(
 const firstSentence = (s: string): string => s.match(/^.*?\.(?=\s|$)/)?.[0] ?? s;
 
 /** "What is changing": the hormone curve and the phase's body copy. `compact` (the day sheet): the short curve, the phase on the right and one sentence. */
-export function BodyCard({ day, compact = false }: { day: GuideDay; compact?: boolean }) {
+export function BodyCard({ day, compact = false, extras = false }: { day: GuideDay; compact?: boolean; extras?: boolean }) {
   const { t } = useTranslation();
   const p = day.phase;
   const body = t(`guidance.${p}.body`);
@@ -70,16 +70,17 @@ export function BodyCard({ day, compact = false }: { day: GuideDay; compact?: bo
         <Text variant="heading" accessibilityRole="header">{t('guidance.bodyLabel')}</Text>
         {compact ? <Text variant="caption" color="textSecondary">{t(day.expected ? 'guidance.phaseExpected' : 'guidance.phaseLine', { phase: t(`guidance.phase.${p}`) })}</Text> : null}
       </View>
-      <HormoneCurve day={day} compact={compact} />
+      <HormoneCurve day={day} compact={compact} extras={extras} />
       <Text variant={compact ? 'bodySmall' : 'body'}>{compact ? firstSentence(body) : body}</Text>
     </Card>
   );
 }
 
 /** Compact is a summary; its Read more button (Today) must say where it goes. Without `onMore` the caller places its own link (the day screen). */
-type Props = { day: GuideDay; supplements: boolean } & ({ compact: true; onMore?: () => void } | { compact: false; onMore?: never });
+/** `extras`: draw LH, FSH and temperature on the curve (only while the ovulation estimate is shown, D-155). */
+type Props = { day: GuideDay; supplements: boolean; extras?: boolean } & ({ compact: true; onMore?: () => void } | { compact: false; onMore?: never });
 
-export function GuidanceSections({ day, supplements, compact, onMore }: Props) {
+export function GuidanceSections({ day, supplements, extras = false, compact, onMore }: Props) {
   const { t } = useTranslation();
   const p = day.phase;
   const g = GUIDANCE[p];
@@ -92,6 +93,7 @@ export function GuidanceSections({ day, supplements, compact, onMore }: Props) {
           <Text variant="heading" accessibilityRole="header">{t('guidance.title')}</Text>
           <Text variant="caption" color="textSecondary" testID={`guidance-phase-${p}`}>{phase}</Text>
         </View>
+        <HormoneCurve day={day} compact extras={extras} />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <Tile label={t('guidance.foodLabel')} text={t(`guidance.summary.${p}.food`)} evidence={best(g.foods.map((f) => f.evidence))} />
           <Tile label={t('guidance.moveLabel')} text={t(`guidance.summary.${p}.move`)} evidence={g.move} />
@@ -109,7 +111,7 @@ export function GuidanceSections({ day, supplements, compact, onMore }: Props) {
         <Text variant="caption" color="textSecondary" testID={`guidance-phase-${p}`}>{phase}</Text>
       </View>
 
-      <BodyCard day={day} />
+      <BodyCard day={day} extras={extras} />
 
       {g.foods.map((f) => <NoteCard key={f.id} testID={`guidance-food-${f.id}`} title={t(`guidance.foodName.${f.id}`)} evidence={f.evidence} tip={t(`guidance.food.${f.id}.tip`)} why={t(`guidance.food.${f.id}.why`)} />)}
       <NoteCard testID="guidance-move-note" title={t('guidance.moveLabel')} evidence={g.move} tip={t(`guidance.${p}.move.tip`)} why={t(`guidance.${p}.move.why`)} />

@@ -99,7 +99,7 @@ export default function DayDetail() {
         </View>
       ) : null}
       <View {...anchor('estimates')}><DayEstimateRows lines={lines} future={isFuture} note bar={isFuture && live?.nextPeriod ? { next: live.nextPeriod, day } : undefined} /></View>
-      {guide ? <View {...anchor('guidance')}><GuidanceSections day={guide} supplements={showSupplements(eff.teen)} compact /></View> : null}
+      {guide ? <View {...anchor('guidance')}><GuidanceSections day={guide} supplements={showSupplements(eff.teen)} extras={showEstimate} compact /></View> : null}
       {live || guide ? <MoreAboutThisCycle /> : null}
     </SubScreen>
   );

@@ -63,7 +63,7 @@ export function ThisCycle() {
         <Text>{tr('insights.thisCycle.intro')}</Text>
       </View>
       {est ? <EstimateSections {...est} /> : null}
-      {guide ? <GuidanceSections day={guide} supplements={showSupplements(eff.teen)} compact={false} /> : null}
+      {guide ? <GuidanceSections day={guide} supplements={showSupplements(eff.teen)} extras={showEstimate} compact={false} /> : null}
       <View testID="this-cycle-sources" style={{ gap: 8 }}>
         <Text variant="heading" accessibilityRole="header">{tr('estimates.how.sources')}</Text>
         <Sources items={sources} />

@@ -184,7 +184,7 @@ export default function TodayScreen() {
       {shownFlags.slice(0, 1).map((f) => <FlagCard key={f.code} f={f} onMute={(c) => void muteFlag(c)} />)}
       {guide ? (
         <View style={{ gap: 12 }} {...anchor('guidance')}>
-          <GuidanceSections compact day={guide} supplements={showSupplements(eff.teen)} onMore={openReadMore} />
+          <GuidanceSections compact day={guide} supplements={showSupplements(eff.teen)} extras={showEstimate} onMore={openReadMore} />
           {energyLow ? <Card><Text variant="bodySmall" testID="guidance-energy-low">{t('guidance.energyLow')}</Text></Card> : null}
         </View>
       ) : null}

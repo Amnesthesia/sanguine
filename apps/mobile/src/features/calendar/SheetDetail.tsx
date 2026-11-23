@@ -47,7 +47,7 @@ export function SheetDetail({ day, pastOv, periodDays, showEstimate, includeUnce
   return (
     <>
       <DayEstimateRows lines={lines} future={day > today} />
-      {guide ? <BodyCard day={guide} compact /> : null}
+      {guide ? <BodyCard day={guide} compact extras={showEstimate} /> : null}
       <MoreAboutThisCycle />
     </>
   );

@@ -30,12 +30,14 @@ const prediction = {
 } as unknown as Prediction;
 const pastOv: PastOvulation[] = [];
 const texts = (c: HTMLElement) => [...c.querySelectorAll('svg text')];
-const heights = (c: HTMLElement) => [...c.querySelectorAll('svg')].map((s) => Number(s.getAttribute('viewBox')?.split(' ')[3]));
+// the legend's line samples are fixed-size and hidden from screen readers; only the pictures grow
+const heights = (c: HTMLElement) => [...c.querySelectorAll('svg:not([aria-hidden])')].map((s) => Number(s.getAttribute('viewBox')?.split(' ')[3]));
 const sizes = (c: HTMLElement) => texts(c).map((x) => Number(x.getAttribute('font-size')));
 const estimates = () => render(<EstimateSections prediction={prediction} day="2026-11-02" pastOv={pastOv} cycleStarts={['2026-10-31']} periodDays={new Set(['2026-10-31'])} showEstimate includeUncertain periodLengths={[5, 4]} />).container;
 const curve = (phase: 'ovulatory' | 'luteal' = 'ovulatory') => render(<HormoneCurve day={{ phase, expected: false }} />).container;
+const curveExtras = () => render(<HormoneCurve day={{ phase: 'luteal', expected: false }} extras />).container;
 
-describe.each([['estimate pictures', estimates], ['hormone curve', curve]] as const)('%s', (_n, draw) => {
+describe.each([['estimate pictures', estimates], ['hormone curve', curve], ['hormone curve with LH, FSH and temperature', curveExtras]] as const)('%s', (_n, draw) => {
   it('draw their text at the base size at normal text size', () => {
     scale.value = 1;
     const c = draw();
@@ -64,5 +66,18 @@ describe.each([['estimate pictures', estimates], ['hormone curve', curve]] as co
       expect(x).toBeGreaterThanOrEqual(0);
       expect(x).toBeLessThanOrEqual(326);
     }
+  });
+});
+
+describe('curve legend (D-155)', () => {
+  it('LH, FSH and temperature are drawn, with a legend, only when extras is on', () => {
+    scale.value = 1;
+    const plain = curve('luteal');
+    expect(plain.querySelector('[data-testid="hormone-legend"]')).toBeNull();
+    cleanup();
+    const more = curveExtras();
+    const legend = more.querySelector('[data-testid="hormone-legend"]');
+    expect(legend?.textContent).toMatch(/Estrogen.*Progesterone.*LH.*FSH.*Temperature/);
+    expect(more.querySelector('svg')?.getAttribute('aria-label') ?? more.innerHTML).toContain('luteinising');
   });
 });

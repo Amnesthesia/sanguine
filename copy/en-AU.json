@@ -1284,6 +1284,12 @@
       "lineOne": "Ovulation most likely {point}.",
       "linePastOne": "Ovulation was most likely {point}.",
       "curveLabel": "ovulation",
+      "curve": {
+        "lh": "LH",
+        "fsh": "FSH",
+        "temperature": "Temperature",
+        "labelExtras": "LH (luteinising hormone) peaks briefly around the middle; FSH (follicle-stimulating hormone) is highest early; body temperature steps up a little in the second half."
+      },
       "stripStart": "This cycle from day 1",
       "stripOvulation": "ovulation estimate days {lo} to {hi}, most likely day {point}",
       "stripFertile": "fertile window estimate from day {lo} to day {hi}",
