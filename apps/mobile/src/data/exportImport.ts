@@ -4,6 +4,7 @@ import { ENGINE_VERSION } from '@sanguine/engine';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import exportCopy from '../../../../copy/export.en-AU.json';
 import { parseCsv, toCsv } from './csv';
+import { exportSanguineData } from './format/exportSanguineData';
 import type { Database } from './database';
 import { type EventRow, validateEvent } from './events';
 import type { Clock } from './ids';
@@ -15,7 +16,7 @@ export const EXPORT_VERSION = 1;
 export interface ExportResult { zip: Uint8Array; eventCount: number }
 
 /** `forBackup` leaves out what came only from HealthKit and the derived CSVs (they would carry the same days): Apple does not allow HealthKit data in iCloud (PLAN.md §7.6). */
-export async function exportBundle(db: Database, store: EventStore, clock: Clock, o: { forBackup?: boolean } = {}): Promise<ExportResult> {
+export async function exportBundle(db: Database, store: EventStore, clock: Clock, o: { forBackup?: boolean; noteKey?: Uint8Array } = {}): Promise<ExportResult> {
   let events = await store.events();
   if (o.forBackup) {
     // by the id prefix the sync writes, not by a link: a link is removed when the platform deletes the record, and the event must stay out of the backup
@@ -50,6 +51,8 @@ export async function exportBundle(db: Database, store: EventStore, clock: Clock
     'manifest.json': strToU8(JSON.stringify({ format: EXPORT_FORMAT, version: EXPORT_VERSION, exported_at: clock.iso(), engine_version: ENGINE_VERSION, events: events.length, cycles: cycles.length }, null, 2)),
     'README.md': strToU8(exportCopy.readme),
   };
+  // the user's copy only: it carries notes in plain text, which a backup must never do
+  if (!o.forBackup) files['sanguine-data.json'] = strToU8(JSON.stringify((await exportSanguineData(db, store, { ...(o.noteKey ? { noteKey: o.noteKey } : {}), exportedAt: clock.iso() })).data, null, 2));
   if (o.forBackup) for (const f of ['cycles.csv', 'daily.csv', 'biomarkers.csv', 'README.md']) delete files[f];
   return { zip: zipSync(files), eventCount: events.length };
 }

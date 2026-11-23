@@ -31,6 +31,16 @@ async function populate(store: EventStore) {
   await store.append({ kind: 'life_state.set', payload: { kind: 'perimenopause', detail: {}, day: '2026-01-01' } });
 }
 
+describe('sanguine-data.json in the bundle', () => {
+  it('is in the user export and never in a backup', async () => {
+    const { db, store, clk } = await fresh();
+    await populate(store);
+    const user = unzipSync((await exportBundle(db, store, clk)).zip);
+    expect(JSON.parse(strFromU8(user['sanguine-data.json'] as Uint8Array)).format).toBe('sanguine-data');
+    expect(unzipSync((await exportBundle(db, store, clk, { forBackup: true })).zip)['sanguine-data.json']).toBeUndefined();
+  });
+});
+
 describe('csv helpers', () => {
   it('quotes commas, quotes and newlines and parses them back', () => {
     const rows = [['a,b', 'say "hi"', 'x\ny', '']];
