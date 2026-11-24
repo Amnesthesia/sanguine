@@ -106,13 +106,19 @@ export async function importSanguineData(db: Database, store: EventStore, data: 
     const covering = await db.get<{ n: number }>(
       `SELECT count(*) AS n FROM life_state l JOIN event e ON e.id = l.event_id WHERE l.kind = ? AND l.from_day <= ? AND (l.until_day IS NULL OR l.until_day >= ?)
          AND NOT (e.provenance = 'imported' AND e.source_app = ?)`, [s.kind, s.start, s.start, o.sourceApp]);
-    const held = (covering?.n ?? 0) > 0;
-    if (held) keptDays.add(`life:${s.kind}:${s.start}`);
-    const set = held ? 'kept' as const : add(`${s.start}:life:${s.kind}`, s.start, 'life_state.set', { kind: s.kind, detail: s.detail ?? {}, day: s.start });
-    if (!s.end) continue;
-    // The projector closes the latest open span of the kind, so an end is only safe next to the start written in this same import.
-    if (set === 'written') add(`${s.end}:life_end:${s.kind}`, s.end, 'life_state.end', { kind: s.kind, ...(s.outcome ? { outcome: s.outcome } : {}), day: s.end });
-    else if (set !== 'duplicate') keptDays.add(`life:${s.kind}:${s.start}`);
+    const keptSpan = () => { keptDays.add(`life:${s.kind}:${s.start}`); };
+    if ((covering?.n ?? 0) > 0) { keptSpan(); continue; }
+    const setId = `${s.start}:life:${s.kind}`;
+    const setDone = inFile.has(`${o.sourceApp}:${setId}`) ? 'duplicate' : known.has(`${o.sourceApp}:${setId}`) ? 'skipped' : undefined;
+    if (!s.end) { add(setId, s.start, 'life_state.set', { kind: s.kind, detail: s.detail ?? {}, day: s.start }); continue; }
+    // A closed span is a pair: the projector closes the latest open span of the kind, so the end is written only with its own start in this import,
+    // and its id carries the start too, so a corrected start gets a new end. If the end cannot be written the whole pair is skipped.
+    const endId = `${s.start}:${s.end}:life_end:${s.kind}`;
+    if (setDone === 'duplicate') { duplicates++; continue; }
+    if (setDone === 'skipped') { skipped++; keptSpan(); continue; }
+    if (inFile.has(`${o.sourceApp}:${endId}`) || known.has(`${o.sourceApp}:${endId}`)) { skipped++; continue; }
+    add(setId, s.start, 'life_state.set', { kind: s.kind, detail: s.detail ?? {}, day: s.start });
+    add(endId, s.end, 'life_state.end', { kind: s.kind, ...(s.outcome ? { outcome: s.outcome } : {}), day: s.end });
   }
   for (const m of data.cycleMarks ?? []) add(`${m.cycleStart}:mark:${m.mark}`, m.cycleStart, `cycle.${m.mark}`, { cycle_start: m.cycleStart });
   for (const m of data.periodMarks ?? []) {

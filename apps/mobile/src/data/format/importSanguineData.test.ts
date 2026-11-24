@@ -56,7 +56,7 @@ describe('importSanguineData (D-159)', () => {
       cycleMarks: [{ cycleStart: '2026-08-01', mark: 'exclude' }, { cycleStart: '2026-07-01', mark: 'confirm_long' }],
     }), opts());
     expect(r.added).toBe(5);
-    expect(await ids()).toEqual(expect.arrayContaining(['natural_cycles:2026-01-01:life:pregnant', 'natural_cycles:2026-09-20:life_end:pregnant', 'natural_cycles:2026-08-01:mark:exclude', 'natural_cycles:2026-07-01:mark:confirm_long']));
+    expect(await ids()).toEqual(expect.arrayContaining(['natural_cycles:2026-01-01:life:pregnant', 'natural_cycles:2026-01-01:2026-09-20:life_end:pregnant', 'natural_cycles:2026-08-01:mark:exclude', 'natural_cycles:2026-07-01:mark:confirm_long']));
     expect(await db.all('SELECT kind, from_day, until_day FROM life_state ORDER BY from_day')).toEqual([{ kind: 'pregnant', from_day: '2026-01-01', until_day: '2026-09-20' }, { kind: 'perimenopause', from_day: '2026-10-01', until_day: null }]);
   });
   it('notes are dropped and counted without a key', async () => {
@@ -167,5 +167,58 @@ describe('review fixes (D-159)', () => {
     const { problems, db2 } = await roundTrip(store, db);
     expect(problems).toEqual([]);
     expect(await db2.all('SELECT value FROM biomarker WHERE type = ?', ['lh'])).toEqual([{ value: JSON.stringify({ result }) }]);
+  });
+});
+
+describe('round trip keeps the projector rules (D-159)', () => {
+  const rt = async () => {
+    const { data } = await exportSanguineData(db, store, { exportedAt: '2026-10-10T00:00:00Z', noteKey: KEY });
+    const checked = validateSanguineData(JSON.parse(JSON.stringify(data)));
+    const db2 = openTestDb();
+    await migrate(db2);
+    const store2 = new EventStore(db2, clock);
+    await importSanguineData(db2, store2, checked.data, opts({ sourceApp: 'sanguine', noteKey: KEY }));
+    return { problems: checked.problems, db2, data };
+  };
+  it('a corrected closed span is written as a pair, never a start without its end', async () => {
+    await importSanguineData(db, store, file([], { lifeStates: [{ kind: 'pregnant', start: '2026-01-01', end: '2026-02-01' }] }), opts());
+    await importSanguineData(db, store, file([], { lifeStates: [{ kind: 'pregnant', start: '2026-01-02', end: '2026-02-01' }] }), opts());
+    expect(await db.all('SELECT from_day, until_day FROM life_state ORDER BY from_day')).toEqual([{ from_day: '2026-01-01', until_day: '2026-02-01' }, { from_day: '2026-01-02', until_day: '2026-02-01' }]);
+  });
+  it('a closed span whose end is already known is skipped whole, not half written', async () => {
+    const f = file([], { lifeStates: [{ kind: 'pregnant', start: '2026-01-01', end: '2026-02-01' }] });
+    await importSanguineData(db, store, f, opts());
+    const r = await importSanguineData(db, store, f, opts());
+    expect(r.added).toBe(0);
+    expect(await db.all('SELECT until_day FROM life_state')).toEqual([{ until_day: '2026-02-01' }]);
+  });
+  it('explicit no-flow days keep two periods apart through the round trip', async () => {
+    for (const [day, level] of [['2026-09-01', 'medium'], ['2026-09-03', 'none'], ['2026-09-04', 'none'], ['2026-09-06', 'medium']]) await store.append({ kind: 'flow', payload: { day, level, flow_kind: 'period' } });
+    const before = await db.all('SELECT start_day, end_day FROM cycle ORDER BY start_day');
+    expect(before).toHaveLength(2);
+    const { problems, db2 } = await rt();
+    expect(problems).toEqual([]);
+    expect(await db2.all('SELECT start_day, end_day FROM cycle ORDER BY start_day')).toEqual(before);
+  });
+  it('a no-flow day that also carries a symptom keeps both', async () => {
+    await store.append({ kind: 'flow', payload: { day: '2026-09-03', level: 'none', flow_kind: 'period' } });
+    await store.append({ kind: 'symptom', payload: { day: '2026-09-03', code: 'cramps', intensity: 2 } });
+    const { db2 } = await rt();
+    expect(await db2.get('SELECT flow, symptoms FROM daily_log')).toEqual(await db.get('SELECT flow, symptoms FROM daily_log'));
+  });
+  it('the latest merge answer for a period start wins, in the export and after import', async () => {
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-01' } });
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-04', merge: false } });
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-04', merge: true } });
+    await store.append({ kind: 'period.start', payload: { day: '2026-09-04' } }); // no answer: the earlier answer stands
+    const before = await db.all('SELECT start_day, end_day FROM cycle ORDER BY start_day');
+    const { data, db2 } = await rt();
+    expect(data.periodMarks).toEqual([{ day: '2026-09-01', mark: 'start' }, { day: '2026-09-04', mark: 'start', merge: true }]);
+    expect(await db2.all('SELECT start_day, end_day FROM cycle ORDER BY start_day')).toEqual(before);
+  });
+  it('the validator reports a period mark listed twice and keeps the first', () => {
+    const { data, problems } = validateSanguineData({ format: 'sanguine-data', version: 1, days: [], periodMarks: [{ day: '2026-09-01', mark: 'start', merge: false }, { day: '2026-09-01', mark: 'start', merge: true }, { day: '2026-09-01', mark: 'end' }] });
+    expect(problems).toHaveLength(1);
+    expect(data.periodMarks).toEqual([{ day: '2026-09-01', mark: 'start', merge: false }, { day: '2026-09-01', mark: 'end' }]);
   });
 });

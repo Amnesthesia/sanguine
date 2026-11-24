@@ -17,7 +17,8 @@ export type Temperature = { valueC: number; type: 'bbt' | 'skin_temp'; time?: st
 
 export interface Day {
   date: ISODate;
-  flow?: { level: 'spotting' | Level3; kind?: FlowKind; clots?: boolean };
+  /** `none` is the person's explicit "no bleeding" for the day: it keeps two periods apart (project.ts explicitNones). Adapters never emit it. */
+  flow?: { level: 'none' | 'spotting' | Level3; kind?: FlowKind; clots?: boolean };
   /** The first reading of a type is the day's value; more are allowed (several measurements a day). */
   temperatures?: Temperature[];
   lh?: LhResult;
@@ -52,7 +53,7 @@ const isDay = (v: unknown): v is ISODate => typeof v === 'string' && DAY.test(v)
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const oneOf = <T extends string>(list: readonly T[], v: unknown): v is T => typeof v === 'string' && (list as readonly string[]).includes(v);
 const LEVEL3 = ['light', 'medium', 'heavy'] as const;
-const FLOW_LEVELS = ['spotting', ...LEVEL3] as const;
+const FLOW_LEVELS = ['none', 'spotting', ...LEVEL3] as const;
 const MUCUS = ['dry', 'sticky', 'creamy', 'watery', 'eggwhite'] as const;
 const RESULT = ['negative', 'positive'] as const;
 const TEMP_TYPES = ['bbt', 'skin_temp'] as const;
@@ -76,7 +77,7 @@ function parseDay(raw: unknown, where: string, problems: string[]): Day | undefi
 
   if (raw.flow !== undefined) {
     const f = raw.flow;
-    if (!isObj(f) || !oneOf(FLOW_LEVELS, f.level)) bad('flow', 'needs a level of spotting, light, medium or heavy');
+    if (!isObj(f) || !oneOf(FLOW_LEVELS, f.level)) bad('flow', 'needs a level of none, spotting, light, medium or heavy');
     else if (f.kind !== undefined && !oneOf(FLOW_KINDS, f.kind)) bad('flow.kind', 'is not a known kind');
     else if (f.clots !== undefined && typeof f.clots !== 'boolean') bad('flow.clots', 'must be true or false');
     else d.flow = { level: f.level, ...(f.kind !== undefined ? { kind: f.kind as FlowKind } : {}), ...(f.clots !== undefined ? { clots: f.clots as boolean } : {}) };
@@ -185,6 +186,7 @@ export function validateSanguineData(x: unknown): { data: SanguineData; problems
     else x.periodMarks.forEach((m, i) => {
       if (!isObj(m) || !isDay(m.day) || !oneOf(['start', 'end'] as const, m.mark)) problems.push(`period mark ${i + 1}: needs a day and a mark of start or end`);
       else if (m.merge !== undefined && (typeof m.merge !== 'boolean' || m.mark !== 'start')) problems.push(`period mark ${i + 1}: merge is true or false and only for a start`);
+      else if (periodMarks.some((x) => x.day === m.day && x.mark === m.mark)) problems.push(`period mark ${i + 1}: ${m.day} ${m.mark} is listed twice, the first is kept`);
       else periodMarks.push({ day: m.day, mark: m.mark, ...(m.merge !== undefined ? { merge: m.merge as boolean } : {}) });
     });
   }

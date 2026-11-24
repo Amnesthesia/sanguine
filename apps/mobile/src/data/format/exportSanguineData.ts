@@ -18,7 +18,7 @@ export async function exportSanguineData(db: Database, store: EventStore, o: { n
 
   for (const r of await db.all<DayRow>('SELECT * FROM daily_log ORDER BY day')) {
     const d = get(r.day);
-    if (r.flow && r.flow !== 'none') d.flow = { level: r.flow as 'spotting' | 'light' | 'medium' | 'heavy', ...(r.flow_kind ? { kind: r.flow_kind as FlowKind } : {}), ...(r.clots ? { clots: true } : {}) };
+    if (r.flow) d.flow = { level: r.flow as 'none' | 'spotting' | 'light' | 'medium' | 'heavy', ...(r.flow_kind ? { kind: r.flow_kind as FlowKind } : {}), ...(r.clots ? { clots: true } : {}) };
     const symptoms = (JSON.parse(r.symptoms) as Array<{ code: string; intensity: 1 | 2 | 3 }>).map((s) => ({ code: s.code, intensity: s.intensity }));
     if (symptoms.length) d.symptoms = symptoms;
     if (r.sex) d.sex = { protected: (JSON.parse(r.sex) as { protected: boolean }).protected };
@@ -66,11 +66,17 @@ export async function exportSanguineData(db: Database, store: EventStore, o: { n
     cycleMarks.push({ cycleStart: (JSON.parse(e.payload) as { cycle_start: string }).cycle_start as CycleMark['cycleStart'], mark: e.kind === 'cycle.exclude' ? 'exclude' : 'confirm_long' });
   }
 
+  // One mark per day and kind, as the projector reads them: in log order the latest explicit merge answer for a start day wins, and a start without an answer leaves it.
   const periodMarks: PeriodMark[] = [];
+  const markAt = new Map<string, PeriodMark>();
   for (const e of active) {
     if (e.kind !== 'period.start' && e.kind !== 'period.end') continue;
-    const merge = e.kind === 'period.start' ? (JSON.parse(e.payload) as { merge?: unknown }).merge : undefined;
-    periodMarks.push({ day: e.effective_day as PeriodMark['day'], mark: e.kind === 'period.start' ? 'start' : 'end', ...(typeof merge === 'boolean' ? { merge } : {}) });
+    const mark = e.kind === 'period.start' ? 'start' : 'end';
+    const key = `${e.effective_day}:${mark}`;
+    let m = markAt.get(key);
+    if (!m) { m = { day: e.effective_day as PeriodMark['day'], mark }; markAt.set(key, m); periodMarks.push(m); }
+    const merge = mark === 'start' ? (JSON.parse(e.payload) as { merge?: unknown }).merge : undefined;
+    if (typeof merge === 'boolean') m.merge = merge;
   }
 
   const days = [...byDay.values()].sort((a, b) => (a.date < b.date ? -1 : 1)).filter((d) => Object.keys(d).length > 1);

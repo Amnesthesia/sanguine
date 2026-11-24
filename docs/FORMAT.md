@@ -64,6 +64,19 @@ Only flow, temperatures, `lh`, `mucus`, `cervix` and life states. Symptoms, ener
 - Each imported value is an `imported` event with `external_id` `<source app>:<date>:<field>`, so importing the same file twice adds nothing.
 - The device's own entry wins: a field the person logged by hand on that day is kept and counted, never overwritten.
 
+## Round trip
+
+Exporting our own file and importing it on a fresh install reproduces the cycles, daily log, biomarkers and life states the app derived (a generated test checks this, `roundTrip.test.ts`). Retracted entries are not exported. `flow.level` `none` (the person's explicit "no bleeding") is kept, because it keeps two periods apart; adapters never write it. `periodMarks` hold one start and one end per day: the latest merge answer for a start day wins, as in the app. A closed life state is written as a pair: its end only goes in with its own start.
+
+Known limits, each covered by a test:
+
+- One `lh`, `mucus`, `cervix` and `pregTest` per day: if the person logged several, the latest is exported.
+- Progesterone has no field and is not exported.
+- A temperature source the format does not know (not oral, vaginal, other, wrist or finger for its type) comes back as the default for its type. An LH, mucus or cervix source is rewritten to the one the importer uses (strip or app).
+- A day whose only trace was a cleared symptom or energy rating has no entry in the file.
+- Two life states of one kind that start on the same day come back as one.
+- `asked_on` of a period answer is not exported.
+
 ## Versioning
 
 Within version 1 only optional fields are added. A change that removes or reinterprets a field is version 2. Readers ignore nothing silently: an unknown field is reported.

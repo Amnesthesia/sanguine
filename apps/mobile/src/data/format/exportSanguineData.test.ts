@@ -43,7 +43,7 @@ describe('exportSanguineData', () => {
     expect(validateSanguineData(JSON.parse(JSON.stringify(data))).problems).toEqual([]);
     const by = Object.fromEntries(data.days.map((d) => [d.date, d]));
     expect(by['2026-09-01']).toMatchObject({ flow: { level: 'medium', kind: 'period', clots: true }, symptoms: [{ code: 'cramps', intensity: 2 }], energy: 3 });
-    expect(by['2026-09-02']).toBeUndefined();
+    expect(by['2026-09-02']?.flow).toEqual({ level: 'none', kind: 'period' }); // explicit no-flow is kept: it separates periods
     expect(by['2026-09-03']).toMatchObject({ sex: { protected: true }, note: 'felt fine' });
     expect(by['2026-09-10']?.temperatures).toEqual([{ valueC: 36.42, type: 'bbt', time: '06:40', source: 'oral', disturbed: true }]);
     expect(by['2026-09-11']).toMatchObject({ lh: 'positive', mucus: { quality: 'eggwhite', amount: 'heavy' } });
