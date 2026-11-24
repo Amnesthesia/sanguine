@@ -90,8 +90,8 @@ export function readZipEntry(bytes: Uint8Array, entry: ZipEntry, password?: stri
   if (entry.aes) throw new ZipUnsupported('AES encryption');
   if (entry.method !== 0 && entry.method !== 8) throw new ZipUnsupported(`method ${entry.method}`);
   if (entry.size > MAX_ENTRY_BYTES || entry.compSize > MAX_ENTRY_BYTES) throw new ZipTooLarge('entry too large');
-  // An empty deflate stream is 2 bytes (plus the 12-byte header when encrypted).
-  if (entry.method === 8 && entry.size === 0 && entry.compSize > (entry.encrypted ? 14 : 2)) throw new ZipCorrupt('empty entry with data');
+  // An empty deflate stream is 2 bytes (fixed block) or 5 (stored block); allow a few more so a different encoder still works, but no real work (plus the 12-byte header when encrypted).
+  if (entry.method === 8 && entry.size === 0 && entry.compSize > (entry.encrypted ? 28 : 16)) throw new ZipCorrupt('empty entry with data');
   if (entry.method === 0 && entry.compSize !== entry.size + (entry.encrypted ? 12 : 0)) throw new ZipCorrupt('size mismatch');
   const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const o = entry.localOffset;

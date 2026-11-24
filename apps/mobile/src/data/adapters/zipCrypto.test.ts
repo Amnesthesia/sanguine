@@ -220,6 +220,12 @@ describe('zipCrypto', () => {
     expect(() => readZipFiles(z, (n) => n === 'a')).not.toThrow(ZipTooLarge);
   });
 
+  it('an empty entry in either valid DEFLATE form (stored block, fixed block) still reads', () => {
+    for (const stream of [[0x01, 0x00, 0x00, 0xff, 0xff], [0x03, 0x00]]) {
+      expect(readZipFiles(handmade(8, new Uint8Array(stream), 0))['a.bin']).toEqual(new Uint8Array(0));
+    }
+  });
+
   it('a size-0 entry with a large stream fails fast', () => {
     const z = handmade(8, new Uint8Array(5 * 1024 * 1024), 0);
     const t0 = performance.now();
