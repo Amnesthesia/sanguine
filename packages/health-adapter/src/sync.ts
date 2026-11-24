@@ -13,7 +13,7 @@ export async function syncType(d: PlatformDriver, links: LinkStore, sink: EventS
 
   // ---- pull ----
   let read: ReadResult;
-  try { read = await d.read(type, await links.anchor(platform, type), o.since); } catch (e) { report.failed.push({ op: 'read', error: msg(e) }); return report; }
+  try { read = await d.read(type, o.backfill ? null : await links.anchor(platform, type), o.since); } catch (e) { report.failed.push({ op: 'read', error: msg(e) }); return report; }
   for (const k of read.skipped ?? []) report.failed.push({ op: 'read', externalId: k.externalId, error: k.reason });
   const wroteHashes = await links.wroteHashesSince(platform, new Date(Date.parse(o.now) - ECHO_WINDOW_MS).toISOString());
   let events = await sink.events();
@@ -66,7 +66,7 @@ export async function syncType(d: PlatformDriver, links: LinkStore, sink: EventS
   }
 
   // ---- deletions: platform -> Sanguine ----
-  for (const id of read.deleted) {
+  for (const id of o.backfill ? [] : read.deleted) {
     const link = await links.byExternalId(platform, id);
     if (!link) continue;
     const ev = events.find((e) => e.id === link.eventId);
@@ -101,6 +101,6 @@ export async function syncType(d: PlatformDriver, links: LinkStore, sink: EventS
     }
   }
 
-  if (!read.throttled) await links.setAnchor(platform, type, read.anchor, o.now);
+  if (!read.throttled && !o.backfill) await links.setAnchor(platform, type, read.anchor, o.now);
   return report;
 }

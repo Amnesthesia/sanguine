@@ -68,7 +68,12 @@ export interface EventSink {
   retract(eventId: string, o: { provenance: 'imported'; source_app: string }): Promise<SinkEvent>;
 }
 
-export interface SyncOptions { now: string; deviceZone: string; since: string }
+export interface SyncOptions {
+  now: string; deviceZone: string; since: string;
+  /** A one-off pass for a widened window: reads from `since` with no anchor, ignores the read's `deleted` (a fresh read is not a change feed)
+   *  and leaves the stored anchor alone, so the incremental feed (and its deletions) carries on from where it was. */
+  backfill?: boolean;
+}
 export interface SyncReport {
   imported: number; echoed: number; duplicates: number; conflicts: number; retracted: number; written: number; deletedRemote: number;
   /** Deletions the user must confirm (§7.3: a manually confirmed entry is never retracted silently). */

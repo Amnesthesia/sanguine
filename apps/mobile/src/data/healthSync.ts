@@ -1,5 +1,5 @@
 // App-side driver of the health-adapter (PLAN.md §7.2): runs one sync pass per enabled type against the local database.
-import { emptyReport, type HealthType, type Platform, type PlatformDriver, type SyncOptions, type SyncReport, syncType } from '@sanguine/health-adapter';
+import { emptyReport, type HealthType, type PlatformDriver, type SyncOptions, type SyncReport, syncType } from '@sanguine/health-adapter';
 import type { Database } from './database';
 import { sqliteLinks } from './healthLinks';
 import { getSetting, setSetting } from './settings';
@@ -22,14 +22,24 @@ export const isWider = (next: HealthWindow, prev: HealthWindow): boolean => WIDT
 const WIDTH: Record<HealthWindow, number> = { '30d': 0, '1y': 1, '2y': 2, all: 3 };
 const WINDOW_KEY = 'health.syncedWindow';
 
-/** Call before a pass with the current window. If it is wider than the one the last pass used, the platform cursors (anchors) are cleared so the next
- *  read starts from the new `since`: a driver given an anchor only returns changes and never looks further back. The links stay, so records already
- *  imported are recognised and not imported again. Narrowing and an unchanged window do nothing. Nothing stored (an install from before this) counts as
- *  the narrowest window, which costs one bounded, de-duplicated re-read. Runs inside the pass, so it cannot overlap a running sync. */
-export async function reconcileWindow(db: Database, platform: Platform, window: HealthWindow): Promise<void> {
-  const before = await getSetting<HealthWindow>(db, WINDOW_KEY, '30d');
-  if (isWider(window, before)) await db.run('UPDATE health_sync SET anchor = NULL WHERE platform = ?', [platform]);
-  if (before !== window) await setSetting(db, WINDOW_KEY, window);
+/** After the window was widened: one backfill pass over the new, wider range (see SyncOptions.backfill). The anchors are not touched, so deletions made
+ *  before the widening still arrive through the incremental feed. The widest window done is stored only when no read failed, so a failed backfill
+ *  retries on the next pass. Nothing stored (an install from before this) counts as the narrowest window: one bounded, de-duplicated re-read.
+ *  Returns null when the window is not wider than the stored one. */
+export async function backfillWidened(db: Database, store: EventStore, driver: PlatformDriver, types: HealthType[], window: HealthWindow, o: SyncOptions): Promise<SyncReport | null> {
+  const done = await getSetting<HealthWindow>(db, WINDOW_KEY, '30d');
+  if (!isWider(window, done)) return null;
+  const report = await runHealthSync(db, store, driver, types, { ...o, backfill: true });
+  if (!report.failed.some((f) => f.op === 'read')) await setSetting(db, WINDOW_KEY, window);
+  return report;
+}
+
+/** Runs one task at a time, in call order: the foreground, the background task and a backfill must not interleave on the same driver and anchors. */
+let gate: Promise<unknown> = Promise.resolve();
+export function serialize<T>(task: () => Promise<T>): Promise<T> {
+  const run = gate.then(task, task);
+  gate = run.catch(() => undefined);
+  return run;
 }
 
 export function mergeReports(rs: SyncReport[]): SyncReport {

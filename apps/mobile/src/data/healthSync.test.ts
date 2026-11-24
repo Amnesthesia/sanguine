@@ -1,7 +1,7 @@
 import { FakeDriver, localIso } from '@sanguine/health-adapter';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Database } from './database';
-import { activeHealthTypes, mergeReports, reconcileWindow, runHealthSync, sinceFor } from './healthSync';
+import { activeHealthTypes, backfillWidened, mergeReports, runHealthSync, serialize, sinceFor } from './healthSync';
 import type { Clock } from './ids';
 import { migrate } from './migrate';
 import { EventStore } from './store';
@@ -67,31 +67,79 @@ describe('mergeReports and sinceFor', () => {
   });
 });
 
-describe('reconcileWindow', () => {
-  const anchors = async () => (await db.all<{ anchor: string | null }>('SELECT anchor FROM health_sync ORDER BY data_type')).map((r) => r.anchor);
-  const links = async () => (await db.all('SELECT external_id FROM health_link')).length;
-  it('widening clears the anchors but keeps the links; a second sync reads from the new since', async () => {
-    d.seed([foreignFlow('2026-08-04'), foreignFlow('2024-03-01')]);
-    await reconcileWindow(db, d.platform, '30d');
-    await runHealthSync(db, store, d, ['period_flow'], { ...o, since: '2026-08-01T00:00:00Z' });
-    const linked = await links();
-    expect(linked).toBe(1);
-    expect((await anchors())[0]).not.toBeNull();
-    await reconcileWindow(db, d.platform, 'all');
-    expect(await anchors()).toEqual([null]);
-    expect(await links()).toBe(linked);
-    const r = await runHealthSync(db, store, d, ['period_flow'], { ...o, since: sinceFor('all', '2026-10-09') });
-    expect(r.imported).toBe(1); // only the older record: the August one is already linked
-    expect(d.lastAnchor).toBeNull();
+/** Health Connect semantics: no anchor reads the records that exist and carries no deletion feed; an anchor returns the changes, deletions included. */
+class HcLikeDriver extends FakeDriver {
+  override async read(type: Parameters<FakeDriver['read']>[0], anchor: string | null, since: string) {
+    const r = await super.read(type, anchor, since);
+    return anchor === null ? { ...r, deleted: [] } : r;
+  }
+}
+describe('backfillWidened', () => {
+  const anchorOf = async () => (await db.get<{ anchor: string | null }>('SELECT anchor FROM health_sync WHERE data_type = ?', ['period_flow']))?.anchor ?? null;
+  const days = async () => (await db.all<{ day: string }>('SELECT day FROM daily_log ORDER BY day')).map((x) => x.day);
+  const recent = { ...o, since: '2026-08-01T00:00:00Z' };
+  const backfill = (window: 'all' | '2y' | '30d', drv: FakeDriver = d) => backfillWidened(db, store, drv, ['period_flow'], window, { ...o, since: sinceFor(window, '2026-10-09') });
+
+  it('imports older records without touching the anchor, and the incremental feed still delivers a deletion made before the widening', async () => {
+    d = new HcLikeDriver('2026-10-09T07:00:00Z');
+    const [recentRec] = d.seed([foreignFlow('2026-08-04')]);
+    await backfill('30d');
+    await runHealthSync(db, store, d, ['period_flow'], recent);
+    const anchor = await anchorOf();
+    d.seed([foreignFlow('2024-03-01')]);
+    d.remoteDelete((recentRec as { externalId: string }).externalId);
+    expect(await backfill('all')).toMatchObject({ imported: 1, retracted: 0, failed: [] });
+    expect(await anchorOf()).toBe(anchor);
+    expect(await days()).toContain('2026-08-04'); // still active: the deletion arrives through the feed, not the backfill
+    const r = await runHealthSync(db, store, d, ['period_flow'], recent);
+    expect(r.retracted).toBe(1);
+    expect(await days()).toEqual(['2024-03-01']);
   });
-  it('narrowing, or the same window, keeps the anchors', async () => {
-    d.seed([foreignFlow('2026-08-04')]);
-    await reconcileWindow(db, d.platform, '2y');
+  it('ignores the deleted list of a fresh read', async () => {
+    const [rec] = d.seed([foreignFlow('2026-08-04')]);
     await runHealthSync(db, store, d, ['period_flow'], o);
-    const before = await anchors();
-    await reconcileWindow(db, d.platform, '2y');
-    await reconcileWindow(db, d.platform, '30d');
-    expect(await anchors()).toEqual(before);
-    expect(before[0]).not.toBeNull();
+    d.remoteDelete((rec as { externalId: string }).externalId);
+    const r = await runHealthSync(db, store, d, ['period_flow'], { ...o, backfill: true });
+    expect(r.retracted).toBe(0);
+    expect(await days()).toEqual(['2026-08-04']);
+  });
+  it('a second backfill adds nothing, and a run for an unchanged or narrower window does not read', async () => {
+    d.seed([foreignFlow('2026-08-04'), foreignFlow('2024-03-01')]);
+    await backfill('30d');
+    await backfill('all');
+    const n = (await store.events()).length;
+    const again = await runHealthSync(db, store, d, ['period_flow'], { ...o, since: sinceFor('all', '2026-10-09'), backfill: true });
+    expect(again).toMatchObject({ imported: 0 });
+    expect((await store.events()).length).toBe(n);
+    d.lastAnchor = 'untouched';
+    expect(await backfill('all')).toBeNull();
+    expect(await backfill('2y')).toBeNull();
+    expect(d.lastAnchor).toBe('untouched');
+  });
+  it('a failed backfill does not mark the window done, so the next call retries', async () => {
+    d.seed([foreignFlow('2024-03-01')]);
+    await backfill('30d');
+    const read = d.read.bind(d);
+    d.read = async () => { throw new Error('offline'); };
+    expect((await backfill('all'))?.failed).toEqual([{ op: 'read', error: 'offline' }]);
+    d.read = read;
+    expect(await backfill('all')).toMatchObject({ imported: 1 });
+    expect(await backfill('all')).toBeNull();
+  });
+});
+
+describe('serialize', () => {
+  it('runs overlapping calls one after the other, in order, and keeps going after a failure', async () => {
+    const log: string[] = [];
+    const task = (name: string, fail = false) => serialize(async () => {
+      log.push(`${name}:start`);
+      await new Promise((r) => setTimeout(r, 5));
+      log.push(`${name}:end`);
+      if (fail) throw new Error(name);
+      return name;
+    });
+    const results = await Promise.allSettled([task('a', true), task('b'), task('c')]);
+    expect(log).toEqual(['a:start', 'a:end', 'b:start', 'b:end', 'c:start', 'c:end']);
+    expect(results.map((x) => x.status)).toEqual(['rejected', 'fulfilled', 'fulfilled']);
   });
 });

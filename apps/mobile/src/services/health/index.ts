@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import type { HealthType, PlatformDriver, SyncReport } from '@sanguine/health-adapter';
 import type { Database } from '@/data/database';
-import { activeHealthTypes, reconcileWindow, runHealthSync, sinceFor } from '@/data/healthSync';
+import { activeHealthTypes, backfillWidened, mergeReports, runHealthSync, serialize, sinceFor } from '@/data/healthSync';
 import type { Prefs } from '@/data/prefs';
 import type { EventStore } from '@/data/store';
 import { deviceClock, todayLocal } from '../clock';
@@ -32,14 +32,19 @@ export async function getHealthDriver(): Promise<PlatformDriver | null> {
 
 export const healthPlatformName = () => (Platform.OS === 'ios' ? 'Apple Health' : 'Health Connect');
 
-/** One pass for the user's enabled types. Null when nothing is enabled or no driver exists. A platform error comes back inside the report. */
-export async function syncHealthOnce(db: Database, store: EventStore, prefs: Pick<Prefs, 'healthTypes' | 'healthWindow' | 'sexLogging'>): Promise<SyncReport | null> {
-  const types = activeHealthTypes(prefs);
-  if (types.length === 0) return null;
-  const driver = await getHealthDriver();
-  if (!driver) return null;
-  await reconcileWindow(db, driver.platform, prefs.healthWindow);
-  return runHealthSync(db, store, driver, types, { now: new Date(deviceClock.nowMs()).toISOString(), deviceZone: deviceClock.tz(), since: sinceFor(prefs.healthWindow, todayLocal()) });
+/** One pass for the user's enabled types, after a backfill when the import window was widened. Null when nothing is enabled or no driver exists.
+ *  A platform error comes back inside the report. Every caller (foreground, background task, window change) goes through one gate. */
+export function syncHealthOnce(db: Database, store: EventStore, prefs: Pick<Prefs, 'healthTypes' | 'healthWindow' | 'sexLogging'>, driverOverride?: PlatformDriver): Promise<SyncReport | null> {
+  return serialize(async () => {
+    const types = activeHealthTypes(prefs);
+    if (types.length === 0) return null;
+    const driver = driverOverride ?? await getHealthDriver();
+    if (!driver) return null;
+    const o = { now: new Date(deviceClock.nowMs()).toISOString(), deviceZone: deviceClock.tz() };
+    const backfill = await backfillWidened(db, store, driver, types, prefs.healthWindow, { ...o, since: sinceFor(prefs.healthWindow, todayLocal()) });
+    const report = await runHealthSync(db, store, driver, types, { ...o, since: sinceFor(prefs.healthWindow, todayLocal()) });
+    return backfill ? mergeReports([backfill, report]) : report;
+  });
 }
 
 /** Asks the platform for access to these types (one system dialog on iOS, the permission screen on Android). */

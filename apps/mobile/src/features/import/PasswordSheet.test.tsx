@@ -111,4 +111,9 @@ describe('usePasswordPrompt', () => {
     fireEvent.click(open());
     await expect(second).resolves.toBe('pw');
   });
+  it('an ask after the host unmounted resolves undefined at once', async () => {
+    const { h, r } = setup();
+    r.unmount();
+    await expect((h.ask as NonNullable<typeof h.ask>)('first')).resolves.toBeUndefined();
+  });
 });

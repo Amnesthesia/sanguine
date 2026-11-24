@@ -88,16 +88,18 @@ export function PasswordSheet({ open, ...p }: SheetProps & { open: boolean }) {
 /** `ask` is the `askPassword` of pickAndImport: it opens the sheet and resolves with the text, or undefined on Cancel. Render `sheet` once; call `close` when the flow ends. */
 export function usePasswordPrompt() {
   const [st, setSt] = useState<{ open: boolean; attempt: 'first' | 'wrong'; fileName?: string | undefined; submitting: boolean }>({ open: false, attempt: 'first', submitting: false });
+  const mounted = useRef(false);
   const resolver = useRef<((v: string | undefined) => void) | null>(null);
   const settle = useCallback((v: string | undefined) => { const r = resolver.current; resolver.current = null; r?.(v); }, []);
   const ask = useCallback((attempt: 'first' | 'wrong', fileName?: string): Promise<string | undefined> => new Promise((res) => {
+    if (!mounted.current) { res(undefined); return; } // the host is gone: nothing could ever answer
     resolver.current?.(undefined); // a second ask never strands the first
     resolver.current = res;
     setSt({ open: true, attempt, fileName, submitting: false });
   }), []) as AskPassword & ((attempt: 'first' | 'wrong', fileName?: string) => Promise<string | undefined>);
   const close = useCallback(() => { settle(undefined); setSt((s) => ({ ...s, open: false, submitting: false })); }, [settle]);
   // the host screen going away must not leave pickAndImport waiting: its cleanup (removing the picked file) runs after the prompt settles
-  useEffect(() => () => settle(undefined), [settle]);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; settle(undefined); }; }, [settle]);
   const sheet = (
     <PasswordSheet
       open={st.open} attempt={st.attempt} fileName={st.fileName} submitting={st.submitting}
