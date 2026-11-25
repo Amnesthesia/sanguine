@@ -17,6 +17,7 @@ import { clue } from './clue';
 const { OWNER_DATA, OWNER_ZIP_PASSWORD, OWNER_TODAY } = process.env;
 let n = 0;
 const clock: Clock = { nowMs: () => 1_700_000_000_000 + n++, iso: () => '2026-10-10T08:00:00+10:00', tz: () => 'Australia/Sydney', randomBytes: (k) => Uint8Array.from({ length: k }, (_, i) => (n + i) % 256) };
+const BLEED_DAYS_IF_UNLOGGED = 5; // mirrors guidance.ts:58 (private); the last line prints the real phaseOn result, so drift shows
 const f = (x: number, d = 1): string => x.toFixed(d);
 const localToday = (): ISODate => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` as ISODate; };
 
@@ -44,7 +45,7 @@ describe.skipIf(!OWNER_DATA)('owner data probe (local only)', () => {
       let cycle: (typeof records)[number] | undefined;
       for (const c of records) if (c.start <= today && (!cycle || c.start > cycle.start)) cycle = c;
       if (!cycle || cycle.quality === 'life_state') return 'no-cycle-or-life-state';
-      const bleedEnd = !cycle.nextStart && p.currentBleed ? p.currentBleed.point : (cycle.end ?? addDays(cycle.start, 4)); // 4 = BLEED_DAYS_IF_UNLOGGED - 1
+      const bleedEnd = !cycle.nextStart && p.currentBleed ? p.currentBleed.point : (cycle.end ?? addDays(cycle.start, BLEED_DAYS_IF_UNLOGGED - 1));
       if (today <= bleedEnd) return 'menstrual';
       if (cycle.nextStart) return cycle.quality !== 'valid' ? 'closed-cycle-not-valid' : (phaseOn({ date: today, today, prediction: p, cycles: records, showEstimate: true })?.phase ?? 'undefined');
       const next = p.nextPeriod;
@@ -64,7 +65,9 @@ describe.skipIf(!OWNER_DATA)('owner data probe (local only)', () => {
 
     console.log(`probe: engine WINDOW_CYCLES=${WINDOW_CYCLES}, ${records.length} cycles`);
     console.log(`probe: cycles by quality ${JSON.stringify(q)}`);
-    console.log(`probe: valid closed cycle lengths n=${lens.length} mean=${f(mean)} sd=${f(sd)} min=${f(Math.min(...lens))} max=${f(Math.max(...lens))}`);
+    console.log(lens.length
+      ? `probe: valid closed cycle lengths n=${lens.length} mean=${f(mean)} sd=${f(sd)} min=${f(Math.min(...lens))} max=${f(Math.max(...lens))}`
+      : 'probe: valid closed cycles: 0');
     console.log(`probe: cycleLength nCyclesUsed=${p.cycleLength.nCyclesUsed} mean=${f(p.cycleLength.mean, 2)} sd=${f(p.cycleLength.sd, 2)}`);
     console.log(p.nextPeriod
       ? `probe: next period 80% half-width=${f(diffDays(p.nextPeriod.i80.hi, p.nextPeriod.i80.lo) / 2)} days, confidence=${p.nextPeriod.confidence}, days from today to i80.hi=${diffDays(p.nextPeriod.i80.hi, today)}`
