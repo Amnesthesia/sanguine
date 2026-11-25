@@ -1025,7 +1025,7 @@ guidance.general.reason.late,"Your period is later than the range Sanguine expec
 guidance.general.reason.wide,"Over your last {n} cycles, lengths have varied from {min} to {max} days, so the middle of your cycle can only be narrowed to {width} days. This day falls inside that stretch, so it isn't placed in a phase.",no,guidance,
 guidance.general.reason.wideNoRange,"The middle of your cycle can only be narrowed to {width} days so far. This day falls inside that stretch, so it isn't placed in a phase.",no,guidance,
 guidance.general.reason.paused,"While {state} is set, Sanguine doesn't estimate the middle of the cycle, so it can't place this day in a phase.",no,guidance,
-guidance.general.reason.pausedUnnamed,"Sanguine isn't estimating the middle of your cycle right now, so it can't place this day in a phase.",no,guidance,
+guidance.general.reason.pausedUnnamed,"A life state you set in Settings pauses the estimate of the middle of your cycle, so Sanguine can't place this day in a phase.",no,guidance,
 guidance.general.reason.setAside,"This cycle was left out of estimates ({quality}), so its days aren't placed in a phase.",no,guidance,
 guidance.general.move.tip,"Regular activity on most days, with muscle-strengthening at least twice a week. On low days, even a short walk helps.",no,guidance,
 guidance.general.move.why,"This is Australia's physical activity guideline. Reviews of more than 1,000 trials find that exercise improves mood and energy.",no,guidance,

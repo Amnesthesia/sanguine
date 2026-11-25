@@ -70,7 +70,11 @@ export function HormoneCurve({ day, compact = false, extras = false }: { day: Gu
   // the picture follows this person's cycle: its length, its bleed and, while the estimate is shown (`extras`), its ovulation day (D-155)
   const ax = cycleAxis(frame && { length: frame.length, bleedDays: frame.bleedDays, ovulationDay: extras ? frame.ovulationDay : undefined });
   const typical = MARK_X[day.phase];
-  const x = typical === undefined ? undefined : frame && ax.own ? Math.min(Math.max((frame.day + 0.5) * ax.perDay, 4), W - 4) : typical;
+  const own = frame && ax.own ? Math.min(Math.max((frame.day + 0.5) * ax.perDay, 4), W - 4) : undefined;
+  // a follicular day stays left of the drawn peak and a luteal one right of it, even when the peak sits in its typical place (a long cycle, or an
+  // estimate that is hidden or too wide to draw, D-162): the picture must not contradict the phase it names
+  const side = own === undefined ? own : day.phase === 'follicular' ? Math.min(own, ax.ovX - 6) : day.phase === 'luteal' || day.phase === 'premenstrual' ? Math.max(own, ax.ovX + 6) : own;
+  const x = typical === undefined ? undefined : side ?? typical;
   const band = extras && ax.own && frame?.ovulationRange ? { lo: frame.ovulationRange.lo * ax.perDay, hi: (frame.ovulationRange.hi + 1) * ax.perDay } : undefined;
   const phase = tr(`guidance.phase.${day.phase}`);
   const label = `${tr('guidance.curve.label')}${extras ? ` ${tr('estimates.ovulation.curve.labelExtras')}` : ''} ${x === undefined ? '' : tr(day.expected ? 'guidance.curve.labelExpected' : 'guidance.curve.labelHere', { phase })}`.trim();

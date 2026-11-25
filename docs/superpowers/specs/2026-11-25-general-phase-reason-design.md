@@ -31,7 +31,7 @@ A user with a long imported Clue history saw "Any day of the cycle" on the guida
   - `{ kind: 'paused' }`: open cycle, a next period but no ovulation estimate (a life state stops the calendar estimate: hormonal IUD, perimenopause, breastfeeding without biomarkers).
   - `{ kind: 'setAside', quality }`: a past day in a closed cycle that is not `valid` (`suspect_skip`, `suspect_short`, `user_excluded`).
   - No reason when there is no next period at all (rare): the card keeps today's generic sentence.
-- `BodyCard`: for `general`, the body is the reason sentence followed by "These notes hold for any day of the cycle."; the compact day sheet shows the reason sentence. For `paused`, the card names the life state(s) she set that stop the estimate, read from the app's current settings, using the existing life-state labels.
+- `BodyCard`: for `general`, the body is the reason sentence followed by "These notes hold for any day of the cycle."; the compact day sheet shows the reason sentence. For `paused`, the card names a life state active on that day that stops the estimate (hormonal IUD, breastfeeding), from the app's settings; perimenopause is never put into a sentence (§2.3 word list), so it gets the unnamed sentence (review, 2026-11-25).
 - Copy (en-AU, addresses women, no fertility words in any reason so the same text is safe in teen mode):
   - late: "Your period is later than the range Sanguine expected (by {date}), so it can't place this day in a phase."
   - wide: "Over your last {n} cycles, lengths have varied from {min} to {max} days, so the middle of your cycle can only be narrowed to {width} days. That is too wide to place this day in a phase."

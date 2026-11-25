@@ -96,6 +96,19 @@ describe('the curve follows the person\'s own cycle (D-155)', () => {
     expect(Number(c.querySelector('circle')?.getAttribute('cx'))).toBeCloseTo((24.5 * 326) / 35, 5); // the marker sits on day 25, not the middle of the phase
     expect(c.querySelectorAll('rect').length).toBe(2); // the bleed and the likely range for ovulation
   });
+  it('a follicular day in a long cycle stays left of a typical peak, a luteal day right of it (D-162)', () => {
+    scale.value = 1;
+    const mark = (phase: 'follicular' | 'luteal', day: number) => {
+      const c = render(<HormoneCurve extras day={{ phase, expected: false, frame: { day, length: 50, bleedDays: 5 } }} />).container;
+      const out = { x: Number(c.querySelector('circle')?.getAttribute('cx')), peak: peak(c) };
+      cleanup();
+      return out;
+    };
+    const f = mark('follicular', 28);
+    expect(f.x).toBeLessThan(f.peak);
+    const l = mark('luteal', 12);
+    expect(l.x).toBeGreaterThan(l.peak);
+  });
   it('a later ovulation moves the peak right', () => {
     scale.value = 1;
     expect(peak(own(true, 24))).toBeGreaterThan(peak(own(true, 16)));

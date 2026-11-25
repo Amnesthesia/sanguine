@@ -5,6 +5,10 @@ import type { Database } from './database';
 import type { CycleRow, Projection } from './project';
 
 const SCORED_BASIS = 'calendar';
+/** D-162: rows an older engine scored are re-scored at most this many per pass, newest first. The pass runs inside the write transaction of
+ *  the user's next entry, and each re-score is one `predict` (about 5 ms on Node with 80 cycles), so a long history catches up over a few
+ *  passes instead of freezing the first entry after an update. */
+export const RESCORE_PER_PASS = 8;
 
 function historyAsOf(h: History, asOf: string): History {
   const upTo = <T extends { date: string }>(xs: T[]) => xs.filter((x) => x.date <= asOf);
@@ -29,10 +33,11 @@ export async function updateLedger(tx: Database, p: Projection, engineVersion: s
   const existing = new Map((await tx.all<{ cycle_id: string; actual_day: string; engine_version: string }>('SELECT cycle_id, actual_day, engine_version FROM prediction_score')).map((r) => [r.cycle_id, r]));
   const keep = new Set(closed.map((c) => c.id));
   for (const id of existing.keys()) if (!keep.has(id)) await tx.run('DELETE FROM prediction_score WHERE cycle_id = ?', [id]);
-  for (const c of closed) {
+  let budget = RESCORE_PER_PASS;
+  for (const c of [...closed].reverse()) {
     const actual = c.next_start as string;
     const row = existing.get(c.id);
-    if (row?.actual_day === actual && row.engine_version === engineVersion) continue;
+    if (row?.actual_day === actual && (row.engine_version === engineVersion || budget-- <= 0)) continue;
     const f = forecastFor(p, c);
     if (!f) continue;
     const err = Math.abs(diffDays(actual, f.point));

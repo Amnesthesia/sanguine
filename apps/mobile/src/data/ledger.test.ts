@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Database } from './database';
-import { ledgerRows, ledgerSummary } from './ledger';
+import { ledgerRows, ledgerSummary, RESCORE_PER_PASS } from './ledger';
 import type { Clock } from './ids';
 import { migrate } from './migrate';
 import { EventStore } from './store';
@@ -62,6 +62,19 @@ describe('prediction-score ledger (PLAN.md §4.15)', () => {
     expect(row?.engine_version).toBe(ENGINE_VERSION);
     expect(row?.abs_error).toBe(before?.abs_error);
     expect(row?.predicted_day).toBe(before?.predicted_day);
+  });
+  it('re-scores old-engine rows a few per pass, newest first, so the first entry after an update stays quick (D-162)', async () => {
+    let d = '2025-01-01';
+    for (let i = 0; i < RESCORE_PER_PASS + 4; i++) { await start(d); const n = new Date(`${d}T00:00:00Z`); n.setUTCDate(n.getUTCDate() + 28 + (i % 3)); d = n.toISOString().slice(0, 10); }
+    await db.run("UPDATE prediction_score SET engine_version = '0.0.1'");
+    const total = (await scores()).length;
+    await store.rebuild();
+    const after = await db.all<{ engine_version: string }>('SELECT engine_version FROM prediction_score ORDER BY actual_day DESC');
+    expect(after.slice(0, RESCORE_PER_PASS).every((r) => r.engine_version === ENGINE_VERSION)).toBe(true);
+    expect(after.slice(RESCORE_PER_PASS).every((r) => r.engine_version === '0.0.1')).toBe(true);
+    expect(total).toBeGreaterThan(RESCORE_PER_PASS);
+    await store.rebuild();
+    expect((await scores()).every((r) => r.engine_version === ENGINE_VERSION)).toBe(true);
   });
   it('re-scores a cycle whose end moved and drops rows for cycles that no longer exist', async () => {
     const events = [];

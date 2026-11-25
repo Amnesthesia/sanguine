@@ -71,8 +71,10 @@ export function generalReasonText(reason: GeneralReason | undefined, t: TFunctio
     case 'wide': return reason.n === undefined ? t('guidance.general.reason.wideNoRange', { width: reason.width })
       : t('guidance.general.reason.wide', { n: reason.n, min: reason.min, max: reason.max, width: reason.width });
     case 'paused': {
-      const key = pausingStateKey(lifeStates);
-      return key ? t('guidance.general.reason.paused', { state: t(key) }) : t('guidance.general.reason.pausedUnnamed');
+      const key = pausingStateKey(lifeStates, reason.on);
+      const label = key ? t(key) : '';
+      // mid-sentence: "While hormonal IUD is set" (the label's capital is for a list; acronyms keep theirs)
+      return key ? t('guidance.general.reason.paused', { state: label.charAt(0).toLowerCase() + label.slice(1) }) : t('guidance.general.reason.pausedUnnamed');
     }
     case 'setAside': return t('guidance.general.reason.setAside', { quality: t(`insights.quality.${reason.quality}`) });
   }

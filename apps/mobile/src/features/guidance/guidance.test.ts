@@ -62,7 +62,7 @@ describe('phaseOn, open cycle', () => {
   it('a wide estimate places days before its range as follicular and after it as luteal; inside the range is general with reason wide (D-162)', () => {
     expect(on('2026-10-10', { prediction: WIDE })).toMatchObject({ phase: 'follicular' });
     expect(on('2026-10-10', { prediction: WIDE })?.reason).toBeUndefined();
-    expect(on('2026-10-11', { prediction: WIDE })).toMatchObject({ phase: 'general', reason: { kind: 'wide', width: 13, n: 2, min: 28, max: 29 } });
+    expect(on('2026-10-11', { prediction: WIDE })).toMatchObject({ phase: 'general', reason: { kind: 'wide', width: 14, n: 2, min: 28, max: 29 } });
     expect(on('2026-10-24', { prediction: WIDE })?.phase).toBe('general');
     expect(on('2026-10-25', { prediction: WIDE })?.phase).toBe('luteal');
     expect(on('2026-10-27', { prediction: WIDE })?.phase).toBe('premenstrual');
@@ -79,10 +79,10 @@ describe('phaseOn, open cycle', () => {
     expect(on('2026-10-25', { prediction: WIDE, showEstimate: false })?.phase).toBe('luteal');
   });
   it('wide with fewer than two valid closed cycles carries no count, shortest or longest', () =>
-    expect(on('2026-10-15', { prediction: WIDE, cycles: [rec('2026-10-04', undefined, { end: '2026-10-07' })] })?.reason).toEqual({ kind: 'wide', width: 13 }));
+    expect(on('2026-10-15', { prediction: WIDE, cycles: [rec('2026-10-04', undefined, { end: '2026-10-07' })] })?.reason).toEqual({ kind: 'wide', width: 14 }));
   it('no ovulation estimate gives general with reason paused', () => {
     const { ovulation: _o, ...rest } = pred();
-    expect(on(TODAY, { prediction: rest as Prediction })).toMatchObject({ phase: 'general', reason: { kind: 'paused' } });
+    expect(on(TODAY, { prediction: rest as Prediction })).toMatchObject({ phase: 'general', reason: { kind: 'paused', on: TODAY } });
   });
 });
 
@@ -223,10 +223,17 @@ describe('guidance summaries (calendar card)', () => {
 
 describe('pausingStateKey (D-162)', () => {
   it('names the life state that stops the ovulation estimate', () => {
-    expect(pausingStateKey([{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-01-01' }])).toBe('settings.lifeState.methods.hormonal_iud');
-    expect(pausingStateKey([{ kind: 'perimenopause', since: '2026-01-01' }])).toBe('settings.lifeState.options.perimenopause');
-    expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: true }])).toBe('settings.lifeState.breastfeeding');
-    expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: false }])).toBeUndefined();
-    expect(pausingStateKey([])).toBeUndefined();
+    const on = '2026-10-14';
+    expect(pausingStateKey([{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-01-01' }], on)).toBe('settings.lifeState.methods.hormonal_iud');
+    expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: true }], on)).toBe('settings.lifeState.breastfeeding');
+    expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: false }], on)).toBeUndefined();
+    expect(pausingStateKey([{ kind: 'perimenopause', since: '2026-01-01' }], on)).toBeUndefined(); // never named in a sentence (§2.3 list)
+    expect(pausingStateKey([], on)).toBeUndefined();
+  });
+  it('an ended state is not named: an IUD that ended before a later state', () => {
+    const iud = { kind: 'hormonal_contraception' as const, method: 'hormonal_iud' as const, since: '2022-01-01', until: '2024-01-01' };
+    expect(pausingStateKey([iud, { kind: 'perimenopause', since: '2026-01-01' }], '2026-10-14')).toBeUndefined();
+    expect(pausingStateKey([iud], '2023-06-01')).toBe('settings.lifeState.methods.hormonal_iud');
+    expect(pausingStateKey([{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-11-01' }], '2026-10-14')).toBeUndefined();
   });
 });

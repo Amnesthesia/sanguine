@@ -1,6 +1,6 @@
 // Food, movement and supplement notes by cycle phase (P8-18, D-107). Pure: which phase a date sits in, and how strong each note's evidence is.
 // Wording: copy/en-AU.json guidance.*. Research: docs/superpowers/plans/2026-10-14-cycle-food-movement-notes.md.
-import { addDays, type CycleRecord, diffDays, type ISODate, type LifeState, LUTEAL_PRIOR, type Prediction, WINDOW_CYCLES } from '@sanguine/engine';
+import { addDays, type CycleRecord, diffDays, type ISODate, type LifeState, lifeStateStart, LUTEAL_PRIOR, type Prediction } from '@sanguine/engine';
 import { ovulationUncertain } from '@/features/today/fertileShown';
 
 export type GuidePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal' | 'premenstrual' | 'general';
@@ -18,12 +18,12 @@ export interface CycleFrame {
   ovulationDay?: number;
   ovulationRange?: { lo: number; hi: number };
 }
-/** Why a day is `general` (D-162), so the card can say it. `wide`: the ovulation 80% range in days, and her valid closed cycles in the model
- *  (count, shortest, longest; absent with fewer than two). */
+/** Why a day is `general` (D-162), so the card can say it. `wide`: the ovulation 80% range in days (both ends count), and her valid closed
+ *  cycles in the model (count as the engine used, shortest, longest; absent with fewer than two). `paused`: the day, to find the life state then. */
 export type GeneralReason =
   | { kind: 'late'; by: ISODate }
   | { kind: 'wide'; width: number; n?: number; min?: number; max?: number }
-  | { kind: 'paused' }
+  | { kind: 'paused'; on: ISODate }
   | { kind: 'setAside'; quality: 'suspect_skip' | 'suspect_short' | 'user_excluded' };
 export interface GuideDay { phase: GuidePhase; expected: boolean; frame?: CycleFrame; reason?: GeneralReason }
 export interface PhaseOnInput {
@@ -79,17 +79,19 @@ function frameOf(cycle: CycleRecord, p: Prediction, date: ISODate, bleedEnd: ISO
   return frame;
 }
 
-/** The i18n key of the life state she set that stops the calendar ovulation estimate (lifestate.ts: bleedingOnly or no calendarEstimate). */
-export function pausingStateKey(lifeStates: readonly LifeState[]): string | undefined {
-  if (lifeStates.some((s) => s.kind === 'hormonal_contraception' && s.method === 'hormonal_iud')) return 'settings.lifeState.methods.hormonal_iud';
-  if (lifeStates.some((s) => s.kind === 'perimenopause')) return 'settings.lifeState.options.perimenopause';
-  if (lifeStates.some((s) => s.kind === 'postpartum' && s.breastfeeding)) return 'settings.lifeState.breastfeeding';
+/** The i18n key of the life state active on `on` that stops the calendar ovulation estimate (lifestate.ts: bleedingOnly or no calendarEstimate).
+ *  Perimenopause also stops it but is never named in a sentence: the word is on the §2.3 list, allowed only as the label she picks (D-162). */
+export function pausingStateKey(lifeStates: readonly (LifeState & { until?: ISODate })[], on: ISODate): string | undefined {
+  const active = lifeStates.filter((s) => s.kind !== 'none' && lifeStateStart(s) <= on && (s.until === undefined || on <= s.until));
+  if (active.some((s) => s.kind === 'hormonal_contraception' && s.method === 'hormonal_iud')) return 'settings.lifeState.methods.hormonal_iud';
+  if (active.some((s) => s.kind === 'postpartum' && s.breastfeeding)) return 'settings.lifeState.breastfeeding';
   return undefined;
 }
 
 function wideReason(p: Prediction & { ovulation: NonNullable<Prediction['ovulation']> }, cycles: CycleRecord[]): GeneralReason {
-  const width = diffDays(p.ovulation.i80.hi, p.ovulation.i80.lo);
-  const lens = cycles.filter((c) => c.quality === 'valid' && c.nextStart && c.length !== undefined).slice(-WINDOW_CYCLES).map((c) => c.length as number);
+  const width = diffDays(p.ovulation.i80.hi, p.ovulation.i80.lo) + 1;
+  const used = p.cycleLength.nCyclesUsed;
+  const lens = used < 1 ? [] : cycles.filter((c) => c.quality === 'valid' && c.nextStart && c.length !== undefined).slice(-used).map((c) => c.length as number);
   return lens.length < 2 ? { kind: 'wide', width } : { kind: 'wide', width, n: lens.length, min: Math.min(...lens), max: Math.max(...lens) };
 }
 
@@ -115,7 +117,7 @@ export function phaseOn({ date, today, prediction: p, cycles, showEstimate }: Ph
     if (!next) return expected ? undefined : at('general');
     if (date > next.i80.hi) return expected ? undefined : at('general', { kind: 'late', by: next.i80.hi }); // late, or beyond the forecast
     if (expected && date >= next.i80.lo) return at('menstrual');
-    if (!p.ovulation) return at('general', { kind: 'paused' });
+    if (!p.ovulation) return at('general', { kind: 'paused', on: date });
     nextStart = next.point;
     if (date >= addDays(nextStart, -PREMENSTRUAL_DAYS)) return at('premenstrual');
     // D-162: a wide estimate still places the days outside its 80% range; only days inside it stay general
