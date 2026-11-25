@@ -43,16 +43,16 @@ describe('Fixture A: regular, 3 cycles (28, 30, 29)', () => {
     expect(p.cycleQuality.map((c) => c.quality)).toEqual(['valid', 'valid', 'valid', 'valid']);
     expect(p.flags).toEqual([]);
   });
-  it('calendar ovulation: day 15.6, SD 3.95, 80% day 11-21 (D-098), low confidence', () => {
+  it('calendar ovulation: day 15.6, SD 3.80, 80% day 11-21 (D-098, D-161), low confidence', () => {
     const o = run().ovulation;
     expect(o?.point).toBe(day(16)); // round(15.64)
-    near(o?.sd, 3.95);
+    near(o?.sd, 3.8);
     expect(o?.i80).toEqual({ lo: day(11), hi: day(21) });
     expect(o?.confidence).toBe('low');
     expect(o?.basis).toBe('calendar');
   });
   it('fertile-day probabilities (plan table)', () => {
-    expectFertile(run(), { 7: 0.2, 9: 0.35, 11: 0.49, 13: 0.55, 15: 0.5, 17: 0.37, 19: 0.22, 21: 0.11 });
+    expectFertile(run(), { 7: 0.2, 9: 0.35, 11: 0.5, 13: 0.57, 15: 0.52, 17: 0.38, 19: 0.22, 21: 0.1 });
   });
   it('current phase on 10 Oct is day 10 of the cycle', () => {
     expect(run().currentPhase?.dayOfCycle).toBe(10);
@@ -68,12 +68,12 @@ describe('Fixture B: one skipped log, 6 cycles (27, 29, 56, 28, 30, 28)', () => 
     expectCycleLength(p, 28.48, 10, 2.16, 5);
     expectNextPeriod(p, '2026-10-29', '2026-10-27', '2026-11-01');
   });
-  it('ovulation day 15.1 (D-098); plan SD 3.9 is 3.71 by §4.5 (D-015); fertile band', () => {
+  it('ovulation day 15.1 (D-098); SD 3.55 by §4.5 (D-015, D-161); fertile band', () => {
     const p = run();
     expect(p.ovulation?.point).toBe(day(15));
-    near(p.ovulation?.sd, 3.71);
+    near(p.ovulation?.sd, 3.55);
     expect(p.ovulation?.confidence).toBe('low');
-    expectFertile(p, { 7: 0.2327, 9: 0.3997, 11: 0.5408, 13: 0.5788, 15: 0.4905, 17: 0.3283, 19: 0.1727, 21: 0.0708 });
+    expectFertile(p, { 7: 0.2255, 9: 0.4031, 11: 0.5572, 13: 0.5992, 15: 0.5019, 17: 0.3264, 19: 0.1636, 21: 0.0626 });
   });
   it('a probable missed log raises no health flag', () => expect(run().flags).toEqual([]));
 });
@@ -86,12 +86,12 @@ describe('Fixture C: cold start, age 37, last period date only', () => {
     expectCycleLength(p, 28.2, 5, 4.5, 0);
     expectNextPeriod(p, '2026-10-29', '2026-10-23', '2026-11-05');
   });
-  it('ovulation day 14.8 (D-098), low confidence; plan SD 5.4 is 6.46 by §4.5 (D-015); fertile band', () => {
+  it('ovulation day 14.8 (D-098), low confidence; SD 6.37 by §4.5 (D-015, D-161); fertile band', () => {
     const p = predict(hist(), settings, TODAY);
     expect(p.ovulation?.point).toBe(day(15));
-    near(p.ovulation?.sd, 6.46);
+    near(p.ovulation?.sd, 6.37);
     expect(p.ovulation?.confidence).toBe('low');
-    expectFertile(p, { 7: 0.2615, 9: 0.3168, 11: 0.351, 13: 0.3557, 15: 0.3298, 17: 0.2796, 19: 0.2168, 21: 0.1537 });
+    expectFertile(p, { 7: 0.2628, 9: 0.3199, 11: 0.3555, 13: 0.3604, 15: 0.3334, 17: 0.2814, 19: 0.2168, 21: 0.1523 });
   });
   it('no last period at all: nothing predicted', () => {
     const p = predict(emptyHistory(), settings, TODAY);
@@ -114,10 +114,10 @@ describe('Fixture D: irregular, 6 cycles (24, 38, 31, 45, 27, 36)', () => {
     expect(f.map((x) => x.code)).toEqual(['variability']);
     expect(f[0]?.params.range).toBe(21);
   });
-  it('ovulation day 19.8 (D-098), low; plan SD 7.0 is 7.17 by §4.5 (D-015); fertile band', () => {
+  it('ovulation day 19.8 (D-098), low; SD 7.09 by §4.5 (D-015, D-161); fertile band', () => {
     const p = run();
     expect(p.ovulation?.point).toBe(day(20));
-    near(p.ovulation?.sd, 7.17);
+    near(p.ovulation?.sd, 7.09);
     expect(p.ovulation?.confidence).toBe('low');
     expectFertile(p, { 7: 0.1231, 9: 0.173, 11: 0.2259, 13: 0.2742, 15: 0.3092, 17: 0.324, 19: 0.3156, 21: 0.2856 });
   });
@@ -130,25 +130,25 @@ describe('Fixture E: single cycle (31)', () => {
     expectCycleLength(p, 30.43, 6, 3.11, 1);
     expectNextPeriod(p, '2026-10-31', '2026-10-27', '2026-11-05');
   });
-  it('ovulation shown whenever a next period is predicted: day 17.0 (D-098), SD 4.73 (plan dash, D-015)', () => {
+  it('ovulation shown whenever a next period is predicted: day 17.0 (D-098), SD 4.61 (plan dash, D-015, D-161)', () => {
     const p = run();
     expect(p.ovulation?.point).toBe(day(17));
-    near(p.ovulation?.sd, 4.73);
-    expectFertile(p, { 7: 0.1561, 9: 0.2606, 11: 0.3714, 13: 0.4526, 15: 0.4718, 17: 0.4208, 19: 0.321, 21: 0.2092 });
+    near(p.ovulation?.sd, 4.61);
+    expectFertile(p, { 7: 0.1515, 9: 0.2592, 11: 0.3758, 13: 0.4622, 15: 0.4827, 17: 0.4283, 19: 0.3225, 21: 0.206 });
   });
 });
 
 describe('Fixture F: luteal update (11, 12, 12)', () => {
-  it('F: luteal posterior: mean 12.23, nu 13, scale 2.22, 80% 9.2-15.2', () => {
+  it('F: luteal posterior: mean 12.23, nu 13, scale 2.06, 80% 9.5-15.0 (D-161)', () => {
     const post = fitCycleLength([11, 12, 12], LUTEAL_PRIOR, 1);
     near(post.m, 12.23);
     expect(2 * post.alpha).toBeCloseTo(13, 6);
-    near(Math.sqrt((post.beta * (post.kappa + 1)) / (post.alpha * post.kappa)), 2.22);
+    near(Math.sqrt((post.beta * (post.kappa + 1)) / (post.alpha * post.kappa)), 2.06);
     const [lo, hi] = predictiveInterval(post, 0.8);
-    near(lo, 9.2, 0.06);
-    near(hi, 15.2, 0.06);
+    near(lo, 9.45, 0.06);
+    near(hi, 15.01, 0.06);
   });
-  it('ovulation day 15.8 (D-098); plan SD 3.6 is 3.68 by §4.5 (D-015)', () => {
+  it('ovulation day 15.8 (D-098); SD 3.56 by §4.5 (D-015, D-161)', () => {
     // luteal length = nextStart - ovulation - 1 (days after ovulation up to the day before the next period)
     const h = historyFromLengths([28, 30, 29]);
     const luteals = [11, 12, 12];
@@ -158,7 +158,7 @@ describe('Fixture F: luteal update (11, 12, 12)', () => {
     });
     const p = predict(h, FIXTURE_SETTINGS, TODAY);
     expect(p.ovulation?.point).toBe(day(16)); // round(15.81)
-    near(p.ovulation?.sd, 3.68, 0.06);
+    near(p.ovulation?.sd, 3.56, 0.06);
   });
 });
 

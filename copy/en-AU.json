@@ -550,7 +550,7 @@
       "late": "Late"
     },
     "accuracy": {
-      "summary": "Your 80% ranges have contained the actual date {hits} of {total} times.",
+      "summary": "Your 80% period ranges have contained the actual start date {hits} of {total} times.",
       "averageMiss": "Average miss: {days} days",
       "explain": "A range is right about 8 times in 10. A few misses are expected.",
       "none": "Your accuracy appears after your first completed cycle with an estimate.",
@@ -730,7 +730,7 @@
       "title": "How Sanguine estimates",
       "rowDesc": "How the ranges are worked out, what the confidence words mean and what changes them.",
       "rangeTitle": "Where the period range comes from",
-      "rangeBody": "Sanguine looks at the lengths of your last 12 cycles. Before you have logged a few, it starts from published averages for your age group (Bull et al. 2019) and moves towards your own pattern as cycles are added. In most life states, recent cycles and older ones count the same. A cycle that looks like a missed log, or that falls in a life change you set (such as pregnancy, or the months after stopping a hormonal method), is left out or counted less. The result is the range of days that has an 80% likelihood of holding your next period start; the calendar also shows the wider 95% range.",
+      "rangeBody": "Sanguine looks at the lengths of your last 36 cycles. Before you have logged a few, it starts from published averages for your age group (Bull et al. 2019) and moves towards your own pattern as cycles are added. In most life states, recent cycles and older ones count the same. A cycle that looks like a missed log, or that falls in a life change you set (such as pregnancy, or the months after stopping a hormonal method), is left out or counted less. The result is the range of days that has an 80% likelihood of holding your next period start; the calendar also shows the wider 95% range.",
       "confidenceTitle": "What the confidence words mean",
       "confidence": {
         "high": { "word": "Confident", "rule": "At least six cycles and a period range no wider than about a week." },
@@ -758,7 +758,7 @@
       "accuracyTitle": "How well it has done for you",
       "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gave at the start of that cycle held the real start date. Insights, Your accuracy, shows the count.",
       "draw": {
-        "blendLabel": "With two cycles logged, the estimate still leans on published averages; it moves towards your own pattern as cycles are added, up to your last 12.",
+        "blendLabel": "With two cycles logged, the estimate still leans on published averages; it moves towards your own pattern as cycles are added, up to your last 36.",
         "blendLeft": "Published averages",
         "blendRight": "Your own pattern",
         "blendZero": "0 cycles",
@@ -1387,7 +1387,7 @@
       "nextPeriod": "Your own cycles ({count} used) are combined with what a study of 612,613 cycles found: cycles averaged 29.3 days, and two in three were 25 to 30 days long. Together they point to a cycle of about {mean} days for you.",
       "nextPeriodFew": "With only {count} of your cycles, the study still carries much of the weight. After about six regular cycles your own pattern takes over and confidence can reach high.",
       "calendarOnly": "Worked out from your period dates only: no ovulation tests or temperatures this cycle",
-      "ovulationCalendar": "The phase after ovulation lasts about 12.4 days on average (give or take 2.4), so ovulation is placed that far before your expected next period.",
+      "ovulationCalendar": "The phase after ovulation lasts about 12.4 days on average, and Sanguine allows give or take 2.6 days for it, so ovulation is placed that far before your expected next period.",
       "ovulationCalendarWide": "Cycles differ mostly in the phase before ovulation, so an estimate from period dates alone can be several days off. Positive ovulation tests or a temperature rise would narrow it.",
       "ovulationPast": "This cycle has ended, so the estimate uses its known length instead of a forecast.",
       "fertile": "The fertile window is the 6 days ending on ovulation day.",

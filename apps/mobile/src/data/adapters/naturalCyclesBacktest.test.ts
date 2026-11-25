@@ -68,7 +68,7 @@ const mean3: DateModel = (h, _s, today) => {
 };
 const MODELS: Record<string, DateModel> = { ...CHALLENGERS, ...mlModels(train()), lastLength, mean3 };
 
-interface Arm { byOffset: Record<number, Record<string, { all: Tally; regular: Tally }>>; suspended: number; ovulationMae: number; ovulationN: number; byHistory: Tally[] }
+interface Arm { byOffset: Record<number, Record<string, { all: Tally; regular: Tally }>>; suspended: number; ovulationMae: number; ovulationN: number; ovulationIn80: number; byHistory: Tally[] }
 
 /** Cycles logged before the forecast: learning over time on real data (D-094). */
 const HISTORY_BANDS = [[MIN_HISTORY + 1, 11], [12, 23], [24, 999]] as const;
@@ -78,7 +78,7 @@ function backtest(h: History, settingsOn: (today: ISODate) => EngineSettings, en
   const starts = full.map((c) => c.start);
   const byOffset: Arm['byOffset'] = {};
   let suspended = 0;
-  let ovErr = 0, ovN = 0;
+  let ovErr = 0, ovN = 0, ovIn = 0;
   const byHistory = HISTORY_BANDS.map(() => [] as Array<{ f: DateForecast; actual: ISODate }>);
   for (const off of OFFSETS) {
     const rows: Record<string, { all: Array<{ f: DateForecast; actual: ISODate }>; regular: Array<{ f: DateForecast; actual: ISODate }> }> =
@@ -100,11 +100,14 @@ function backtest(h: History, settingsOn: (today: ISODate) => EngineSettings, en
       }
       // the calendar ovulation forecast against the ovulation the whole cycle's tests and temperatures show afterwards
       const retro = full[k - 1]?.ovulation;
-      if (off === 0 && p.ovulation && retro && retro.basis !== 'calendar') { ovErr += Math.abs(diffDays(p.ovulation.point, retro.point)); ovN++; }
+      if (off === 0 && p.ovulation && retro && retro.basis !== 'calendar') {
+        ovErr += Math.abs(diffDays(p.ovulation.point, retro.point)); ovN++;
+        if (p.ovulation.i80.lo <= retro.point && retro.point <= p.ovulation.i80.hi) ovIn++;
+      }
     }
     byOffset[off] = Object.fromEntries(Object.entries(rows).map(([m, r]) => [m, { all: tally(r.all), regular: tally(r.regular) }]));
   }
-  return { byOffset, suspended, ovulationMae: ovN ? ovErr / ovN : 0, ovulationN: ovN, byHistory: byHistory.map(tally) };
+  return { byOffset, suspended, ovulationMae: ovN ? ovErr / ovN : 0, ovulationN: ovN, ovulationIn80: ovN ? ovIn / ovN : 0, byHistory: byHistory.map(tally) };
 }
 
 const table = (a: Arm) => Object.entries(a.byOffset).flatMap(([off, ms]) => Object.entries(ms).map(([m, t]) => ({
@@ -142,7 +145,7 @@ describe('real Natural Cycles export backtest (local only)', async () => {
   if (process.env.BACKTEST_REPORT) {
     console.log(`\ncycles ${history.cycles.length}, losses marked ${marked.lifeStates.length / 2}; regular targets only (allN/allMae: every target)`);
     console.log('\n=== as imported ==='); console.table(table(raw));
-    console.log(`ovulation forecast vs retrospective: MAE ${raw.ovulationMae.toFixed(2)} d over ${raw.ovulationN} cycles`);
+    console.log(`ovulation forecast vs retrospective: MAE ${raw.ovulationMae.toFixed(2)} d over ${raw.ovulationN} cycles, 80% range held ${(raw.ovulationIn80 * 100).toFixed(0)}%`);
     console.log(`\n=== losses marked (suspended forecasts: ${withLoss.suspended}) ===`); console.table(table(withLoss));
     console.log('\n=== engine by cycles logged, losses marked ==='); console.table(withLoss.byHistory.map((t, i) => ({ cycles: HISTORY_BANDS[i]?.join('-'), ...t })));
   }

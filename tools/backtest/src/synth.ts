@@ -37,3 +37,25 @@ export function sampleHistory(rng: Rng, u: User, n: number, pop: Population, pSk
   }
   return out;
 }
+
+/** Luteal spreads for ovulation ground truth (D-161). Within a woman: SD 1.7 d (Henry 2024: median within-woman variance
+ *  3.0 d²), weakly tied to that cycle's length (corr 0.15, implied by Henry's cycle, follicular and luteal variances).
+ *  Between women: the SD of each woman's own mean, 1.1 d (Henry 2024: overall 4.3 d² minus within 3.0 d²) or 2.0 d (older
+ *  Fertil Steril figure, 4.0 d²); population mean 12.4 d (Bull 2019). */
+export const LUTEAL_WITHIN_SD = 1.7;
+const LUTEAL_LENGTH_CORR = 0.15;
+
+/** Cycle lengths and, per cycle, the true ovulation offset from its start (length - luteal - 1, as `lutealLengths` measures). */
+export function sampleOvulationHistory(rng: Rng, u: User, n: number, pop: Population, lutealBetweenSd: number, driftPerCycle = 0): { lengths: number[]; ovulation: number[] } {
+  const own = Math.min(17, Math.max(8, rng.normal(12.4, lutealBetweenSd)));
+  const lengths: number[] = [];
+  const ovulation: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const l = sampleCycle(rng, u.mu + driftPerCycle * i, u.sig, pop.pLong);
+    const z = Math.max(-3, Math.min(3, (l - u.mu - driftPerCycle * i) / u.sig));
+    const lut = Math.round(own + LUTEAL_WITHIN_SD * (LUTEAL_LENGTH_CORR * z + Math.sqrt(1 - LUTEAL_LENGTH_CORR ** 2) * rng.normal()));
+    lengths.push(l);
+    ovulation.push(l - Math.min(Math.max(6, lut), l - 8) - 1); // at least 7 follicular days
+  }
+  return { lengths, ovulation };
+}

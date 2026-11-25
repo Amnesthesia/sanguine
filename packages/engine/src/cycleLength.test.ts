@@ -66,7 +66,7 @@ describe('fitCycleLength (PLAN.md §4.12, lambda = 1)', () => {
     const p = fitCycleLength([11, 12, 12], LUTEAL_PRIOR, 1);
     close(p.m, 12.23);
     expect(2 * p.alpha).toBe(13);
-    close(predictiveScale(p), 2.22);
+    close(predictiveScale(p), 2.06);
   });
 });
 

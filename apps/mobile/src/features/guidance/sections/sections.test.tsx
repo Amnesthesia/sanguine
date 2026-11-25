@@ -1,6 +1,6 @@
 import type { PastOvulation, Prediction } from '@sanguine/engine';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { FERTILE_WINDOW_DAYS, LUTEAL_PRIOR, POPULATION_MEAN } from '@sanguine/engine';
+import { FERTILE_WINDOW_DAYS, LUTEAL_PREDICTIVE_SD, LUTEAL_PRIOR, POPULATION_MEAN, WINDOW_CYCLES } from '@sanguine/engine';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
@@ -157,7 +157,10 @@ describe('EstimateSections', () => {
   it('the numbers written into the how-it-was-worked-out copy match the engine constants', () => {
     const how = en.estimates.how;
     expect(how.ovulationCalendar).toContain(String(LUTEAL_PRIOR.m0));
-    expect(how.ovulationCalendar).toContain(Math.sqrt(LUTEAL_PRIOR.beta0 / LUTEAL_PRIOR.alpha0).toFixed(1));
+    expect(how.ovulationCalendar).toContain(`give or take ${LUTEAL_PREDICTIVE_SD} days`);
+    // the Settings > How Sanguine estimates copy names the cycle window (D-161)
+    expect(en.settings.how.rangeBody).toContain(`last ${WINDOW_CYCLES} cycles`);
+    expect(en.settings.how.draw.blendLabel).toContain(`up to your last ${WINDOW_CYCLES}`);
     expect(how.nextPeriodNone).toContain(String(POPULATION_MEAN));
     expect(how.nextPeriod).toContain(String(POPULATION_MEAN));
     expect(how.fertile).toContain(`${FERTILE_WINDOW_DAYS + 1} days`);

@@ -2,7 +2,7 @@
 // A change here is an engine change: update docs/regulatory/engine-changelog.md and requirements.md.
 import type { NigPrior } from './types';
 
-export const ENGINE_VERSION = '0.3.0';
+export const ENGINE_VERSION = '0.4.0';
 
 /** Cycle-length prior (§4.3): population mean 29.3 d by age band, per-person SD 2.6 d. */
 export const CYCLE_PRIOR_KAPPA0 = 0.5;
@@ -18,7 +18,10 @@ export const AGE_BAND_MEANS: Array<{ maxAge: number; mean: number }> = [
 /** Default recency weight. PLAN.md §4.3 proposed 0.92 but the §4.15 acceptance test (tools/backtest/acceptance.test.ts)
  *  measured a gain of ~5% against the required 15%, so the fallback λ = 1 ships (D-021, V-05). */
 export const RECENCY_LAMBDA = 1;
-export const WINDOW_CYCLES = 12;
+/** Cycles in the length model (D-161): the last 36 kept cycles. 12 assumed older cycles fade under λ < 1, but λ = 1 ships
+ *  (D-021) and per-user recency (D-094) lowers λ for a drifting history, so a long regular history counts. 36 rather than
+ *  all: same accuracy in the backtest, and `predict` stays near 24 ms at 150 cycles (51 ms with all of them). */
+export const WINDOW_CYCLES = 36;
 /** Per-user recency (D-094, P8-13 item 2): with this many kept cycles, λ and κ0 are chosen per user from these grids by her
  *  own leave-future-out error; RECENCY_LAMBDA and CYCLE_PRIOR_KAPPA0 apply below it. */
 export const RECENCY_SELECT_MIN_CYCLES = 6;
@@ -34,8 +37,18 @@ export const CONFORMAL_MIN_HALFWIDTH = 1;
 export const MIN_VALID_LENGTH = 15;
 export const MAX_VALID_LENGTH = 90;
 
-/** Luteal prior (§4.5, §11.1 LUTEAL_PRIOR): 12.4 +/- 2.4 d (Bull 2019), not the 14 d textbook value. */
-export const LUTEAL_PRIOR: NigPrior = { m0: 12.4, kappa0: 10, alpha0: 5, beta0: 5 * 2.4 ** 2 };
+/** Luteal prior (§4.5, §11.1 LUTEAL_PRIOR): mean 12.4 d (Bull 2019), not the 14 d textbook value. Its spread is set as the
+ *  prior's predictive SD, the spread of her next luteal phase before any of her own are known (D-161): 2.6 d, the narrowest
+ *  value that kept every check (the population SD is 2.4 d, Bull 2019; 2.4 and 2.5 held 11 of 12 temperature-dated
+ *  ovulations on the real Natural Cycles export, 2.6 holds all 12). β0 = α0 s² with s² = SD² / ((κ0 + 1)/κ0 · ν/(ν − 2));
+ *  to 0.3.0 s was 2.4 itself, a predictive SD of 2.81 d. */
+export const LUTEAL_PREDICTIVE_SD = 2.6;
+const LUTEAL_K0 = 10;
+const LUTEAL_A0 = 5;
+export const LUTEAL_PRIOR: NigPrior = {
+  m0: 12.4, kappa0: LUTEAL_K0, alpha0: LUTEAL_A0,
+  beta0: (LUTEAL_A0 * LUTEAL_PREDICTIVE_SD ** 2) / (((LUTEAL_K0 + 1) / LUTEAL_K0) * ((2 * LUTEAL_A0) / (2 * LUTEAL_A0 - 2))),
+};
 
 /** §11.1 LH_OFFSET, MUCUS_SD and signal SDs (§4.6). */
 export const LH_OFFSET_DAYS = 1;

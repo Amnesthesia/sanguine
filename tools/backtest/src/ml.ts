@@ -1,7 +1,7 @@
 // P8-12 (D-091): small learned models for the next period, measured against the engine and never shipped.
 // Deterministic: closed-form ridge regression, and a tiny neural network trained with a seeded RNG. All work on the cycles
 // the engine keeps (its outlier rules stay in front) and predict the next length's deviation from her mean.
-import { addDays, analyzeCycles, diffDays } from '@sanguine/engine';
+import { addDays, analyzeCycles, diffDays, WINDOW_CYCLES } from '@sanguine/engine';
 import type { EngineSettings, History, ISODate } from '@sanguine/engine';
 import { type DateForecast, type DateModel, engine } from './challengers';
 import { EVENTS, historyFrom, timeline } from './events';
@@ -77,7 +77,7 @@ export class Mlp {
   }
 }
 
-const BASE: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
+const BASE: EngineSettings = { lifeStates: [], recencyLambda: 1, window: WINDOW_CYCLES };
 const TARGET_CLIP = 12; // a skipped log or a long cycle should not dominate squared error
 
 /** Training rows from seeded synthetic users with every kind of event (a different seed from any evaluation). */

@@ -1,7 +1,7 @@
 // P8-12 (D-091): forecast accuracy around life events on seeded synthetic users. Rolling origin: at every logged period,
 // forecast the next one from what was logged so far. Targets are split into before the event, around it, and two or more
 // cycles after it (recovery). The challengers (src/challengers.ts) are measured, not gated.
-import { addDays, diffDays } from '@sanguine/engine';
+import { addDays, diffDays, WINDOW_CYCLES } from '@sanguine/engine';
 import type { EngineSettings, ISODate } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
 import { CHALLENGERS, engine, type DateForecast, type DateModel, tally, type Tally } from './src/challengers';
@@ -13,7 +13,7 @@ import { sampleUsers, WIDE } from './src/synth';
 const USERS = 400;
 const CYCLES = 16;
 const SEED = 20261010;
-const BASE: EngineSettings = { lifeStates: [], recencyLambda: 1, window: 12 };
+const BASE: EngineSettings = { lifeStates: [], recencyLambda: 1, window: WINDOW_CYCLES };
 
 /** Last valid-looking cycle length, the "same as last time" rule many apps start from. */
 const naive: DateModel = (h, _s, today) => {

@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { WINDOW_CYCLES } from '@sanguine/engine';
 import type { Database } from './database';
 import type { EventRow } from './events';
 import { type Clock, uuidv7 } from './ids';
@@ -258,7 +259,7 @@ describe('biomarkers and life states', () => {
   });
   it('the profile (birth year etc.) reaches the engine settings', async () => {
     await store.setProfile({ birthYear: 1989, menarcheYear: 2002 });
-    expect((await store.engineInputs()).settings).toMatchObject({ birthYear: 1989, menarcheYear: 2002, window: 12 });
+    expect((await store.engineInputs()).settings).toMatchObject({ birthYear: 1989, menarcheYear: 2002, window: WINDOW_CYCLES });
   });
 });
 

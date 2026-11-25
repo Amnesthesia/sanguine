@@ -39,23 +39,23 @@ describe('calendarOvulation (§4.5)', () => {
     const o = calendarOvulation(cyc(Array(60).fill(28)), fitLuteal(lutealLengths(cycles)), LAST_START);
     near(o.offset, 14, 0.4); // the cycle and luteal priors shrink it a little; the -1 slip was a whole day
   });
-  it('A: day 15.64, SD 3.95 (D-098)', () => {
+  it('A: day 15.64, SD 3.80 (D-098, D-161)', () => {
     const o = calendarOvulation(cyc([28, 30, 29]), fitLuteal([]), LAST_START);
     near(o.offset, 15.64);
-    near(o.sd, 3.95);
+    near(o.sd, 3.8);
     expect(o.point).toBe(addDays(LAST_START, 16));
     expect(o.basis).toBe('calendar');
     expect(o.confidence).toBe('low');
   });
-  it('F: luteal update moves ovulation to 15.81, SD 3.68', () => {
+  it('F: luteal update moves ovulation to 15.81, SD 3.56', () => {
     const o = calendarOvulation(cyc([28, 30, 29]), fitLuteal([11, 12, 12]), LAST_START);
     near(o.offset, 15.81);
-    near(o.sd, 3.68, 0.06);
+    near(o.sd, 3.56, 0.06);
   });
   it('B/C/D formula values (D-015)', () => {
-    near(calendarOvulation(cyc([27, 29, 28, 30, 28]), fitLuteal([]), LAST_START).sd, 3.71);
-    near(calendarOvulation(cyc([], cyclePrior(1989, 2026)), fitLuteal([]), LAST_START).sd, 6.46);
-    near(calendarOvulation(cyc([24, 38, 31, 45, 27, 36]), fitLuteal([]), LAST_START).sd, 7.17);
+    near(calendarOvulation(cyc([27, 29, 28, 30, 28]), fitLuteal([]), LAST_START).sd, 3.55);
+    near(calendarOvulation(cyc([], cyclePrior(1989, 2026)), fitLuteal([]), LAST_START).sd, 6.37);
+    near(calendarOvulation(cyc([24, 38, 31, 45, 27, 36]), fitLuteal([]), LAST_START).sd, 7.09);
   });
 });
 
@@ -81,7 +81,7 @@ describe('fertileDayProbabilities (§4.8)', () => {
   const rows = fertileDayProbabilities(o, LAST_START, 40);
   const at = (d: number) => rows.find((r) => r.date === addDays(LAST_START, d))?.pInWindow;
   it('matches the plan table for fixture A', () => {
-    for (const [d, p] of Object.entries({ 7: 0.2, 9: 0.35, 11: 0.49, 13: 0.55, 15: 0.5, 17: 0.37, 19: 0.22, 21: 0.11 })) near(at(Number(d)), p, 0.01);
+    for (const [d, p] of Object.entries({ 7: 0.2, 9: 0.35, 11: 0.5, 13: 0.57, 15: 0.52, 17: 0.38, 19: 0.22, 21: 0.1 })) near(at(Number(d)), p, 0.01);
   });
   it('is a graded band: peaks mid-window and is never a single day', () => {
     const above = rows.filter((r) => r.pInWindow >= 0.2).length;

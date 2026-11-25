@@ -1,13 +1,13 @@
 // Rolling-origin forecast over a CSV of period start dates (one 'YYYY-MM-DD' per line, optional header 'date').
 import { readFileSync } from 'node:fs';
-import { diffDays, predict } from '@sanguine/engine';
+import { diffDays, predict, WINDOW_CYCLES } from '@sanguine/engine';
 import type { CycleRecord, EngineSettings, History } from '@sanguine/engine';
 
 export interface CsvResult { cycles: number; forecasts: number; mae: number; cov80: number; cov95: number; width80: number }
 
 export function runCsv(path: string, lambda = 0.92, minHistory = 3): CsvResult {
   const starts = readFileSync(path, 'utf8').split(/\r?\n/).map((l) => l.trim().split(',')[0] as string).filter((l) => /^\d{4}-\d{2}-\d{2}$/.test(l)).sort();
-  const settings: EngineSettings = { lifeStates: [], recencyLambda: lambda, window: 12 };
+  const settings: EngineSettings = { lifeStates: [], recencyLambda: lambda, window: WINDOW_CYCLES };
   let n = 0, ae = 0, c80 = 0, c95 = 0, w = 0;
   for (let k = minHistory + 1; k < starts.length; k++) {
     const known = starts.slice(0, k);

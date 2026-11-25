@@ -1,5 +1,5 @@
 // Models A-C from the prototype and the engine itself. Each returns a point and 80% / 95% intervals in days.
-import { analyzeCycles, cyclePrior, fitCycleLength, predict, predictiveInterval, studentTQuantile } from '@sanguine/engine';
+import { analyzeCycles, cyclePrior, fitCycleLength, predict, predictiveInterval, studentTQuantile, WINDOW_CYCLES } from '@sanguine/engine';
 import type { CycleRecord, EngineSettings, History } from '@sanguine/engine';
 
 export interface Forecast { point: number; i80: [number, number]; i95: [number, number] }
@@ -47,7 +47,7 @@ function historyFor(lengths: number[]): History {
 
 /** The shipped engine: robust exclusion + NIG, with a given recency lambda. */
 export function engineModel(lambda: number): Model {
-  const settings: EngineSettings = { lifeStates: [], recencyLambda: lambda, window: 12 };
+  const settings: EngineSettings = { lifeStates: [], recencyLambda: lambda, window: WINDOW_CYCLES };
   return (lengths) => {
     const h = historyFor(lengths);
     const today = h.cycles.at(-1)?.start as string;
@@ -60,7 +60,7 @@ export function engineModel(lambda: number): Model {
 
 /** The engine's cycle-length model before D-094: the same robust exclusion, a fixed λ and κ0 (the §4.15 baseline). */
 export function fixedEngineModel(lambda: number): Model {
-  const settings: EngineSettings = { lifeStates: [], recencyLambda: lambda, window: 12 };
+  const settings: EngineSettings = { lifeStates: [], recencyLambda: lambda, window: WINDOW_CYCLES };
   return (lengths) => {
     const h = historyFor(lengths);
     const valid = analyzeCycles(h, settings).map((c) => c.record).filter((c) => c.quality === 'valid' && c.length !== undefined).map((c) => c.length as number);

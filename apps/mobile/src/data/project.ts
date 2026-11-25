@@ -1,6 +1,6 @@
 // Pure projection of the event log (PLAN.md §5.3-5.4). Same events in, same rows out, in any input order.
 import {
-  addDays, analyzeCycles, MIN_VALID_LENGTH, RECENCY_LAMBDA, diffDays,
+  addDays, analyzeCycles, MIN_VALID_LENGTH, RECENCY_LAMBDA, WINDOW_CYCLES, diffDays,
   type CervixObs, type CycleRecord, type DailyLog, type EngineSettings, type History, type ISODate, type LhTest, type LifeState,
   type MucusObs, type TemperatureReading,
 } from '@sanguine/engine';
@@ -185,7 +185,7 @@ export function project(events: EventRow[], profile: Profile = {}): Projection {
   }));
   const history: History = { cycles: records, temperatures, lh, mucus, cervix, logs, excluded, confirmedLong };
   const settings: EngineSettings = {
-    lifeStates: lifeStates.map(lifeStateOf), recencyLambda: profile.recencyLambda ?? RECENCY_LAMBDA, window: profile.window ?? 12,
+    lifeStates: lifeStates.map(lifeStateOf), recencyLambda: profile.recencyLambda ?? RECENCY_LAMBDA, window: profile.window ?? WINDOW_CYCLES,
     ...(profile.birthYear !== undefined ? { birthYear: profile.birthYear } : {}),
     ...(profile.menarcheYear !== undefined ? { menarcheYear: profile.menarcheYear } : {}),
     ...(profile.usualCycleLength !== undefined ? { usualCycleLength: profile.usualCycleLength } : {}),

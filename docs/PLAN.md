@@ -250,7 +250,7 @@ L_{\text{next}} \sim t_{2\alpha_n}\!\left(m_n,\; \sqrt{\tfrac{\beta_n(\kappa_n +
 | α₀ | 2.5 (5 pseudo-cycles of variance information) | Prototype: calibrated 80% coverage at 1–3 cycles |
 | β₀ | α₀ · 2.6² = 16.9 | Bull 2019 mean per-user SD 2.6 d |
 | λ (recency) | 1, no recency weighting (D-021). 0.92 was proposed; the §4.15 acceptance backtest measured a 4.9% gain against the 15% required, so the plan's own fallback ships. The perimenopause state uses 0.8 (§4.9) | Cycle length drifts about −0.18 d/yr (Bull) and transition onset is marked by abrupt change (STRAW+10); at 0.8 a step change is tracked 12% better, which is why only the perimenopause state uses it |
-| window | last 12 valid cycles | Median user has 11 cycles tracked (Li 2022); older cycles are near-weightless under λ |
+| window | last 36 valid cycles (D-161; was 12) | 12 assumed older cycles fade under λ < 1, but λ = 1 ships (D-021) and per-user recency (D-094) lowers λ when her history drifts. A long regular history then narrows her spread: 36 cycles matched all cycles in the backtest and keeps `predict` near 24 ms at 150 cycles. The period range itself still comes from her last 12 forecast errors (`CONFORMAL_WINDOW`) |
 | hard bounds | lengths 15–90 d accepted, else `suspect` | Bull 2019 acceptance range |
 
 **Cold start.**
@@ -280,13 +280,13 @@ The UI, not the engine, asks the user about a `suspect_skip` ("Did you have a pe
 
 ### 4.5 Phase model and ovulation without biomarkers
 
-Luteal length is modelled with its own NIG (m₀ 12.4, κ₀ 10, α₀ 5, β₀ 5·2.4²) updated by the person's own biomarker-dated luteal phases. Without biomarkers in the current cycle, ovulation day O = (predicted cycle length) − (luteal length), and because both are independent uncertainties:
+Luteal length is modelled with its own NIG (m₀ 12.4, κ₀ 10, α₀ 5, β₀ set so the prior's predictive SD is 2.6 d, D-161; it was 5·2.4², a predictive SD of 2.81 d) updated by the person's own biomarker-dated luteal phases. Without biomarkers in the current cycle, ovulation day O = (predicted cycle length) − (luteal length), and because both are independent uncertainties:
 
 ```latex
 \mathbb{E}[O] = m_n - \ell_n \ \text{(cycle day; offset } m_n - \ell_n - 1 \text{ from the start)}, \qquad \mathrm{SD}[O] = \sqrt{\mathrm{Var}[L_{\text{next}}] + \mathrm{Var}[\text{luteal}]}
 ```
 
-Here O is a cycle day (day 1 = first bleeding day), matching the luteal definition (day after ovulation to the day before the next period); the engine stores ovulation as an offset from the cycle start, m_n − ℓ_n − 1 (D-098: it had used m_n − ℓ_n, one day late). For a regular user with three cycles (fixture A) that gives cycle day 16.6 (offset 15.6) with SD 3.95 d: an 80% range of roughly offsets 11 to 21. That width is the honest answer and is what Wilcox 2000 found empirically, so the UI shows it as a band. Follicular length is never modelled directly; it is the remainder.
+Here O is a cycle day (day 1 = first bleeding day), matching the luteal definition (day after ovulation to the day before the next period); the engine stores ovulation as an offset from the cycle start, m_n − ℓ_n − 1 (D-098: it had used m_n − ℓ_n, one day late). For a regular user with three cycles (fixture A) that gives cycle day 16.6 (offset 15.6) with SD 3.80 d (3.95 before D-161): an 80% range of roughly offsets 11 to 21. That width is the honest answer and is what Wilcox 2000 found empirically, so the UI shows it as a band. Follicular length is never modelled directly; it is the remainder.
 
 ### 4.6 Biomarker integration
 
@@ -322,7 +322,7 @@ The biological window is the five days before ovulation and ovulation day (Wilco
 p(d) = P(d \le O \le d + 5) = \Phi\!\left(\tfrac{d + 5.5 - \mathbb{E}[O]}{\mathrm{SD}[O]}\right) - \Phi\!\left(\tfrac{d - 0.5 - \mathbb{E}[O]}{\mathrm{SD}[O]}\right)
 ```
 
-For fixture A this peaks at 0.55 on day 14 and stays above 0.2 from day 8 to day 20, which the calendar renders as a graded band, not a boxed six days. Confidence grade: `high` when SD\[O\] ≤ 1.5 (LH or mucus confirmed this cycle), `medium` when 1.5 < SD ≤ 3 (wearable or BBT shift, or a well-established user), `low` when SD > 3 (calendar only), `none` when suspended. The card always carries the 2.3 wording.
+For fixture A this peaks near 0.57 on day 14 and stays above 0.2 from day 9 to day 20 (D-161), which the calendar renders as a graded band, not a boxed six days. Confidence grade: `high` when SD\[O\] ≤ 1.5 (LH or mucus confirmed this cycle), `medium` when 1.5 < SD ≤ 3 (wearable or BBT shift, or a well-established user), `low` when SD > 3 (calendar only), `none` when suspended. The card always carries the 2.3 wording.
 
 ### 4.9 Life states
 
@@ -377,17 +377,17 @@ Ovulation days in this table are offsets from the last period start (offset 0 = 
 
 | Fixture | Input lengths (oldest first) | Classification | Posterior mean | ν | scale | 80% PI (days) | Next period (point, 80%) | Ovulation (calendar) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A regular, 3 cycles | 28, 30, 29 | all valid | 29.04 | 8 | 2.40 | 25.7–32.4 | 30 Oct, 27 Oct–2 Nov | day 15.6, SD 3.95, 80% day 11–21 |
-| B one skipped log, 6 cycles | 27, 29, 56, 28, 30, 28 | 56 → `suspect_skip` (threshold 35.5) | 28.48 | 10 | 2.16 | 25.5–31.4 | 29 Oct, 27 Oct–1 Nov | day 15.1, SD 3.9 |
-| C cold start, age 37 | none | — | 28.2 | 5 | 4.50 | 21.6–34.8 | 29 Oct, 23 Oct–5 Nov | day 14.8, SD 5.4, `low` |
-| D irregular, 6 cycles | 24, 38, 31, 45, 27, 36 | all valid (threshold 58) | 33.18 | 11 | 5.97 | 25.0–41.3 | 3 Nov, 26 Oct–11 Nov; high-variability flag fires (range 21 d) | day 19.8, SD 7.0, `low` |
+| A regular, 3 cycles | 28, 30, 29 | all valid | 29.04 | 8 | 2.40 | 25.7–32.4 | 30 Oct, 27 Oct–2 Nov | day 15.6, SD 3.80, 80% day 11–21 |
+| B one skipped log, 6 cycles | 27, 29, 56, 28, 30, 28 | 56 → `suspect_skip` (threshold 35.5) | 28.48 | 10 | 2.16 | 25.5–31.4 | 29 Oct, 27 Oct–1 Nov | day 15.1, SD 3.55 |
+| C cold start, age 37 | none | — | 28.2 | 5 | 4.50 | 21.6–34.8 | 29 Oct, 23 Oct–5 Nov | day 14.8, SD 6.37, `low` |
+| D irregular, 6 cycles | 24, 38, 31, 45, 27, 36 | all valid (threshold 58) | 33.18 | 11 | 5.97 | 25.0–41.3 | 3 Nov, 26 Oct–11 Nov; high-variability flag fires (range 21 d) | day 19.8, SD 7.09, `low` |
 | E single cycle | 31 | valid | 30.43 | 6 | 3.11 | 26.0–34.9 | 1 Nov, 27 Oct–5 Nov | — |
-| F luteal update | fixture A plus biomarker-dated luteal phases 11, 12, 12 | — | luteal mean 12.23, ν 13, scale 2.22, 80% 9.2–15.2 |  |  |  |  | ovulation day 15.8, SD 3.6 |
+| F luteal update | fixture A plus biomarker-dated luteal phases 11, 12, 12 | — | luteal mean 12.23, ν 13, scale 2.06, 80% 9.5–15.0 |  |  |  |  | ovulation day 15.8, SD 3.56 |
 | G LH override | fixture A, negative LH day 13, positive day 14 | — | — | — | — | — | — | ovulation day 15, SD 1.0, `high`, basis `lh`; fertile band p ≥ 0.8 on days 10–15 |
 | H conflicting signals | fixture A, positive LH day 14, BBT shift first high day 23 | — | — | — | — | — | — | shift falls 8 d after LH: discarded; ovulation day 15 SD 1.0; `conflict: true` in cycleQuality |
 | I contraception | fixture A, then life state combined pill from 1 Oct | — | — | — | — | — | suspended | none; bleeds logged as withdrawal |
 
-Fertile probabilities for fixture A by offset (for the calendar band test, D-098): day 7 0.20, 9 0.35, 11 0.49, 13 0.55, 15 0.50, 17 0.37, 19 0.22, 21 0.11.
+Fertile probabilities for fixture A by offset (for the calendar band test, D-098, D-161): day 7 0.20, 9 0.35, 11 0.50, 13 0.57, 15 0.52, 17 0.38, 19 0.22, 21 0.10. The SDs in this table are from engine 0.4.0 (D-161: luteal prior predictive SD 2.6 d); B–D were the plan's rounded figures before, and the tests pin the formula values (D-015).
 
 ### 4.13 Prototype results
 
@@ -991,7 +991,7 @@ No external clinician or regulatory review is assumed. Every decision that would
 
 | Decision | Default applied | Alternative rejected and why | Where it lives |
 | --- | --- | --- | --- |
-| Luteal prior | 12.4 ± 2.4 d (Bull 2019, n = 612k) | 14 d textbook median: smaller, older cohorts; would bias ovulation early | `engine/params.ts: LUTEAL_PRIOR` |
+| Luteal prior | 12.4 d (Bull 2019, n = 612k), spread as a predictive SD of 2.6 d (D-161: the narrowest value that held every temperature-dated ovulation on the real export; population SD 2.4 d) | 14 d textbook median: smaller, older cohorts; would bias ovulation early. 2.4 d predictive SD: held 11 of 12 on the real export | `engine/params.ts: LUTEAL_PRIOR` |
 | Short luteal insight | Shown only as low-prominence insight at ≤ 9 d in 2 of 3 biomarker-dated cycles, with the uncertainty note | Flagging as a health flag: evidence contested (3.4) | `engine/flags.ts: SHORT_LUTEAL` |
 | LH to ovulation | Positive + 1 d, SD 1.0 | Positive = ovulation day: ignores the 28–48 h onset-to-rupture delay | `engine/params.ts: LH_OFFSET` |
 | Mucus peak | Peak day, SD 1.5 | Peak + 1: Ecochard found peak within ±1 d in \~70% | `engine/params.ts: MUCUS_SD` |
