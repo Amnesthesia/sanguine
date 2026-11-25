@@ -1,6 +1,6 @@
 // Food, movement and supplement notes by cycle phase (P8-18, D-107). Pure: which phase a date sits in, and how strong each note's evidence is.
 // Wording: copy/en-AU.json guidance.*. Research: docs/superpowers/plans/2026-10-14-cycle-food-movement-notes.md.
-import { addDays, type CycleRecord, diffDays, type ISODate, LUTEAL_PRIOR, type Prediction } from '@sanguine/engine';
+import { addDays, type CycleRecord, diffDays, type ISODate, type LifeState, LUTEAL_PRIOR, type Prediction, WINDOW_CYCLES } from '@sanguine/engine';
 import { ovulationUncertain } from '@/features/today/fertileShown';
 
 export type GuidePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal' | 'premenstrual' | 'general';
@@ -18,7 +18,14 @@ export interface CycleFrame {
   ovulationDay?: number;
   ovulationRange?: { lo: number; hi: number };
 }
-export interface GuideDay { phase: GuidePhase; expected: boolean; frame?: CycleFrame }
+/** Why a day is `general` (D-162), so the card can say it. `wide`: the ovulation 80% range in days, and her valid closed cycles in the model
+ *  (count, shortest, longest; absent with fewer than two). */
+export type GeneralReason =
+  | { kind: 'late'; by: ISODate }
+  | { kind: 'wide'; width: number; n?: number; min?: number; max?: number }
+  | { kind: 'paused' }
+  | { kind: 'setAside'; quality: 'suspect_skip' | 'suspect_short' | 'user_excluded' };
+export interface GuideDay { phase: GuidePhase; expected: boolean; frame?: CycleFrame; reason?: GeneralReason }
 export interface PhaseOnInput {
   date: ISODate;
   today: ISODate;
@@ -72,6 +79,20 @@ function frameOf(cycle: CycleRecord, p: Prediction, date: ISODate, bleedEnd: ISO
   return frame;
 }
 
+/** The i18n key of the life state she set that stops the calendar ovulation estimate (lifestate.ts: bleedingOnly or no calendarEstimate). */
+export function pausingStateKey(lifeStates: readonly LifeState[]): string | undefined {
+  if (lifeStates.some((s) => s.kind === 'hormonal_contraception' && s.method === 'hormonal_iud')) return 'settings.lifeState.methods.hormonal_iud';
+  if (lifeStates.some((s) => s.kind === 'perimenopause')) return 'settings.lifeState.options.perimenopause';
+  if (lifeStates.some((s) => s.kind === 'postpartum' && s.breastfeeding)) return 'settings.lifeState.breastfeeding';
+  return undefined;
+}
+
+function wideReason(p: Prediction & { ovulation: NonNullable<Prediction['ovulation']> }, cycles: CycleRecord[]): GeneralReason {
+  const width = diffDays(p.ovulation.i80.hi, p.ovulation.i80.lo);
+  const lens = cycles.filter((c) => c.quality === 'valid' && c.nextStart && c.length !== undefined).slice(-WINDOW_CYCLES).map((c) => c.length as number);
+  return lens.length < 2 ? { kind: 'wide', width } : { kind: 'wide', width, n: lens.length, min: Math.min(...lens), max: Math.max(...lens) };
+}
+
 export function phaseOn({ date, today, prediction: p, cycles, showEstimate }: PhaseOnInput): GuideDay | undefined {
   if (!p || p.suspended) return undefined;
   let cycle: CycleRecord | undefined;
@@ -80,21 +101,28 @@ export function phaseOn({ date, today, prediction: p, cycles, showEstimate }: Ph
   const expected = date > today;
   const bleedEnd = !cycle.nextStart && p.currentBleed ? p.currentBleed.point : (cycle.end ?? addDays(cycle.start, BLEED_DAYS_IF_UNLOGGED - 1));
   const frame = frameOf(cycle, p, date, bleedEnd);
-  const at = (phase: GuidePhase): GuideDay => ({ phase, expected, frame });
+  const at = (phase: GuidePhase, reason?: GeneralReason): GuideDay => ({ phase, expected, frame, ...(reason ? { reason } : {}) });
   if (date <= bleedEnd) return at('menstrual');
 
   let nextStart: ISODate;
   let ovulationDay: ISODate;
   if (cycle.nextStart) {
-    if (cycle.quality !== 'valid') return at('general');
+    if (cycle.quality !== 'valid') return at('general', { kind: 'setAside', quality: cycle.quality as 'suspect_skip' | 'suspect_short' | 'user_excluded' });
     nextStart = cycle.nextStart;
     ovulationDay = cycle.ovulation?.point ?? addDays(cycle.start, Math.round(diffDays(nextStart, cycle.start) - LUTEAL_PRIOR.m0 - 1)); // §4.5 offset m − ℓ − 1
   } else {
     const next = p.nextPeriod;
-    if (!next || date > next.i80.hi) return expected ? undefined : at('general'); // late, or beyond the forecast
+    if (!next) return expected ? undefined : at('general');
+    if (date > next.i80.hi) return expected ? undefined : at('general', { kind: 'late', by: next.i80.hi }); // late, or beyond the forecast
     if (expected && date >= next.i80.lo) return at('menstrual');
-    if (!p.ovulation || ovulationUncertain(p)) return at('general');
+    if (!p.ovulation) return at('general', { kind: 'paused' });
     nextStart = next.point;
+    if (date >= addDays(nextStart, -PREMENSTRUAL_DAYS)) return at('premenstrual');
+    // D-162: a wide estimate still places the days outside its 80% range; only days inside it stay general
+    if (ovulationUncertain(p)) {
+      const ov = p.ovulation;
+      return date < ov.i80.lo ? at('follicular') : date > ov.i80.hi ? at('luteal') : at('general', wideReason({ ...p, ovulation: ov }, cycles));
+    }
     ovulationDay = p.ovulation.point;
   }
   if (date >= addDays(nextStart, -PREMENSTRUAL_DAYS)) return at('premenstrual');

@@ -1,7 +1,7 @@
 import en from '../../../../../copy/en-AU.json';
 import { addDays, type CycleRecord, diffDays, type ISODate, type Prediction } from '@sanguine/engine';
 import { describe, expect, it } from 'vitest';
-import { GUIDANCE, GUIDE_PHASES, phaseOn, type PhaseOnInput, showSupplements } from './guidance';
+import { GUIDANCE, GUIDE_PHASES, pausingStateKey, phaseOn, type PhaseOnInput, showSupplements } from './guidance';
 
 const TODAY = '2026-10-14'; // cycle day 11 of the open cycle
 const rec = (start: ISODate, nextStart?: ISODate, extra: Partial<CycleRecord> = {}): CycleRecord =>
@@ -49,7 +49,7 @@ describe('phaseOn, open cycle', () => {
     expect(on('2026-10-31')).toMatchObject({ phase: 'menstrual', expected: true }));
   it('a future day past the 80% range gets no card', () => expect(on('2026-11-04')).toBeUndefined());
   it('late: today past the 80% range gives general', () =>
-    expect(on('2026-11-05', { today: '2026-11-05' })).toMatchObject({ phase: 'general', expected: false }));
+    expect(on('2026-11-05', { today: '2026-11-05' })).toMatchObject({ phase: 'general', expected: false, reason: { kind: 'late', by: '2026-11-03' } }));
   it('a hidden estimate (teen mode) folds ovulatory into follicular or luteal', () => {
     expect(on('2026-10-18', { showEstimate: false })?.phase).toBe('follicular');
     expect(on('2026-10-19', { showEstimate: false })?.phase).toBe('luteal');
@@ -58,15 +58,31 @@ describe('phaseOn, open cycle', () => {
       expect(on(d, { showEstimate: false })?.phase).not.toBe('ovulatory');
     }
   });
-  it('uncertain ovulation gives general on non-period days and keeps period days', () => {
-    const p = pred({ ovulation: { point: '2026-10-19', i80: { lo: '2026-10-08', hi: '2026-10-29' }, sd: 7, confidence: 'low', basis: 'calendar' } });
-    expect(on(TODAY, { prediction: p })?.phase).toBe('general');
-    expect(on('2026-10-05', { prediction: p })?.phase).toBe('menstrual');
-    expect(on('2026-10-31', { prediction: p })).toMatchObject({ phase: 'menstrual', expected: true });
+  const WIDE = pred({ ovulation: { point: '2026-10-18', i80: { lo: '2026-10-11', hi: '2026-10-24' }, sd: 5.2, confidence: 'low', basis: 'calendar' } });
+  it('a wide estimate places days before its range as follicular and after it as luteal; inside the range is general with reason wide (D-162)', () => {
+    expect(on('2026-10-10', { prediction: WIDE })).toMatchObject({ phase: 'follicular' });
+    expect(on('2026-10-10', { prediction: WIDE })?.reason).toBeUndefined();
+    expect(on('2026-10-11', { prediction: WIDE })).toMatchObject({ phase: 'general', reason: { kind: 'wide', width: 13, n: 2, min: 28, max: 29 } });
+    expect(on('2026-10-24', { prediction: WIDE })?.phase).toBe('general');
+    expect(on('2026-10-25', { prediction: WIDE })?.phase).toBe('luteal');
+    expect(on('2026-10-27', { prediction: WIDE })?.phase).toBe('premenstrual');
+    for (const d of ['2026-10-17', '2026-10-18', '2026-10-19']) expect(on(d, { prediction: WIDE })?.phase).toBe('general');
   });
-  it('no ovulation estimate gives general', () => {
+  it('a wide range never overrides bleeding, premenstrual or expected period days', () => {
+    const early = pred({ ovulation: { point: '2026-10-17', i80: { lo: '2026-10-05', hi: '2026-10-30' }, sd: 9, confidence: 'low', basis: 'calendar' } });
+    expect(on('2026-10-05', { prediction: early })?.phase).toBe('menstrual');
+    expect(on('2026-10-28', { prediction: early })?.phase).toBe('premenstrual');
+    expect(on('2026-10-31', { prediction: early })).toMatchObject({ phase: 'menstrual', expected: true });
+  });
+  it('estimate switched off (teen mode): the same placement around a wide range, never ovulatory', () => {
+    expect(on('2026-10-10', { prediction: WIDE, showEstimate: false })?.phase).toBe('follicular');
+    expect(on('2026-10-25', { prediction: WIDE, showEstimate: false })?.phase).toBe('luteal');
+  });
+  it('wide with fewer than two valid closed cycles carries no count, shortest or longest', () =>
+    expect(on('2026-10-15', { prediction: WIDE, cycles: [rec('2026-10-04', undefined, { end: '2026-10-07' })] })?.reason).toEqual({ kind: 'wide', width: 13 }));
+  it('no ovulation estimate gives general with reason paused', () => {
     const { ovulation: _o, ...rest } = pred();
-    expect(on(TODAY, { prediction: rest as Prediction })?.phase).toBe('general');
+    expect(on(TODAY, { prediction: rest as Prediction })).toMatchObject({ phase: 'general', reason: { kind: 'paused' } });
   });
 });
 
@@ -89,7 +105,7 @@ describe('phaseOn, past cycles', () => {
   });
   it('a merged cycle (suspect_skip) gives general, a life-state cycle gives no card', () => {
     const skip = [{ ...CYCLES[0]!, quality: 'suspect_skip' as const }, CYCLES[1]!, CYCLES[2]!];
-    expect(on('2026-08-25', { cycles: skip })?.phase).toBe('general');
+    expect(on('2026-08-25', { cycles: skip })).toMatchObject({ phase: 'general', reason: { kind: 'setAside', quality: 'suspect_skip' } });
     const life = [{ ...CYCLES[0]!, quality: 'life_state' as const }, CYCLES[1]!, CYCLES[2]!];
     expect(on('2026-08-09', { cycles: life })).toBeUndefined();
   });
@@ -205,3 +221,12 @@ describe('guidance summaries (calendar card)', () => {
   });
 });
 
+describe('pausingStateKey (D-162)', () => {
+  it('names the life state that stops the ovulation estimate', () => {
+    expect(pausingStateKey([{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-01-01' }])).toBe('settings.lifeState.methods.hormonal_iud');
+    expect(pausingStateKey([{ kind: 'perimenopause', since: '2026-01-01' }])).toBe('settings.lifeState.options.perimenopause');
+    expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: true }])).toBe('settings.lifeState.breastfeeding');
+    expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: false }])).toBeUndefined();
+    expect(pausingStateKey([])).toBeUndefined();
+  });
+});

@@ -3,7 +3,7 @@
 // estimate's range minus N days.
 import { addDays, type CycleRecord, diffDays, type ISODate, type Prediction } from '@sanguine/engine';
 import { phaseOn } from '@/features/guidance/guidance';
-import { shownFertileDays } from '@/features/today/fertileShown';
+import { ovulationUncertain, shownFertileDays } from '@/features/today/fertileShown';
 
 export const REMINDER_HOUR = 9;
 export type PhaseEvent = 'follicularEarly' | 'follicularLate' | 'lutealEarly' | 'lutealLate';
@@ -43,8 +43,10 @@ export function cleanText(s: string | undefined): string | undefined {
 export interface PhaseContext { cycles: CycleRecord[]; showEstimate: boolean; today: ISODate }
 
 /** The first and last day of the follicular run and of the luteal run (premenstrual days count as luteal) in the current cycle, from phaseOn(),
- *  so a reminder and Today's phase card never disagree. Empty while phaseOn says `general` (uncertain or missing ovulation, a late period). */
+ *  so a reminder and Today's phase card never disagree. Empty while phaseOn says `general` (missing ovulation, a late period), and while the ovulation
+ *  estimate is uncertain: Today then places the days outside the wide range (D-162), but the runs would be cut short, so reminders stay silent as D-152 set. */
 function phaseRuns(p: Prediction, c: PhaseContext): { follicular?: { lo: ISODate; hi: ISODate }; luteal?: { lo: ISODate; hi: ISODate } } {
+  if (ovulationUncertain(p)) return {};
   let start: ISODate | undefined;
   for (const r of c.cycles) if (r.start <= c.today && (!start || r.start > start)) start = r.start;
   if (!start) return {};
