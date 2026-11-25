@@ -756,7 +756,7 @@
         "notes": "Notes"
       },
       "accuracyTitle": "How well it has done for you",
-      "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gave at the start of that cycle held the real start date. Insights, Your accuracy, shows the count.",
+      "accuracyBody": "When a cycle ends, Sanguine checks whether the range it gives at the start of that cycle, using only what you had logged by then, held the real start date. When an update changes how estimates are worked out, past cycles are checked again the same way. Insights, Your accuracy, shows the count.",
       "draw": {
         "blendLabel": "With two cycles logged, the estimate still leans on published averages; it moves towards your own pattern as cycles are added, up to your last 36.",
         "blendLeft": "Published averages",

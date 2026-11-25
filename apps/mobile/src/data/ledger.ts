@@ -22,15 +22,17 @@ function forecastFor(p: Projection, c: CycleRow) {
   return predict(historyAsOf(p.history, asOf), settings, asOf).nextPeriod;
 }
 
-/** Inserts missing records, re-scores a cycle whose actual end changed, and removes records of cycles that no longer qualify. */
+/** Inserts missing records, re-scores a cycle whose actual end changed or that an older engine version scored (D-162: the count describes the
+ *  engine running now, each forecast still made from what was known when its cycle started), and removes records of cycles that no longer qualify. */
 export async function updateLedger(tx: Database, p: Projection, engineVersion: string): Promise<void> {
   const closed = p.cycles.filter((c) => c.quality === 'valid' && c.next_start !== null);
-  const existing = new Map((await tx.all<{ cycle_id: string; actual_day: string }>('SELECT cycle_id, actual_day FROM prediction_score')).map((r) => [r.cycle_id, r.actual_day]));
+  const existing = new Map((await tx.all<{ cycle_id: string; actual_day: string; engine_version: string }>('SELECT cycle_id, actual_day, engine_version FROM prediction_score')).map((r) => [r.cycle_id, r]));
   const keep = new Set(closed.map((c) => c.id));
   for (const id of existing.keys()) if (!keep.has(id)) await tx.run('DELETE FROM prediction_score WHERE cycle_id = ?', [id]);
   for (const c of closed) {
     const actual = c.next_start as string;
-    if (existing.get(c.id) === actual) continue;
+    const row = existing.get(c.id);
+    if (row?.actual_day === actual && row.engine_version === engineVersion) continue;
     const f = forecastFor(p, c);
     if (!f) continue;
     const err = Math.abs(diffDays(actual, f.point));

@@ -47,11 +47,21 @@ describe('prediction-score ledger (PLAN.md §4.15)', () => {
     expect(ids).not.toContain('cyc-2026-02-27'); // the 56-day cycle
     expect(ids).toContain('cyc-2026-01-01');
   });
-  it('is stable: rebuilding does not rewrite existing rows', async () => {
+  it('is stable: rebuilding with the same engine does not rewrite existing rows', async () => {
     for (const d of REGULAR) await start(d);
-    await db.run("UPDATE prediction_score SET engine_version = '0.0.1' WHERE cycle_id = 'cyc-2026-06-01'");
+    await db.run("UPDATE prediction_score SET abs_error = 99 WHERE cycle_id = 'cyc-2026-06-01'");
     await store.rebuild();
-    expect((await scores())[0]?.engine_version).toBe('0.0.1'); // what was shown then stays
+    expect((await scores())[0]?.abs_error).toBe(99);
+  });
+  it('a row scored by an older engine is re-scored by the running one, still from what was known when the cycle started (D-162)', async () => {
+    for (const d of REGULAR) await start(d);
+    const before = (await scores())[0];
+    await db.run("UPDATE prediction_score SET engine_version = '0.0.1', abs_error = 99 WHERE cycle_id = 'cyc-2026-06-01'");
+    await store.rebuild();
+    const row = (await scores())[0];
+    expect(row?.engine_version).toBe(ENGINE_VERSION);
+    expect(row?.abs_error).toBe(before?.abs_error);
+    expect(row?.predicted_day).toBe(before?.predicted_day);
   });
   it('re-scores a cycle whose end moved and drops rows for cycles that no longer exist', async () => {
     const events = [];
