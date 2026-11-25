@@ -224,16 +224,16 @@ describe('guidance summaries (calendar card)', () => {
 describe('pausingStateKey (D-162)', () => {
   it('names the life state that stops the ovulation estimate', () => {
     const on = '2026-10-14';
-    expect(pausingStateKey([{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-01-01' }], on)).toBe('settings.lifeState.methods.hormonal_iud');
+    expect(pausingStateKey([{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-01-01' }], on)).toBeUndefined(); // D-163: an IUD pauses nothing
     expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: true }], on)).toBe('settings.lifeState.breastfeeding');
     expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: false }], on)).toBeUndefined();
     expect(pausingStateKey([{ kind: 'perimenopause', since: '2026-01-01' }], on)).toBeUndefined(); // never named in a sentence (§2.3 list)
     expect(pausingStateKey([], on)).toBeUndefined();
   });
-  it('an ended state is not named: an IUD that ended before a later state', () => {
-    const iud = { kind: 'hormonal_contraception' as const, method: 'hormonal_iud' as const, since: '2022-01-01', until: '2024-01-01' };
-    expect(pausingStateKey([iud, { kind: 'perimenopause', since: '2026-01-01' }], '2026-10-14')).toBeUndefined();
-    expect(pausingStateKey([iud], '2023-06-01')).toBe('settings.lifeState.methods.hormonal_iud');
-    expect(pausingStateKey([{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-11-01' }], '2026-10-14')).toBeUndefined();
+  it('an ended state is not named: breastfeeding that ended before a later state', () => {
+    const bf = { kind: 'postpartum' as const, delivered: '2022-01-01', breastfeeding: true, until: '2024-01-01' };
+    expect(pausingStateKey([bf, { kind: 'perimenopause', since: '2026-01-01' }], '2026-10-14')).toBeUndefined();
+    expect(pausingStateKey([bf], '2023-06-01')).toBe('settings.lifeState.breastfeeding');
+    expect(pausingStateKey([{ kind: 'postpartum', delivered: '2026-11-01', breastfeeding: true }], '2026-10-14')).toBeUndefined();
   });
 });

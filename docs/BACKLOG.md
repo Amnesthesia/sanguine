@@ -136,3 +136,4 @@ Glass redesign fix plan (docs/superpowers/plans/2026-11-18-glass-redesign-fix-pl
 - [ ] P8-41 Apple Health "All history" import window next to 30 days, 1 year and 2 years, with a line that Flo and Natural Cycles can share into Apple Health (owner; D-159 (7)).
 - [ ] P8-42 Long histories count and the calendar ovulation range is calibrated: cycle window 36, luteal prior predictive SD 2.6 d, long-history coverage gates, Insights accuracy line names the period range; then find why the hormone chart said "Any day of the cycle" on the owner's imported data while the period was not late (owner; D-161).
 - [ ] P8-43 Days around a wide ovulation range are placed; a day that can't be placed says why on the guidance card; the accuracy count is re-scored by the running engine (owner; D-162). Follow-up: ask whether an imported period within about two weeks of a logged one is the same period.
+- [ ] P8-44 A hormonal IUD changes no estimate (owner; D-163).

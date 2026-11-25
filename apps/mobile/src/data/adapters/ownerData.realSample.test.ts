@@ -75,7 +75,7 @@ describe.skipIf(!OWNER_DATA)('owner data probe (local only)', () => {
     console.log(p.ovulation
       ? `probe: ovulation present sd=${f(p.ovulation.sd, 2)} width80=${diffDays(p.ovulation.i80.hi, p.ovulation.i80.lo)} days, confidence=${p.ovulation.confidence}, basis=${p.ovulation.basis}, uncertain=${ovulationUncertain(p)}`
       : 'probe: ovulation absent');
-    console.log(`probe: gate calendarEstimate=${gate.calendarEstimate} bleedingOnly=${gate.bleedingOnly} confidenceCap=${gate.confidenceCap} suspended=${gate.suspended?.reason}`);
+    console.log(`probe: gate calendarEstimate=${gate.calendarEstimate} cycleFlagsOff=${gate.cycleFlagsOff} confidenceCap=${gate.confidenceCap} suspended=${gate.suspended?.reason}`);
     console.log(`probe: life state kinds=${JSON.stringify(settings.lifeStates.map((s) => s.kind))} window=${settings.window}`);
     console.log(`probe: days since open cycle start=${open ? diffDays(today, open.start) : 'no open cycle'}`);
     console.log(`probe: import added=${imp.added} problems=${decoded.problems.length}`);

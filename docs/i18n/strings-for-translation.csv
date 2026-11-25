@@ -547,7 +547,7 @@ settings.lifeState.patternSymptoms,"Hot flushes, night sweats and trouble sleepi
 settings.lifeState.breastfeeding,Breastfeeding,no,settings,
 settings.lifeState.pregnancyEnded,"If the pregnancy has ended, choose ""Recently gave birth"" or ""After a pregnancy loss"".",no,settings,
 settings.lifeState.effect.paused,Estimates are paused while this is set. Your logs are kept.,no,settings,
-settings.lifeState.effect.iud,"Period estimates continue from periods you log, as a rough estimate. A hormonal IUD can change or stop bleeding. Ovulation estimates and cycle-pattern notices are paused.",no,settings,
+settings.lifeState.effect.iud,"Estimates continue from the periods you log, as for any cycle, including the ovulation estimate. A hormonal IUD can change or stop bleeding, so cycle-pattern notices are paused.",no,settings,
 settings.lifeState.effect.warmup,Estimates use general starting ranges for your first three cycles.,no,settings,
 settings.lifeState.effect.wider,Ranges are wider while this is set.,no,settings,
 settings.health.title,Health sync,no,settings,

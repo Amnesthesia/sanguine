@@ -330,7 +330,7 @@ For fixture A this peaks near 0.57 on day 14 and stays above 0.2 from day 9 to d
 | --- | --- | --- |
 | Hormonal contraception (combined pill, ring, patch) | Suspended. Bleeds are logged as `withdrawal_bleed`, shown on the calendar, never used as cycle starts | Withdrawal bleeds are not menses; no ovulation estimate, no fertile band, no cycle flags |
 | Progestogen-only pill, implant, injection | Suspended; bleeding logged as `on_contraception` | Patterns are method effects |
-| Hormonal IUD | Period ranges continue from explicitly logged periods, confidence capped low; no ovulation, fertile band or cycle-pattern flags | Bleeding can change or stop; other bleeding stays `on_contraception`. D-110 |
+| Hormonal IUD | Estimates as for any cycle: period ranges, confidence and the ovulation estimate from her logs, unchanged by the IUD; no cycle-pattern flags | Owner, D-163 (was D-110: confidence capped low, no ovulation or fertile band). Bleeding can change or stop; other bleeding stays `on_contraception` |
 | Copper IUD | Ordinary period predictions; choose None in life-state settings | Non-hormonal; D-110 |
 | Post-contraception (first 3 cycles after stopping) | Predictions run with the population prior only (κ₀ = 0.5, no history), labelled `low`; cycles are kept but weighted 0.5 until three post-stop cycles exist | Return of ovulation varies by method (Girum 2018; progestin review) |
 | Pregnant | Suspended; cycle history frozen; optional pregnancy week shown | — |

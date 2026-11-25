@@ -657,7 +657,7 @@
       "pregnancyEnded": "If the pregnancy has ended, choose \"Recently gave birth\" or \"After a pregnancy loss\".",
       "effect": {
         "paused": "Estimates are paused while this is set. Your logs are kept.",
-        "iud": "Period estimates continue from periods you log, as a rough estimate. A hormonal IUD can change or stop bleeding. Ovulation estimates and cycle-pattern notices are paused.",
+        "iud": "Estimates continue from the periods you log, as for any cycle, including the ovulation estimate. A hormonal IUD can change or stop bleeding, so cycle-pattern notices are paused.",
         "warmup": "Estimates use general starting ranges for your first three cycles.",
         "wider": "Ranges are wider while this is set."
       }

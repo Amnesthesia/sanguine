@@ -62,12 +62,11 @@ describe('currentBleed', () => {
     expect(predict(history(), { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'pregnant', since: '2026-11-01' }] }, '2026-11-02').currentBleed).toBeUndefined();
   });
 
-  it('present with a hormonal IUD and capped at low', () => {
+  it('a hormonal IUD does not change the current-bleed estimate (D-163)', () => {
     const h = history([5, 5, 5, 5]);
     expect(predict(h, FIXTURE_SETTINGS, '2026-11-02').currentBleed?.confidence).toBe('medium');
-    expect(predict(h, { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-10-31' }] }, '2026-11-02').currentBleed).toEqual({
-      point: '2026-11-04', i80: { lo: '2026-11-04', hi: '2026-11-04' }, confidence: 'low',
-    });
+    expect(predict(h, { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-10-31' }] }, '2026-11-02').currentBleed)
+      .toEqual(predict(h, FIXTURE_SETTINGS, '2026-11-02').currentBleed);
   });
 
   it('ignores cycles without a bleed length', () => {

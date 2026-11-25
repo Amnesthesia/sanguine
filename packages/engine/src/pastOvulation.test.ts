@@ -45,9 +45,9 @@ describe('pastOvulations', () => {
     expect(pastOvulations(historyFromLengths([10], '2026-10-31'), FIXTURE_SETTINGS)).toEqual([]);
   });
 
-  it('no row for a cycle overlapping a hormonal IUD state', () => {
+  it('a cycle overlapping a hormonal IUD state keeps its row (D-163)', () => {
     const settings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'hormonal_contraception' as const, method: 'hormonal_iud' as const, since: '2026-10-10', until: '2026-10-20' }] };
-    expect(pastOvulations(history(), settings).map((r) => r.cycleId)).toEqual(['c1']);
+    expect(pastOvulations(history(), settings)).toEqual(pastOvulations(history(), FIXTURE_SETTINGS));
   });
 
   it.each([
@@ -120,9 +120,9 @@ describe('pastOvulations', () => {
   it.each([
     ['2026-10-31', undefined, true],
     ['2026-09-01', '2026-10-02', true],
-    ['2026-09-01', '2026-10-03', false],
-    ['2026-10-10', undefined, false],
-  ] as const)('IUD boundary since %s until %s retains row: %s', (since, until, retained) => {
+    ['2026-09-01', '2026-10-03', true],
+    ['2026-10-10', undefined, true],
+  ] as const)('IUD since %s until %s retains the row (D-163: an IUD changes no estimate): %s', (since, until, retained) => {
     const settings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'hormonal_contraception' as const, method: 'hormonal_iud' as const, since, until }] };
     expect(pastOvulations(history(), settings).some(r => r.cycleId === 'c2')).toBe(retained);
   });

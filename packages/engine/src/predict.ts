@@ -118,9 +118,9 @@ export function predict(history: History, settings: EngineSettings, today: ISODa
   };
 
   // ovulation for the current cycle: biomarkers first, calendar otherwise (§4.5, §4.6)
-  const bio = gate.bleedingOnly ? null : cycleBiomarkerOvulation(history, start, addDays(today, 1));
+  const bio = cycleBiomarkerOvulation(history, start, addDays(today, 1));
   let ov: OvulationEstimate | null = bio;
-  if (!ov && gate.calendarEstimate && !gate.bleedingOnly) ov = calendarOvulation(post, fitLuteal(lutealLengths(cycles)), start);
+  if (!ov && gate.calendarEstimate) ov = calendarOvulation(post, fitLuteal(lutealLengths(cycles)), start);
   const ovulation: Prediction['ovulation'] = ov
     ? {
         point: ov.point, i80: ovulationInterval(ov, start), sd: ov.sd,
@@ -162,7 +162,7 @@ export function predict(history: History, settings: EngineSettings, today: ISODa
           : Math.abs(offset - ovOffset) <= OVULATORY_HALF_WINDOW_DAYS ? 'ovulatory'
             : offset < ovOffset ? 'follicular' : 'luteal';
 
-  const flags = gate.bleedingOnly ? [] : evaluateFlags(cycles, history.logs, settings, today, {
+  const flags = gate.cycleFlagsOff ? [] : evaluateFlags(cycles, history.logs, settings, today, {
     ...(history.muted ? { muted: history.muted } : {}), ...(history.lastFlagRaised ? { lastRaised: history.lastFlagRaised } : {}),
     upper95: modelHi95, ...(gate.missedGapDays !== undefined ? { gapDays: gate.missedGapDays } : {}),
   });

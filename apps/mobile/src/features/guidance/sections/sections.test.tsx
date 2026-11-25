@@ -238,7 +238,6 @@ describe('GuidanceSections', () => {
     expect(generalReasonText({ kind: 'late', by: '2026-11-03' }, t, [])).toContain('later than the range Sanguine expected (by 3 Nov)');
     expect(generalReasonText({ kind: 'wide', width: 14, n: 36, min: 24, max: 38 }, t, [])).toContain('Over your last 36 cycles, lengths have varied from 24 to 38 days, so the middle of your cycle can only be narrowed to 14 days.');
     expect(generalReasonText({ kind: 'wide', width: 14 }, t, [])).toContain('narrowed to 14 days so far');
-    expect(generalReasonText({ kind: 'paused', on: '2026-10-14' }, t, [{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2026-01-01' }])).toContain('While hormonal IUD is set');
     expect(generalReasonText({ kind: 'paused', on: '2026-10-14' }, t, [{ kind: 'postpartum', delivered: '2026-01-01', breastfeeding: true }])).toContain('While breastfeeding is set');
     expect(generalReasonText({ kind: 'paused', on: '2026-10-14' }, t, [{ kind: 'perimenopause', since: '2026-01-01' }])).toContain('A life state you set in Settings');
     expect(generalReasonText({ kind: 'paused', on: '2026-10-14' }, t, [])).toContain('A life state you set in Settings');

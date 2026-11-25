@@ -79,11 +79,11 @@ function frameOf(cycle: CycleRecord, p: Prediction, date: ISODate, bleedEnd: ISO
   return frame;
 }
 
-/** The i18n key of the life state active on `on` that stops the calendar ovulation estimate (lifestate.ts: bleedingOnly or no calendarEstimate).
- *  Perimenopause also stops it but is never named in a sentence: the word is on the §2.3 list, allowed only as the label she picks (D-162). */
+/** The i18n key of the life state active on `on` that stops the calendar ovulation estimate (lifestate.ts: no calendarEstimate). A hormonal IUD no
+ *  longer stops it (D-163). Perimenopause also stops it but is never named in a sentence: the word is on the §2.3 list, allowed only as the label
+ *  she picks (D-162). */
 export function pausingStateKey(lifeStates: readonly (LifeState & { until?: ISODate })[], on: ISODate): string | undefined {
   const active = lifeStates.filter((s) => s.kind !== 'none' && lifeStateStart(s) <= on && (s.until === undefined || on <= s.until));
-  if (active.some((s) => s.kind === 'hormonal_contraception' && s.method === 'hormonal_iud')) return 'settings.lifeState.methods.hormonal_iud';
   if (active.some((s) => s.kind === 'postpartum' && s.breastfeeding)) return 'settings.lifeState.breastfeeding';
   return undefined;
 }

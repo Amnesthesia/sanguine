@@ -8,17 +8,20 @@ import type { EngineSettings } from './types';
 const A = () => historyFromLengths([28, 30, 29]);
 
 describe('predict', () => {
-  it('keeps hormonal-IUD period ranges, with low confidence and no ovulation or cycle flags', () => {
+  it('a hormonal IUD changes no estimate (D-163): same ranges, confidence and ovulation as without it; only cycle flags stay off', () => {
     const h = A();
     h.lh = [{ date: addDays(LAST_START, 12), result: 'positive', provenance: 'manual' }];
     const s: EngineSettings = { ...FIXTURE_SETTINGS, lifeStates: [{ kind: 'hormonal_contraception', method: 'hormonal_iud', since: '2020-01-01' }] };
     const p = predict(h, s, TODAY);
+    const without = predict(h, FIXTURE_SETTINGS, TODAY);
     expect(p.suspended).toBeUndefined();
-    expect(p.nextPeriod?.confidence).toBe('low');
+    expect(p.nextPeriod).toEqual(without.nextPeriod);
+    expect(p.nextPeriod?.confidence).toBe('medium');
     expect(p.cycleLength.nCyclesUsed).toBe(3);
     expect(p.cycleQuality.every((c) => c.quality === 'valid')).toBe(true);
-    expect(p.ovulation).toBeUndefined();
-    expect(p.fertileDays).toBeUndefined();
+    expect(p.ovulation).toEqual(without.ovulation);
+    expect(p.ovulation).toBeDefined();
+    expect(p.fertileDays).toEqual(without.fertileDays);
     expect(p.flags).toEqual([]);
     expect(predict({ ...h, cycles: [] }, s, TODAY).nextPeriod).toBeUndefined();
     expect(predict(h, { ...s, lifeStates: [...s.lifeStates, { kind: 'pregnant', since: LAST_START }] }, TODAY).suspended?.reason).toBe('pregnant');
