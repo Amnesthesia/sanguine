@@ -10,7 +10,7 @@ A user with a long imported Clue history saw "Any day of the cycle" on the guida
 - The Insights accuracy count reflects the engine version that is running now.
 
 ## Non-goals
-- No change to when a day is `general` (D-098, D-115 rules stand).
+- No change to what is drawn for an uncertain ovulation estimate (no marker, no band: D-098, D-115 stand).
 - No diagnostics screen.
 - No change to the Today ovulation card: it already says "Based on your cycle lengths." under the confidence word.
 
@@ -24,16 +24,17 @@ A user with a long imported Clue history saw "Any day of the cycle" on the guida
 3. Recompute the reason inside the card: rejected; duplicates `phaseOn`'s rules and drifts.
 
 ## Design
+- **Placement rule (owner addendum, 2026-11-25: "with that much data it really should have enough confidence").** While the ovulation estimate is uncertain (80% range over 12 days), a day is no longer `general` for the whole cycle: the premenstrual check (5 days before the most likely next start) runs first as now; then a day before the ovulation range's low end is `follicular`, a day after its high end is `luteal`, and only a day inside the range is `general` with reason `wide`. No day is `ovulatory` while uncertain (as now).
 - `GuideDay` gains `reason?: GeneralReason` when `phase === 'general'`:
   - `{ kind: 'late', by: ISODate }`: open cycle, date past the next period's 80% upper bound (`by` = that bound).
-  - `{ kind: 'wide', min, max, width }`: open cycle, ovulation estimate uncertain (80% range over 12 days). `min`/`max` = shortest and longest valid closed cycle among the last `WINDOW_CYCLES` kept cycles; `width` = the ovulation 80% range in days.
+  - `{ kind: 'wide', n, min, max, width }`: open cycle, ovulation estimate uncertain (80% range over 12 days). `n`/`min`/`max` = count, shortest and longest valid closed cycle among the last `WINDOW_CYCLES` kept cycles; `width` = the ovulation 80% range in days.
   - `{ kind: 'paused' }`: open cycle, a next period but no ovulation estimate (a life state stops the calendar estimate: hormonal IUD, perimenopause, breastfeeding without biomarkers).
   - `{ kind: 'setAside', quality }`: a past day in a closed cycle that is not `valid` (`suspect_skip`, `suspect_short`, `user_excluded`).
   - No reason when there is no next period at all (rare): the card keeps today's generic sentence.
 - `BodyCard`: for `general`, the body is the reason sentence followed by "These notes hold for any day of the cycle."; the compact day sheet shows the reason sentence. For `paused`, the card names the life state(s) she set that stop the estimate, read from the app's current settings, using the existing life-state labels.
 - Copy (en-AU, addresses women, no fertility words in any reason so the same text is safe in teen mode):
   - late: "Your period is later than the range Sanguine expected (by {date}), so it can't place this day in a phase."
-  - wide: "Your cycle lengths have varied from {min} to {max} days, so the middle of your cycle can only be narrowed to {width} days. That is too wide to place this day in a phase."
+  - wide: "Over your last {n} cycles, lengths have varied from {min} to {max} days, so the middle of your cycle can only be narrowed to {width} days. That is too wide to place this day in a phase."
   - paused: "While {state} is set, Sanguine doesn't estimate the middle of the cycle, so it can't place this day in a phase."
   - setAside: "This cycle was left out of estimates ({quality word}), so its days aren't placed in a phase." (quality words: existing `insights.quality.*`)
 - Accuracy ledger (`data/ledger.ts`): a stored record whose `engine_version` differs from the running `ENGINE_VERSION` is re-scored, still from the history as of that cycle's start (no hindsight).
