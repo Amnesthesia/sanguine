@@ -2,15 +2,19 @@
 // with a picture, one card per food note and the movement note with an evidence bar and its reason, supplements (when allowed) and the evidence key;
 // the numbered sources and the caveat close the This cycle page, after the estimate sources. Compact = two tiles with their evidence bars and,
 // on Today, a Read more button. All wording is existing guidance.* copy except the evidence key (D-120).
+import type { LifeState } from '@sanguine/engine';
+import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { useApp } from '@/state/app';
 import { useTheme } from '@/theme';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { Meter, evidenceLevel } from '@/ui/Meter';
+import { formatDay } from '@/ui/format';
 import { Text } from '@/ui/Text';
-import { type Evidence, GUIDANCE, type GuideDay } from '../guidance';
+import { type Evidence, type GeneralReason, GUIDANCE, type GuideDay, pausingStateKey } from '../guidance';
 import { HormoneCurve } from './HormoneCurve';
 
 const GRADES: readonly Evidence[] = ['strong', 'some', 'early', 'general'];
@@ -59,11 +63,28 @@ export const splitSources = (line: string): string[] => line.split(/\.\s+/).map(
 /** The phase's first sentence: the sheet's short phase line under the compact curve. */
 const firstSentence = (s: string): string => s.match(/^.*?\.(?=\s|$)/)?.[0] ?? s;
 
+/** Why a day is not placed in a phase (D-162), in her own numbers; undefined without a reason (the generic sentence stays). */
+export function generalReasonText(reason: GeneralReason | undefined, t: TFunction, lifeStates: readonly LifeState[]): string | undefined {
+  if (!reason) return undefined;
+  switch (reason.kind) {
+    case 'late': return t('guidance.general.reason.late', { date: formatDay(reason.by) });
+    case 'wide': return reason.n === undefined ? t('guidance.general.reason.wideNoRange', { width: reason.width })
+      : t('guidance.general.reason.wide', { n: reason.n, min: reason.min, max: reason.max, width: reason.width });
+    case 'paused': {
+      const key = pausingStateKey(lifeStates);
+      return key ? t('guidance.general.reason.paused', { state: t(key) }) : t('guidance.general.reason.pausedUnnamed');
+    }
+    case 'setAside': return t('guidance.general.reason.setAside', { quality: t(`insights.quality.${reason.quality}`) });
+  }
+}
+
 /** "What is changing": the hormone curve and the phase's body copy. `compact` (the day sheet): the short curve, the phase on the right and one sentence. */
 export function BodyCard({ day, compact = false, extras = false }: { day: GuideDay; compact?: boolean; extras?: boolean }) {
   const { t } = useTranslation();
+  const { settings } = useApp();
   const p = day.phase;
-  const body = t(`guidance.${p}.body`);
+  const reason = p === 'general' ? generalReasonText(day.reason, t, settings?.lifeStates ?? []) : undefined;
+  const body = reason ? `${reason} ${t('guidance.general.anyDay')}` : t(`guidance.${p}.body`);
   return (
     <Card testID={compact ? 'guidance-body-compact' : 'guidance-body'} style={{ gap: compact ? 8 : 12 }}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>

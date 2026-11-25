@@ -7,7 +7,7 @@ import i18n from '@/i18n';
 import en from '../../../../../../copy/en-AU.json';
 import { GUIDANCE, type GuidePhase } from '../guidance';
 import { DayEstimateRows, EstimateSections, estimateRow, estimateSources } from './EstimateSections';
-import { BodyCard, GuidanceSections, splitSources } from './GuidanceSections';
+import { BodyCard, GuidanceSections, generalReasonText, splitSources } from './GuidanceSections';
 
 // the drawing is rendered, not swallowed: shapes become <i data-svg-shape>, SVG text becomes <span data-svg-text>
 vi.mock('react-native-svg', () => {
@@ -16,6 +16,7 @@ vi.mock('react-native-svg', () => {
   const label = ({ children }: { children?: ReactNode }) => <span data-svg-text="">{children}</span>;
   return { default: group, G: group, Rect: shape, Path: shape, Line: shape, Circle: shape, Text: label };
 });
+vi.mock('@/state/app', () => ({ useApp: () => ({}) })); // BodyCard reads the life states for the paused reason; none here
 afterEach(cleanup);
 
 const prediction = {
@@ -231,6 +232,28 @@ describe('GuidanceSections', () => {
     render(<GuidanceSections day={day} supplements compact />);
     expect(screen.getAllByTestId('guidance-tile')).toHaveLength(2);
     expect(screen.queryByTestId('guidance-more')).toBeNull();
+  });
+  it('a general day says why: late, wide with and without her cycles, paused named and unnamed, set aside (D-162)', () => {
+    const t = i18n.t.bind(i18n);
+    expect(generalReasonText({ kind: 'late', by: '2026-11-03' }, t, [])).toContain('later than the range Sanguine expected (by 3 Nov)');
+    expect(generalReasonText({ kind: 'wide', width: 14, n: 36, min: 24, max: 38 }, t, [])).toContain('Over your last 36 cycles, lengths have varied from 24 to 38 days, so the middle of your cycle can only be narrowed to 14 days.');
+    expect(generalReasonText({ kind: 'wide', width: 14 }, t, [])).toContain('narrowed to 14 days so far');
+    expect(generalReasonText({ kind: 'paused' }, t, [{ kind: 'perimenopause', since: '2026-01-01' }])).toContain('While Perimenopause is set');
+    expect(generalReasonText({ kind: 'paused' }, t, [])).toContain("isn't estimating the middle of your cycle");
+    expect(generalReasonText({ kind: 'setAside', quality: 'suspect_skip' }, t, [])).toContain('(unusually long)');
+    expect(generalReasonText(undefined, t, [])).toBeUndefined();
+  });
+  it('the card leads with the reason and keeps the any-day line; the compact card shows the reason', () => {
+    const day = { phase: 'general', expected: false, reason: { kind: 'wide', width: 14, n: 36, min: 24, max: 38 } } as const;
+    render(<BodyCard day={day} />);
+    expect(text()).toContain('Over your last 36 cycles, lengths have varied from 24 to 38 days, so the middle of your cycle can only be narrowed to 14 days. This day falls inside that stretch, so it isn\'t placed in a phase. These notes hold for any day of the cycle.');
+    expect(text()).not.toContain('for example when cycles vary a lot');
+    cleanup();
+    render(<BodyCard day={day} compact />);
+    expect(text()).toContain('Over your last 36 cycles, lengths have varied from 24 to 38 days, so the middle of your cycle can only be narrowed to 14 days.');
+    cleanup();
+    render(<BodyCard day={{ phase: 'general', expected: false }} />);
+    expect(text()).toContain('for example when cycles vary a lot'); // no reason: the generic sentence
   });
   it('the compact body card has the short curve, the phase and one sentence', () => {
     render(<BodyCard day={{ phase: 'menstrual', expected: false }} compact />);
